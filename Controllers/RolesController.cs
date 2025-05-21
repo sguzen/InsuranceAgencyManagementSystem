@@ -9,21 +9,24 @@ using System.Security.Claims;
 
 namespace IAMS.Api.Controllers
 {
- [ApiController]
- [Route("api/[controller]")]
- [Authorize(Roles = "Administrator")]
-public class RolesController : ControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize(Roles = "Administrator")]
+    public class RolesController : ControllerBase
     {
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPermissionService _permissionService;
         private readonly ILogger<RolesController> _logger;
 
         public RolesController(
             RoleManager<ApplicationRole> roleManager,
+            UserManager<ApplicationUser> userManager,
             IPermissionService permissionService,
             ILogger<RolesController> logger)
         {
             _roleManager = roleManager;
+            _userManager = userManager;
             _permissionService = permissionService;
             _logger = logger;
         }
@@ -58,13 +61,14 @@ public class RolesController : ControllerBase
                 await _permissionService.UpdateRolePermissionsAsync(roleId, updateDto.PermissionIds);
                 return NoContent();
             }
-            //catch (Exception)
-            //{
-            //    return NotFound();
-            //}
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating role permissions for role {RoleId}", roleId);
+                return StatusCode(500, new { Message = "An error occurred while updating role permissions" });
             }
         }
 
@@ -233,8 +237,8 @@ public class RolesController : ControllerBase
         private int GetTenantId()
         {
             // Get tenant ID from the current context
-            // This would typically come from your tenant context accessor
-            return int.Parse(User.FindFirstValue("tenant_id"));
+            var tenantIdClaim = User.FindFirstValue("tenant_id");
+            return int.TryParse(tenantIdClaim, out var tenantId) ? tenantId : 1; // Default to 1 if not found
         }
     }
 }

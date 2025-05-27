@@ -2340,7 +2340,7 @@
           "IAMS.Application": "1.0.0",
           "IAMS.MultiTenancy": "1.0.0",
           "IAMS.Shared": "1.0.0",
-          "Microsoft.EntityFrameworkCore": "8.0.0",
+          "Microsoft.EntityFrameworkCore": "9.0.5",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.0",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.0",
           "Microsoft.Extensions.Configuration": "8.0.0"

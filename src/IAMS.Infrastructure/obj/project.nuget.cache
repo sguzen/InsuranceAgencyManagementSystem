@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "k26ERdlH1po=",
+  "dgSpecHash": "+WT431f1LAI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Sis\\source\\repos\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Sis\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Sis\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

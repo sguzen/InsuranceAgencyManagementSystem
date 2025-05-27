@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3S8+f7v9gTU=",
+  "dgSpecHash": "cHf4f1s3gWU=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Sis\\source\\repos\\IAMS.Identity\\IAMS.Identity.csproj",
+  "projectFilePath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Identity\\IAMS.Identity.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Sis\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\Sis\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

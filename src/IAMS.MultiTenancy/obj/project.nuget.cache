@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "C0/t+nUEDu8=",
+  "dgSpecHash": "un0izA0Ilz4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Sis\\source\\repos\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj",
+  "projectFilePath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Sis\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Sis\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

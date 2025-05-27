@@ -1,1 +1,2 @@
 C:\Users\Sis\source\repos\IAMS.Web\obj\Debug\net8.0\IAMS.Web.csproj.AssemblyReference.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Web\obj\Debug\net8.0\IAMS.Web.csproj.AssemblyReference.cache

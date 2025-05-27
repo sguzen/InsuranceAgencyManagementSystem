@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IAMS.Application\IAMS.Application.csproj" />
-    <ProjectReference Include="..\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\src\IAMS.Application\IAMS.Application.csproj" />
+    <ProjectReference Include="..\..\src\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
   </ItemGroup>
 
   <ItemGroup>

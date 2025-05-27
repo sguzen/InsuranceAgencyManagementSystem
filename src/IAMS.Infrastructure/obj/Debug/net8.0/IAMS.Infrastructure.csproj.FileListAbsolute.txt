@@ -1,0 +1,12 @@
+C:\Users\Sis\source\repos\IAMS.Infrastructure\bin\Debug\net8.0\IAMS.Infrastructure.deps.json
+C:\Users\Sis\source\repos\IAMS.Infrastructure\bin\Debug\net8.0\IAMS.Infrastructure.dll
+C:\Users\Sis\source\repos\IAMS.Infrastructure\bin\Debug\net8.0\IAMS.Infrastructure.pdb
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.AssemblyInfo.cs
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.dll
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\refint\IAMS.Infrastructure.dll
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.pdb
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\ref\IAMS.Infrastructure.dll
+C:\Users\Sis\source\repos\IAMS.Infrastructure\obj\Debug\net8.0\IAMS.Infrastructure.csproj.AssemblyReference.cache

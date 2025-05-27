@@ -1,0 +1,11 @@
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\bin\Debug\net8.0\IAMS.KnowledgeBase.deps.json
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\bin\Debug\net8.0\IAMS.KnowledgeBase.dll
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\bin\Debug\net8.0\IAMS.KnowledgeBase.pdb
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\IAMS.KnowledgeBase.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\IAMS.KnowledgeBase.AssemblyInfoInputs.cache
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\IAMS.KnowledgeBase.AssemblyInfo.cs
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\IAMS.KnowledgeBase.csproj.CoreCompileInputs.cache
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\IAMS.KnowledgeBase.dll
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\refint\IAMS.KnowledgeBase.dll
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\IAMS.KnowledgeBase.pdb
+C:\Users\Sis\source\repos\IAMS.KnowledgeBase\obj\Debug\net8.0\ref\IAMS.KnowledgeBase.dll

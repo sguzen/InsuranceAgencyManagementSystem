@@ -1,0 +1,5 @@
+C:\Users\Sis\source\repos\IAMS.MultiTenancy\obj\Debug\net8.0\IAMS.MultiTenancy.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sis\source\repos\IAMS.MultiTenancy\obj\Debug\net8.0\IAMS.MultiTenancy.AssemblyInfoInputs.cache
+C:\Users\Sis\source\repos\IAMS.MultiTenancy\obj\Debug\net8.0\IAMS.MultiTenancy.AssemblyInfo.cs
+C:\Users\Sis\source\repos\IAMS.MultiTenancy\obj\Debug\net8.0\IAMS.MultiTenancy.csproj.CoreCompileInputs.cache
+C:\Users\Sis\source\repos\IAMS.MultiTenancy\obj\Debug\net8.0\IAMS.MultiTenancy.csproj.AssemblyReference.cache

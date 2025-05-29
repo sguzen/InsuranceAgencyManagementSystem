@@ -35,10 +35,10 @@ namespace IAMS.MultiTenancy.Extensions
             });
 
             // Register HTTP context accessor for web scenarios (only if not already registered)
-            if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
-            {
-                services.AddHttpContextAccessor();
-            }
+            //if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
+            //{
+            //    services.AddHttpContextAccessor();
+            //}
 
             // Register tenant context accessor as scoped
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
@@ -71,11 +71,11 @@ namespace IAMS.MultiTenancy.Extensions
             services.AddDbContext<TenantContext>(options =>
                 options.UseSqlServer(masterConnectionString));
 
-            // Register HTTP context accessor (only if not already registered)
-            if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
-            {
-                services.AddHttpContextAccessor();
-            }
+            //// Register HTTP context accessor (only if not already registered)
+            //if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
+            //{
+            //    services.AddHttpContextAccessor();
+            //}
 
             // Register services with explicit interface mapping
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
@@ -137,10 +137,10 @@ namespace IAMS.MultiTenancy.Extensions
             }
 
             // Register HTTP context accessor
-            if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
-            {
-                services.AddHttpContextAccessor();
-            }
+            //if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
+            //{
+            //    services.AddHttpContextAccessor();
+            //}
 
             // Register core services
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();

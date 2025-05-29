@@ -1,5 +1,5 @@
 {
-  "IAMS.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\Sis\\source\\repos\\IAMS.Application",
-  "IAMS.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\Sis\\source\\repos\\IAMS.Domain",
-  "IAMS.MultiTenancy": "C:\\Users\\Sis\\source\\repos\\IAMS.MultiTenancy"
+  "IAMS.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application",
+  "IAMS.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Domain",
+  "IAMS.MultiTenancy": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy"
 }

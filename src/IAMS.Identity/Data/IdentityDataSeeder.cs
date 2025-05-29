@@ -16,14 +16,14 @@ namespace IAMS.Identity.Data
     public class IdentityDataSeeder
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly RoleManager<ApplicationUser> _roleManager;
         private readonly AppIdentityDbContext _dbContext;
         private readonly ITenantService _tenantService;
         private readonly ILogger<IdentityDataSeeder> _logger;
 
         public IdentityDataSeeder(
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager,
+            RoleManager<ApplicationUser> roleManager,
             AppIdentityDbContext dbContext,
             ITenantService tenantService,
             ILogger<IdentityDataSeeder> logger)
@@ -139,7 +139,7 @@ namespace IAMS.Identity.Data
             var corePermissions = allPermissions.Where(p => p.Module == null).ToList();
 
             // Create Administrator role
-            var adminRole = new ApplicationRole
+            var adminRole = new ApplicationUser
             {
                 Name = "Administrator",
                 NormalizedName = "ADMINISTRATOR",
@@ -165,7 +165,7 @@ namespace IAMS.Identity.Data
             }
 
             // Create Manager role
-            var managerRole = new ApplicationRole
+            var managerRole = new ApplicationUser
             {
                 Name = "Manager",
                 NormalizedName = "MANAGER",
@@ -196,7 +196,7 @@ namespace IAMS.Identity.Data
             }
 
             // Create Agent role
-            var agentRole = new ApplicationRole
+            var agentRole = new ApplicationUser
             {
                 Name = "Agent",
                 NormalizedName = "AGENT",
@@ -233,7 +233,7 @@ namespace IAMS.Identity.Data
             }
 
             // Create ReadOnly role
-            var readOnlyRole = new ApplicationRole
+            var readOnlyRole = new ApplicationUser
             {
                 Name = "ReadOnly",
                 NormalizedName = "READONLY",

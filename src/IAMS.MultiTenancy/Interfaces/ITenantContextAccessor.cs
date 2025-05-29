@@ -1,9 +1,5 @@
-﻿using IAMS.MultiTenancy.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Interfaces
 {
@@ -12,12 +8,12 @@ namespace IAMS.MultiTenancy.Interfaces
         /// <summary>
         /// Gets the current tenant context
         /// </summary>
-        TenantContext TenantContext { get; set; }
+        TenantContext? TenantContext { get; set; }
 
         /// <summary>
         /// Gets the current tenant, returns null if no tenant context is set
         /// </summary>
-        Tenant CurrentTenant { get; }
+        Tenant? CurrentTenant { get; }
 
         /// <summary>
         /// Gets the current tenant ID, returns null if no tenant context is set
@@ -32,7 +28,7 @@ namespace IAMS.MultiTenancy.Interfaces
         /// <summary>
         /// Gets the connection string for the current tenant
         /// </summary>
-        string GetConnectionString();
+        string? GetConnectionString();
 
         /// <summary>
         /// Checks if the specified module is enabled for the current tenant

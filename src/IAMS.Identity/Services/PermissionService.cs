@@ -1,5 +1,6 @@
-﻿using IAMS.Application.DTOs.Identity;
-using IAMS.Identity.Contexts;
+﻿// Fixed PermissionService.cs
+using IAMS.Application.DTOs.Identity;
+using IAMS.Identity.Data;
 using IAMS.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,12 @@ namespace IAMS.Identity.Services
     {
         private readonly IdentityDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly RoleManager<ApplicationUser> _roleManager;
 
         public PermissionService(
             IdentityDbContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager)
+            RoleManager<ApplicationUser> roleManager)
         {
             _context = context;
             _userManager = userManager;
@@ -30,6 +31,7 @@ namespace IAMS.Identity.Services
             {
                 Id = p.Id,
                 Name = p.Name,
+                DisplayName = p.DisplayName,
                 Description = p.Description,
                 Module = p.Module
             }).ToList();
@@ -44,6 +46,7 @@ namespace IAMS.Identity.Services
                 {
                     Id = rp.Permission.Id,
                     Name = rp.Permission.Name,
+                    DisplayName = rp.Permission.DisplayName,
                     Description = rp.Permission.Description,
                     Module = rp.Permission.Module
                 })

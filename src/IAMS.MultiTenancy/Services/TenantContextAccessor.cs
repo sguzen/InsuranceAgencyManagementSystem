@@ -2,6 +2,7 @@
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
 using Microsoft.Extensions.Logging;
+using IAMS.MultiTenancy.Data;
 
 namespace IAMS.MultiTenancy.Services
 {
@@ -19,7 +20,7 @@ namespace IAMS.MultiTenancy.Services
             _logger = logger;
         }
 
-        public TenantContext TenantContext
+        public TenantContext? TenantContext
         {
             get
             {
@@ -54,15 +55,13 @@ namespace IAMS.MultiTenancy.Services
             }
         }
 
-        public Tenant CurrentTenant => TenantContext?.Tenant;
+        public Tenant? CurrentTenant => TenantContext?.Tenant;
 
         public int? CurrentTenantId => CurrentTenant?.Id;
 
         public bool HasTenantContext => TenantContext != null;
 
-        Models.TenantContext ITenantContextAccessor.TenantContext { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public string GetConnectionString()
+        public string? GetConnectionString()
         {
             var tenant = CurrentTenant;
             if (tenant == null)
@@ -216,7 +215,7 @@ namespace IAMS.MultiTenancy.Services
 
         private class TenantContextHolder
         {
-            public TenantContext Context;
+            public TenantContext? Context;
         }
     }
 }

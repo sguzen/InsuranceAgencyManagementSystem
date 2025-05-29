@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Fixed PermissionRequirement.cs with proper claim type
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IAMS.Identity.Authorization
 {
@@ -19,15 +15,15 @@ namespace IAMS.Identity.Authorization
         }
     }
 
-    // IAMS.Identity/Authorization/PermissionHandler.cs
+    // Fixed PermissionHandler.cs with correct claim type
     public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             PermissionRequirement requirement)
         {
-            // Check if user has the required permission claim
-            if (context.User.HasClaim(c => c.Type == "Permission" && c.Value == requirement.Permission))
+            // Check if user has the required permission claim (fixed claim type)
+            if (context.User.HasClaim(c => c.Type == "permission" && c.Value == requirement.Permission))
             {
                 context.Succeed(requirement);
             }
@@ -36,7 +32,7 @@ namespace IAMS.Identity.Authorization
         }
     }
 
-    // IAMS.Identity/Authorization/PermissionAuthorizationPolicyProvider.cs
+    // Fixed PermissionAuthorizationPolicyProvider.cs
     public class PermissionAuthorizationPolicyProvider : DefaultAuthorizationPolicyProvider
     {
         private readonly IConfiguration _configuration;
@@ -47,9 +43,9 @@ namespace IAMS.Identity.Authorization
             _configuration = configuration;
         }
 
-        public override async Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        public override async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
-            // If the policy name starts with "Permission", it's a permission policy
+            // If the policy name starts with "Permission:", it's a permission policy
             if (policyName.StartsWith("Permission:", StringComparison.OrdinalIgnoreCase))
             {
                 var permission = policyName.Substring("Permission:".Length);
@@ -61,12 +57,24 @@ namespace IAMS.Identity.Authorization
                 return policy;
             }
 
+            // If the policy name starts with "Module:", it's a module policy
+            if (policyName.StartsWith("Module:", StringComparison.OrdinalIgnoreCase))
+            {
+                var moduleName = policyName.Substring("Module:".Length);
+
+                var policy = new AuthorizationPolicyBuilder()
+                    .AddRequirements(new ModuleRequirement(moduleName))
+                    .Build();
+
+                return policy;
+            }
+
             // Use the base implementation for other policies
             return await base.GetPolicyAsync(policyName);
         }
     }
 
-    // IAMS.Identity/Authorization/HasPermissionAttribute.cs
+    // HasPermissionAttribute.cs
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
     public class HasPermissionAttribute : AuthorizeAttribute
     {

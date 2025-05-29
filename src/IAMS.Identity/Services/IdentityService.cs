@@ -13,13 +13,13 @@ namespace IAMS.Identity.Services
     public class IdentityService : IIdentityService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly RoleManager<ApplicationUser> _roleManager;
         private readonly IPermissionService _permissionService;
         private readonly IConfiguration _configuration;
 
         public IdentityService(
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager,
+            RoleManager<ApplicationUser> roleManager,
             IPermissionService permissionService,
             IConfiguration configuration)
         {

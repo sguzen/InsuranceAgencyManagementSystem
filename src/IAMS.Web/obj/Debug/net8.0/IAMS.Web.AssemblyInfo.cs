@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IAMS.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+271372f04103dbcd44160dc08a123d2c7711c048")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d73f3d9d053ef75b43b588968c5a52197e5315e")]
 [assembly: System.Reflection.AssemblyProductAttribute("IAMS.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IAMS.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

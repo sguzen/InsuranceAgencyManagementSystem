@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// Services/TenantService.cs - Complete Implementation
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
-using IAMS.Domain.Entities;
 
 namespace IAMS.MultiTenancy.Services
 {
@@ -30,7 +30,7 @@ namespace IAMS.MultiTenancy.Services
             _tenantContextAccessor = tenantContextAccessor;
         }
 
-        public async Task<Tenant> GetTenantAsync(string identifier)
+        public async Task<Tenant?> GetTenantAsync(string identifier)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -39,22 +39,22 @@ namespace IAMS.MultiTenancy.Services
 
             var cacheKey = $"{CacheKeyPrefix}{identifier.ToLowerInvariant()}";
 
-            if (!_cache.TryGetValue(cacheKey, out Tenant tenant))
+            if (!_cache.TryGetValue(cacheKey, out Tenant? tenant))
             {
                 _logger.LogDebug("Tenant cache miss for identifier: {Identifier}", identifier);
 
                 try
                 {
-                    // Query the master database using EF
                     var tenantEntity = await _masterDbContext.Tenants
                         .AsNoTracking()
+                        .Include(t => t.TenantModules)
+                        .Include(t => t.TenantSettings)
                         .FirstOrDefaultAsync(t => t.Identifier == identifier && t.IsActive);
 
                     if (tenantEntity != null)
                     {
-                        tenant = await MapTenantEntityToTenant(tenantEntity);
+                        tenant = MapTenantEntityToTenant(tenantEntity);
 
-                        // Cache the tenant
                         var cacheOptions = new MemoryCacheEntryOptions
                         {
                             AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheExpirationMinutes),
@@ -84,21 +84,23 @@ namespace IAMS.MultiTenancy.Services
             return tenant;
         }
 
-        public async Task<Tenant> GetTenantByIdAsync(int tenantId)
+        public async Task<Tenant?> GetTenantByIdAsync(int tenantId)
         {
             var cacheKey = $"{CacheKeyPrefix}id_{tenantId}";
 
-            if (!_cache.TryGetValue(cacheKey, out Tenant tenant))
+            if (!_cache.TryGetValue(cacheKey, out Tenant? tenant))
             {
                 try
                 {
                     var tenantEntity = await _masterDbContext.Tenants
                         .AsNoTracking()
+                        .Include(t => t.TenantModules)
+                        .Include(t => t.TenantSettings)
                         .FirstOrDefaultAsync(t => t.Id == tenantId);
 
                     if (tenantEntity != null)
                     {
-                        tenant = await MapTenantEntityToTenant(tenantEntity);
+                        tenant = MapTenantEntityToTenant(tenantEntity);
 
                         var cacheOptions = new MemoryCacheEntryOptions
                         {
@@ -126,22 +128,162 @@ namespace IAMS.MultiTenancy.Services
             {
                 var tenantEntities = await _masterDbContext.Tenants
                     .AsNoTracking()
+                    .Include(t => t.TenantModules)
+                    .Include(t => t.TenantSettings)
                     .Where(t => t.IsActive)
                     .ToListAsync();
 
-                var tenants = new List<Tenant>();
-                foreach (var tenantEntity in tenantEntities)
-                {
-                    var tenant = await MapTenantEntityToTenant(tenantEntity);
-                    tenants.Add(tenant);
-                }
-
-                return tenants;
+                return tenantEntities.Select(MapTenantEntityToTenant).ToList();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving all active tenants");
                 return new List<Tenant>();
+            }
+        }
+
+        public async Task<Tenant> CreateTenantAsync(CreateTenantRequest request)
+        {
+            try
+            {
+                // Check if identifier already exists
+                var existingTenant = await _masterDbContext.Tenants
+                    .FirstOrDefaultAsync(t => t.Identifier == request.Identifier);
+
+                if (existingTenant != null)
+                {
+                    throw new InvalidOperationException($"Tenant with identifier '{request.Identifier}' already exists.");
+                }
+
+                var tenantEntity = new TenantEntity
+                {
+                    Name = request.Name,
+                    Identifier = request.Identifier,
+                    ConnectionString = request.ConnectionString,
+                    ContactEmail = request.ContactEmail,
+                    ContactPhone = request.ContactPhone,
+                    SubscriptionPlan = request.SubscriptionPlan,
+                    SubscriptionExpiry = request.SubscriptionExpiry,
+                    MaxUsers = request.MaxUsers,
+                    MaxStorageBytes = request.MaxStorageBytes,
+                    TimeZone = request.TimeZone,
+                    Currency = request.Currency,
+                    Language = request.Language,
+                    CreatedOn = DateTime.UtcNow,
+                    IsActive = true
+                };
+
+                _masterDbContext.Tenants.Add(tenantEntity);
+                await _masterDbContext.SaveChangesAsync();
+
+                // Add enabled modules
+                if (request.EnabledModules.Any())
+                {
+                    var moduleEntities = request.EnabledModules.Select(module => new TenantModule
+                    {
+                        TenantId = tenantEntity.Id,
+                        ModuleName = module,
+                        IsEnabled = true,
+                        CreatedOn = DateTime.UtcNow
+                    });
+
+                    _masterDbContext.TenantModules.AddRange(moduleEntities);
+                }
+
+                // Add settings
+                if (request.Settings.Any())
+                {
+                    var settingEntities = request.Settings.Select(setting => new TenantSetting
+                    {
+                        TenantId = tenantEntity.Id,
+                        SettingKey = setting.Key,
+                        SettingValue = setting.Value?.ToString() ?? string.Empty,
+                        SettingType = GetSettingType(setting.Value),
+                        CreatedOn = DateTime.UtcNow
+                    });
+
+                    _masterDbContext.TenantSettings.AddRange(settingEntities);
+                }
+
+                await _masterDbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Created new tenant: {TenantId} - {TenantName}", tenantEntity.Id, tenantEntity.Name);
+
+                // Reload with includes
+                var createdTenant = await GetTenantByIdAsync(tenantEntity.Id);
+                return createdTenant!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating tenant: {TenantName}", request.Name);
+                throw;
+            }
+        }
+
+        public async Task<Tenant> UpdateTenantAsync(int tenantId, UpdateTenantRequest request)
+        {
+            try
+            {
+                var tenantEntity = await _masterDbContext.Tenants.FindAsync(tenantId);
+                if (tenantEntity == null)
+                {
+                    throw new InvalidOperationException($"Tenant with ID {tenantId} not found.");
+                }
+
+                // Update properties
+                tenantEntity.Name = request.Name;
+                tenantEntity.ContactEmail = request.ContactEmail;
+                tenantEntity.ContactPhone = request.ContactPhone;
+                tenantEntity.SubscriptionPlan = request.SubscriptionPlan;
+                tenantEntity.SubscriptionExpiry = request.SubscriptionExpiry;
+                tenantEntity.MaxUsers = request.MaxUsers;
+                tenantEntity.MaxStorageBytes = request.MaxStorageBytes;
+                tenantEntity.TimeZone = request.TimeZone;
+                tenantEntity.Currency = request.Currency;
+                tenantEntity.Language = request.Language;
+                tenantEntity.IsActive = request.IsActive;
+                tenantEntity.LastUpdated = DateTime.UtcNow;
+
+                await _masterDbContext.SaveChangesAsync();
+
+                // Invalidate cache
+                await InvalidateTenantCacheAsync(tenantId);
+
+                _logger.LogInformation("Updated tenant: {TenantId} - {TenantName}", tenantId, request.Name);
+
+                var updatedTenant = await GetTenantByIdAsync(tenantId);
+                return updatedTenant!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating tenant: {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task DeleteTenantAsync(int tenantId)
+        {
+            try
+            {
+                var tenantEntity = await _masterDbContext.Tenants.FindAsync(tenantId);
+                if (tenantEntity == null)
+                {
+                    throw new InvalidOperationException($"Tenant with ID {tenantId} not found.");
+                }
+
+                // Soft delete - just mark as inactive
+                tenantEntity.IsActive = false;
+                tenantEntity.LastUpdated = DateTime.UtcNow;
+
+                await _masterDbContext.SaveChangesAsync();
+                await InvalidateTenantCacheAsync(tenantId);
+
+                _logger.LogInformation("Deleted (deactivated) tenant: {TenantId}", tenantId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting tenant: {TenantId}", tenantId);
+                throw;
             }
         }
 
@@ -155,7 +297,6 @@ namespace IAMS.MultiTenancy.Services
             var cacheKey = $"{CacheKeyPrefix}{identifier.ToLowerInvariant()}";
             _cache.Remove(cacheKey);
 
-            // Also try to get the tenant ID and invalidate that cache entry
             try
             {
                 var tenantId = await _masterDbContext.Tenants
@@ -183,7 +324,6 @@ namespace IAMS.MultiTenancy.Services
             var idCacheKey = $"{CacheKeyPrefix}id_{tenantId}";
             _cache.Remove(idCacheKey);
 
-            // Also try to get the identifier and invalidate that cache entry
             try
             {
                 var identifier = await _masterDbContext.Tenants
@@ -206,7 +346,7 @@ namespace IAMS.MultiTenancy.Services
             _logger.LogInformation("Invalidated tenant cache for ID: {TenantId}", tenantId);
         }
 
-        public Tenant GetCurrentTenant()
+        public Tenant? GetCurrentTenant()
         {
             return _tenantContextAccessor.CurrentTenant;
         }
@@ -221,91 +361,6 @@ namespace IAMS.MultiTenancy.Services
             return _tenantContextAccessor.IsModuleEnabled(moduleName);
         }
 
-        private async Task<Tenant> MapTenantEntityToTenant(ITenantEntity tenantEntity)
-        {
-            var tenant = new Tenant
-            {
-                Id = tenantEntity.Id,
-                Name = tenantEntity.Name,
-                Identifier = tenantEntity.Identifier,
-                ConnectionString = tenantEntity.ConnectionString,
-                IsActive = tenantEntity.IsActive,
-                CreatedOn = tenantEntity.CreatedOn,
-                LastUpdated = tenantEntity.LastUpdated,
-                SubscriptionPlan = tenantEntity.SubscriptionPlan,
-                SubscriptionExpiry = tenantEntity.SubscriptionExpiry,
-                MaxUsers = tenantEntity.MaxUsers,
-                MaxStorageBytes = tenantEntity.MaxStorageBytes,
-                ContactEmail = tenantEntity.ContactEmail,
-                ContactPhone = tenantEntity.ContactPhone,
-                TimeZone = tenantEntity.TimeZone,
-                Currency = tenantEntity.Currency,
-                Language = tenantEntity.Language,
-                EnabledModules = new Dictionary<string, bool>(),
-                Settings = new Dictionary<string, object>()
-            };
-
-            // Load enabled modules using EF
-            await LoadTenantModulesAsync(tenant);
-
-            // Load tenant settings using EF
-            await LoadTenantSettingsAsync(tenant);
-
-            return tenant;
-        }
-
-        private async Task LoadTenantModulesAsync(Tenant tenant)
-        {
-            try
-            {
-                var modules = await _masterDbContext.TenantModules
-                    .AsNoTracking()
-                    .Where(tm => tm.TenantId == tenant.Id)
-                    .ToListAsync();
-
-                tenant.EnabledModules.Clear();
-                foreach (var module in modules)
-                {
-                    tenant.EnabledModules[module.ModuleName] = module.IsEnabled;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading modules for tenant {TenantId}", tenant.Id);
-            }
-        }
-
-        private async Task LoadTenantSettingsAsync(Tenant tenant)
-        {
-            try
-            {
-                var settings = await _masterDbContext.TenantSettings
-                    .AsNoTracking()
-                    .Where(ts => ts.TenantId == tenant.Id)
-                    .ToListAsync();
-
-                tenant.Settings.Clear();
-                foreach (var setting in settings)
-                {
-                    // Convert the setting value based on its type
-                    object value = setting.SettingType switch
-                    {
-                        "int" => int.Parse(setting.SettingValue),
-                        "bool" => bool.Parse(setting.SettingValue),
-                        "decimal" => decimal.Parse(setting.SettingValue),
-                        "datetime" => DateTime.Parse(setting.SettingValue),
-                        _ => setting.SettingValue // Default to string
-                    };
-
-                    tenant.Settings[setting.SettingKey] = value;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading settings for tenant {TenantId}", tenant.Id);
-            }
-        }
-
         public async Task UpdateTenantModuleAsync(int tenantId, string moduleName, bool isEnabled)
         {
             try
@@ -315,7 +370,6 @@ namespace IAMS.MultiTenancy.Services
 
                 if (tenantModule == null)
                 {
-                    // Create new module entry
                     tenantModule = new TenantModule
                     {
                         TenantId = tenantId,
@@ -327,14 +381,11 @@ namespace IAMS.MultiTenancy.Services
                 }
                 else
                 {
-                    // Update existing module
                     tenantModule.IsEnabled = isEnabled;
                     tenantModule.LastUpdated = DateTime.UtcNow;
                 }
 
                 await _masterDbContext.SaveChangesAsync();
-
-                // Invalidate cache
                 await InvalidateTenantCacheAsync(tenantId);
 
                 _logger.LogInformation("Updated module {ModuleName} for tenant {TenantId} to {IsEnabled}",
@@ -359,7 +410,6 @@ namespace IAMS.MultiTenancy.Services
 
                 if (tenantSetting == null)
                 {
-                    // Create new setting entry
                     tenantSetting = new TenantSetting
                     {
                         TenantId = tenantId,
@@ -372,15 +422,12 @@ namespace IAMS.MultiTenancy.Services
                 }
                 else
                 {
-                    // Update existing setting
                     tenantSetting.SettingValue = stringValue;
                     tenantSetting.SettingType = settingType;
                     tenantSetting.LastUpdated = DateTime.UtcNow;
                 }
 
                 await _masterDbContext.SaveChangesAsync();
-
-                // Invalidate cache
                 await InvalidateTenantCacheAsync(tenantId);
 
                 _logger.LogInformation("Updated setting {SettingKey} for tenant {TenantId}",
@@ -392,6 +439,146 @@ namespace IAMS.MultiTenancy.Services
                     settingKey, tenantId);
                 throw;
             }
+        }
+
+        public async Task<bool> IsSubscriptionActiveAsync(int tenantId)
+        {
+            try
+            {
+                var tenant = await GetTenantByIdAsync(tenantId);
+                return tenant?.IsSubscriptionActive() ?? false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking subscription status for tenant {TenantId}", tenantId);
+                return false;
+            }
+        }
+
+        public async Task UpdateSubscriptionAsync(int tenantId, string subscriptionPlan, DateTime? expiryDate)
+        {
+            try
+            {
+                var tenantEntity = await _masterDbContext.Tenants.FindAsync(tenantId);
+                if (tenantEntity == null)
+                {
+                    throw new InvalidOperationException($"Tenant with ID {tenantId} not found.");
+                }
+
+                tenantEntity.SubscriptionPlan = subscriptionPlan;
+                tenantEntity.SubscriptionExpiry = expiryDate;
+                tenantEntity.LastUpdated = DateTime.UtcNow;
+
+                await _masterDbContext.SaveChangesAsync();
+                await InvalidateTenantCacheAsync(tenantId);
+
+                _logger.LogInformation("Updated subscription for tenant {TenantId}: {Plan} until {Expiry}",
+                    tenantId, subscriptionPlan, expiryDate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating subscription for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<Tenant?> GetTenantByDomainAsync(string domain)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return null;
+            }
+
+            // Extract subdomain from domain (e.g., "tenant.example.com" -> "tenant")
+            var parts = domain.Split('.');
+            if (parts.Length < 2)
+            {
+                return null;
+            }
+
+            var subdomain = parts[0];
+            return await GetTenantAsync(subdomain);
+        }
+
+        public async Task<bool> TenantExistsAsync(string identifier)
+        {
+            try
+            {
+                return await _masterDbContext.Tenants
+                    .AnyAsync(t => t.Identifier == identifier && t.IsActive);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking if tenant exists: {Identifier}", identifier);
+                return false;
+            }
+        }
+
+        private static Tenant MapTenantEntityToTenant(TenantEntity tenantEntity)
+        {
+            var tenant = new Tenant
+            {
+                Id = tenantEntity.Id,
+                Name = tenantEntity.Name,
+                Identifier = tenantEntity.Identifier,
+                ConnectionString = tenantEntity.ConnectionString,
+                IsActive = tenantEntity.IsActive,
+                CreatedOn = tenantEntity.CreatedOn,
+                LastUpdated = tenantEntity.LastUpdated,
+                SubscriptionPlan = tenantEntity.SubscriptionPlan,
+                SubscriptionExpiry = tenantEntity.SubscriptionExpiry,
+                MaxUsers = tenantEntity.MaxUsers,
+                MaxStorageBytes = tenantEntity.MaxStorageBytes,
+                ContactEmail = tenantEntity.ContactEmail,
+                ContactPhone = tenantEntity.ContactPhone,
+                TimeZone = tenantEntity.TimeZone,
+                Currency = tenantEntity.Currency,
+                Language = tenantEntity.Language,
+                EnabledModules = new Dictionary<string, bool>(),
+                Settings = new Dictionary<string, object>()
+            };
+
+            // Map modules
+            foreach (var module in tenantEntity.TenantModules)
+            {
+                tenant.EnabledModules[module.ModuleName] = module.IsEnabled;
+            }
+
+            // Map settings
+            foreach (var setting in tenantEntity.TenantSettings)
+            {
+                var value = ConvertSettingValue(setting.SettingValue, setting.SettingType);
+                tenant.Settings[setting.SettingKey] = value;
+            }
+
+            return tenant;
+        }
+
+        private static object ConvertSettingValue(string value, string type)
+        {
+            return type.ToLower() switch
+            {
+                "int" => int.TryParse(value, out var intVal) ? intVal : 0,
+                "bool" => bool.TryParse(value, out var boolVal) && boolVal,
+                "decimal" => decimal.TryParse(value, out var decVal) ? decVal : 0m,
+                "datetime" => DateTime.TryParse(value, out var dateVal) ? dateVal : DateTime.MinValue,
+                "double" => double.TryParse(value, out var doubleVal) ? doubleVal : 0d,
+                _ => value
+            };
+        }
+
+        private static string GetSettingType(object? value)
+        {
+            return value switch
+            {
+                int => "int",
+                bool => "bool",
+                decimal => "decimal",
+                DateTime => "datetime",
+                double => "double",
+                float => "double",
+                _ => "string"
+            };
         }
     }
 }

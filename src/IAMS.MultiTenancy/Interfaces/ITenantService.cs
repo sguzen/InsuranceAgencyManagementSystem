@@ -1,55 +1,72 @@
-﻿namespace IAMS.MultiTenancy.Services
+﻿using IAMS.MultiTenancy.Models;
+
+namespace IAMS.MultiTenancy.Interfaces
 {
     public interface ITenantService
     {
-        Task<int> GetCurrentTenantIdAsync();
-        Task<string> GetCurrentTenantNameAsync();
-        Task GetTenantAsync(string tenantIdentifier);
+        // Core CRUD operations
+        Task<Tenant?> GetTenantAsync(string identifier);
+        Task<Tenant?> GetTenantByIdAsync(int tenantId);
+        Task<List<Tenant>> GetAllActiveTenantsAsync();
+        Task<Tenant> CreateTenantAsync(CreateTenantRequest request);
+        Task<Tenant> UpdateTenantAsync(int tenantId, UpdateTenantRequest request);
+        Task DeleteTenantAsync(int tenantId);
+
+        // Cache management
+        Task InvalidateTenantCacheAsync(string identifier);
+        Task InvalidateTenantCacheAsync(int tenantId);
+
+        // Current tenant operations
+        Tenant? GetCurrentTenant();
+        int? GetCurrentTenantId();
+
+        // Module management
+        Task UpdateTenantModuleAsync(int tenantId, string moduleName, bool isEnabled);
+        bool IsModuleEnabledForCurrentTenant(string moduleName);
+
+        // Settings management
+        Task UpdateTenantSettingAsync(int tenantId, string settingKey, object value, string settingType = "string");
+
+        // Subscription management
+        Task<bool> IsSubscriptionActiveAsync(int tenantId);
+        Task UpdateSubscriptionAsync(int tenantId, string subscriptionPlan, DateTime? expiryDate);
+
+        // Domain/Identifier resolution
+        Task<Tenant?> GetTenantByDomainAsync(string domain);
         Task<bool> TenantExistsAsync(string identifier);
     }
 
-    public interface ITenantContext
+    // Request DTOs
+    public class CreateTenantRequest
     {
-        int TenantId { get; set; }
-        string TenantName { get; set; }
-        string TenantIdentifier { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Identifier { get; set; } = string.Empty;
+        public string ConnectionString { get; set; } = string.Empty;
+        public string? ContactEmail { get; set; }
+        public string? ContactPhone { get; set; }
+        public string? SubscriptionPlan { get; set; }
+        public DateTime? SubscriptionExpiry { get; set; }
+        public int MaxUsers { get; set; } = 10;
+        public long MaxStorageBytes { get; set; } = 1073741824; // 1GB
+        public string TimeZone { get; set; } = "UTC";
+        public string Currency { get; set; } = "USD";
+        public string Language { get; set; } = "en";
+        public List<string> EnabledModules { get; set; } = new();
+        public Dictionary<string, object> Settings { get; set; } = new();
     }
 
-    public class TenantContext : ITenantContext
+    public class UpdateTenantRequest
     {
-        public int TenantId { get; set; }
-        public string TenantName { get; set; } = string.Empty;
-        public string TenantIdentifier { get; set; } = string.Empty;
-    }
-
-    public class TenantService : ITenantService
-    {
-        private readonly ITenantContext _tenantContext;
-
-        public TenantService(ITenantContext tenantContext)
-        {
-            _tenantContext = tenantContext;
-        }
-
-        public Task<int> GetCurrentTenantIdAsync()
-        {
-            return Task.FromResult(_tenantContext.TenantId);
-        }
-
-        public Task<string> GetCurrentTenantNameAsync()
-        {
-            return Task.FromResult(_tenantContext.TenantName);
-        }
-
-        public Task<bool> TenantExistsAsync(string identifier)
-        {
-            // TODO: Implement tenant validation logic
-            return Task.FromResult(true);
-        }
-
-        Task ITenantService.GetTenantAsync(string tenantIdentifier)
-        {
-            return GetTenantAsync(tenantIdentifier);
-        }
+        public string Name { get; set; } = string.Empty;
+        public string? ContactEmail { get; set; }
+        public string? ContactPhone { get; set; }
+        public string? SubscriptionPlan { get; set; }
+        public DateTime? SubscriptionExpiry { get; set; }
+        public int MaxUsers { get; set; }
+        public long MaxStorageBytes { get; set; }
+        public string TimeZone { get; set; } = "UTC";
+        public string Currency { get; set; } = "USD";
+        public string Language { get; set; } = "en";
+        public bool IsActive { get; set; } = true;
     }
 }

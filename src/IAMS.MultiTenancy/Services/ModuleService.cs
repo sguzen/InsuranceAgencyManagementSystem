@@ -2,22 +2,23 @@
 using IAMS.MultiTenancy.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Services
 {
     public class ModuleService : IModuleService
     {
         private readonly ITenantContextAccessor _tenantContextAccessor;
-        private readonly TenantContext _tenantContext;
+        private readonly TenantDbContext _tenantdbContext;
         private readonly ILogger<ModuleService> _logger;
 
         public ModuleService(
             ITenantContextAccessor tenantContextAccessor,
-            TenantContext tenantContext,
+            TenantDbContext tenantDbContext,
             ILogger<ModuleService> logger)
         {
             _tenantContextAccessor = tenantContextAccessor;
-            _tenantContext = tenantContext;
+            _tenantdbContext = tenantDbContext;
             _logger = logger;
         }
 
@@ -72,7 +73,7 @@ namespace IAMS.MultiTenancy.Services
         {
             try
             {
-                var enabledModules = await _tenantContext.TenantModules
+                var enabledModules = await _tenantdbContext.TenantModules
                     .Where(tm => tm.TenantId == tenantId && tm.IsEnabled)
                     .Select(tm => tm.ModuleName)
                     .ToListAsync();
@@ -100,7 +101,7 @@ namespace IAMS.MultiTenancy.Services
         {
             try
             {
-                var moduleStatuses = await _tenantContext.TenantModules
+                var moduleStatuses = await _tenantdbContext.TenantModules
                     .Where(tm => tm.TenantId == tenantId)
                     .ToDictionaryAsync(tm => tm.ModuleName, tm => tm.IsEnabled);
 
@@ -132,7 +133,7 @@ namespace IAMS.MultiTenancy.Services
 
             try
             {
-                var tenantModule = await _tenantContext.TenantModules
+                var tenantModule = await _tenantdbContext.TenantModules
                     .FirstOrDefaultAsync(tm => tm.TenantId == tenantId && tm.ModuleName == moduleName);
 
                 if (tenantModule == null)
@@ -145,7 +146,7 @@ namespace IAMS.MultiTenancy.Services
                         IsEnabled = isEnabled,
                         CreatedOn = DateTime.UtcNow
                     };
-                    _tenantContext.TenantModules.Add(tenantModule);
+                    _tenantdbContext.TenantModules.Add(tenantModule);
                 }
                 else
                 {
@@ -154,7 +155,7 @@ namespace IAMS.MultiTenancy.Services
                     tenantModule.LastUpdated = DateTime.UtcNow;
                 }
 
-                await _tenantContext.SaveChangesAsync();
+                await _tenantdbContext.SaveChangesAsync();
 
                 var action = isEnabled ? "enabled" : "disabled";
                 _logger.LogInformation("Module {ModuleName} {Action} for tenant {TenantId}",

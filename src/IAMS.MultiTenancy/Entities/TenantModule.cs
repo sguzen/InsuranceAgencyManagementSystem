@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IAMS.MultiTenancy.Entities
@@ -9,6 +10,7 @@ namespace IAMS.MultiTenancy.Entities
         [Key]
         public int Id { get; set; }
 
+        [Required]
         public int TenantId { get; set; }
 
         [Required]
@@ -21,8 +23,7 @@ namespace IAMS.MultiTenancy.Entities
 
         public DateTime? LastUpdated { get; set; }
 
-        // Navigation property
         [ForeignKey(nameof(TenantId))]
-        public virtual TenantEntity Tenant { get; set; } = null!;
+        public virtual TenantEntity Tenant { get; set; }
     }
 }

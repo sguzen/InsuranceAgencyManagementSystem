@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IAMS.MultiTenancy.Entities
@@ -15,10 +17,11 @@ namespace IAMS.MultiTenancy.Entities
 
         [Required]
         [MaxLength(100)]
+        [Index(IsUnique = true)]
         public string Identifier { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(1000)]
+        [MaxLength(500)]
         public string ConnectionString { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;
@@ -28,31 +31,27 @@ namespace IAMS.MultiTenancy.Entities
         public DateTime? LastUpdated { get; set; }
 
         [MaxLength(50)]
-        public string? SubscriptionPlan { get; set; }
+        public string SubscriptionPlan { get; set; } = "Basic";
 
         public DateTime? SubscriptionExpiry { get; set; }
 
         public int MaxUsers { get; set; } = 10;
 
-        public long MaxStorageBytes { get; set; } = 1073741824; // 1GB
+        public long MaxStorageBytes { get; set; } = 1024 * 1024 * 1024; // 1GB
 
-        [MaxLength(255)]
-        public string? ContactEmail { get; set; }
-
-        [MaxLength(20)]
-        public string? ContactPhone { get; set; }
+        [MaxLength(200)]
+        public string ContactEmail { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string? TimeZone { get; set; } = "UTC";
+        public string ContactPhone { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string TimeZone { get; set; } = "UTC";
 
         [MaxLength(10)]
-        public string? Currency { get; set; } = "USD";
+        public string Currency { get; set; } = "USD";
 
         [MaxLength(10)]
-        public string? Language { get; set; } = "en";
-
-        // Navigation properties
-        public virtual ICollection<TenantModule> TenantModules { get; set; } = new List<TenantModule>();
-        public virtual ICollection<TenantSetting> TenantSettings { get; set; } = new List<TenantSetting>();
+        public string Language { get; set; } = "en";
     }
 }

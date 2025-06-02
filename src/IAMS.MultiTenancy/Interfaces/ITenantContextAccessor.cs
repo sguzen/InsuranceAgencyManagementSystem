@@ -1,4 +1,5 @@
-﻿using IAMS.MultiTenancy.Models;
+﻿using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Interfaces
 {

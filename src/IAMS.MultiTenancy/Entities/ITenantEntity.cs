@@ -1,4 +1,6 @@
-﻿namespace IAMS.MultiTenancy.Entities
+﻿using System;
+
+namespace IAMS.MultiTenancy.Entities
 {
     public interface ITenantEntity
     {
@@ -9,14 +11,14 @@
         bool IsActive { get; set; }
         DateTime CreatedOn { get; set; }
         DateTime? LastUpdated { get; set; }
-        string? SubscriptionPlan { get; set; }
+        string SubscriptionPlan { get; set; }
         DateTime? SubscriptionExpiry { get; set; }
         int MaxUsers { get; set; }
         long MaxStorageBytes { get; set; }
-        string? ContactEmail { get; set; }
-        string? ContactPhone { get; set; }
-        string? TimeZone { get; set; }
-        string? Currency { get; set; }
-        string? Language { get; set; }
+        string ContactEmail { get; set; }
+        string ContactPhone { get; set; }
+        string TimeZone { get; set; }
+        string Currency { get; set; }
+        string Language { get; set; }
     }
 }

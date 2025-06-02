@@ -1,14 +1,14 @@
-﻿// Services/TenantContextAccessor.cs - Simple Implementation
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using IAMS.MultiTenancy.Interfaces;
-using IAMS.MultiTenancy.Models;
+using IAMS.MultiTenancy.Data;
 using Microsoft.Extensions.Logging;
+using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Services
 {
     public class TenantContextAccessor : ITenantContextAccessor
     {
-        private static readonly AsyncLocal<TenantHolder> _currentTenant = new AsyncLocal<TenantHolder>();
+        private static readonly AsyncLocal<TenantContextHolder> _tenantContextCurrent = new AsyncLocal<TenantContextHolder>();
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<TenantContextAccessor> _logger;
 
@@ -20,24 +20,18 @@ namespace IAMS.MultiTenancy.Services
             _logger = logger;
         }
 
-        public TenantContext? TenantContext
+        public TenantContext TenantContext
         {
             get
             {
-                // Try to get from HTTP context first
-                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("TenantContext", out var context) == true)
+                // First try to get from HTTP context (for web requests)
+                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("TenantContext", out var httpTenantContext) == true)
                 {
-                    return context as TenantContext;
+                    return httpTenantContext as TenantContext;
                 }
 
-                // Fall back to AsyncLocal
-                var holder = _currentTenant.Value;
-                if (holder?.Tenant != null)
-                {
-                    return new TenantContext(holder.Tenant);
-                }
-
-                return null;
+                // Fall back to AsyncLocal (for background tasks, etc.)
+                return _tenantContextCurrent.Value?.Context;
             }
             set
             {
@@ -47,38 +41,27 @@ namespace IAMS.MultiTenancy.Services
                     _httpContextAccessor.HttpContext.Items["TenantContext"] = value;
                 }
 
-                // Also set in AsyncLocal
-                if (value?.Tenant != null)
+                // Also set in AsyncLocal for background operations
+                var holder = _tenantContextCurrent.Value;
+                if (holder != null)
                 {
-                    _currentTenant.Value = new TenantHolder { Tenant = value.Tenant };
+                    holder.Context = null;
                 }
-                else
+
+                if (value != null)
                 {
-                    _currentTenant.Value = null;
+                    _tenantContextCurrent.Value = new TenantContextHolder { Context = value };
                 }
             }
         }
 
-        public Tenant? CurrentTenant
-        {
-            get
-            {
-                // Try HTTP context first
-                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("CurrentTenant", out var tenant) == true)
-                {
-                    return tenant as Tenant;
-                }
-
-                // Fall back to TenantContext
-                return TenantContext?.Tenant;
-            }
-        }
+        public Tenant CurrentTenant => TenantContext?.Tenant;
 
         public int? CurrentTenantId => CurrentTenant?.Id;
 
-        public bool HasTenantContext => CurrentTenant != null;
+        public bool HasTenantContext => TenantContext != null;
 
-        public string? GetConnectionString()
+        public string GetConnectionString()
         {
             var tenant = CurrentTenant;
             if (tenant == null)
@@ -144,6 +127,8 @@ namespace IAMS.MultiTenancy.Services
                 return;
             }
 
+            // This only sets the value for the current request context
+            // To persist changes, you would need to call a tenant service
             tenant.SetSetting(key, value);
         }
 
@@ -228,9 +213,9 @@ namespace IAMS.MultiTenancy.Services
             }
         }
 
-        private class TenantHolder
+        private class TenantContextHolder
         {
-            public Tenant? Tenant { get; set; }
+            public TenantContext Context;
         }
     }
 }

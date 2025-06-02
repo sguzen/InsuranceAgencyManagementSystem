@@ -1,12 +1,7 @@
 ﻿using IAMS.Application.Interfaces;
-using IAMS.Application.Models;
 using IAMS.Domain.Entities;
+using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IAMS.Persistence.Repositories
 {
@@ -16,68 +11,100 @@ namespace IAMS.Persistence.Repositories
         {
         }
 
-        public async Task<IEnumerable<Customer>> GetCustomersWithPoliciesAsync()
+        public async Task<IEnumerable<Customer>> GetActiveCustomersAsync()
         {
             return await _dbSet
-                .Include(c => c.Policies)
-                .ThenInclude(p => p.InsuranceCompany)
-                .ToListAsync();
-        }
-
-        public async Task<Customer> GetCustomerWithMappingsAsync(int customerId)
-        {
-            return await _dbSet
-                .Include(c => c.InsuranceCompanyMappings)
-                .ThenInclude(m => m.InsuranceCompany)
-                .FirstOrDefaultAsync(c => c.Id == customerId);
-        }
-
-        public async Task<IEnumerable<Customer>> SearchCustomersAsync(string searchTerm)
-        {
-            if (string.IsNullOrWhiteSpace(searchTerm))
-            {
-                return await GetAllAsync();
-            }
-
-            return await _dbSet
-                .Where(c =>
-                    c.FirstName.Contains(searchTerm) ||
-                    c.LastName.Contains(searchTerm) ||
-                    c.Email.Contains(searchTerm) ||
-                    c.CustomerCode.Contains(searchTerm))
+                .Where(c => c.IsActive && !c.IsDeleted)
                 .OrderBy(c => c.LastName)
                 .ThenBy(c => c.FirstName)
                 .ToListAsync();
         }
 
-        public async Task<PagedResult<Customer>> GetCustomersPagedAsync(int pageNumber, int pageSize, string searchTerm = null)
+        public async Task<Customer?> GetByTcNoAsync(string tcNo)
         {
-            IQueryable<Customer> query = _dbSet;
+            return await _dbSet
+                .Where(c => !c.IsDeleted)
+                .FirstOrDefaultAsync(c => c.TcNo == tcNo);
+        }
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = query.Where(c =>
-                    c.FirstName.Contains(searchTerm) ||
-                    c.LastName.Contains(searchTerm) ||
-                    c.Email.Contains(searchTerm) ||
-                    c.CustomerCode.Contains(searchTerm));
-            }
-
-            query = query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName);
-
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+        public async Task<IEnumerable<Customer>> SearchCustomersAsync(string searchTerm)
+        {
+            var term = searchTerm.ToLower();
+            return await _dbSet
+                .Where(c => !c.IsDeleted &&
+                       (c.FirstName.ToLower().Contains(term) ||
+                        c.LastName.ToLower().Contains(term) ||
+                        c.Email.ToLower().Contains(term) ||
+                        c.TcNo.Contains(term)))
+                .OrderBy(c => c.LastName)
+                .ThenBy(c => c.FirstName)
                 .ToListAsync();
+        }
 
-            return new PagedResult<Customer>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+        public async Task<IEnumerable<Customer>> GetCustomersWithPoliciesAsync()
+        {
+            return await _dbSet
+                .Include(c => c.Policies)
+                .ThenInclude(p => p.InsuranceCompany)
+                .Where(c => !c.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<Customer?> GetCustomerWithMappingsAsync(int customerId)
+        {
+            return await _dbSet
+                .Include(c => c.CustomerInsuranceCompanies)
+                .ThenInclude(m => m.InsuranceCompany)
+                .Where(c => !c.IsDeleted)
+                .FirstOrDefaultAsync(c => c.Id == customerId);
+        }
+    }
+
+    public class PolicyRepository : Repository<Policy>, IPolicyRepository
+    {
+        public PolicyRepository(ApplicationDbContext context) : base(context)
+        {
+        }
+
+        public async Task<IEnumerable<Policy>> GetPoliciesByCustomerIdAsync(int customerId)
+        {
+            return await _dbSet
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.CustomerId == customerId && !p.IsDeleted)
+                .OrderByDescending(p => p.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Policy>> GetExpiringPoliciesAsync(DateTime date)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.EndDate <= date && p.Status == PolicyStatus.Active && !p.IsDeleted)
+                .OrderBy(p => p.EndDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.PolicyType)
+                .Where(p => p.InsuranceCompanyId == insuranceCompanyId && !p.IsDeleted)
+                .OrderByDescending(p => p.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<Policy?> GetByPolicyNumberAsync(string policyNumber)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => !p.IsDeleted)
+                .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber);
         }
     }
 }

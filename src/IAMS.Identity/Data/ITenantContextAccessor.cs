@@ -1,39 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// IAMS.Identity/Interfaces/ITenantContextAccessor.cs
+using IAMS.MultiTenancy.Models;
 
-namespace IAMS.Identity.Data
+namespace IAMS.Identity.Interfaces
 {
     public interface ITenantContextAccessor
     {
-        TenantContext? TenantContext { get; }
-        void SetTenant(TenantInfo tenant);
+        TenantContext TenantContext { get; }
     }
 
     public class TenantContext
     {
-        public TenantInfo Tenant { get; set; } = null!;
+        public Tenant Tenant { get; set; }
+        public bool IsResolved { get; set; }
     }
 
-    public class TenantInfo
+    public class Tenant
     {
         public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string ConnectionString { get; set; } = string.Empty;
+        public string Name { get; set; }
+        public string ConnectionString { get; set; }
         public bool IsActive { get; set; }
-    }
-
-    public class TenantContextAccessor : ITenantContextAccessor
-    {
-        private TenantContext? _tenantContext;
-
-        public TenantContext? TenantContext => _tenantContext;
-
-        public void SetTenant(TenantInfo tenant)
-        {
-            _tenantContext = new TenantContext { Tenant = tenant };
-        }
+        // Add other tenant properties as needed
     }
 }

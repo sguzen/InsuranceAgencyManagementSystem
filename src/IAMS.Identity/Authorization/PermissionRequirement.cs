@@ -1,4 +1,4 @@
-﻿// Fixed PermissionRequirement.cs with proper claim type
+﻿// IAMS.Identity/Authorization/PermissionRequirement.cs
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -15,14 +15,13 @@ namespace IAMS.Identity.Authorization
         }
     }
 
-    // Fixed PermissionHandler.cs with correct claim type
     public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             PermissionRequirement requirement)
         {
-            // Check if user has the required permission claim (fixed claim type)
+            // Check if user has the required permission claim (consistent case)
             if (context.User.HasClaim(c => c.Type == "permission" && c.Value == requirement.Permission))
             {
                 context.Succeed(requirement);
@@ -32,7 +31,6 @@ namespace IAMS.Identity.Authorization
         }
     }
 
-    // Fixed PermissionAuthorizationPolicyProvider.cs
     public class PermissionAuthorizationPolicyProvider : DefaultAuthorizationPolicyProvider
     {
         private readonly IConfiguration _configuration;
@@ -74,7 +72,6 @@ namespace IAMS.Identity.Authorization
         }
     }
 
-    // HasPermissionAttribute.cs
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
     public class HasPermissionAttribute : AuthorizeAttribute
     {

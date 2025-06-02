@@ -1,4 +1,4 @@
-﻿// Fixed PermissionService.cs
+﻿// IAMS.Identity/Services/PermissionService.cs
 using IAMS.Application.DTOs.Identity;
 using IAMS.Identity.Data;
 using IAMS.Identity.Models;
@@ -11,12 +11,12 @@ namespace IAMS.Identity.Services
     {
         private readonly IdentityDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationUser> _roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
         public PermissionService(
             IdentityDbContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationUser> roleManager)
+            RoleManager<ApplicationRole> roleManager)
         {
             _context = context;
             _userManager = userManager;
@@ -33,7 +33,8 @@ namespace IAMS.Identity.Services
                 Name = p.Name,
                 DisplayName = p.DisplayName,
                 Description = p.Description,
-                Module = p.Module
+                Module = p.Module,
+                IsSystem = p.IsSystem
             }).ToList();
         }
 
@@ -48,7 +49,8 @@ namespace IAMS.Identity.Services
                     Name = rp.Permission.Name,
                     DisplayName = rp.Permission.DisplayName,
                     Description = rp.Permission.Description,
-                    Module = rp.Permission.Module
+                    Module = rp.Permission.Module,
+                    IsSystem = rp.Permission.IsSystem
                 })
                 .ToListAsync();
 
@@ -100,6 +102,32 @@ namespace IAMS.Identity.Services
                 .ToListAsync();
 
             return permissions;
+        }
+
+        public async Task<List<PermissionDto>> GetPermissionsByModuleAsync(string? moduleName)
+        {
+            var query = _context.Permissions.AsQueryable();
+
+            if (string.IsNullOrEmpty(moduleName))
+            {
+                query = query.Where(p => p.Module == null);
+            }
+            else
+            {
+                query = query.Where(p => p.Module == moduleName);
+            }
+
+            var permissions = await query.ToListAsync();
+
+            return permissions.Select(p => new PermissionDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                DisplayName = p.DisplayName,
+                Description = p.Description,
+                Module = p.Module,
+                IsSystem = p.IsSystem
+            }).ToList();
         }
     }
 }

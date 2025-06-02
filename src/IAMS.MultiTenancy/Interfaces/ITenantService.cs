@@ -14,5 +14,6 @@ namespace IAMS.MultiTenancy.Interfaces
         bool IsModuleEnabledForCurrentTenant(string moduleName);
         Task UpdateTenantModuleAsync(int tenantId, string moduleName, bool isEnabled);
         Task UpdateTenantSettingAsync(int tenantId, string settingKey, object value, string settingType = "string");
+
     }
 }

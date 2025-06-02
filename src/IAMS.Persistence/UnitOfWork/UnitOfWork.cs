@@ -4,7 +4,7 @@ using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace IAMS.Persistence
+namespace IAMS.Persistence.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {

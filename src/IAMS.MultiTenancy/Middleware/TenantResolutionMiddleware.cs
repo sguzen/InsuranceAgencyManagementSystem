@@ -1,4 +1,4 @@
-﻿using IAMS.MultiTenancy.Data;
+﻿using IAMS.MultiTenancy.Models;
 using IAMS.MultiTenancy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -48,7 +48,7 @@ namespace IAMS.MultiTenancy.Middleware
             //    _logger.LogInformation("Using default tenant: {DefaultTenant}", defaultTenant);
             //}
 
-            await _next(context);
+            //await _next(context);
         }
 
         private string? ResolveTenantIdentifier(HttpContext context)

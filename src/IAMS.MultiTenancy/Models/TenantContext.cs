@@ -1,7 +1,7 @@
 ﻿using IAMS.MultiTenancy.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace IAMS.MultiTenancy.Data
+namespace IAMS.MultiTenancy.Models
 {
     public class TenantContext : DbContext
     {

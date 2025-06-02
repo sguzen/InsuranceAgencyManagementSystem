@@ -1,16 +1,14 @@
-﻿// Extensions/ServiceCollectionExtensions.cs - Revised Implementation
+﻿// Extensions/ServiceCollectionExtensions.cs - Final Fixed Implementation
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using IAMS.MultiTenancy.Services;
 using IAMS.MultiTenancy.Interfaces;
-using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Middleware;
-using IAMS.MultiTenancy.Services.IAMS.MultiTenancy.Services;
+using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Extensions
 {
@@ -43,10 +41,8 @@ namespace IAMS.MultiTenancy.Extensions
             // Register tenant context accessor as scoped
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
 
-            // Register tenant services with explicit interface mapping to avoid conflicts
-            services.AddScoped<ITenantService>(provider => provider.GetRequiredService<TenantService>());
-            services.AddScoped<TenantService>();
-
+            // Register tenant services
+            services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IModuleService, ModuleService>();
 
             // Add memory cache for tenant caching (only if not already registered)
@@ -71,16 +67,15 @@ namespace IAMS.MultiTenancy.Extensions
             services.AddDbContext<TenantContext>(options =>
                 options.UseSqlServer(masterConnectionString));
 
-            //// Register HTTP context accessor (only if not already registered)
+            // Register HTTP context accessor (only if not already registered)
             //if (!services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
             //{
             //    services.AddHttpContextAccessor();
             //}
 
-            // Register services with explicit interface mapping
+            // Register services
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
-            services.AddScoped<ITenantService>(provider => provider.GetRequiredService<TenantService>());
-            services.AddScoped<TenantService>();
+            services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IModuleService, ModuleService>();
 
             // Add memory cache (only if not already registered)
@@ -144,8 +139,7 @@ namespace IAMS.MultiTenancy.Extensions
 
             // Register core services
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
-            services.AddScoped<ITenantService>(provider => provider.GetRequiredService<TenantService>());
-            services.AddScoped<TenantService>();
+            services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IModuleService, ModuleService>();
 
             // Register configuration
@@ -201,8 +195,8 @@ namespace IAMS.MultiTenancy.Extensions
         public static IApplicationBuilder UseMultiTenancyWithPerformanceMonitoring(this IApplicationBuilder app)
         {
             return app
-                .UseMiddleware<TenantMiddleware>()
-                .UseMiddleware<TenantPerformanceMiddleware>();
+                .UseMiddleware<TenantMiddleware>();
+            // Note: TenantPerformanceMiddleware would need to be implemented separately
         }
     }
 }

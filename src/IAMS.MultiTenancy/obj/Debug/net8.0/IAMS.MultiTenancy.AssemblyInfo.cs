@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IAMS.MultiTenancy")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d73f3d9d053ef75b43b588968c5a52197e5315e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a6ec44d8821a13b9bb71eefd1da0a41e7433c0b9")]
 [assembly: System.Reflection.AssemblyProductAttribute("IAMS.MultiTenancy")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IAMS.MultiTenancy")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

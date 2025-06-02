@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿// Services/TenantContextAccessor.cs - Simple Implementation
+using Microsoft.AspNetCore.Http;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
 using Microsoft.Extensions.Logging;
-using IAMS.MultiTenancy.Data;
 
 namespace IAMS.MultiTenancy.Services
 {
     public class TenantContextAccessor : ITenantContextAccessor
     {
-        private static readonly AsyncLocal<TenantContextHolder> _tenantContextCurrent = new AsyncLocal<TenantContextHolder>();
+        private static readonly AsyncLocal<TenantHolder> _currentTenant = new AsyncLocal<TenantHolder>();
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<TenantContextAccessor> _logger;
 
@@ -24,14 +24,20 @@ namespace IAMS.MultiTenancy.Services
         {
             get
             {
-                // First try to get from HTTP context (for web requests)
-                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("TenantContext", out var httpTenantContext) == true)
+                // Try to get from HTTP context first
+                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("TenantContext", out var context) == true)
                 {
-                    return httpTenantContext as TenantContext;
+                    return context as TenantContext;
                 }
 
-                // Fall back to AsyncLocal (for background tasks, etc.)
-                return _tenantContextCurrent.Value?.Context;
+                // Fall back to AsyncLocal
+                var holder = _currentTenant.Value;
+                if (holder?.Tenant != null)
+                {
+                    return new TenantContext(holder.Tenant);
+                }
+
+                return null;
             }
             set
             {
@@ -41,25 +47,36 @@ namespace IAMS.MultiTenancy.Services
                     _httpContextAccessor.HttpContext.Items["TenantContext"] = value;
                 }
 
-                // Also set in AsyncLocal for background operations
-                var holder = _tenantContextCurrent.Value;
-                if (holder != null)
+                // Also set in AsyncLocal
+                if (value?.Tenant != null)
                 {
-                    holder.Context = null;
+                    _currentTenant.Value = new TenantHolder { Tenant = value.Tenant };
                 }
-
-                if (value != null)
+                else
                 {
-                    _tenantContextCurrent.Value = new TenantContextHolder { Context = value };
+                    _currentTenant.Value = null;
                 }
             }
         }
 
-        public Tenant? CurrentTenant => TenantContext?.Tenant;
+        public Tenant? CurrentTenant
+        {
+            get
+            {
+                // Try HTTP context first
+                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("CurrentTenant", out var tenant) == true)
+                {
+                    return tenant as Tenant;
+                }
+
+                // Fall back to TenantContext
+                return TenantContext?.Tenant;
+            }
+        }
 
         public int? CurrentTenantId => CurrentTenant?.Id;
 
-        public bool HasTenantContext => TenantContext != null;
+        public bool HasTenantContext => CurrentTenant != null;
 
         public string? GetConnectionString()
         {
@@ -127,8 +144,6 @@ namespace IAMS.MultiTenancy.Services
                 return;
             }
 
-            // This only sets the value for the current request context
-            // To persist changes, you would need to call a tenant service
             tenant.SetSetting(key, value);
         }
 
@@ -213,9 +228,9 @@ namespace IAMS.MultiTenancy.Services
             }
         }
 
-        private class TenantContextHolder
+        private class TenantHolder
         {
-            public TenantContext? Context;
+            public Tenant? Tenant { get; set; }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,7 +16,6 @@ namespace IAMS.MultiTenancy.Entities
 
         [Required]
         [MaxLength(100)]
-        [Index(IsUnique = true)]
         public string Identifier { get; set; } = string.Empty;
 
         [Required]

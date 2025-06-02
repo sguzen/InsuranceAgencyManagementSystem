@@ -12,16 +12,13 @@ namespace IAMS.MultiTenancy.Extensions
         public static IServiceCollection AddMultiTenancy(this IServiceCollection services, IConfiguration configuration)
         {
             // Add Entity Framework context for tenant management
-            services.AddDbContext<TenantContext>(options =>
+            services.AddDbContext<TenantDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("MasterDatabase")));
 
             // Register multi-tenancy services
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
-            services.AddScoped<ITenantService, TenantService>();
+            services.AddScoped<ITenantService, Services.TenantService>();
             services.AddScoped<IModuleService, ModuleService>();
-
-            // Add HTTP context accessor for tenant resolution
-            services.AddHttpContextAccessor();
 
             return services;
         }

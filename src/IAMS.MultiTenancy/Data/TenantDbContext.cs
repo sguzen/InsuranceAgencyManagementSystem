@@ -3,9 +3,9 @@ using IAMS.MultiTenancy.Entities;
 
 namespace IAMS.MultiTenancy.Data
 {
-    public class TenantContext : DbContext
+    public class TenantDbContext : DbContext
     {
-        public TenantContext(DbContextOptions<TenantContext> options) : base(options)
+        public TenantDbContext(DbContextOptions<TenantDbContext> options) : base(options)
         {
         }
 

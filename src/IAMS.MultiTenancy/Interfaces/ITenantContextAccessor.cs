@@ -8,7 +8,7 @@ namespace IAMS.MultiTenancy.Interfaces
         /// <summary>
         /// Gets the current tenant context
         /// </summary>
-        TenantContext? TenantContext { get; set; }
+        TenantDbContext? TenantContext { get; set; }
 
         /// <summary>
         /// Gets the current tenant, returns null if no tenant context is set

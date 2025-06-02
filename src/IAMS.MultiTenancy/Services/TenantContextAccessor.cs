@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using IAMS.MultiTenancy.Interfaces;
+using IAMS.MultiTenancy.Models;
 using IAMS.MultiTenancy.Data;
 using Microsoft.Extensions.Logging;
-using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Services
 {
@@ -20,14 +20,15 @@ namespace IAMS.MultiTenancy.Services
             _logger = logger;
         }
 
-        public TenantContext TenantContext
+        public TenantDbContext TenantContext
         {
             get
             {
                 // First try to get from HTTP context (for web requests)
-                if (_httpContextAccessor.HttpContext?.Items.TryGetValue("TenantContext", out var httpTenantContext) == true)
+                if (_httpContextAccessor.HttpContext?.Items != null &&
+                    _httpContextAccessor.HttpContext.Items.TryGetValue("TenantContext", out var httpTenantContext))
                 {
-                    return httpTenantContext as TenantContext;
+                    return httpTenantContext as TenantDbContext;
                 }
 
                 // Fall back to AsyncLocal (for background tasks, etc.)
@@ -36,7 +37,7 @@ namespace IAMS.MultiTenancy.Services
             set
             {
                 // Set in HTTP context if available
-                if (_httpContextAccessor.HttpContext != null)
+                if (_httpContextAccessor.HttpContext?.Items != null)
                 {
                     _httpContextAccessor.HttpContext.Items["TenantContext"] = value;
                 }
@@ -180,7 +181,7 @@ namespace IAMS.MultiTenancy.Services
             var previousContext = TenantContext;
             try
             {
-                TenantContext = new TenantContext(tenant);
+                TenantContext = new TenantDbContext(tenant);
                 await action();
             }
             finally
@@ -204,7 +205,7 @@ namespace IAMS.MultiTenancy.Services
             var previousContext = TenantContext;
             try
             {
-                TenantContext = new TenantContext(tenant);
+                TenantContext = new TenantDbContext(tenant);
                 return await function();
             }
             finally
@@ -215,7 +216,7 @@ namespace IAMS.MultiTenancy.Services
 
         private class TenantContextHolder
         {
-            public TenantContext Context;
+            public TenantDbContext Context;
         }
     }
 }

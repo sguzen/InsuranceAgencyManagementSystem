@@ -1,9 +1,8 @@
-﻿// IAMS.MultiTenancy/Middleware/TenantMiddleware.cs (Enhanced)
+﻿// Middleware/TenantMiddleware.cs - Simple Implementation
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
-using IAMS.MultiTenancy.Services;
 
 namespace IAMS.MultiTenancy.Middleware
 {
@@ -30,58 +29,44 @@ namespace IAMS.MultiTenancy.Middleware
         {
             try
             {
-                // Extract tenant identifier from the request
-                var tenantIdentifier = ExtractTenantIdentifier(context);
+                // Get tenant identifier from request
+                var tenantIdentifier = GetTenantIdentifier(context);
 
                 if (string.IsNullOrEmpty(tenantIdentifier))
                 {
-                    _logger.LogWarning("No tenant identifier found in request: {Request}", context.Request.Path);
-                    context.Response.StatusCode = 400;
-                    await context.Response.WriteAsync("Tenant identifier is required");
-                    return;
+                    tenantIdentifier = "default"; // Use default tenant
                 }
 
-                // Get tenant information
+                // Get tenant from your service (which uses your TenantContext DbContext)
                 var tenant = await _tenantService.GetTenantAsync(tenantIdentifier);
 
                 if (tenant == null)
                 {
-                    _logger.LogWarning("Unknown tenant attempted to access the system: {TenantIdentifier}", tenantIdentifier);
+                    _logger.LogWarning("Tenant not found: {TenantIdentifier}", tenantIdentifier);
                     context.Response.StatusCode = 404;
                     await context.Response.WriteAsync("Tenant not found");
                     return;
                 }
 
-                // Check if tenant is active
                 if (!tenant.IsActive)
                 {
-                    _logger.LogWarning("Inactive tenant attempted to access the system: {TenantId}", tenant.Id);
+                    _logger.LogWarning("Inactive tenant: {TenantId}", tenant.Id);
                     context.Response.StatusCode = 403;
-                    await context.Response.WriteAsync("Tenant account is inactive");
+                    await context.Response.WriteAsync("Tenant is inactive");
                     return;
                 }
 
-                // Check subscription status
-                if (!tenant.IsSubscriptionActive())
-                {
-                    _logger.LogWarning("Tenant with expired subscription attempted access: {TenantId}", tenant.Id);
-                    context.Response.StatusCode = 402;
-                    await context.Response.WriteAsync("Subscription has expired");
-                    return;
-                }
+                // Set the current tenant in context accessor
+                // This creates a TenantContext (the wrapper) with the Tenant (the model)
+                _tenantContextAccessor.TenantContext = new TenantContext(tenant);
 
-                // Set tenant context
-                var tenantContext = new TenantContext(tenant);
-                _tenantContextAccessor.TenantContext = tenantContext;
-
-                // Add tenant information to HTTP context items for easy access
+                // Also add to HTTP context for easy access
                 context.Items["CurrentTenant"] = tenant;
                 context.Items["TenantId"] = tenant.Id;
                 context.Items["TenantIdentifier"] = tenant.Identifier;
 
-                _logger.LogDebug("Tenant context set for request: {TenantId} - {TenantIdentifier}", tenant.Id, tenant.Identifier);
+                _logger.LogDebug("Tenant set: {TenantId} - {TenantName}", tenant.Id, tenant.Name);
 
-                // Continue to the next middleware
                 await _next(context);
             }
             catch (Exception ex)
@@ -92,45 +77,39 @@ namespace IAMS.MultiTenancy.Middleware
             }
         }
 
-        private string ExtractTenantIdentifier(HttpContext context)
+        private static string GetTenantIdentifier(HttpContext context)
         {
-            // Strategy 1: Extract from subdomain
-            var host = context.Request.Host.Value.ToLowerInvariant();
+            // Try header first
+            if (context.Request.Headers.TryGetValue("X-Tenant-ID", out var headerValue))
+            {
+                var tenantId = headerValue.FirstOrDefault();
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    return tenantId;
+                }
+            }
 
-            // Check if it's a subdomain (tenant.yourdomain.com)
+            // Try subdomain
+            var host = context.Request.Host.Value;
             if (host.Contains('.'))
             {
                 var parts = host.Split('.');
-                if (parts.Length >= 3) // subdomain.domain.com
+                if (parts.Length >= 3 && parts[0] != "www")
                 {
                     return parts[0];
                 }
             }
 
-            // Strategy 2: Extract from custom header
-            if (context.Request.Headers.TryGetValue("X-Tenant-ID", out var headerValue))
-            {
-                return headerValue.FirstOrDefault();
-            }
-
-            // Strategy 3: Extract from query parameter (for development/testing)
+            // Try query parameter
             if (context.Request.Query.TryGetValue("tenant", out var queryValue))
             {
-                return queryValue.FirstOrDefault();
-            }
-
-            // Strategy 4: Extract from path (api/{tenant}/...)
-            var path = context.Request.Path.Value;
-            if (path.StartsWith("/api/") && path.Length > 5)
-            {
-                var pathParts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                if (pathParts.Length >= 2 && pathParts[0] == "api")
+                var tenantId = queryValue.FirstOrDefault();
+                if (!string.IsNullOrEmpty(tenantId))
                 {
-                    return pathParts[1];
+                    return tenantId;
                 }
             }
 
-            // Default for development
             return "default";
         }
     }

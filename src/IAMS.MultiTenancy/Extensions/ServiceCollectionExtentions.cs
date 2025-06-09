@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using IAMS.MultiTenancy.Services;
+using IAMS.MultiTenancy.Interfaces;
+using IAMS.MultiTenancy.Data;
 
 namespace IAMS.MultiTenancy.Extensions
 {
@@ -8,9 +11,14 @@ namespace IAMS.MultiTenancy.Extensions
     {
         public static IServiceCollection AddMultiTenancy(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register tenant context as scoped so it's available per request
-            services.AddScoped<ITenantContext, TenantContext>();
-            services.AddScoped<ITenantService, TenantService>();
+            // Add Entity Framework context for tenant management
+            services.AddDbContext<TenantDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("MasterDatabase")));
+
+            // Register multi-tenancy services
+            services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
+            services.AddScoped<ITenantService, Services.TenantService>();
+            services.AddScoped<IModuleService, ModuleService>();
 
             return services;
         }

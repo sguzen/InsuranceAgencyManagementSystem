@@ -10,20 +10,22 @@ namespace IAMS.Application.Interfaces
     public interface IUnitOfWork : IDisposable
     {
 
-        // Bulk operations
-        Task<int> ExecuteSqlAsync(string sql, params object[] parameters);
-
+        // Repository properties
         ICustomerRepository Customers { get; }
         IPolicyRepository Policies { get; }
         IRepository<InsuranceCompany> InsuranceCompanies { get; }
         IRepository<PolicyType> PolicyTypes { get; }
         IRepository<CommissionRate> CommissionRates { get; }
-        IRepository<PolicyPayment> PolicyPayments { get; }
-        IRepository<PolicyClaim> PolicyClaims { get; }
+        IPolicyPaymentRepository PolicyPayments { get; }
+        IPolicyClaimRepository PolicyClaims { get; }
 
+        // Transaction methods
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
+
+        // Bulk operations
+        Task<int> ExecuteSqlAsync(string sql, params object[] parameters);
     }
 }

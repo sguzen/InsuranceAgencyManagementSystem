@@ -9,15 +9,23 @@ namespace IAMS.Persistence.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddPersistenceServices(
+            this IServiceCollection services,
+            IConfiguration configuration)
         {
             // Add DbContext
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-            // Add repositories and unit of work
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            // Register generic repository and unit of work
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+
+            // Register specialized repositories
             services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IPolicyRepository, PolicyRepository>();
+
+            // Add other specialized repositories as needed
 
             return services;
         }

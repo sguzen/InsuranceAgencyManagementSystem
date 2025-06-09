@@ -13,12 +13,4 @@ namespace IAMS.Identity.Models
         public DateTime? RefreshTokenExpiry { get; set; }
         public int TenantId { get; set; }
     }
-
-    public class ApplicationRole : IdentityRole
-    {
-        public string? Description { get; set; }
-        public bool IsDefault { get; set; }
-        public bool IsSystem { get; set; }
-        public int TenantId { get; set; }
-    }
 }

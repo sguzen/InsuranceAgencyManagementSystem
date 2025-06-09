@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using IAMS.Application.Services.Customers;
 using System.Reflection;
+using IAMS.Application.Services.Policies;
 
 namespace IAMS.Application.Extensions
 {
@@ -16,6 +17,7 @@ namespace IAMS.Application.Extensions
 
             // Add Application Services
             services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IPolicyService, PolicyService>();
 
             return services;
         }

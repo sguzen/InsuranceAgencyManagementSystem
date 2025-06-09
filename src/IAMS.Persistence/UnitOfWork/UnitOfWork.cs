@@ -4,7 +4,7 @@ using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace IAMS.Persistence
+namespace IAMS.Persistence.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -30,6 +30,10 @@ namespace IAMS.Persistence
         public IRepository<CommissionRate> CommissionRates { get; }
         public IRepository<PolicyPayment> PolicyPayments { get; }
         public IRepository<PolicyClaim> PolicyClaims { get; }
+
+        IPolicyPaymentRepository IUnitOfWork.PolicyPayments => throw new NotImplementedException();
+
+        IPolicyClaimRepository IUnitOfWork.PolicyClaims => throw new NotImplementedException();
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
@@ -65,6 +69,11 @@ namespace IAMS.Persistence
         {
             _transaction?.Dispose();
             _context.Dispose();
+        }
+
+        public Task<int> ExecuteSqlAsync(string sql, params object[] parameters)
+        {
+            throw new NotImplementedException();
         }
     }
 }

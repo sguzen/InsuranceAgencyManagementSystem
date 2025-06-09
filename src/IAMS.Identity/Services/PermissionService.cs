@@ -1,5 +1,6 @@
-﻿using IAMS.Application.DTOs.Identity;
-using IAMS.Identity.Contexts;
+﻿// IAMS.Identity/Services/PermissionService.cs
+using IAMS.Application.DTOs.Identity;
+using IAMS.Identity.Data;
 using IAMS.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -30,8 +31,10 @@ namespace IAMS.Identity.Services
             {
                 Id = p.Id,
                 Name = p.Name,
+                DisplayName = p.DisplayName,
                 Description = p.Description,
-                Module = p.Module
+                Module = p.Module,
+                IsSystem = p.IsSystem
             }).ToList();
         }
 
@@ -44,8 +47,10 @@ namespace IAMS.Identity.Services
                 {
                     Id = rp.Permission.Id,
                     Name = rp.Permission.Name,
+                    DisplayName = rp.Permission.DisplayName,
                     Description = rp.Permission.Description,
-                    Module = rp.Permission.Module
+                    Module = rp.Permission.Module,
+                    IsSystem = rp.Permission.IsSystem
                 })
                 .ToListAsync();
 
@@ -97,6 +102,32 @@ namespace IAMS.Identity.Services
                 .ToListAsync();
 
             return permissions;
+        }
+
+        public async Task<List<PermissionDto>> GetPermissionsByModuleAsync(string? moduleName)
+        {
+            var query = _context.Permissions.AsQueryable();
+
+            if (string.IsNullOrEmpty(moduleName))
+            {
+                query = query.Where(p => p.Module == null);
+            }
+            else
+            {
+                query = query.Where(p => p.Module == moduleName);
+            }
+
+            var permissions = await query.ToListAsync();
+
+            return permissions.Select(p => new PermissionDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                DisplayName = p.DisplayName,
+                Description = p.Description,
+                Module = p.Module,
+                IsSystem = p.IsSystem
+            }).ToList();
         }
     }
 }

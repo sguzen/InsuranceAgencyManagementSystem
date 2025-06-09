@@ -426,3 +426,11 @@ C:\Users\Sis\source\repos\IAMS.IntegrationTests\obj\Debug\net8.0\refint\IAMS.Int
 C:\Users\Sis\source\repos\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.pdb
 C:\Users\Sis\source\repos\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.genruntimeconfig.cache
 C:\Users\Sis\source\repos\IAMS.IntegrationTests\obj\Debug\net8.0\ref\IAMS.IntegrationTests.dll
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\bin\Debug\net8.0\CoverletSourceRootsMapping_IAMS.IntegrationTests
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.csproj.AssemblyReference.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\MvcTestingAppManifest.json
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.AssemblyInfoInputs.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.AssemblyInfo.cs
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.csproj.CoreCompileInputs.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\tests\IAMS.IntegrationTests\obj\Debug\net8.0\IAMS.IntegrationTests.sourcelink.json

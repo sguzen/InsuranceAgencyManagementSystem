@@ -1,8 +1,6 @@
-﻿using IAMS.MultiTenancy.Models;
+﻿
+using IAMS.MultiTenancy.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace IAMS.MultiTenancy.Interfaces
@@ -10,7 +8,7 @@ namespace IAMS.MultiTenancy.Interfaces
     public interface ITenantContextAccessor
     {
         /// <summary>
-        /// Gets the current tenant context
+        /// Gets or sets the current tenant context
         /// </summary>
         TenantContext TenantContext { get; set; }
 
@@ -45,19 +43,14 @@ namespace IAMS.MultiTenancy.Interfaces
         T GetTenantSetting<T>(string key, T defaultValue = default);
 
         /// <summary>
-        /// Sets a tenant setting value (only for the current request context)
+        /// Gets a request-specific property value
         /// </summary>
-        void SetTenantSetting<T>(string key, T value);
+        T GetRequestProperty<T>(string key, T defaultValue = default);
 
         /// <summary>
-        /// Gets a context property value
+        /// Sets a request-specific property value
         /// </summary>
-        T GetContextProperty<T>(string key, T defaultValue = default);
-
-        /// <summary>
-        /// Sets a context property value
-        /// </summary>
-        void SetContextProperty<T>(string key, T value);
+        void SetRequestProperty<T>(string key, T value);
 
         /// <summary>
         /// Executes an action with a specific tenant context
@@ -65,7 +58,7 @@ namespace IAMS.MultiTenancy.Interfaces
         Task ExecuteWithTenantAsync(Tenant tenant, Func<Task> action);
 
         /// <summary>
-        /// Executes a function with a specific tenant context
+        /// Executes a function with a specific tenant context and returns a result
         /// </summary>
         Task<T> ExecuteWithTenantAsync<T>(Tenant tenant, Func<Task<T>> function);
     }

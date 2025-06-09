@@ -5,13 +5,12 @@ using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
-using IAMS.Domain.Entities;
 
 namespace IAMS.MultiTenancy.Services
 {
     public class TenantService : ITenantService
     {
-        private readonly TenantContext _masterDbContext;
+        private readonly TenantDbContext _masterDbContext;
         private readonly IMemoryCache _cache;
         private readonly ILogger<TenantService> _logger;
         private readonly ITenantContextAccessor _tenantContextAccessor;
@@ -19,7 +18,7 @@ namespace IAMS.MultiTenancy.Services
         private const int CacheExpirationMinutes = 30;
 
         public TenantService(
-            TenantContext masterDbContext,
+            TenantDbContext masterDbContext,
             IMemoryCache cache,
             ILogger<TenantService> logger,
             ITenantContextAccessor tenantContextAccessor)

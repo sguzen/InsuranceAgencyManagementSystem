@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿// IAMS.Identity/Services/IdentityService.cs
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -191,7 +192,7 @@ namespace IAMS.Identity.Services
             var roles = await _userManager.GetRolesAsync(user);
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            // Add permission claims
+            // Add permission claims (use consistent lowercase)
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Id);
             claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
 

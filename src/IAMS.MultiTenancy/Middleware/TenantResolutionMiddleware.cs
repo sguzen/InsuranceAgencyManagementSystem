@@ -1,4 +1,5 @@
-﻿using IAMS.MultiTenancy.Services;
+﻿using IAMS.MultiTenancy.Models;
+using IAMS.MultiTenancy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -22,32 +23,32 @@ namespace IAMS.MultiTenancy.Middleware
             _configuration = configuration;
         }
 
-        public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext)
+        public async Task InvokeAsync(HttpContext context, TenantContext tenantContext)
         {
             var tenantIdentifier = ResolveTenantIdentifier(context);
 
-            if (!string.IsNullOrEmpty(tenantIdentifier))
-            {
-                // In a real implementation, you would fetch tenant details from database
-                tenantContext.TenantIdentifier = tenantIdentifier;
-                tenantContext.TenantId = GetTenantId(tenantIdentifier);
-                tenantContext.TenantName = GetTenantName(tenantIdentifier);
+            //if (!string.IsNullOrEmpty(tenantIdentifier))
+            //{
+            //    // In a real implementation, you would fetch tenant details from database
+            //    tenantContext.TenantIdentifier = tenantIdentifier;
+            //    tenantContext.TenantId = GetTenantId(tenantIdentifier);
+            //    tenantContext.TenantName = GetTenantName(tenantIdentifier);
 
-                _logger.LogInformation("Resolved tenant: {TenantIdentifier} (ID: {TenantId})",
-                    tenantIdentifier, tenantContext.TenantId);
-            }
-            else
-            {
-                // Default tenant
-                var defaultTenant = _configuration["MultiTenancy:DefaultTenant"] ?? "default";
-                tenantContext.TenantIdentifier = defaultTenant;
-                tenantContext.TenantId = 1;
-                tenantContext.TenantName = "Default Agency";
+            //    _logger.LogInformation("Resolved tenant: {TenantIdentifier} (ID: {TenantId})",
+            //        tenantIdentifier, tenantContext.TenantId);
+            //}
+            //else
+            //{
+            //    // Default tenant
+            //    var defaultTenant = _configuration["MultiTenancy:DefaultTenant"] ?? "default";
+            //    tenantContext.TenantIdentifier = defaultTenant;
+            //    tenantContext.TenantId = 1;
+            //    tenantContext.TenantName = "Default Agency";
 
-                _logger.LogInformation("Using default tenant: {DefaultTenant}", defaultTenant);
-            }
+            //    _logger.LogInformation("Using default tenant: {DefaultTenant}", defaultTenant);
+            //}
 
-            await _next(context);
+            //await _next(context);
         }
 
         private string? ResolveTenantIdentifier(HttpContext context)

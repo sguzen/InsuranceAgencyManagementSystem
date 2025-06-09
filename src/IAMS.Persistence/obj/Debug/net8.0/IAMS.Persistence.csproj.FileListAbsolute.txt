@@ -1,0 +1,6 @@
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Persistence\obj\Debug\net8.0\IAMS.Persistence.csproj.AssemblyReference.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Persistence\obj\Debug\net8.0\IAMS.Persistence.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Persistence\obj\Debug\net8.0\IAMS.Persistence.AssemblyInfoInputs.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Persistence\obj\Debug\net8.0\IAMS.Persistence.AssemblyInfo.cs
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Persistence\obj\Debug\net8.0\IAMS.Persistence.csproj.CoreCompileInputs.cache
+C:\Users\Sis\source\repos\InsuranceAgencyManagementSystem\src\IAMS.Persistence\obj\Debug\net8.0\IAMS.Persistence.sourcelink.json

@@ -1,4 +1,8 @@
-﻿namespace IAMS.Domain.Entities
+﻿using IAMS.Domain.Enums;
+using IAMS.Domain.ValueObjects;
+using IAMS.Domain.Events;
+
+namespace IAMS.Domain.Entities
 {
     public class PolicyPayment : BaseEntity
     {
@@ -9,24 +13,32 @@
         public string? Reference { get; set; }
         public PaymentStatus Status { get; set; }
         public string? Notes { get; set; }
+        public string Currency { get; set; } = "TRY";
 
         // Navigation properties
         public virtual Policy Policy { get; set; } = null!;
-    }
 
-    public enum PaymentMethod
-    {
-        Cash = 0,
-        CreditCard = 1,
-        BankTransfer = 2,
-        Cheque = 3
-    }
+        // Value objects
+        public Money GetPaymentMoney() => new Money(Amount, Currency);
 
-    public enum PaymentStatus
-    {
-        Pending = 0,
-        Completed = 1,
-        Failed = 2,
-        Refunded = 3
+        // Business methods
+        public void MarkAsCompleted(string processedBy)
+        {
+            if (Status != PaymentStatus.Pending)
+                throw new InvalidOperationException("Only pending payments can be marked as completed");
+
+            Status = PaymentStatus.Completed;
+            UpdateAuditInfo(processedBy);
+            AddDomainEvent(new PaymentProcessedEvent(this, processedBy));
+        }
+
+        public void MarkAsFailed(string reason, string processedBy)
+        {
+            Status = PaymentStatus.Failed;
+            Notes = $"{Notes}\nFailed: {reason}".Trim();
+            UpdateAuditInfo(processedBy);
+        }
+
+        public bool IsOverdue => Status == PaymentStatus.Pending && PaymentDate < DateTime.Today;
     }
 }

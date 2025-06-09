@@ -2,6 +2,7 @@
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Interfaces;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 
 namespace IAMS.Application.Services.Customers
 {

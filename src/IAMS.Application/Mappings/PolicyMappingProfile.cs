@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using IAMS.Application.DTOs.Policy;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 
 namespace IAMS.Application.Mappings
 {

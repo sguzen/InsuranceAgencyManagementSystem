@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
+using IAMS.Infrastructure.Interfaces;
 
 namespace IAMS.Infrastructure.BackgroundServices
 {

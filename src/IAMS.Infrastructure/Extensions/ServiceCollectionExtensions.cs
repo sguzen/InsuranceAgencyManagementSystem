@@ -9,6 +9,7 @@ using IAMS.Infrastructure.Services;
 using IAMS.Infrastructure.BackgroundServices;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Services;
+using ModuleService = IAMS.Infrastructure.Services.ModuleService;
 
 namespace IAMS.Infrastructure.Extensions
 {

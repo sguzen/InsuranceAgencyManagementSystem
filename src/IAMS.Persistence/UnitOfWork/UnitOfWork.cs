@@ -31,6 +31,10 @@ namespace IAMS.Persistence.UnitOfWork
         public IRepository<PolicyPayment> PolicyPayments { get; }
         public IRepository<PolicyClaim> PolicyClaims { get; }
 
+        IPolicyPaymentRepository IUnitOfWork.PolicyPayments => throw new NotImplementedException();
+
+        IPolicyClaimRepository IUnitOfWork.PolicyClaims => throw new NotImplementedException();
+
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
@@ -65,6 +69,11 @@ namespace IAMS.Persistence.UnitOfWork
         {
             _transaction?.Dispose();
             _context.Dispose();
+        }
+
+        public Task<int> ExecuteSqlAsync(string sql, params object[] parameters)
+        {
+            throw new NotImplementedException();
         }
     }
 }

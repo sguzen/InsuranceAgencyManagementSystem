@@ -13,9 +13,9 @@ using Moq;
 
 namespace IAMS.Tests.Helpers
 {
-    public class TenantTestHelper
+    public static class TenantTestHelper
     {
-        public static Mock<ITenantContextAccessor> CreateMockTenantContextAccessor(Tenant tenant = null)
+        public static Mock<ITenantContextAccessor> CreateMockTenantContextAccessor(MultiTenancy.Models.Tenant tenant = null)
         {
             tenant ??= CreateTestTenant();
             var tenantContext = new TenantContext(tenant);
@@ -32,9 +32,9 @@ namespace IAMS.Tests.Helpers
             return mock;
         }
 
-        public static Tenant CreateTestTenant(int id = 1, string identifier = "test")
+        public static MultiTenancy.Models.Tenant CreateTestTenant(int id = 1, string identifier = "test")
         {
-            return new Tenant
+            return new MultiTenancy.Models.Tenant
             {
                 Id = id,
                 Name = $"Test Tenant {id}",
@@ -66,7 +66,7 @@ namespace IAMS.Tests.Helpers
 
         public static IServiceCollection AddTestTenantServices(
             this IServiceCollection services,
-            Tenant testTenant = null)
+            MultiTenancy.Models.Tenant testTenant = null)
         {
             testTenant ??= CreateTestTenant();
 
@@ -108,11 +108,11 @@ namespace IAMS.Tests.Helpers
             var testTenant = TenantTestHelper.CreateTestTenant();
             _tenantContextAccessorMock = TenantTestHelper.CreateMockTenantContextAccessor(testTenant);
 
-            _customerService = new CustomerService(
-                _customerRepositoryMock.Object,
-                _unitOfWorkMock.Object,
-                _mapperMock.Object,
-                Mock.Of<ILogger<CustomerService>>());
+            //_customerService = new CustomerService(
+            //    _customerRepositoryMock.Object,
+            //    _unitOfWorkMock.Object,
+            //    _mapperMock.Object,
+            //    Mock.Of<ILogger<CustomerService>>());
         }
 
         [Fact]

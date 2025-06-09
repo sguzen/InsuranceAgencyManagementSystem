@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using IAMS.Infrastructure.Interfaces;
 using IAMS.Infrastructure.Data;
 using IAMS.MultiTenancy.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace IAMS.Infrastructure.BackgroundServices
 {

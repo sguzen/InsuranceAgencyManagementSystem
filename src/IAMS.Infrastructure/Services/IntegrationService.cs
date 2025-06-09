@@ -155,7 +155,7 @@ namespace IAMS.Infrastructure.Services
             return result;
         }
 
-        public async Task<List<IntegrationLog>> GetLogsAsync(DateTime? fromDate = null, DateTime? toDate = null)
+        public async Task<List<IntegrationLogEntity>> GetLogsAsync(DateTime? fromDate = null, DateTime? toDate = null)
         {
             var query = _dbContext.IntegrationLogs.AsQueryable();
 

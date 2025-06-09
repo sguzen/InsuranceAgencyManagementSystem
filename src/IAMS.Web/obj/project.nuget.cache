@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "eXfApSZ9Kfo=",
+  "dgSpecHash": "k1yu4Suyrxk=",
   "success": true,
   "projectFilePath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\IAMS.Web.csproj",
   "expectedPackageFiles": [
@@ -112,8 +112,10 @@
     {
       "code": "NU1608",
       "level": "Warning",
-      "warningLevel": 1,
       "message": "Detected package version outside of dependency constraint: AutoMapper.Extensions.Microsoft.DependencyInjection 12.0.1 requires AutoMapper (= 12.0.1) but version AutoMapper 14.0.0 was resolved.",
+      "projectPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\IAMS.Web.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\IAMS.Web.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
         "net8.0"

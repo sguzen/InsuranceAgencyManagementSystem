@@ -3,6 +3,7 @@ using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Services.Policies

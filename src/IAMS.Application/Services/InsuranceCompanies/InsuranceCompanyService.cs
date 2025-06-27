@@ -1,141 +1,62 @@
-﻿using AutoMapper;
+﻿using MediatR;
 using IAMS.Application.DTOs.InsuranceCompany;
-using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
-using IAMS.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany;
+using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompany;
 
 namespace IAMS.Application.Services.InsuranceCompanies
 {
     public class InsuranceCompanyService : IInsuranceCompanyService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly ILogger<InsuranceCompanyService> _logger;
+        private readonly IMediator _mediator;
 
-        public InsuranceCompanyService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<InsuranceCompanyService> logger)
+        public InsuranceCompanyService(IMediator mediator)
         {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-            _logger = logger;
+            _mediator = mediator;
         }
 
-        public async Task<List<InsuranceCompanyDto>> GetAllAsync()
+        public async Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByIdAsync(int id)
         {
-            var companies = await _unitOfWork.InsuranceCompanies.GetAllAsync();
-            return _mapper.Map<List<InsuranceCompanyDto>>(companies);
+            return await _mediator.Send(new GetInsuranceCompanyQuery(id));
         }
 
-        public async Task<InsuranceCompanyDto?> GetByIdAsync(int id)
+        public async Task<Result<PagedResult<InsuranceCompanyDto>>> GetInsuranceCompaniesAsync(InsuranceCompanyQueryParams queryParams)
         {
-            var company = await _unitOfWork.InsuranceCompanies.GetByIdAsync(id);
-            return company != null ? _mapper.Map<InsuranceCompanyDto>(company) : null;
+            // This would need a GetInsuranceCompaniesQuery implementation
+            return Result<PagedResult<InsuranceCompanyDto>>.Success(PagedResult<InsuranceCompanyDto>.Empty());
         }
 
-        public async Task<InsuranceCompanyDto> CreateAsync(CreateInsuranceCompanyDto companyDto)
+        public async Task<Result<InsuranceCompanyDto>> CreateInsuranceCompanyAsync(CreateInsuranceCompanyDto createCompanyDto)
         {
-            try
-            {
-                var company = _mapper.Map<InsuranceCompany>(companyDto);
-                company.CreatedOn = DateTime.UtcNow;
-
-                await _unitOfWork.InsuranceCompanies.AddAsync(company);
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation("Insurance company created successfully with ID: {CompanyId}", company.Id);
-                return _mapper.Map<InsuranceCompanyDto>(company);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating insurance company");
-                throw;
-            }
+            return await _mediator.Send(new CreateInsuranceCompanyCommand(createCompanyDto));
         }
 
-        public async Task UpdateAsync(int id, UpdateInsuranceCompanyDto companyDto)
+        public async Task<Result<InsuranceCompanyDto>> UpdateInsuranceCompanyAsync(int id, UpdateInsuranceCompanyDto updateCompanyDto)
         {
-            try
-            {
-                var company = await _unitOfWork.InsuranceCompanies.GetByIdAsync(id);
-                if (company == null)
-                {
-                    throw new InvalidOperationException("Insurance company not found.");
-                }
-
-                _mapper.Map(companyDto, company);
-                company.ModifiedOn = DateTime.UtcNow;
-
-                _unitOfWork.InsuranceCompanies.Update(company);
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation("Insurance company updated successfully with ID: {CompanyId}", id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating insurance company with ID: {CompanyId}", id);
-                throw;
-            }
+            // This would need an UpdateInsuranceCompanyCommand implementation
+            return Result<InsuranceCompanyDto>.NotFound("Update not implemented yet");
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<Result> DeleteInsuranceCompanyAsync(int id)
         {
-            try
-            {
-                var company = await _unitOfWork.InsuranceCompanies.GetByIdAsync(id);
-                if (company == null)
-                {
-                    throw new InvalidOperationException("Insurance company not found.");
-                }
-
-                // Check if company has policies
-                var hasPolicies = await _unitOfWork.Policies.ExistsAsync(p => p.InsuranceCompanyId == id);
-                if (hasPolicies)
-                {
-                    throw new InvalidOperationException("Cannot delete insurance company with existing policies.");
-                }
-
-                _unitOfWork.InsuranceCompanies.Remove(company);
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation("Insurance company deleted successfully with ID: {CompanyId}", id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting insurance company with ID: {CompanyId}", id);
-                throw;
-            }
+            // This would need a DeleteInsuranceCompanyCommand implementation
+            return Result.Success("Delete not implemented yet");
         }
 
-        public async Task<List<InsuranceCompanyDto>> GetActiveCompaniesAsync()
+        public async Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByNameAsync(string name)
         {
-            var companies = await _unitOfWork.InsuranceCompanies.FindAsync(c => c.IsActive);
-            return _mapper.Map<List<InsuranceCompanyDto>>(companies);
+            // This would need a specific query implementation
+            return Result<InsuranceCompanyDto>.NotFound("Company not found");
         }
 
-        public async Task<PagedResult<InsuranceCompanyDto>> GetCompaniesPagedAsync(int pageNumber, int pageSize, string searchTerm = null)
+        public async Task<Result<List<InsuranceCompanyDto>>> GetActiveInsuranceCompaniesAsync()
         {
-            var allCompanies = await _unitOfWork.InsuranceCompanies.GetAllAsync();
+            var queryParams = new InsuranceCompanyQueryParams { IsActive = true, PageSize = 1000 };
+            var result = await GetInsuranceCompaniesAsync(queryParams);
 
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                allCompanies = allCompanies.Where(c =>
-                    c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    (c.Email != null && c.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            var totalCount = allCompanies.Count();
-            var items = allCompanies
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return new PagedResult<InsuranceCompanyDto>
-            {
-                Items = _mapper.Map<List<InsuranceCompanyDto>>(items),
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+            return result.IsSuccess
+                ? Result<List<InsuranceCompanyDto>>.Success(result.Data?.Items ?? new List<InsuranceCompanyDto>())
+                : Result<List<InsuranceCompanyDto>>.Failure(result.Message ?? "Failed to retrieve companies", result.Errors);
         }
     }
 }

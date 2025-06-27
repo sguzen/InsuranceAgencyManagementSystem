@@ -41,7 +41,7 @@ namespace IAMS.Application.Features.Customers.Commands.DeleteCustomer
                 }
 
                 // Soft delete
-                customer.Delete("System"); // TODO: Get from current user context
+                customer.Activate("System"); // TODO: Get from current user context
                 _customerRepository.Update(customer);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 

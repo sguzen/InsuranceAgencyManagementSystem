@@ -13,7 +13,7 @@ namespace IAMS.Application.Services.Customers
         Task<Result<PagedResult<CustomerDto>>> GetCustomersAsync(CustomerQueryParams queryParams);
         Task<Result<CustomerDto>> CreateCustomerAsync(CreateCustomerDto createCustomerDto);
         Task<Result<CustomerDto>> UpdateCustomerAsync(int id, UpdateCustomerDto updateCustomerDto);
-        Task<r> DeleteCustomerAsync(int id);
+        Task<Result> DeleteCustomerAsync(int id);
         Task<Result<CustomerDto>> GetCustomerByTcNoAsync(string tcNo);
         Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email);
         Task<Result<CustomerDto>> GetCustomerByCodeAsync(string customerCode);

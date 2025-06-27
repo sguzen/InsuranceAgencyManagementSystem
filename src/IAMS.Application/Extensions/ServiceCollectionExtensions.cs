@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using FluentValidation;
+﻿using FluentValidation;
+using IAMS.Application.Behaviors;
 using IAMS.Application.Services.Customers;
+using IAMS.Application.Services.InsuranceCompanies;
 using IAMS.Application.Services.Policies;
 using IAMS.Application.Validators.Customer;
 using IAMS.Application.Validators.Policy;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace IAMS.Application.Extensions
@@ -21,9 +24,14 @@ namespace IAMS.Application.Extensions
             // Register FluentValidation
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+            // Register Pipeline Behaviors
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+
             // Register Application Services
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IPolicyService, PolicyService>();
+            services.AddScoped<IInsuranceCompanyService, InsuranceCompanyService>();
 
             return services;
         }

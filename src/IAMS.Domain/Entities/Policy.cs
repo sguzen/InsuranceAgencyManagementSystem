@@ -136,5 +136,143 @@ namespace IAMS.Domain.Entities
             if (errors.Any())
                 throw new PolicyValidationException(this, errors);
         }
+
+        // Update policy dates
+        public void UpdateDates(DateTime startDate, DateTime endDate, string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateDates",
+                    "Cannot update deleted policy",
+                    TenantId);
+
+            if (Status == PolicyStatus.Cancelled)
+                throw new InvalidOperationDomainException(
+                    "UpdateDates",
+                    "Cannot update dates of cancelled policy",
+                    TenantId);
+
+            if (startDate >= endDate)
+                throw new BusinessRuleViolationException(
+                    "PolicyDates",
+                    "Start date must be before end date",
+                    TenantId);
+
+            StartDate = startDate;
+            EndDate = endDate;
+
+            UpdateAuditInfo(updatedBy);
+            AddDomainEvent(new PolicyDatesUpdatedEvent(this, updatedBy));
+        }
+
+        // Update premium amount
+        public void UpdatePremium(decimal premiumAmount, string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdatePremium",
+                    "Cannot update deleted policy",
+                    TenantId);
+
+            if (Status == PolicyStatus.Cancelled)
+                throw new InvalidOperationDomainException(
+                    "UpdatePremium",
+                    "Cannot update premium of cancelled policy",
+                    TenantId);
+
+            if (premiumAmount <= 0)
+                throw new BusinessRuleViolationException(
+                    "PolicyPremium",
+                    "Premium amount must be greater than zero",
+                    TenantId);
+
+            var oldPremium = PremiumAmount;
+            PremiumAmount = premiumAmount;
+
+            // Recalculate commission with existing rate
+            CommissionAmount = premiumAmount * (CommissionRate / 100);
+
+            UpdateAuditInfo(updatedBy);
+            AddDomainEvent(new PolicyPremiumUpdatedEvent(this, oldPremium, premiumAmount, updatedBy));
+        }
+
+        // Update notes
+        public void UpdateNotes(string? notes, string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateNotes",
+                    "Cannot update deleted policy",
+                    TenantId);
+
+            Notes = notes;
+            UpdateAuditInfo(updatedBy);
+        }
+
+        // Renew policy
+        public Policy RenewPolicy(
+            DateTime newStartDate,
+            DateTime newEndDate,
+            decimal newPremiumAmount,
+            decimal newCommissionRate,
+            string renewedBy)
+        {
+            if (!CanRenew)
+                throw new BusinessRuleViolationException(
+                    "PolicyRenewal",
+                    "Policy cannot be renewed in current state",
+                    TenantId);
+
+            var renewalPolicy = Create(
+                GenerateRenewalPolicyNumber(),
+                CustomerId,
+                InsuranceCompanyId,
+                PolicyTypeId,
+                newStartDate,
+                newEndDate,
+                newPremiumAmount,
+                newCommissionRate,
+                renewedBy,
+                TenantId,
+                Currency);
+
+            renewalPolicy.Notes = $"Renewal of policy {PolicyNumber}";
+
+            AddDomainEvent(new PolicyRenewedEvent(this, renewalPolicy, renewedBy));
+
+            return renewalPolicy;
+        }
+
+        private string GenerateRenewalPolicyNumber()
+        {
+            // Simple renewal numbering - in real implementation, use IPolicyNumberGenerator
+            return $"{PolicyNumber}-R{DateTime.Now:yyyyMMdd}";
+        }
+
+        // Get policy performance metrics
+        public decimal GetPaymentCompletionRate()
+        {
+            if (PremiumAmount == 0) return 100;
+
+            var totalPaid = CalculateTotalPaid();
+            return (totalPaid / PremiumAmount) * 100;
+        }
+
+        public int GetDaysActive()
+        {
+            if (Status != PolicyStatus.Active) return 0;
+
+            var activeFrom = Math.Max(StartDate.Ticks, CreatedDate.Ticks);
+            var activeTo = Math.Min(DateTime.Today.Ticks, EndDate.Ticks);
+
+            return (int)TimeSpan.FromTicks(activeTo - activeFrom).TotalDays;
+        }
+
+        public bool IsNearExpiry(int daysThreshold = 30)
+        {
+            return Status == PolicyStatus.Active &&
+                   EndDate <= DateTime.Today.AddDays(daysThreshold) &&
+                   EndDate >= DateTime.Today;
+        }
     }
 }

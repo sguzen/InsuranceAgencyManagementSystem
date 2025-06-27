@@ -1,13 +1,11 @@
-﻿using AutoMapper;
+﻿using MediatR;
 using IAMS.Application.DTOs.Policy;
-using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
-using IAMS.Application.Features.Policies.Commands.CreatePolicy;
-using IAMS.Application.Interfaces;
 using IAMS.Application.Models;
-using IAMS.Domain.Entities;
-using IAMS.Domain.Enums;
-using MediatR;
-using Microsoft.Extensions.Logging;
+using IAMS.Application.Features.Policies.Commands.CreatePolicy;
+using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
+using IAMS.Application.Features.Policies.Commands.DeletePolicy;
+using IAMS.Application.Features.Policies.Queries.GetPolicy;
+using IAMS.Application.Features.Policies.Queries.GetPolicies;
 
 namespace IAMS.Application.Services.Policies
 {
@@ -27,8 +25,7 @@ namespace IAMS.Application.Services.Policies
 
         public async Task<Result<PagedResult<PolicyDto>>> GetPoliciesAsync(PolicyQueryParams queryParams)
         {
-            // This would need a GetPoliciesQuery - simplified for now
-            return Result<PagedResult<PolicyDto>>.Success(PagedResult<PolicyDto>.Empty());
+            return await _mediator.Send(new GetPoliciesQuery(queryParams));
         }
 
         public async Task<Result<PolicyDto>> CreatePolicyAsync(CreatePolicyDto createPolicyDto)
@@ -43,62 +40,155 @@ namespace IAMS.Application.Services.Policies
 
         public async Task<Result> DeletePolicyAsync(int id)
         {
-            // This would need a DeletePolicyCommand
-            return Result.Success("Policy deletion not implemented yet");
+            return await _mediator.Send(new DeletePolicyCommand(id));
         }
 
         public async Task<Result<PolicyDto>> GetPolicyByNumberAsync(string policyNumber)
         {
-            // This would need a specific query
+            var queryParams = new PolicyQueryParams { SearchTerm = policyNumber, PageSize = 1 };
+            var result = await GetPoliciesAsync(queryParams);
+
+            if (result.IsSuccess && result.Data?.Items.Any() == true)
+            {
+                var policy = result.Data.Items.FirstOrDefault(p => p.PolicyNumber == policyNumber);
+                return policy != null
+                    ? Result<PolicyDto>.Success(policy)
+                    : Result<PolicyDto>.NotFound("Policy not found");
+            }
+
             return Result<PolicyDto>.NotFound("Policy not found");
         }
 
         public async Task<Result<List<PolicyDto>>> GetPoliciesByCustomerAsync(int customerId)
         {
-            // This would need a specific query
-            return Result<List<PolicyDto>>.Success(new List<PolicyDto>());
+            var queryParams = new PolicyQueryParams { CustomerId = customerId, PageSize = 1000 };
+            var result = await GetPoliciesAsync(queryParams);
+
+            return result.IsSuccess
+                ? Result<List<PolicyDto>>.Success(result.Data?.Items ?? new List<PolicyDto>())
+                : Result<List<PolicyDto>>.Failure(result.Message ?? "Failed to retrieve policies", result.Errors);
         }
 
         public async Task<Result<List<PolicyDto>>> GetActivePoliciesAsync()
         {
-            // This would need a specific query
-            return Result<List<PolicyDto>>.Success(new List<PolicyDto>());
+            var queryParams = new PolicyQueryParams
+            {
+                Status = Domain.Enums.PolicyStatus.Active,
+                PageSize = 1000
+            };
+            var result = await GetPoliciesAsync(queryParams);
+
+            return result.IsSuccess
+                ? Result<List<PolicyDto>>.Success(result.Data?.Items ?? new List<PolicyDto>())
+                : Result<List<PolicyDto>>.Failure(result.Message ?? "Failed to retrieve active policies", result.Errors);
         }
 
         public async Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30)
         {
-            // This would need a specific query
-            return Result<List<PolicyDto>>.Success(new List<PolicyDto>());
+            var queryParams = new PolicyQueryParams
+            {
+                Status = Domain.Enums.PolicyStatus.Active,
+                EndDateFrom = DateTime.Today,
+                EndDateTo = DateTime.Today.AddDays(daysAhead),
+                PageSize = 1000
+            };
+            var result = await GetPoliciesAsync(queryParams);
+
+            return result.IsSuccess
+                ? Result<List<PolicyDto>>.Success(result.Data?.Items ?? new List<PolicyDto>())
+                : Result<List<PolicyDto>>.Failure(result.Message ?? "Failed to retrieve expiring policies", result.Errors);
         }
 
         public async Task<Result<List<PolicyDto>>> GetExpiredPoliciesAsync()
         {
-            // This would need a specific query
-            return Result<List<PolicyDto>>.Success(new List<PolicyDto>());
+            var queryParams = new PolicyQueryParams
+            {
+                IsExpired = true,
+                PageSize = 1000
+            };
+            var result = await GetPoliciesAsync(queryParams);
+
+            return result.IsSuccess
+                ? Result<List<PolicyDto>>.Success(result.Data?.Items ?? new List<PolicyDto>())
+                : Result<List<PolicyDto>>.Failure(result.Message ?? "Failed to retrieve expired policies", result.Errors);
         }
 
         public async Task<Result<PolicyDto>> ActivatePolicyAsync(int id)
         {
-            // This would need a specific command
-            return Result<PolicyDto>.NotFound("Policy not found");
+            // This would need a specific ActivatePolicyCommand
+            var policy = await GetPolicyByIdAsync(id);
+            if (!policy.IsSuccess || policy.Data == null)
+                return Result<PolicyDto>.NotFound("Policy not found");
+
+            // For now, using update with status change
+            var updateDto = new UpdatePolicyDto
+            {
+                StartDate = policy.Data.StartDate,
+                EndDate = policy.Data.EndDate,
+                PremiumAmount = policy.Data.PremiumAmount,
+                CommissionRate = policy.Data.CommissionRate,
+                Status = Domain.Enums.PolicyStatus.Active,
+                Notes = policy.Data.Notes
+            };
+
+            return await UpdatePolicyAsync(id, updateDto);
         }
 
         public async Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason = null)
         {
-            // This would need a specific command
-            return Result<PolicyDto>.NotFound("Policy not found");
+            var policy = await GetPolicyByIdAsync(id);
+            if (!policy.IsSuccess || policy.Data == null)
+                return Result<PolicyDto>.NotFound("Policy not found");
+
+            var updateDto = new UpdatePolicyDto
+            {
+                StartDate = policy.Data.StartDate,
+                EndDate = policy.Data.EndDate,
+                PremiumAmount = policy.Data.PremiumAmount,
+                CommissionRate = policy.Data.CommissionRate,
+                Status = Domain.Enums.PolicyStatus.Cancelled,
+                Notes = string.IsNullOrEmpty(reason) ? policy.Data.Notes : $"{policy.Data.Notes}\nCancellation reason: {reason}"
+            };
+
+            return await UpdatePolicyAsync(id, updateDto);
         }
 
         public async Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null)
         {
-            // This would need a specific command
-            return Result<PolicyDto>.NotFound("Policy not found");
+            var policy = await GetPolicyByIdAsync(id);
+            if (!policy.IsSuccess || policy.Data == null)
+                return Result<PolicyDto>.NotFound("Policy not found");
+
+            var updateDto = new UpdatePolicyDto
+            {
+                StartDate = policy.Data.StartDate,
+                EndDate = policy.Data.EndDate,
+                PremiumAmount = policy.Data.PremiumAmount,
+                CommissionRate = policy.Data.CommissionRate,
+                Status = Domain.Enums.PolicyStatus.Suspended,
+                Notes = string.IsNullOrEmpty(reason) ? policy.Data.Notes : $"{policy.Data.Notes}\nSuspension reason: {reason}"
+            };
+
+            return await UpdatePolicyAsync(id, updateDto);
         }
 
         public async Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto)
         {
-            // This would need a specific command
-            return Result<PolicyDto>.NotFound("Policy not found");
+            var originalPolicy = await GetPolicyByIdAsync(id);
+            if (!originalPolicy.IsSuccess || originalPolicy.Data == null)
+                return Result<PolicyDto>.NotFound("Original policy not found");
+
+            if (!originalPolicy.Data.CanRenew)
+                return Result<PolicyDto>.Failure("Policy cannot be renewed in its current state");
+
+            // Set renewal-specific properties
+            renewalDto.PolicyNumber = $"{originalPolicy.Data.PolicyNumber}-R{DateTime.Now:yyyyMMdd}";
+            renewalDto.CustomerId = originalPolicy.Data.CustomerId;
+            renewalDto.InsuranceCompanyId = originalPolicy.Data.InsuranceCompanyId;
+            renewalDto.PolicyTypeId = originalPolicy.Data.PolicyTypeId;
+            renewalDto.Notes = $"Renewal of policy {originalPolicy.Data.PolicyNumber}";
+
+            return await CreatePolicyAsync(renewalDto);
         }
     }
 }

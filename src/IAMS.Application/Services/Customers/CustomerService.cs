@@ -1,6 +1,7 @@
 ﻿using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
+using IAMS.Application.Features.Customers.Queries.GetCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
 using IAMS.Application.Models;
 using IAMS.Application.Services.Customers;
@@ -35,7 +36,7 @@ using MediatR;
             return Result<CustomerDto>.NotFound("Update not implemented yet");
         }
 
-        public async Task<r> DeleteCustomerAsync(int id)
+        public async Task<Result> DeleteCustomerAsync(int id)
         {
             return await _mediator.Send(new DeleteCustomerCommand(id));
         }
@@ -70,4 +71,3 @@ using MediatR;
             return Result<bool>.Success(true);
         }
     }
-}

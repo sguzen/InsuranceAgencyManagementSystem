@@ -1,46 +1,37 @@
-﻿// src/IAMS.Application/Extensions/ServiceCollectionExtensions.cs (FINAL UPDATE)
-using Microsoft.Extensions.DependencyInjection;
-using IAMS.Application.Services.Customers;
-using IAMS.Application.Services.Policies;
-using IAMS.Application.Services.InsuranceCompanies;
-using IAMS.Application.Services.CustomerMappings;
-using IAMS.Application.Services.PolicyTypes;
+﻿using FluentValidation;
 using IAMS.Application.Behaviors;
-using System.Reflection;
-using FluentValidation;
+using IAMS.Application.Services.Customers;
+using IAMS.Application.Services.InsuranceCompanies;
+using IAMS.Application.Services.Policies;
+using IAMS.Application.Validators.Customer;
+using IAMS.Application.Validators.Policy;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace IAMS.Application.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            // Register MediatR
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-            // Add AutoMapper
-            services.AddAutoMapper(assembly);
+            // Register AutoMapper
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-            // Add MediatR
-            services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssembly(assembly);
-            });
+            // Register FluentValidation
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // Add MediatR Pipeline Behaviors
-            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
+            // Register Pipeline Behaviors
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
-            // Add FluentValidation
-            services.AddValidatorsFromAssembly(assembly);
-
-            // Add Application Services
+            // Register Application Services
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IPolicyService, PolicyService>();
             services.AddScoped<IInsuranceCompanyService, InsuranceCompanyService>();
-            services.AddScoped<ICustomerMappingService, CustomerMappingService>();
-            services.AddScoped<IPolicyTypeService, PolicyTypeService>();
 
             return services;
         }

@@ -1,24 +1,24 @@
-﻿using AutoMapper;
+﻿using MediatR;
+using AutoMapper;
 using IAMS.Application.DTOs.Customer;
-using IAMS.Application.Interfaces;
 using IAMS.Application.Models;
-using MediatR;
+using IAMS.Application.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomers
 {
     public class GetCustomersQueryHandler : IRequestHandler<GetCustomersQuery, Result<PagedResult<CustomerDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ICustomerRepository _customerRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<GetCustomersQueryHandler> _logger;
 
         public GetCustomersQueryHandler(
-            IUnitOfWork unitOfWork,
+            ICustomerRepository customerRepository,
             IMapper mapper,
             ILogger<GetCustomersQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _customerRepository = customerRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -27,25 +27,35 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomers
         {
             try
             {
-                var pagedResult = await _unitOfWork.Customers.GetCustomersPagedAsync(
-                    request.PageNumber,
-                    request.PageSize,
-                    request.SearchTerm);
+                _logger.LogInformation("Getting customers with parameters: {SearchTerm}, Page: {PageNumber}, Size: {PageSize}",
+                    request.QueryParams.SearchTerm, request.QueryParams.PageNumber, request.QueryParams.PageSize);
 
-                var customerDtos = new PagedResult<CustomerDto>
+                var (customers, totalCount) = await _customerRepository.GetPagedAsync(request.QueryParams);
+
+                var customerDtos = _mapper.Map<List<CustomerDto>>(customers);
+
+                // Add aggregated data for each customer
+                foreach (var customerDto in customerDtos)
                 {
-                    Items = _mapper.Map<List<CustomerDto>>(pagedResult.Items),
-                    TotalCount = pagedResult.TotalCount,
-                    PageNumber = pagedResult.PageNumber,
-                    PageSize = pagedResult.PageSize
-                };
+                    var customer = customers.First(c => c.Id == customerDto.Id);
+                    customerDto.ActivePoliciesCount = customer.GetActivePolicies().Count;
+                    customerDto.TotalPremiums = customer.GetTotalPremiums();
+                    customerDto.TotalCommissions = customer.GetTotalCommissions();
+                    customerDto.LastPolicyDate = customer.GetLastPolicyDate();
+                }
 
-                return Result<PagedResult<CustomerDto>>.Success(customerDtos);
+                var pagedResult = PagedResult<CustomerDto>.Create(
+                    customerDtos,
+                    totalCount,
+                    request.QueryParams.PageNumber,
+                    request.QueryParams.PageSize);
+
+                return Result<PagedResult<CustomerDto>>.Success(pagedResult);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving customers");
-                return Result<PagedResult<CustomerDto>>.Failure("An error occurred while retrieving customers");
+                _logger.LogError(ex, "Error getting customers");
+                return Result<PagedResult<CustomerDto>>.InternalError("An error occurred while retrieving customers");
             }
         }
     }

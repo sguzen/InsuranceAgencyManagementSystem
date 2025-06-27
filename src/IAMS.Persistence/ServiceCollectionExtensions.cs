@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using IAMS.Application.Interfaces;
 using IAMS.Persistence.Repositories;
 using IAMS.Persistence.UnitOfWork;
+using IAMS.Application.Interfaces.Repositories;
 
 namespace IAMS.Persistence
 {

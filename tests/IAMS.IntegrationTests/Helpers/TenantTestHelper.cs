@@ -3,6 +3,7 @@ using AutoMapper;
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.DTOs.Identity;
 using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Services.Customers;
 using IAMS.Domain.Entities;
 using IAMS.MultiTenancy.Interfaces;

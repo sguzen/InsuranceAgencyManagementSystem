@@ -5,12 +5,12 @@ namespace IAMS.Application.Services.InsuranceCompanies
 {
     public interface IInsuranceCompanyService
     {
-        Task<List<InsuranceCompanyDto>> GetAllAsync();
-        Task<InsuranceCompanyDto?> GetByIdAsync(int id);
-        Task<InsuranceCompanyDto> CreateAsync(CreateInsuranceCompanyDto companyDto);
-        Task UpdateAsync(int id, UpdateInsuranceCompanyDto companyDto);
-        Task DeleteAsync(int id);
-        Task<List<InsuranceCompanyDto>> GetActiveCompaniesAsync();
-        Task<PagedResult<InsuranceCompanyDto>> GetCompaniesPagedAsync(int pageNumber, int pageSize, string searchTerm = null);
+        Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByIdAsync(int id);
+        Task<Result<PagedResult<InsuranceCompanyDto>>> GetInsuranceCompaniesAsync(InsuranceCompanyQueryParams queryParams);
+        Task<Result<InsuranceCompanyDto>> CreateInsuranceCompanyAsync(CreateInsuranceCompanyDto createCompanyDto);
+        Task<Result<InsuranceCompanyDto>> UpdateInsuranceCompanyAsync(int id, UpdateInsuranceCompanyDto updateCompanyDto);
+        Task<Result> DeleteInsuranceCompanyAsync(int id);
+        Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByNameAsync(string name);
+        Task<Result<List<InsuranceCompanyDto>>> GetActiveInsuranceCompaniesAsync();
     }
 }

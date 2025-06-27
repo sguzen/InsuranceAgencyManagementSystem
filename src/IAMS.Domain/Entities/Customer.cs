@@ -2,6 +2,7 @@
 using IAMS.Domain.Events;
 using IAMS.Domain.Exceptions;
 using IAMS.Domain.ValueObjects;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace IAMS.Domain.Entities
@@ -14,11 +15,12 @@ namespace IAMS.Domain.Entities
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string? Address { get; set; }
-        public string TcNo { get; set; } = string.Empty; // Turkish Cypriot ID Number
+        public string KktcNo { get; set; } = string.Empty; // Turkish Cypriot ID Number
         public DateTime DateOfBirth { get; set; }
         public CustomerStatus Status { get; set; } = CustomerStatus.Active;
         public CustomerType Type { get; set; } = CustomerType.Individual;
         public IdentificationType IdentificationType { get; set; } = IdentificationType.KkTcNo;
+        public Gender Gender { get; set; } = Gender.Male;
         public string? Notes { get; set; }
 
         // Navigation properties
@@ -103,16 +105,6 @@ namespace IAMS.Domain.Entities
                 CustomerInsuranceCompanies.Add(mapping);
                 AddDomainEvent(new CustomerMappedToInsuranceCompanyEvent(mapping, mappedBy));
             }
-        }
-
-        public IEnumerable<Policy> GetActivePolicies()
-        {
-            return Policies.Where(p => p.IsActive && !p.IsDeleted);
-        }
-
-        public IEnumerable<Policy> GetPoliciesByStatus(PolicyStatus status)
-        {
-            return Policies.Where(p => p.Status == status && !p.IsDeleted);
         }
 
         public decimal GetTotalPremiumAmount()
@@ -231,6 +223,154 @@ namespace IAMS.Domain.Entities
             customer.AddDomainEvent(new CustomerRegisteredEvent(customer, createdBy));
 
             return customer;
+        }
+    public void UpdatePersonalInfo(
+            string firstName,
+            string lastName,
+            string? kktcNo,
+            DateTime dateOfBirth,
+            Gender? gender,
+            string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdatePersonalInfo",
+                    "Cannot update deleted customer",
+                    TenantId);
+
+            FirstName = firstName;
+            LastName = lastName;
+            KktcNo = kktcNo;
+            DateOfBirth = dateOfBirth;
+            Gender = gender ?? Gender.Male;
+
+            UpdateAuditInfo(updatedBy);
+            Validate();
+        }
+
+
+        // Update customer status
+        public void UpdateStatus(CustomerStatus status, string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateStatus",
+                    "Cannot update deleted customer",
+                    TenantId);
+
+            var oldStatus = Status;
+            Status = status;
+
+            UpdateAuditInfo(updatedBy);
+
+            if (oldStatus != status)
+            {
+                AddDomainEvent(new CustomerStatusChangedEvent(this, oldStatus, status, updatedBy));
+            }
+        }
+
+        // Update notes
+        public void UpdateNotes(string? notes, string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateNotes",
+                    "Cannot update deleted customer",
+                    TenantId);
+
+            Notes = notes;
+            UpdateAuditInfo(updatedBy);
+        }
+
+        // Soft delete customer
+        public void Delete(string deletedBy)
+        {
+            if (IsDeleted)
+                return; // Already deleted
+
+            // Check if customer has active policies
+            var activePolicies = GetActivePolicies();
+            if (activePolicies.Any())
+            {
+                throw new BusinessRuleViolationException(
+                    "CustomerDeletion",
+                    "Cannot delete customer with active policies",
+                    TenantId);
+            }
+
+            IsDeleted = true;
+            DeletedDate = DateTime.UtcNow;
+            DeletedBy = deletedBy;
+            Status = CustomerStatus.Inactive;
+
+            AddDomainEvent(new CustomerDeletedEvent(this, deletedBy));
+        }
+
+        // Restore deleted customer
+        public void Restore(string restoredBy)
+        {
+            if (!IsDeleted)
+                return; // Not deleted
+
+            IsDeleted = false;
+            DeletedDate = null;
+            DeletedBy = null;
+            Status = CustomerStatus.Active;
+
+            UpdateAuditInfo(restoredBy);
+            AddDomainEvent(new CustomerRestoredEvent(this, restoredBy));
+        }
+
+        // Business logic methods
+        public List<Policy> GetActivePolicies()
+        {
+            return Policies?.Where(p => p.IsActive && !p.IsDeleted).ToList() ?? new List<Policy>();
+        }
+
+        public List<Policy> GetPoliciesByStatus(PolicyStatus status)
+        {
+            return Policies?.Where(p => p.Status == status && !p.IsDeleted).ToList() ?? new List<Policy>();
+        }
+
+        public decimal GetTotalPremiums()
+        {
+            return Policies?.Where(p => !p.IsDeleted).Sum(p => p.PremiumAmount) ?? 0;
+        }
+
+        public decimal GetTotalCommissions()
+        {
+            return Policies?.Where(p => !p.IsDeleted).Sum(p => p.CommissionAmount) ?? 0;
+        }
+
+        public DateTime? GetLastPolicyDate()
+        {
+            return Policies?.Where(p => !p.IsDeleted).Max(p => p?.CreatedDate);
+        }
+
+        public bool HasActivePolicies()
+        {
+            return GetActivePolicies().Any();
+        }
+
+        public bool IsEligibleForNewPolicy()
+        {
+            return Status == CustomerStatus.Active &&
+                   !IsDeleted &&
+                   Age >= 18;
+        }
+
+        public int GetPolicyCount()
+        {
+            return Policies?.Count(p => !p.IsDeleted) ?? 0;
+        }
+
+        public decimal GetAveragePolicyValue()
+        {
+            var policies = Policies?.Where(p => !p.IsDeleted).ToList();
+            if (policies == null || !policies.Any())
+                return 0;
+
+            return policies.Average(p => p.PremiumAmount);
         }
     }
 }

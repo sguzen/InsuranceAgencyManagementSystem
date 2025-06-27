@@ -1,46 +1,47 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.Policy;
 using IAMS.Domain.Entities;
-using IAMS.Domain.Enums;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.Mappings
 {
-    public class PolicyMappingProfile : Profile
+    public class InsuranceCompanyMappingProfile : Profile
     {
-        public PolicyMappingProfile()
+        public InsuranceCompanyMappingProfile()
         {
-            CreateMap<Policy, PolicyDto>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => $"{src.Customer.FirstName} {src.Customer.LastName}"))
-                .ForMember(dest => dest.InsuranceCompanyName, opt => opt.MapFrom(src => src.InsuranceCompany.Name))
-                .ForMember(dest => dest.PolicyTypeName, opt => opt.MapFrom(src => src.PolicyType.Name));
+            CreateMap<InsuranceCompany, InsuranceCompanyDto>()
+                .ForMember(dest => dest.ActivePoliciesCount, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalPremiums, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalCommissions, opt => opt.Ignore())
+                .ForMember(dest => dest.LastPolicyDate, opt => opt.Ignore());
 
-            CreateMap<CreatePolicyDto, Policy>()
+            CreateMap<CreateInsuranceCompanyDto, InsuranceCompany>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())
-                .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
                 .ForMember(dest => dest.TenantId, opt => opt.Ignore())
-                .ForMember(dest => dest.Customer, opt => opt.Ignore())
-                .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
-                .ForMember(dest => dest.PolicyType, opt => opt.Ignore())
-                .ForMember(dest => dest.PolicyPayments, opt => opt.Ignore())
-                .ForMember(dest => dest.PolicyClaims, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => PolicyStatus.Draft));
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.Policies, opt => opt.Ignore())
+                .ForMember(dest => dest.PolicyTypes, opt => opt.Ignore())
+                .ForMember(dest => dest.CommissionRates, opt => opt.Ignore());
 
-            CreateMap<UpdatePolicyDto, Policy>()
+            CreateMap<UpdateInsuranceCompanyDto, InsuranceCompany>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())
-                .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
                 .ForMember(dest => dest.TenantId, opt => opt.Ignore())
-                .ForMember(dest => dest.PolicyNumber, opt => opt.Ignore()) // Don't allow policy number updates
-                .ForMember(dest => dest.Customer, opt => opt.Ignore())
-                .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
-                .ForMember(dest => dest.PolicyType, opt => opt.Ignore());
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.Policies, opt => opt.Ignore())
+                .ForMember(dest => dest.PolicyTypes, opt => opt.Ignore())
+                .ForMember(dest => dest.CommissionRates, opt => opt.Ignore());
         }
     }
 }

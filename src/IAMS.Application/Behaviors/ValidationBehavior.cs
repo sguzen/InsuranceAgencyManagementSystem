@@ -1,11 +1,12 @@
 ﻿using MediatR;
 using FluentValidation;
-using ValidationException = IAMS.Application.Exceptions.ValidationException;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Behaviors
 {
     public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
+        where TResponse : class
     {
         private readonly IEnumerable<IValidator<TRequest>> _validators;
 
@@ -25,7 +26,20 @@ namespace IAMS.Application.Behaviors
                 if (failures.Any())
                 {
                     var errors = failures.Select(f => f.ErrorMessage).ToList();
-                    throw new ValidationException(errors);
+
+                    // If TResponse is a Result type, return a failure result
+                    if (typeof(TResponse).IsGenericType && typeof(TResponse).GetGenericTypeDefinition() == typeof(Result<>))
+                    {
+                        var resultType = typeof(TResponse).GetGenericArguments()[0];
+                        var failureMethod = typeof(Result<>).MakeGenericType(resultType).GetMethod("Failure", new[] { typeof(string), typeof(List<string>), typeof(int) });
+                        return (TResponse)failureMethod!.Invoke(null, new object[] { "Validation failed", errors, 400 })!;
+                    }
+                    else if (typeof(TResponse) == typeof(Result))
+                    {
+                        return (TResponse)(object)Result.Failure("Validation failed", errors, 400);
+                    }
+
+                    throw new ValidationException(failures);
                 }
             }
 

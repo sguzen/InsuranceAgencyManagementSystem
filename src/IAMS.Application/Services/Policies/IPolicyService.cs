@@ -1,24 +1,20 @@
 ﻿using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace IAMS.Application.Services.Policies
+public interface IPolicyService
 {
-    public interface IPolicyService
-    {
-        Task<List<PolicyDto>> GetAllAsync();
-        Task<PolicyDto?> GetByIdAsync(int id);
-        Task<PolicyDto> CreateAsync(CreatePolicyDto policyDto);
-        Task UpdateAsync(int id, UpdatePolicyDto policyDto);
-        Task DeleteAsync(int id);
-        Task<List<PolicyDto>> GetPoliciesByCustomerIdAsync(int customerId);
-        Task<List<PolicyDto>> GetExpiringPoliciesAsync(DateTime date);
-        Task<PagedResult<PolicyDto>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string searchTerm = null);
-        Task<decimal> CalculateCommissionAsync(int policyId);
-        Task<bool> RenewPolicyAsync(int policyId, DateTime newEndDate);
-    }
+    Task<Result<PolicyDto>> GetPolicyByIdAsync(int id);
+    Task<Result<PagedResult<PolicyDto>>> GetPoliciesAsync(PolicyQueryParams queryParams);
+    Task<Result<PolicyDto>> CreatePolicyAsync(CreatePolicyDto createPolicyDto);
+    Task<Result<PolicyDto>> UpdatePolicyAsync(int id, UpdatePolicyDto updatePolicyDto);
+    Task<Result> DeletePolicyAsync(int id);
+    Task<Result<PolicyDto>> GetPolicyByNumberAsync(string policyNumber);
+    Task<Result<List<PolicyDto>>> GetPoliciesByCustomerAsync(int customerId);
+    Task<Result<List<PolicyDto>>> GetActivePoliciesAsync();
+    Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30);
+    Task<Result<List<PolicyDto>>> GetExpiredPoliciesAsync();
+    Task<Result<PolicyDto>> ActivatePolicyAsync(int id);
+    Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason = null);
+    Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null);
+    Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto);
 }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using IAMS.Application.DTOs.PolicyType;
-using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 

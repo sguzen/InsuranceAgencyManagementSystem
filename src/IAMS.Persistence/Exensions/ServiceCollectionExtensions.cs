@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using IAMS.Persistence.Contexts;
-using IAMS.Application.Interfaces;
 using IAMS.Persistence.Repositories;
+using IAMS.Application.Interfaces.Repositories;
 
 namespace IAMS.Persistence.Extensions
 {

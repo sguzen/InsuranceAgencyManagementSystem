@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using IAMS.Application.DTOs.InsuranceCompany;
-using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;

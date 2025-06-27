@@ -1,24 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using IAMS.Domain.Enums;
 
 namespace IAMS.Application.DTOs.Customer
 {
     public class CustomerDto
     {
         public int Id { get; set; }
+        public int TenantId { get; set; }
+        public string CustomerCode { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string TcNo { get; set; } = string.Empty; // Turkish Cypriot ID Number
-        public DateTime DateOfBirth { get; set; }
-        public bool IsActive { get; set; }
-        public DateTime CreatedOn { get; set; }
+        public string FullName => $"{FirstName} {LastName}";
+        public string? TcNo { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public int? Age => DateOfBirth?.CalculateAge();
+        public Gender? Gender { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public CustomerStatus Status { get; set; }
+        public string? Notes { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
+
+        // Aggregated data
+        public int ActivePoliciesCount { get; set; }
+        public decimal TotalPremiums { get; set; }
+        public decimal TotalCommissions { get; set; }
+        public DateTime? LastPolicyDate { get; set; }
     }
 
-
+    public static class DateTimeExtensions
+    {
+        public static int CalculateAge(this DateTime dateOfBirth)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - dateOfBirth.Year;
+            if (dateOfBirth.Date > today.AddYears(-age)) age--;
+            return age;
+        }
+    }
 }

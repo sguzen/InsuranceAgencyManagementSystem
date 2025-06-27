@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;

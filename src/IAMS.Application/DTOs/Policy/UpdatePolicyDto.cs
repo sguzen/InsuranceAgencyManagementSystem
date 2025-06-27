@@ -1,5 +1,4 @@
-﻿using IAMS.Domain.Entities;
-using IAMS.Domain.Enums;
+﻿using IAMS.Domain.Enums;
 
 namespace IAMS.Application.DTOs.Policy
 {

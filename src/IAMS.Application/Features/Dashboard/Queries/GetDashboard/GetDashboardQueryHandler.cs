@@ -1,4 +1,4 @@
-﻿using IAMS.Application.Interfaces;
+﻿using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;

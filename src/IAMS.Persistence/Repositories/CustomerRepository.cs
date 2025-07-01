@@ -21,11 +21,11 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Customer?> GetByTcNoAsync(string tcNo)
+        public async Task<Customer?> GetByKktcNoAsync(string kktcNo, int tenantId)
         {
             return await _dbSet
                 .Where(c => !c.IsDeleted)
-                .FirstOrDefaultAsync(c => c.TcNo == tcNo);
+                .FirstOrDefaultAsync(c => c.KktcNo == kktcNo);
         }
 
         public async Task<IEnumerable<Customer>> SearchCustomersAsync(string searchTerm)
@@ -36,7 +36,7 @@ namespace IAMS.Persistence.Repositories
                        (c.FirstName.ToLower().Contains(term) ||
                         c.LastName.ToLower().Contains(term) ||
                         c.Email.ToLower().Contains(term) ||
-                        c.TcNo.Contains(term)))
+                        c.KktcNo.Contains(term)))
                 .OrderBy(c => c.LastName)
                 .ThenBy(c => c.FirstName)
                 .ToListAsync();

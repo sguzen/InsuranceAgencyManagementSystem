@@ -1,5 +1,4 @@
-﻿// Updated ApplicationRole.cs and ApplicationRole.cs in single file
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace IAMS.Identity.Models
 {

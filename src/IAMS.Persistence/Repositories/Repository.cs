@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -93,6 +94,21 @@ namespace IAMS.Persistence.Repositories
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.Where(x => !x.IsDeleted).AnyAsync(predicate);
+        }
+
+        Task IRepository<T>.AddAsync(T entity)
+        {
+            return AddAsync(entity);
+        }
+
+        Task IRepository<T>.AddRangeAsync(IEnumerable<T> entities)
+        {
+            return AddRangeAsync(entities);
+        }
+
+        public Task<int> CountAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

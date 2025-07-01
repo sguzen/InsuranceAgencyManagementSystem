@@ -1,5 +1,4 @@
-﻿// IAMS.Identity/Data/IdentityDataSeeder.cs
-using IAMS.Identity.Models;
+﻿using IAMS.Identity.Models;
 using IAMS.Identity.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

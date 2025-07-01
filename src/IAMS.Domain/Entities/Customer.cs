@@ -177,7 +177,7 @@ namespace IAMS.Domain.Entities
             if (!IsValidPhone(Phone))
                 errors.Add("Valid phone number is required");
 
-            if (IdentificationType == IdentificationType.KkTcNo && !IsValidTcNo(TcNo))
+            if (IdentificationType == IdentificationType.KkTcNo && !IsValidTcNo(KktcNo))
                 errors.Add("Valid TC number is required");
 
             if (DateOfBirth >= DateTime.Today)
@@ -196,7 +196,7 @@ namespace IAMS.Domain.Entities
             string lastName,
             string email,
             string phone,
-            string tcNo,
+            string kktcNo,
             DateTime dateOfBirth,
             string createdBy,
             int tenantId,
@@ -210,7 +210,7 @@ namespace IAMS.Domain.Entities
                 LastName = lastName,
                 Email = email,
                 Phone = phone,
-                TcNo = tcNo,
+                KktcNo = kktcNo,
                 DateOfBirth = dateOfBirth,
                 Type = type,
                 Address = address,
@@ -228,7 +228,7 @@ namespace IAMS.Domain.Entities
             string firstName,
             string lastName,
             string? kktcNo,
-            DateTime dateOfBirth,
+            DateTime? dateOfBirth,
             Gender? gender,
             string updatedBy)
         {
@@ -241,7 +241,8 @@ namespace IAMS.Domain.Entities
             FirstName = firstName;
             LastName = lastName;
             KktcNo = kktcNo;
-            DateOfBirth = dateOfBirth;
+            if (dateOfBirth != null)
+                DateOfBirth = dateOfBirth.Value;
             Gender = gender ?? Gender.Male;
 
             UpdateAuditInfo(updatedBy);
@@ -299,7 +300,7 @@ namespace IAMS.Domain.Entities
             }
 
             IsDeleted = true;
-            DeletedDate = DateTime.UtcNow;
+            DeletedOn = DateTime.UtcNow;
             DeletedBy = deletedBy;
             Status = CustomerStatus.Inactive;
 
@@ -313,7 +314,7 @@ namespace IAMS.Domain.Entities
                 return; // Not deleted
 
             IsDeleted = false;
-            DeletedDate = null;
+            DeletedOn = null;
             DeletedBy = null;
             Status = CustomerStatus.Active;
 
@@ -344,7 +345,7 @@ namespace IAMS.Domain.Entities
 
         public DateTime? GetLastPolicyDate()
         {
-            return Policies?.Where(p => !p.IsDeleted).Max(p => p?.CreatedDate);
+            return Policies?.Where(p => !p.IsDeleted).Max(p => p?.CreatedOn);
         }
 
         public bool HasActivePolicies()

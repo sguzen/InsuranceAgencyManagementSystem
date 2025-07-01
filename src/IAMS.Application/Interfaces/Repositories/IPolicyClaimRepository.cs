@@ -1,7 +1,7 @@
 ﻿using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 
-namespace IAMS.Application.Interfaces
+namespace IAMS.Application.Interfaces.Repositories
 {
     public interface IPolicyClaimRepository : IRepository<PolicyClaim>
     {

@@ -19,9 +19,6 @@ namespace IAMS.Application.Validators.Policy
 
             RuleFor(x => x.CommissionRate)
                 .InclusiveBetween(0, 100).WithMessage("Commission rate must be between 0 and 100");
-
-            RuleFor(x => x.Notes)
-                .MaximumLength(1000).WithMessage("Notes must not exceed 1000 characters");
         }
     }
 }

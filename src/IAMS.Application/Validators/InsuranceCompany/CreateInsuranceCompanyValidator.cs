@@ -11,22 +11,19 @@ namespace IAMS.Application.Validators.InsuranceCompany
                 .NotEmpty().WithMessage("Company name is required")
                 .MaximumLength(200).WithMessage("Company name must not exceed 200 characters");
 
-            RuleFor(x => x.Description)
-                .MaximumLength(1000).WithMessage("Description must not exceed 1000 characters");
-
             RuleFor(x => x.ContactEmail)
-                .EmailAddress().WithMessage("Email format is invalid")
-                .MaximumLength(255).WithMessage("Email must not exceed 255 characters")
+                .EmailAddress().WithMessage("Invalid email format")
                 .When(x => !string.IsNullOrEmpty(x.ContactEmail));
 
-            RuleFor(x => x.ContactPhone)
-                .MaximumLength(20).WithMessage("Phone must not exceed 20 characters");
-
-            RuleFor(x => x.Address)
-                .MaximumLength(500).WithMessage("Address must not exceed 500 characters");
-
             RuleFor(x => x.Website)
-                .MaximumLength(255).WithMessage("Website must not exceed 255 characters");
+                .Must(BeValidUrl).WithMessage("Invalid website URL")
+                .When(x => !string.IsNullOrEmpty(x.Website));
+        }
+
+        private bool BeValidUrl(string? url)
+        {
+            if (string.IsNullOrEmpty(url)) return true;
+            return Uri.TryCreate(url, UriKind.Absolute, out _);
         }
     }
 }

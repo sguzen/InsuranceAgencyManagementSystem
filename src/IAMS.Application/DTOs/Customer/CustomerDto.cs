@@ -10,7 +10,7 @@ namespace IAMS.Application.DTOs.Customer
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName => $"{FirstName} {LastName}";
-        public string? TcNo { get; set; }
+        public string? KktcNo { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public int? Age => DateOfBirth?.CalculateAge();
         public Gender? Gender { get; set; }
@@ -26,9 +26,11 @@ namespace IAMS.Application.DTOs.Customer
 
         // Aggregated data
         public int ActivePoliciesCount { get; set; }
-        public decimal TotalPremiums { get; set; }
+        public decimal TotalPremium { get; set; }
         public decimal TotalCommissions { get; set; }
         public DateTime? LastPolicyDate { get; set; }
+        public int PolicyCount { get; set; }
+
     }
 
     public static class DateTimeExtensions

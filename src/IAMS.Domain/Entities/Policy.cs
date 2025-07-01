@@ -243,6 +243,11 @@ namespace IAMS.Domain.Entities
             return renewalPolicy;
         }
 
+        private Policy Create(string v, int customerId, int insuranceCompanyId, int policyTypeId, DateTime newStartDate, DateTime newEndDate, decimal newPremiumAmount, decimal newCommissionRate, string renewedBy, int tenantId, string currency)
+        {
+            throw new NotImplementedException();
+        }
+
         private string GenerateRenewalPolicyNumber()
         {
             // Simple renewal numbering - in real implementation, use IPolicyNumberGenerator
@@ -262,7 +267,7 @@ namespace IAMS.Domain.Entities
         {
             if (Status != PolicyStatus.Active) return 0;
 
-            var activeFrom = Math.Max(StartDate.Ticks, CreatedDate.Ticks);
+            var activeFrom = Math.Max(StartDate.Ticks, CreatedOn.Ticks);
             var activeTo = Math.Min(DateTime.Today.Ticks, EndDate.Ticks);
 
             return (int)TimeSpan.FromTicks(activeTo - activeFrom).TotalDays;

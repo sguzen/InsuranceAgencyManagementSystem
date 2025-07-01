@@ -1,4 +1,5 @@
 ﻿using IAMS.Domain.Entities;
+using IAMS.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,14 @@ using System.Threading.Tasks;
 
 namespace IAMS.Domain.Events
 {
-    public class CustomerRestoredEvent
+    public class CustomerRestoredEvent : IDomainEvent
     {
         public Customer Customer { get; }
         public string RestoredBy { get; }
+
+        public DateTime OccurredOn => throw new NotImplementedException();
+
+        public int TenantId => throw new NotImplementedException();
 
         public CustomerRestoredEvent(Customer customer, string restoredBy)
         {

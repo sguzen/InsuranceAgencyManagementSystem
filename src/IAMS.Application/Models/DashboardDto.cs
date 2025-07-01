@@ -1,5 +1,4 @@
-﻿// src/IAMS.Application/Models/DashboardDto.cs
-namespace IAMS.Application.Models
+﻿namespace IAMS.Application.Models
 {
     public class DashboardDto
     {
@@ -10,28 +9,35 @@ namespace IAMS.Application.Models
         public int ExpiringPoliciesThisMonth { get; set; }
         public decimal TotalPremiumAmount { get; set; }
         public decimal TotalCommissionAmount { get; set; }
-        public int PendingClaims { get; set; }
-        public int OverduePayments { get; set; }
-        public List<InsuranceCompanyStatsDto> InsuranceCompanyStats { get; set; } = new();
-        public List<MonthlyStatsDto> MonthlyStats { get; set; } = new();
+        public int NewCustomersThisMonth { get; set; }
+        public int NewPoliciesThisMonth { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+        public int TotalInsuranceCompanies { get; set; }
+        public List<MonthlyStatDto> MonthlyStats { get; set; } = new();
+        public List<TopCustomerDto> TopCustomers { get; set; } = new();
+        public List<PolicyStatusSummaryDto> PolicyStatusSummary { get; set; } = new();
     }
 
-    public class InsuranceCompanyStatsDto
+    public class MonthlyStatDto
     {
-        public int CompanyId { get; set; }
-        public string CompanyName { get; set; } = string.Empty;
+        public string Month { get; set; } = string.Empty;
+        public int CustomerCount { get; set; }
+        public int PolicyCount { get; set; }
+        public decimal Revenue { get; set; }
+    }
+
+    public class TopCustomerDto
+    {
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
         public int PolicyCount { get; set; }
         public decimal TotalPremium { get; set; }
-        public decimal TotalCommission { get; set; }
     }
 
-    public class MonthlyStatsDto
+    public class PolicyStatusSummaryDto
     {
-        public int Year { get; set; }
-        public int Month { get; set; }
-        public string MonthName { get; set; } = string.Empty;
-        public int NewPolicies { get; set; }
-        public decimal TotalPremium { get; set; }
-        public decimal TotalCommission { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal Percentage { get; set; }
     }
 }

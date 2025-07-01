@@ -1,10 +1,12 @@
-﻿namespace IAMS.Application.DTOs.Customer
+﻿using IAMS.Domain.Enums;
+
+namespace IAMS.Application.DTOs.Customer
 {
     public class CreateCustomerDto
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string? TcNo { get; set; }
+        public string? KktcNo { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public Gender? Gender { get; set; }
         public string? Email { get; set; }

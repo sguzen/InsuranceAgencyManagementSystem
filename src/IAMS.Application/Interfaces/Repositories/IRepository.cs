@@ -1,27 +1,20 @@
-﻿using IAMS.Domain.Entities;
-using IAMS.Domain.Interfaces;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace IAMS.Application.Interfaces.Repositories
 {
-    public interface IRepository<TEntity> where TEntity : class, ITenantEntity
+    public interface IRepository<T> where T : class
     {
-        Task<TEntity?> GetByIdAsync(int id);
-        Task<TEntity?> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes);
-        Task<List<TEntity>> GetAllAsync();
-        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate);
-        Task<(List<TEntity> items, int totalCount)> GetPagedAsync<TQueryParams>(TQueryParams queryParams) where TQueryParams : class;
-        Task<TEntity?> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
-        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate);
+        Task<T?> GetByIdAsync(int id);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task AddAsync(T entity);
+        Task AddRangeAsync(IEnumerable<T> entities);
+        void Update(T entity);
+        void UpdateRange(IEnumerable<T> entities);
+        void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
+        Task<bool> ExistsAsync(int id);
         Task<int> CountAsync();
-        Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate);
-        Task AddAsync(TEntity entity);
-        Task AddRangeAsync(IEnumerable<TEntity> entities);
-        void Update(TEntity entity);
-        void UpdateRange(IEnumerable<TEntity> entities);
-        void Remove(TEntity entity);
-        void RemoveRange(IEnumerable<TEntity> entities);
+        Task<int> CountAsync(Expression<Func<T, bool>> predicate);
     }
-
-
 }

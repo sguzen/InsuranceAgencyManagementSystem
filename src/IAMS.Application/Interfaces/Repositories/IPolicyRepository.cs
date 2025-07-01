@@ -1,20 +1,18 @@
-﻿using IAMS.Application.DTOs.Policy;
+﻿using IAMS.Application.Models;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 
 namespace IAMS.Application.Interfaces.Repositories
 {
     public interface IPolicyRepository : IRepository<Policy>
     {
-        Task<Policy?> GetByIdWithDetailsAsync(int id);
-        Task<Policy?> GetByPolicyNumberAsync(string policyNumber, int tenantId);
-        Task<List<Policy>> GetActivePoliciesAsync(int tenantId);
-        Task<List<Policy>> GetExpiringPoliciesAsync(int tenantId, int daysAhead = 30);
-        Task<List<Policy>> GetExpiredPoliciesAsync(int tenantId);
-        Task<List<Policy>> GetPoliciesByCustomerAsync(int customerId);
-        Task<List<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId);
-        Task<(List<Policy> policies, int totalCount)> GetPagedAsync(PolicyQueryParams queryParams);
-        Task<bool> PolicyNumberExistsAsync(string policyNumber, int tenantId, int? excludePolicyId = null);
-        Task<decimal> GetTotalPremiumsByCustomerAsync(int customerId);
-        Task<decimal> GetTotalCommissionsByCustomerAsync(int customerId);
+        Task<IEnumerable<Policy>> GetPoliciesByCustomerIdAsync(int customerId);
+        Task<IEnumerable<Policy>> GetPoliciesByCompanyIdAsync(int companyId);
+        Task<IEnumerable<Policy>> GetPoliciesByStatusAsync(PolicyStatus status);
+        Task<IEnumerable<Policy>> GetExpiringPoliciesAsync(DateTime date);
+        Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
+        Task<Policy?> GetByPolicyNumberAsync(string policyNumber);
+        Task<decimal> GetTotalPremiumByCustomerAsync(int customerId);
+        Task<decimal> GetTotalCommissionByCustomerAsync(int customerId);
     }
 }

@@ -1,32 +1,30 @@
-﻿using MediatR;
-using AutoMapper;
+﻿using AutoMapper;
+using FluentValidation;
 using IAMS.Application.DTOs.Customer;
-using IAMS.Application.Models;
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
-using IAMS.Domain.Services;
+using IAMS.Application.Models;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
 {
     public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerCommand, Result<CustomerDto>>
     {
-        private readonly ICustomerRepository _customerRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICustomerValidator _customerValidator;
+        private readonly IValidator<UpdateCustomerDto> _validator;
         private readonly ILogger<UpdateCustomerCommandHandler> _logger;
 
         public UpdateCustomerCommandHandler(
-            ICustomerRepository customerRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ICustomerValidator customerValidator,
+            IValidator<UpdateCustomerDto> validator,
             ILogger<UpdateCustomerCommandHandler> logger)
         {
-            _customerRepository = customerRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _customerValidator = customerValidator;
+            _validator = validator;
             _logger = logger;
         }
 
@@ -34,55 +32,47 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
         {
             try
             {
-                _logger.LogInformation("Updating customer with ID: {CustomerId}", request.Id);
+                // Validate the request
+                var validationResult = await _validator.ValidateAsync(request.CustomerDto, cancellationToken);
+                if (!validationResult.IsValid)
+                {
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                    return Result<CustomerDto>.Failure("Validation failed", errors);
+                }
 
                 // Get existing customer
-                var customer = await _customerRepository.GetByIdAsync(request.Id);
-                if (customer == null)
+                var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(request.Id);
+                if (existingCustomer == null)
                 {
                     return Result<CustomerDto>.NotFound("Customer not found");
                 }
 
-                // Update customer properties
-                customer.UpdatePersonalInfo(
-                    request.CustomerDto.FirstName,
-                    request.CustomerDto.LastName,
-                    request.CustomerDto.TcNo,
-                    request.CustomerDto.DateOfBirth,
-                    request.CustomerDto.Gender,
-                    "System"); // TODO: Get from current user context
-
-                customer.UpdateContactInfo(
-                    request.CustomerDto.Email,
-                    request.CustomerDto.Phone,
-                    request.CustomerDto.Address,
-                    "System"); // TODO: Get from current user context
-
-                customer.UpdateStatus(request.CustomerDto.Status, "System");
-                customer.UpdateNotes(request.CustomerDto.Notes, "System");
-
-                // Validate updated customer
-                var validationErrors = await _customerValidator.ValidateCustomerAsync(customer);
-                if (validationErrors.Any())
+                // Check if KKTC No is being changed and if it already exists
+                if (existingCustomer.KktcNo != request.CustomerDto.KktcNo && !string.IsNullOrEmpty(request.CustomerDto.KktcNo))
                 {
-                    return Result<CustomerDto>.Failure("Validation failed", validationErrors);
+                    var duplicateCustomer = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNo, request.Id);
+                    if (duplicateCustomer != null)
+                    {
+                        return Result<CustomerDto>.Failure("A customer with this TC number already exists.");
+                    }
                 }
 
-                // Save changes
-                _customerRepository.Update(customer);
+                // Update the customer
+                _mapper.Map(request.CustomerDto, existingCustomer);
+                existingCustomer.up = DateTime.UtcNow;
+
+                _unitOfWork.Customers.Update(existingCustomer);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Map to DTO and return
-                var customerDto = _mapper.Map<CustomerDto>(customer);
-
-                _logger.LogInformation("Customer updated successfully: {CustomerId}", customer.Id);
+                var customerDto = _mapper.Map<CustomerDto>(existingCustomer);
+                _logger.LogInformation("Customer updated successfully with ID: {CustomerId}", existingCustomer.Id);
 
                 return Result<CustomerDto>.Success(customerDto, "Customer updated successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating customer with ID: {CustomerId}", request.Id);
-                return Result<CustomerDto>.InternalError("An error occurred while updating the customer");
+                return Result<CustomerDto>.Failure("An error occurred while updating the customer");
             }
         }
     }

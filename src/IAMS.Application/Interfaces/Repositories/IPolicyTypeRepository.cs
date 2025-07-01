@@ -1,6 +1,6 @@
 ﻿using IAMS.Domain.Entities;
 
-namespace IAMS.Application.Interfaces
+namespace IAMS.Application.Interfaces.Repositories
 {
     public interface IPolicyTypeRepository : IRepository<PolicyType>
     {

@@ -52,7 +52,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                     customerCode,
                     request.CustomerDto.FirstName,
                     request.CustomerDto.LastName,
-                    request.CustomerDto.TcNo,
+                    request.CustomerDto.KktcNo,
                     request.CustomerDto.DateOfBirth,
                     request.CustomerDto.Gender,
                     request.CustomerDto.Email,

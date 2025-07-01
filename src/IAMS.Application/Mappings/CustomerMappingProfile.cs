@@ -35,7 +35,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
                 .ForMember(dest => dest.TenantId, opt => opt.Ignore())
-                .ForMember(dest => dest.TcNo, opt => opt.Ignore()) // Don't allow TC number updates
+                .ForMember(dest => dest.KktcNo, opt => opt.Ignore()) // Don't allow TC number updates
                 .ForMember(dest => dest.Policies, opt => opt.Ignore())
                 .ForMember(dest => dest.CustomerInsuranceCompanies, opt => opt.Ignore());
 

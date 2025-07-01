@@ -1,6 +1,6 @@
 ﻿namespace IAMS.Application.Models
 {
-    public class PagedResult<T>
+    public partial class PagedResult<T>
     {
         public List<T> Items { get; set; } = new();
         public int TotalCount { get; set; }
@@ -29,5 +29,6 @@
         {
             return new PagedResult<T>(new List<T>(), 0, pageNumber, pageSize);
         }
+
     }
 }

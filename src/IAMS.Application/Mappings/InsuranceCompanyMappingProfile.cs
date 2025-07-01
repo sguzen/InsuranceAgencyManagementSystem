@@ -11,7 +11,7 @@ namespace IAMS.Application.Mappings
         {
             CreateMap<InsuranceCompany, InsuranceCompanyDto>()
                 .ForMember(dest => dest.TotalPolicies, opt => opt.MapFrom(src => src.Policies.Count))
-                .ForMember(dest => dest.ActivePolicies, opt => opt.MapFrom(src => src.Policies.Count(p => p.Status == PolicyStatus.Active)));
+                .ForMember(dest => dest.ActivePoliciesCount, opt => opt.MapFrom(src => src.Policies.Count(p => p.Status == PolicyStatus.Active)));
 
             CreateMap<CreateInsuranceCompanyDto, InsuranceCompany>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

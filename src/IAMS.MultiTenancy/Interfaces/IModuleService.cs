@@ -2,7 +2,7 @@
 {
     public interface IModuleService
     {
-        bool IsModuleEnabled(string moduleName);
+        Task<bool> IsModuleEnabledAsync(string moduleName);
         IEnumerable<string> GetEnabledModules();
         Task<List<string>> GetEnabledModulesAsync(int tenantId);
         Task EnableModuleAsync(int tenantId, string moduleName);

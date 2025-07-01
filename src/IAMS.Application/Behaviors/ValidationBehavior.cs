@@ -36,7 +36,7 @@ namespace IAMS.Application.Behaviors
                     }
                     else if (typeof(TResponse) == typeof(Result))
                     {
-                        return (TResponse)(object)Result.Failure("Validation failed", errors, 400);
+                        return (TResponse)(object)Result.Failure("Validation failed", errors);
                     }
 
                     throw new ValidationException(failures);

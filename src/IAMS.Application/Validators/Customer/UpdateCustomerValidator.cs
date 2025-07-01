@@ -33,10 +33,10 @@ namespace IAMS.Application.Validators.Customer
                 .Must(BeAValidAge).WithMessage("Customer must be at least 18 years old");
         }
 
-        private bool BeAValidAge(DateTime dateOfBirth)
+        private bool BeAValidAge(DateTime? dateOfBirth)
         {
-            var age = DateTime.Today.Year - dateOfBirth.Year;
-            if (dateOfBirth.Date > DateTime.Today.AddYears(-age)) age--;
+            var age = DateTime.Today.Year - dateOfBirth.Value.Year;
+            if (dateOfBirth.Value.Date > DateTime.Today.AddYears(-age)) age--;
             return age >= 18;
         }
     }

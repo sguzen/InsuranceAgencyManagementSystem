@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IAMS.Infrastructure.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace IAMS.Infrastructure.Interfaces
         Task<IntegrationResult> SyncCustomerDataAsync(int customerId);
         Task<IntegrationResult> SyncPolicyDataAsync(int policyId);
         Task<IntegrationResult> SubmitClaimAsync(int claimId);
-        Task<List<IntegrationLog>> GetLogsAsync(DateTime? fromDate = null, DateTime? toDate = null);
+        Task<List<IntegrationLogEntity>> GetLogsAsync(DateTime? fromDate = null, DateTime? toDate = null);
         Task<bool> TestConnectionAsync(string providerName);
         Task<List<IntegrationProvider>> GetAvailableProvidersAsync();
     }

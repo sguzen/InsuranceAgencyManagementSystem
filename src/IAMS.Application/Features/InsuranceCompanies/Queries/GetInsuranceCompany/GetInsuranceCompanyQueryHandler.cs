@@ -29,7 +29,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
             {
                 _logger.LogInformation("Getting insurance company with ID: {CompanyId}", request.Id);
 
-                var company = await _insuranceCompanyRepository.GetByIdWithDetailsAsync(request.Id);
+                var company = await _insuranceCompanyRepository.GetByIdAsync(request.Id);
                 if (company == null)
                 {
                     return Result<InsuranceCompanyDto>.NotFound("Insurance company not found");
@@ -39,7 +39,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
 
                 // Add aggregated data
                 companyDto.ActivePoliciesCount = await _insuranceCompanyRepository.GetActivePoliciesCountAsync(company.Id);
-                companyDto.TotalPremiums = await _insuranceCompanyRepository.GetTotalPremiumsAsync(company.Id);
+                companyDto.TotalPremiums = await _insuranceCompanyRepository.GetTotalPremiumAmountAsync(company.Id);
                 companyDto.TotalCommissions = await _insuranceCompanyRepository.GetTotalCommissionsAsync(company.Id);
 
                 return Result<InsuranceCompanyDto>.Success(companyDto);

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using IAMS.Persistence.Repositories;
 using IAMS.Persistence.UnitOfWork;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Persistence.Contexts;
 
 namespace IAMS.Persistence
 {
@@ -19,7 +20,7 @@ namespace IAMS.Persistence
 
             // Register generic repository and unit of work
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
             // Register specialized repositories
             services.AddScoped<ICustomerRepository, CustomerRepository>();

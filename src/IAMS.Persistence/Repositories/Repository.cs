@@ -1,5 +1,4 @@
-﻿using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +19,7 @@ namespace IAMS.Persistence.Repositories
 
         public virtual async Task<T?> GetByIdAsync(int id)
         {
-            return await _dbSet.FindAsync(id);
+            return await _dbSet.Where(x => !x.IsDeleted && x.Id == id).FirstOrDefaultAsync();
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -40,20 +39,28 @@ namespace IAMS.Persistence.Repositories
 
         public virtual async Task<T> AddAsync(T entity)
         {
+            entity.CreatedOn = DateTime.UtcNow;
+            entity.ModifiedOn = DateTime.UtcNow;
             await _dbSet.AddAsync(entity);
             return entity;
         }
 
         public virtual async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
         {
-            await _dbSet.AddRangeAsync(entities);
-            return entities;
+            var entityList = entities.ToList();
+            foreach (var entity in entityList)
+            {
+                entity.CreatedOn = DateTime.UtcNow;
+                entity.ModifiedOn = DateTime.UtcNow;
+            }
+            await _dbSet.AddRangeAsync(entityList);
+            return entityList;
         }
 
         public virtual void Update(T entity)
         {
             entity.ModifiedOn = DateTime.UtcNow;
-            _dbSet.Update(entity);
+            _context.Entry(entity).State = EntityState.Modified;
         }
 
         public virtual void UpdateRange(IEnumerable<T> entities)
@@ -61,8 +68,8 @@ namespace IAMS.Persistence.Repositories
             foreach (var entity in entities)
             {
                 entity.ModifiedOn = DateTime.UtcNow;
+                _context.Entry(entity).State = EntityState.Modified;
             }
-            _dbSet.UpdateRange(entities);
         }
 
         public virtual void Remove(T entity)
@@ -70,7 +77,7 @@ namespace IAMS.Persistence.Repositories
             // Soft delete
             entity.IsDeleted = true;
             entity.ModifiedOn = DateTime.UtcNow;
-            _dbSet.Update(entity);
+            _context.Entry(entity).State = EntityState.Modified;
         }
 
         public virtual void RemoveRange(IEnumerable<T> entities)
@@ -79,8 +86,8 @@ namespace IAMS.Persistence.Repositories
             {
                 entity.IsDeleted = true;
                 entity.ModifiedOn = DateTime.UtcNow;
+                _context.Entry(entity).State = EntityState.Modified;
             }
-            _dbSet.UpdateRange(entities);
         }
 
         public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
@@ -94,21 +101,6 @@ namespace IAMS.Persistence.Repositories
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.Where(x => !x.IsDeleted).AnyAsync(predicate);
-        }
-
-        Task IRepository<T>.AddAsync(T entity)
-        {
-            return AddAsync(entity);
-        }
-
-        Task IRepository<T>.AddRangeAsync(IEnumerable<T> entities)
-        {
-            return AddRangeAsync(entities);
-        }
-
-        public Task<int> CountAsync()
-        {
-            throw new NotImplementedException();
         }
     }
 }

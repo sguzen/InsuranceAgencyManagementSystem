@@ -1,17 +1,19 @@
-﻿using IAMS.Application.Models;
-using IAMS.Domain.Entities;
+﻿using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Interfaces.Repositories
 {
     public interface IInsuranceCompanyRepository : IRepository<InsuranceCompany>
     {
         Task<IEnumerable<InsuranceCompany>> GetActiveCompaniesAsync();
-        Task<PagedResult<InsuranceCompany>> GetCompaniesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
+        Task<InsuranceCompany?> GetByCodeAsync(string code);
         Task<InsuranceCompany?> GetByNameAsync(string name);
+        Task<IEnumerable<InsuranceCompany>> GetCompaniesWithIntegrationAsync();
+        Task<bool> CodeExistsAsync(string code, int? excludeId = null);
         Task<bool> NameExistsAsync(string name, int? excludeId = null);
-        Task<int> GetActivePoliciesCountAsync(object id);
-        Task<decimal> GetTotalPremiumsAsync(object id);
-        Task<decimal> GetTotalCommissionsAsync(object id);
-        Task<InsuranceCompany> GetByIdWithDetailsAsync(int id);
+        Task<IEnumerable<CommissionRate>> GetCommissionRatesAsync(int companyId);
+        Task<int> GetActiveCustomerCountAsync(int companyId);
+        Task<decimal> GetTotalPremiumAmountAsync(int companyId);
+        Task<int> GetActivePoliciesCountAsync(int id);
+        Task<decimal> GetTotalCommissionsAsync(int id);
     }
 }

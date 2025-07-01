@@ -1,4 +1,4 @@
-﻿using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Interfaces.Repositories
 {
@@ -9,10 +9,14 @@ namespace IAMS.Application.Interfaces.Repositories
         IPolicyTypeRepository PolicyTypes { get; }
         IInsuranceCompanyRepository InsuranceCompanies { get; }
         ICustomerInsuranceCompanyRepository CustomerInsuranceCompanies { get; }
+        IPolicyPaymentRepository PolicyPayments { get; }
+        IPolicyClaimRepository PolicyClaims { get; }
+        ICommissionRateRepository CommissionRates { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
+        Task<int> ExecuteSqlAsync(string sql, params object[] parameters);
     }
 }

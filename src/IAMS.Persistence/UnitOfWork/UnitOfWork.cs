@@ -1,8 +1,7 @@
-﻿using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Domain.Entities;
+﻿using IAMS.Application.Interfaces.Repositories;
 using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace IAMS.Persistence.UnitOfWork
@@ -11,46 +10,93 @@ namespace IAMS.Persistence.UnitOfWork
     {
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
+        private bool _disposed = false;
+
+        // Repository instances
+        private ICustomerRepository? _customers;
+        private IPolicyRepository? _policies;
+        private IPolicyTypeRepository? _policyTypes;
+        private IInsuranceCompanyRepository? _insuranceCompanies;
+        private ICustomerInsuranceCompanyRepository? _customerInsuranceCompanies;
+        private IPolicyPaymentRepository? _policyPayments;
+        private IPolicyClaimRepository? _policyClaims;
+        private ICommissionRateRepository? _commissionRates;
 
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
-            Customers = new CustomerRepository(_context);
-            Policies = new PolicyRepository(_context);
-            InsuranceCompanies = new Repository<InsuranceCompany>(_context);
-            PolicyTypes = new Repository<PolicyType>(_context);
-            CommissionRates = new Repository<CommissionRate>(_context);
-            PolicyPayments = new Repository<PolicyPayment>(_context);
-            PolicyClaims = new Repository<PolicyClaim>(_context);
         }
 
-        public ICustomerRepository Customers { get; }
-        public IPolicyRepository Policies { get; }
-        public IRepository<InsuranceCompany> InsuranceCompanies { get; }
-        public IRepository<PolicyType> PolicyTypes { get; }
-        public IRepository<CommissionRate> CommissionRates { get; }
-        public IRepository<PolicyPayment> PolicyPayments { get; }
-        public IRepository<PolicyClaim> PolicyClaims { get; }
+        public ICustomerRepository Customers =>
+            _customers ??= new CustomerRepository(_context);
 
-        IPolicyPaymentRepository IUnitOfWork.PolicyPayments => throw new NotImplementedException();
+        public IPolicyRepository Policies =>
+            _policies ??= new PolicyRepository(_context);
 
-        IPolicyClaimRepository IUnitOfWork.PolicyClaims => throw new NotImplementedException();
+        public IPolicyTypeRepository PolicyTypes =>
+            _policyTypes ??= new PolicyTypeRepository(_context);
+
+        public IInsuranceCompanyRepository InsuranceCompanies =>
+            _insuranceCompanies ??= new InsuranceCompanyRepository(_context);
+
+        public ICustomerInsuranceCompanyRepository CustomerInsuranceCompanies =>
+            _customerInsuranceCompanies ??= new CustomerInsuranceCompanyRepository(_context);
+
+        public IPolicyPaymentRepository PolicyPayments =>
+            _policyPayments ??= new PolicyPaymentRepository(_context);
+
+        public IPolicyClaimRepository PolicyClaims =>
+            _policyClaims ??= new PolicyClaimRepository(_context);
+
+        public ICommissionRateRepository CommissionRates =>
+            _commissionRates ??= new CommissionRateRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                return await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                // Handle concurrency conflicts
+                throw new InvalidOperationException("A concurrency conflict occurred while saving changes.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                // Handle database update errors
+                throw new InvalidOperationException("An error occurred while saving changes to the database.", ex);
+            }
         }
 
         public async Task BeginTransactionAsync()
         {
+            if (_transaction != null)
+            {
+                throw new InvalidOperationException("A transaction is already in progress.");
+            }
+
             _transaction = await _context.Database.BeginTransactionAsync();
         }
 
         public async Task CommitTransactionAsync()
         {
-            if (_transaction != null)
+            if (_transaction == null)
+            {
+                throw new InvalidOperationException("No transaction is in progress.");
+            }
+
+            try
             {
                 await _transaction.CommitAsync();
+            }
+            catch
+            {
+                await _transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
                 await _transaction.DisposeAsync();
                 _transaction = null;
             }
@@ -58,23 +104,41 @@ namespace IAMS.Persistence.UnitOfWork
 
         public async Task RollbackTransactionAsync()
         {
-            if (_transaction != null)
+            if (_transaction == null)
+            {
+                throw new InvalidOperationException("No transaction is in progress.");
+            }
+
+            try
             {
                 await _transaction.RollbackAsync();
+            }
+            finally
+            {
                 await _transaction.DisposeAsync();
                 _transaction = null;
             }
         }
 
-        public void Dispose()
+        public async Task<int> ExecuteSqlAsync(string sql, params object[] parameters)
         {
-            _transaction?.Dispose();
-            _context.Dispose();
+            return await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
 
-        public Task<int> ExecuteSqlAsync(string sql, params object[] parameters)
+        protected virtual void Dispose(bool disposing)
         {
-            throw new NotImplementedException();
+            if (!_disposed && disposing)
+            {
+                _transaction?.Dispose();
+                _context.Dispose();
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

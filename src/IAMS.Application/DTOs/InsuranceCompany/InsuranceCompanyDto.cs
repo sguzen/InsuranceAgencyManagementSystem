@@ -18,6 +18,7 @@
 
         // Aggregated data
         public int ActivePoliciesCount { get; set; }
+        public int TotalPolicies { get; set; }
         public decimal TotalPremiums { get; set; }
         public decimal TotalCommissions { get; set; }
         public DateTime? LastPolicyDate { get; set; }

@@ -53,13 +53,13 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                     var duplicateCustomer = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNo, request.Id);
                     if (duplicateCustomer != null)
                     {
-                        return Result<CustomerDto>.Failure("A customer with this TC number already exists.");
+                        return Result<CustomerDto>.Failure("A customer with this KKTC number already exists.");
                     }
                 }
 
                 // Update the customer
                 _mapper.Map(request.CustomerDto, existingCustomer);
-                existingCustomer.up = DateTime.UtcNow;
+                existingCustomer.ModifiedOn = DateTime.UtcNow;
 
                 _unitOfWork.Customers.Update(existingCustomer);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

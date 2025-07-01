@@ -39,7 +39,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomers
                 {
                     var customer = customers.First(c => c.Id == customerDto.Id);
                     customerDto.ActivePoliciesCount = customer.GetActivePolicies().Count;
-                    customerDto.TotalPremiums = customer.GetTotalPremiums();
+                    customerDto.TotalPremium = customer.GetTotalPremiums();
                     customerDto.TotalCommissions = customer.GetTotalCommissions();
                     customerDto.LastPolicyDate = customer.GetLastPolicyDate();
                 }

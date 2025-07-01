@@ -13,7 +13,7 @@ namespace IAMS.Application.Interfaces.Repositories
         void UpdateRange(IEnumerable<T> entities);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
-        Task<bool> ExistsAsync(int id);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
         Task<int> CountAsync();
         Task<int> CountAsync(Expression<Func<T, bool>> predicate);
     }

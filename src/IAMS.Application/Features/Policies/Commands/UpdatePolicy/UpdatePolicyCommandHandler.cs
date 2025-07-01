@@ -1,9 +1,11 @@
-﻿using MediatR;
-using AutoMapper;
+﻿using AutoMapper;
+using FluentValidation;
+using IAMS.Application.DTOs.Customer;
 using IAMS.Application.DTOs.Policy;
-using IAMS.Application.Models;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Models;
 using IAMS.Domain.Services;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
@@ -13,14 +15,14 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         private readonly IPolicyRepository _policyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IPolicyValidator _policyValidator;
+        private readonly IValidator<UpdatePolicyDto> _policyValidator;
         private readonly ILogger<UpdatePolicyCommandHandler> _logger;
 
         public UpdatePolicyCommandHandler(
             IPolicyRepository policyRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IPolicyValidator policyValidator,
+            IValidator<UpdatePolicyDto> policyValidator,
             ILogger<UpdatePolicyCommandHandler> logger)
         {
             _policyRepository = policyRepository;
@@ -36,6 +38,14 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             {
                 _logger.LogInformation("Updating policy with ID: {PolicyId}", request.Id);
 
+                // Validate updated policy
+                var validationResult = await _policyValidator.ValidateAsync(request.PolicyDto, cancellationToken);
+                if (!validationResult.IsValid)
+                {
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                    return Result<PolicyDto>.Failure("Validation failed", errors);
+                }
+
                 // Get existing policy
                 var policy = await _policyRepository.GetByIdAsync(request.Id);
                 if (policy == null)
@@ -46,7 +56,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                 // Update policy properties
                 policy.UpdateDates(request.PolicyDto.StartDate, request.PolicyDto.EndDate, "System");
                 policy.UpdatePremium(request.PolicyDto.PremiumAmount, "System");
-                policy.CalculateCommission(request.PolicyDto.CommissionRate, "System");
+                //policy.CalculateCommission(request.PolicyDto.CommissionRate, "System"); //TODO
                 policy.UpdateNotes(request.PolicyDto.Notes, "System");
 
                 // Handle status changes
@@ -66,12 +76,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                     }
                 }
 
-                // Validate updated policy
-                var validationErrors = await _policyValidator.ValidatePolicyAsync(policy);
-                if (validationErrors.Any())
-                {
-                    return Result<PolicyDto>.Failure("Validation failed", validationErrors);
-                }
+                
 
                 // Save changes
                 _policyRepository.Update(policy);

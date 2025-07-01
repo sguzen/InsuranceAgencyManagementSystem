@@ -279,5 +279,10 @@ namespace IAMS.Domain.Entities
                    EndDate <= DateTime.Today.AddDays(daysThreshold) &&
                    EndDate >= DateTime.Today;
         }
+
+        public void Delete(string v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

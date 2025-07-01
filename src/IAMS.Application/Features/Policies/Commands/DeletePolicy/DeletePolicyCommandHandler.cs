@@ -51,7 +51,7 @@ namespace IAMS.Application.Features.Policies.Commands.DeletePolicy
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting policy with ID: {PolicyId}", request.Id);
-                return Result.InternalError("An error occurred while deleting the policy");
+                return Result.Failure("An error occurred while deleting the policy");
             }
         }
     }

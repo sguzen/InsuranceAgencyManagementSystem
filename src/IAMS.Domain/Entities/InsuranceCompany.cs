@@ -57,5 +57,10 @@ namespace IAMS.Domain.Entities
         {
             return CustomerInsuranceCompanies.Count(c => c.IsActive);
         }
+
+        public static InsuranceCompany Create(string name, string? description, string? contactEmail, string? contactPhone, string? address, string? website, string v1, int v2)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

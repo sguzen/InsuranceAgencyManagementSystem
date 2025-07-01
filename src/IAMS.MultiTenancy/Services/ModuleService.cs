@@ -22,7 +22,7 @@ namespace IAMS.MultiTenancy.Services
             _logger = logger;
         }
 
-        public bool IsModuleEnabled(string moduleName)
+        public async Task<bool> IsModuleEnabledAsync(string moduleName)
         {
             if (string.IsNullOrWhiteSpace(moduleName))
             {

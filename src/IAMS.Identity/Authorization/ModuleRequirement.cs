@@ -33,7 +33,7 @@ namespace IAMS.Identity.Authorization
             ModuleRequirement requirement)
         {
             // Check if the required module is enabled for the tenant
-            if (_moduleService.IsModuleEnabled(requirement.ModuleName))
+            if (_moduleService.IsModuleEnabledAsync(requirement.ModuleName).Result) // TODO
             {
                 context.Succeed(requirement);
             }

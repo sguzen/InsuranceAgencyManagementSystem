@@ -4,11 +4,6 @@ using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IAMS.Persistence.Repositories
 {
@@ -23,7 +18,29 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Customer)
                 .Where(p => p.CustomerId == customerId && !p.IsDeleted)
+                .OrderByDescending(p => p.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Policy>> GetPoliciesByCompanyIdAsync(int companyId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.PolicyType)
+                .Where(p => p.InsuranceCompanyId == companyId && !p.IsDeleted)
+                .OrderByDescending(p => p.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Policy>> GetPoliciesByStatusAsync(PolicyStatus status)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.Status == status && !p.IsDeleted)
                 .OrderByDescending(p => p.StartDate)
                 .ToListAsync();
         }
@@ -39,14 +56,43 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId)
+        public async Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
         {
-            return await _dbSet
+            var query = _dbSet
                 .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.InsuranceCompanyId == insuranceCompanyId && !p.IsDeleted)
+                .Where(p => !p.IsDeleted);
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var search = searchTerm.ToLower();
+                query = query.Where(p =>
+                    p.PolicyNumber.ToLower().Contains(search) ||
+                    p.Customer.FirstName.ToLower().Contains(search) ||
+                    p.Customer.LastName.ToLower().Contains(search) ||
+                    p.InsuranceCompany.Name.ToLower().Contains(search) ||
+                    p.PolicyType.Name.ToLower().Contains(search));
+            }
+
+            // Get total count
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination and ordering
+            var policies = await query
                 .OrderByDescending(p => p.StartDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return new PagedResult<Policy>
+            {
+                Items = policies,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<Policy?> GetByPolicyNumberAsync(string policyNumber)
@@ -55,63 +101,24 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.PolicyPayments)
+                .Include(p => p.PolicyClaims)
                 .Where(p => !p.IsDeleted)
                 .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber);
         }
 
-        public async Task<IEnumerable<Policy>> GetPoliciesByCompanyIdAsync(int companyId)
+        public async Task<decimal> GetTotalPremiumByCustomerAsync(int customerId)
         {
             return await _dbSet
-                .Include(p => p.InsuranceCompany)
-                .Include(p => p.PolicyType)
-                .Where(p => p.InsuranceCompanyId == companyId && !p.IsDeleted)
-                .OrderByDescending(p => p.StartDate)
-                .ToListAsync();
+                .Where(p => p.CustomerId == customerId && !p.IsDeleted && p.IsActive)
+                .SumAsync(p => p.PremiumAmount);
         }
 
-        public async Task<IEnumerable<Policy>> GetPoliciesByStatusAsync(PolicyStatus status)
+        public async Task<decimal> GetTotalCommissionByCustomerAsync(int customerId)
         {
             return await _dbSet
-                .Include(p => p.InsuranceCompany)
-                .Include(p => p.PolicyType)
-                .Where(p => p.Status == status && !p.IsDeleted)
-                .OrderByDescending(p => p.StartDate)
-                .ToListAsync();
-        }
-
-        public async Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<decimal> GetTotalPremiumByCustomerAsync(int customerId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<decimal> GetTotalCommissionByCustomerAsync(int customerId)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IRepository<Policy>.AddAsync(Policy entity)
-        {
-            return AddAsync(entity);
-        }
-
-        Task IRepository<Policy>.AddRangeAsync(IEnumerable<Policy> entities)
-        {
-            return AddRangeAsync(entities);
-        }
-
-        public Task<bool> ExistsAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<int> CountAsync()
-        {
-            throw new NotImplementedException();
+                .Where(p => p.CustomerId == customerId && !p.IsDeleted && p.IsActive)
+                .SumAsync(p => p.CommissionAmount);
         }
     }
 }

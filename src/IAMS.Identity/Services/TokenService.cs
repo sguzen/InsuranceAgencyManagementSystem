@@ -1,4 +1,5 @@
-﻿using IAMS.Identity.Models;
+﻿using IAMS.Identity.Interfaces;
+using IAMS.Identity.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;

@@ -28,7 +28,7 @@ namespace IAMS.Persistence.Configurations
             builder.Property(c => c.Address)
                 .HasMaxLength(500);
 
-            builder.Property(c => c.TcNo)
+            builder.Property(c => c.KktcNo)
                 .IsRequired()
                 .HasMaxLength(11);
 
@@ -36,7 +36,7 @@ namespace IAMS.Persistence.Configurations
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 
-            builder.HasIndex(c => c.TcNo)
+            builder.HasIndex(c => c.KktcNo)
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 

@@ -1,6 +1,7 @@
-﻿// Middleware/TenantMiddleware.cs - Simple Implementation
+﻿// IAMS.MultiTenancy/Middleware/TenantMiddleware.cs
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
 
@@ -9,19 +10,14 @@ namespace IAMS.MultiTenancy.Middleware
     public class TenantMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ITenantService _tenantService;
-        private readonly ITenantContextAccessor _tenantContextAccessor;
         private readonly ILogger<TenantMiddleware> _logger;
 
+        // Only inject services that are safe to inject at startup (Singleton or Transient)
         public TenantMiddleware(
             RequestDelegate next,
-            ITenantService tenantService,
-            ITenantContextAccessor tenantContextAccessor,
             ILogger<TenantMiddleware> logger)
         {
             _next = next;
-            _tenantService = tenantService;
-            _tenantContextAccessor = tenantContextAccessor;
             _logger = logger;
         }
 
@@ -29,6 +25,10 @@ namespace IAMS.MultiTenancy.Middleware
         {
             try
             {
+                // Get scoped services from the request's service provider
+                var tenantService = context.RequestServices.GetRequiredService<ITenantService>();
+                var tenantContextAccessor = context.RequestServices.GetRequiredService<ITenantContextAccessor>();
+
                 // Get tenant identifier from request
                 var tenantIdentifier = GetTenantIdentifier(context);
 
@@ -38,7 +38,7 @@ namespace IAMS.MultiTenancy.Middleware
                 }
 
                 // Get tenant from your service (which uses your TenantContext DbContext)
-                var tenant = await _tenantService.GetTenantAsync(tenantIdentifier);
+                var tenant = await tenantService.GetTenantAsync(tenantIdentifier);
 
                 if (tenant == null)
                 {
@@ -58,7 +58,7 @@ namespace IAMS.MultiTenancy.Middleware
 
                 // Set the current tenant in context accessor
                 // This creates a TenantContext (the wrapper) with the Tenant (the model)
-                _tenantContextAccessor.TenantContext = new TenantContext(tenant);
+                tenantContextAccessor.TenantContext = new TenantContext(tenant);
 
                 // Also add to HTTP context for easy access
                 context.Items["CurrentTenant"] = tenant;

@@ -1,0 +1,17 @@
+{
+  "name": "iams-blazor",
+  "version": "1.0.0",
+  "description": "IAMS Blazor TypeScript Integration",
+  "scripts": {
+    "build-ts": "tsc --outDir wwwroot/js/compiled --rootDir wwwroot/ts",
+    "watch-ts": "tsc --watch --outDir wwwroot/js/compiled --rootDir wwwroot/ts",
+    "dev": "concurrently \"npm run watch-ts\" \"dotnet watch run\"",
+    "clean": "rimraf wwwroot/js/compiled"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "concurrently": "^8.2.0",
+    "rimraf": "^5.0.0"
+  }
+}

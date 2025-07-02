@@ -1,92 +1,82 @@
-﻿@implements IDisposable
+﻿@using MudBlazor
+@inject ITenantContextAccessor TenantContext
 
-@inject NavigationManager NavigationManager
+<MudNavMenu>
+    <!-- Dashboard -->
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+        Dashboard
+    </MudNavLink>
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">IAMS.Web</a>
-    </div>
-</div>
+    <!-- Customers -->
+    <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.People">
+        Müşteriler
+    </MudNavLink>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+    <!-- Policies -->
+    <MudNavLink Href="/policies" Icon="@Icons.Material.Filled.Description">
+        Poliçeler
+    </MudNavLink>
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    <!-- Insurance Companies -->
+    <MudNavLink Href="/insurance-companies" Icon="@Icons.Material.Filled.Business">
+        Sigorta Şirketleri
+    </MudNavLink>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
-
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div>
-
-@code {
-    private string? currentUrl;
-
-    protected override void OnInitialized()
+    <!-- Conditional Modules -->
+    @if (TenantContext.IsModuleEnabled("Reporting"))
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        <MudNavGroup Text="Raporlar" Icon="@Icons.Material.Filled.Assessment" Expanded="false">
+            <MudNavLink Href="/reports/customers" Icon="@Icons.Material.Filled.PeopleAlt">
+                Müşteri Raporları
+            </MudNavLink>
+            <MudNavLink Href="/reports/policies" Icon="@Icons.Material.Filled.Policy">
+                Poliçe Raporları
+            </MudNavLink>
+            <MudNavLink Href="/reports/financial" Icon="@Icons.Material.Filled.MonetizationOn">
+                Mali Raporlar
+            </MudNavLink>
+        </MudNavGroup>
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    @if (TenantContext.IsModuleEnabled("Accounting"))
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
+        <MudNavGroup Text="Muhasebe" Icon="@Icons.Material.Filled.Calculate" Expanded="false">
+            <MudNavLink Href="/accounting/invoices" Icon="@Icons.Material.Filled.Receipt">
+                Faturalar
+            </MudNavLink>
+            <MudNavLink Href="/accounting/payments" Icon="@Icons.Material.Filled.Payment">
+                Ödemeler
+            </MudNavLink>
+            <MudNavLink Href="/accounting/commissions" Icon="@Icons.Material.Filled.TrendingUp">
+                Komisyonlar
+            </MudNavLink>
+        </MudNavGroup>
     }
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-}
+    <MudDivider Class="my-2" />
 
+    <!-- Administration -->
+    <MudNavGroup Text="Yönetim" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
+        <MudNavLink Href="/admin/users" Icon="@Icons.Material.Filled.Group">
+            Kullanıcılar
+        </MudNavLink>
+        <MudNavLink Href="/admin/roles" Icon="@Icons.Material.Filled.Security">
+            Roller
+        </MudNavLink>
+        <MudNavLink Href="/admin/settings" Icon="@Icons.Material.Filled.Settings">
+            Ayarlar
+        </MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>
+
+<style>
+    .mud-nav-link {
+        border-radius: 8px;
+        margin: 4px 8px;
+    }
+
+        .mud-nav-link.active {
+            background-color: var(--mud-palette-primary-lighten);
+            color: var(--mud-palette-primary);
+        }
+</style>

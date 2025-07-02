@@ -1,14 +1,10 @@
 using IAMS.Application.Extensions;
-using IAMS.Infrastructure.Data;
 using IAMS.Infrastructure.Extensions;
-using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Extensions;
 using IAMS.MultiTenancy.Interfaces;
-using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Extensions;
 using IAMS.Web.Components;
 using IAMS.Web.Extensions;
-using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using Serilog;
 
@@ -44,7 +40,7 @@ builder.Services.AddApplicationServices();
 // Add Infrastructure Services (email, file storage, integrations)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// Add Web-specific services (placeholder for future services)
+// Add Web-specific services
 builder.Services.AddWebServices();
 
 // Add authentication
@@ -123,45 +119,47 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Add tenant resolution middleware (must be early in pipeline)
-app.UseMultiTenancy();
-
+// IMPORTANT: Multi-tenancy middleware must be early in the pipeline
+// but AFTER authentication and authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add multi-tenancy middleware (must be after authentication/authorization)
+app.UseMultiTenancy();
 
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Ensure all three databases are created
-using (var scope = app.Services.CreateScope())
+// Initialize databases (this might be where the error occurs)
+await InitializeDatabasesAsync(app);
+
+app.Run();
+
+// Database initialization method
+static async Task InitializeDatabasesAsync(WebApplication app)
 {
     try
     {
-        // 1. Master/Tenant Database - stores tenant metadata
-        var tenantDbContext = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
-        await tenantDbContext.Database.EnsureCreatedAsync();
-        Log.Information("Tenant database initialized successfully");
+        using var scope = app.Services.CreateScope();
+        var serviceProvider = scope.ServiceProvider;
 
-        // 2. Integration Database - stores logs, reports, file metadata
-        var integrationDbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
-        await integrationDbContext.Database.EnsureCreatedAsync();
-        Log.Information("Integration database initialized successfully");
+        // Initialize master database (this doesn't need tenant context)
+        var masterDbContext = serviceProvider.GetRequiredService<IAMS.MultiTenancy.Data.TenantDbContext>();
+        await masterDbContext.Database.EnsureCreatedAsync();
 
-        // 3. Application Database - stores business data (tenant-specific)
-        // Note: This uses tenant-aware connection string resolution
-        var applicationDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await applicationDbContext.Database.EnsureCreatedAsync();
-        Log.Information("Application database initialized successfully");
+        // NOTE: Don't try to initialize tenant databases here during startup
+        // They should be initialized when a tenant is first accessed
+        // or through a separate initialization process
 
-        Log.Information("All databases initialized successfully");
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Master database initialized successfully");
     }
     catch (Exception ex)
     {
-        Log.Error(ex, "Error initializing databases");
-        throw; // Re-throw to prevent app from starting with broken database setup
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while initializing databases");
+        throw;
     }
 }
-
-app.Run();

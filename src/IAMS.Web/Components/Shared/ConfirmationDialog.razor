@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Components
+@inherits MudComponentBase
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex align-center">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="@Color" Size="Size.Large" Class="mr-3" />
+            <MudText Typo="Typo.body1">@ContentText</MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string ContentText { get; set; } = string.Empty;
+    [Parameter] public string ButtonText { get; set; } = "Onayla";
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

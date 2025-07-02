@@ -3,7 +3,7 @@ using IAMS.Application.DTOs.Customer;
 
 namespace IAMS.Application.Validators.Customer
 {
-    public class CreateCustomerValidator : AbstractValidator<CreateCustomerDto>
+    public class CreateCustomerValidator : AbstractValidator<CreateOrUpdateCustomerDto>
     {
         public CreateCustomerValidator()
         {
@@ -15,10 +15,10 @@ namespace IAMS.Application.Validators.Customer
                 .NotEmpty().WithMessage("Last name is required")
                 .MaximumLength(100).WithMessage("Last name must not exceed 100 characters");
 
-            RuleFor(x => x.KktcNo)
-                .Length(11).WithMessage("TC number must be 11 digits")
-                .Matches(@"^\d{11}$").WithMessage("TC number must contain only digits")
-                .When(x => !string.IsNullOrEmpty(x.KktcNo));
+            RuleFor(x => x.KktcNumber)
+                .Length(11).WithMessage("TC number must be 10 digits")
+                .Matches(@"^\d{10}$").WithMessage("KKTC number must contain only digits")
+                .When(x => !string.IsNullOrEmpty(x.KktcNumber));
 
             RuleFor(x => x.Email)
                 .EmailAddress().WithMessage("Invalid email format")

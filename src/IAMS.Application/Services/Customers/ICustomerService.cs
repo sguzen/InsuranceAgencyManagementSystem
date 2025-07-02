@@ -11,8 +11,8 @@ namespace IAMS.Application.Services.Customers
     {
         Task<Result<CustomerDto>> GetCustomerByIdAsync(int id);
         Task<Result<PagedResult<CustomerDto>>> GetCustomersAsync(CustomerQueryParams queryParams);
-        Task<Result<CustomerDto>> CreateCustomerAsync(CreateCustomerDto createCustomerDto);
-        Task<Result<CustomerDto>> UpdateCustomerAsync(int id, UpdateCustomerDto updateCustomerDto);
+        Task<Result<CustomerDto>> CreateCustomerAsync(CreateOrUpdateCustomerDto createCustomerDto);
+        Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto updateCustomerDto);
         Task<Result> DeleteCustomerAsync(int id);
         Task<Result<CustomerDto>> GetCustomerByTcNoAsync(string tcNo);
         Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email);

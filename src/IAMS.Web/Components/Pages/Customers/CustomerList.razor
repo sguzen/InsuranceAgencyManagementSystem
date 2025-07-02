@@ -1,200 +1,163 @@
 ﻿@page "/customers"
+@page "/customers/list"
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
-@using MudBlazor
+@using IAMS.MultiTenancy.Interfaces
+@using IAMS.Domain.Enums
+@using IAMS.Web.Components.Shared
 @inject ICustomerService CustomerService
+@inject ITenantContextAccessor TenantContext
+@inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Müşteriler - IAMS</PageTitle>
+<PageTitle>Müşteriler</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <!-- Page Header -->
-    <MudPaper Class="pa-4 mb-4" Elevation="1">
-        <div class="d-flex justify-space-between align-center">
-            <div>
-                <MudText Typo="Typo.h4" Class="mb-2">
-                    <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
-                    Müşteriler
-                </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    Toplam @_totalCount müşteri
-                </MudText>
-            </div>
-            <MudButton Variant="Variant.Filled" 
-                       Color="Color.Primary" 
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="Icons.Material.Filled.People" Class="mr-3" />
+                Müşteriler
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="OpenCreateDialog">
+                       OnClick="NavigateToCreate">
                 Yeni Müşteri
             </MudButton>
-        </div>
-    </MudPaper>
+        </MudStack>
 
-    <!-- Search and Filters -->
-    <MudPaper Class="pa-4 mb-4" Elevation="1">
-        <MudGrid>
-            <MudItem xs="12" md="6">
-                <MudTextField @bind-Value="_searchTerm"
-                              Label="Müşteri Ara"
-                              Placeholder="Ad, soyad veya e-posta ile ara..."
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              OnKeyUp="OnSearchKeyUp"
-                              Clearable="true" />
-            </MudItem>
-            <MudItem xs="12" md="3">
-                <MudSelect @bind-Value="_pageSize" Label="Sayfa Başına" T="int">
-                    <MudSelectItem Value="10">10</MudSelectItem>
-                    <MudSelectItem Value="25">25</MudSelectItem>
-                    <MudSelectItem Value="50">50</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="3" Class="d-flex align-center">
-                <MudButton Variant="Variant.Outlined" 
-                           Color="Color.Secondary" 
-                           StartIcon="@Icons.Material.Filled.Clear"
-                           OnClick="ClearSearch">
-                    Temizle
-                </MudButton>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
+        <!-- Search and Filters -->
+        <MudCard>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="searchTerm"
+                                      Label="Ara..."
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Immediate="true"
+                                      OnDebounceIntervalElapsed="OnSearch"
+                                      DebounceInterval="300" />
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudSelect @bind-Value="selectedStatus"
+                                   Label="Durum"
+                                   Variant="Variant.Outlined"
+                                   T="CustomerStatus?"
+                                   Clearable="true">
+                            <MudSelectItem Value="@((IAMS.Domain.Enums.CustomerStatus?)null)">Tümü</MudSelectItem>
+                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Active">Aktif</MudSelectItem>
+                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Inactive">Pasif</MudSelectItem>
+                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Suspended">Iptal edilmiş</MudSelectItem>
+                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Blacklisted">Kara Listede</MudSelectItem>
+                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Former">Eski</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudDatePicker @bind-Date="fromDate"
+                                       Label="Başlangıç Tarihi"
+                                       Variant="Variant.Outlined"
+                                       Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="2">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   OnClick="ClearFilters">
+                            Temizle
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
 
-    <!-- Customer Table -->
-    <MudPaper Elevation="1">
-        @if (_loading)
-        {
-            <div class="d-flex justify-center pa-4">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            </div>
-        }
-        else if (_customers.Any())
-        {
-            <MudDataGrid Items="_customers" 
-                         Hover="true" 
+        <!-- Data Table -->
+        <MudCard>
+            <MudDataGrid T="CustomerDto"
+                         Items="@customers"
+                         Loading="@loading"
+                         Hover="true"
                          Striped="true"
-                         SortMode="SortMode.Single">
+                         ReadOnly="false"
+                         EditMode="DataGridEditMode.Cell"
+                         Dense="true"
+                         Height="600px"
+                         FixedHeader="true"
+                         Virtualize="@virtualizeEnabled">
+
                 <Columns>
-                    <PropertyColumn Property="x => x.FullName" Title="Ad Soyad">
-                        <CellTemplate>
-                            <div class="d-flex align-center">
-                                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-3">
-                                    @context.Item.FirstName.First()@context.Item.LastName.First()
-                                </MudAvatar>
-                                @* <div>
-                                    <MudText Typo="Typo.body2">@context.Item.FullName</MudText>
-                                    @if (!string.IsNullOrEmpty(context.Item.NationalId))
-                                    {
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            TC: @context.Item.NationalId
-                                        </MudText>
-                                    }
-                                </div> *@
-                            </div>
-                        </CellTemplate>
-                    </PropertyColumn>
-                    
+                    <PropertyColumn Property="x => x.CustomerCode" Title="Müşteri Kodu" />
+                    <PropertyColumn Property="x => x.FirstName" Title="Ad" />
+                    <PropertyColumn Property="x => x.LastName" Title="Soyad" />
                     <PropertyColumn Property="x => x.Email" Title="E-posta" />
-                    
-                    <PropertyColumn Property="x => x.Phone" Title="Telefon">
+                    <PropertyColumn Property="x => x.Phone" Title="Telefon" />
+
+                    <TemplateColumn Title="Durum" CellClass="d-flex justify-center">
                         <CellTemplate>
-                            @if (!string.IsNullOrEmpty(context.Item.Phone))
-                            {
-                                <MudLink Href="@($"tel:{context.Item.Phone}")">
-                                    @context.Item.Phone
-                                </MudLink>
-                            }
-                            else
-                            {
-                                <MudText Color="Color.Secondary">-</MudText>
-                            }
-                        </CellTemplate>
-                    </PropertyColumn>
-                    
-                    <PropertyColumn Property="x => x.PolicyCount" Title="Poliçe Sayısı">
-                        <CellTemplate>
-                            <MudChip Size="Size.Small" Color="Color.Info">
-                                @context.Item.PolicyCount
+                            <MudChip Color="@GetStatusColor(context.Item.Status)"
+                                     Size="Size.Small"
+                                     Variant="Variant.Filled">
+                                @GetStatusText(context.Item.Status)
                             </MudChip>
                         </CellTemplate>
-                    </PropertyColumn>
-                    
-                    <PropertyColumn Property="x => x.CreatedDate" Title="Kayıt Tarihi">
+                    </TemplateColumn>
+
+                    <PropertyColumn Property="x => x.CreatedDate"
+                                    Title="Kayıt Tarihi"
+                                    Format="dd.MM.yyyy" />
+
+                    <TemplateColumn CellClass="d-flex justify-end" Sortable="false">
                         <CellTemplate>
-                            @context.Item.CreatedDate.ToString("dd/MM/yyyy")
-                        </CellTemplate>
-                    </PropertyColumn>
-                    
-                    <TemplateColumn Title="İşlemler" Sortable="false">
-                        <CellTemplate>
-                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                            <MudButtonGroup>
                                 <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                               Color="Color.Info"
-                                               Title="Detaylar"
-                                               OnClick="() => ViewCustomer(context.Item.Id)" />
+                                               Size="Size.Small"
+                                               Color="Color.Primary"
+                                               OnClick="@(() => ViewCustomer(context.Item.Id))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Color="Color.Warning"
-                                               Title="Düzenle"
-                                               OnClick="() => EditCustomer(context.Item)" />
+                                               Size="Size.Small"
+                                               Color="Color.Secondary"
+                                               OnClick="@(() => EditCustomer(context.Item.Id))" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Size="Size.Small"
                                                Color="Color.Error"
-                                               Title="Sil"
-                                               OnClick="() => DeleteCustomer(context.Item)" />
+                                               OnClick="@(() => DeleteCustomer(context.Item))" />
                             </MudButtonGroup>
                         </CellTemplate>
                     </TemplateColumn>
                 </Columns>
+
+                <PagerContent>
+                    <MudDataGridPager T="CustomerDto" />
+                </PagerContent>
+
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Default" />
+                        <MudText Typo="Typo.h6">Müşteri bulunamadı</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Default">
+                            Arama kriterlerinizi değiştirin veya yeni müşteri ekleyin.
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
             </MudDataGrid>
-            
-            <!-- Pagination -->
-            <div class="d-flex justify-center pa-4">
-                <MudPagination Count="_totalPages" 
-                               @bind-Selected="_currentPage"
-                               BoundaryCount="1"
-                               MiddleCount="3"
-                               ShowFirstButton="true"
-                               ShowLastButton="true" />
-            </div>
-        }
-        else
-        {
-            <div class="d-flex flex-column align-center pa-8">
-                <MudIcon Icon="@Icons.Material.Filled.People" 
-                         Style="font-size: 4rem;" 
-                         Color="Color.Secondary" 
-                         Class="mb-4" />
-                <MudText Typo="Typo.h6" Class="mb-2">Müşteri bulunamadı</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                    @if (string.IsNullOrEmpty(_searchTerm))
-                    {
-                        <span>Henüz hiç müşteri eklenmemiş.</span>
-                    }
-                    else
-                    {
-                        <span>"@_searchTerm" araması için sonuç bulunamadı.</span>
-                    }
-                </MudText>
-                <MudButton Variant="Variant.Filled" 
-                           Color="Color.Primary" 
-                           StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="OpenCreateDialog">
-                    İlk Müşteriyi Ekle
-                </MudButton>
-            </div>
-        }
-    </MudPaper>
+        </MudCard>
+    </MudStack>
 </MudContainer>
 
 @code {
-    private List<CustomerDto> _customers = new();
-    private bool _loading = true;
-    private string _searchTerm = "";
-    private int _currentPage = 1;
-    private int _pageSize = 10;
-    private int _totalCount = 0;
-    private int _totalPages = 1;
-    private Timer? _searchTimer;
+    private List<CustomerDto> customers = new();
+    private bool loading = true;
+    private bool virtualizeEnabled = true;
+
+    // Search and filter parameters
+    private string searchTerm = string.Empty;
+    private CustomerStatus? selectedStatus;
+    private DateTime? fromDate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -203,21 +166,18 @@
 
     private async Task LoadCustomers()
     {
-        _loading = true;
-        StateHasChanged();
-
+        loading = true;
         try
         {
-            CustomerQueryParams queryParams = new CustomerQueryParams
+            var result = await CustomerService.GetCustomersAsync(new CustomerQueryParams
             {
-                PageNumber = _currentPage,
-                PageSize = _pageSize,
-                SearchTerm = _searchTerm
-            };
-            var result = await CustomerService.GetCustomersAsync(queryParams);
-            _customers = result.Data.Items;
-            _totalCount = result.Data.TotalCount;
-            _totalPages = result.Data.TotalPages;
+                SearchTerm = searchTerm,
+                Status = selectedStatus,
+                CreatedFrom = fromDate,
+                PageSize = 1000 // Adjust based on your needs
+            });
+
+            customers = result.Data.Items.ToList();
         }
         catch (Exception ex)
         {
@@ -225,77 +185,57 @@
         }
         finally
         {
-            _loading = false;
-            StateHasChanged();
+            loading = false;
         }
     }
 
-    private void OnSearchKeyUp(KeyboardEventArgs e)
+    private async Task OnSearch()
     {
-        _searchTimer?.Dispose();
-        _searchTimer = new Timer(async _ =>
-        {
-            _currentPage = 1;
-            await InvokeAsync(LoadCustomers);
-        }, null, 500, Timeout.Infinite);
-    }
-
-    private async Task ClearSearch()
-    {
-        _searchTerm = "";
-        _currentPage = 1;
         await LoadCustomers();
     }
 
-    private async Task OpenCreateDialog()
+    private async Task ClearFilters()
     {
-        var dialog = await DialogService.ShowAsync<CustomerCreateDialog>("Yeni Müşteri");
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            await LoadCustomers();
-            Snackbar.Add("Müşteri başarıyla oluşturuldu!", MudBlazor.Severity.Success);
-        }
+        searchTerm = string.Empty;
+        selectedStatus = null;
+        fromDate = null;
+        await LoadCustomers();
     }
 
-    private async Task EditCustomer(CustomerDto customer)
+    private void NavigateToCreate()
     {
-        // var parameters = new DialogParameters<CustomerEditDialog>
-        // {
-        //     { x => x.Customer, customer }
-        // };
-
-        // var dialog = await DialogService.ShowAsync<CustomerEditDialog>("Müşteri Düzenle", parameters);
-        // var result = await dialog.Result;
-
-        // if (!result.Canceled)
-        // {
-        //     await LoadCustomers();
-        //     Snackbar.Add("Müşteri başarıyla güncellendi!", MudBlazor.Severity.Success);
-        // }
+        Navigation.NavigateTo("/customers/create");
     }
 
     private void ViewCustomer(int customerId)
     {
-        // Navigate to customer details page
-        // Navigation.NavigateTo($"/customers/{customerId}");
+        Navigation.NavigateTo($"/customers/{customerId}");
+    }
+
+    private void EditCustomer(int customerId)
+    {
+        Navigation.NavigateTo($"/customers/{customerId}/edit");
     }
 
     private async Task DeleteCustomer(CustomerDto customer)
     {
-        var confirm = await DialogService.ShowMessageBox(
-            "Müşteriyi Sil",
-            $"{customer.FullName} adlı müşteriyi silmek istediğinizden emin misiniz?",
-            yesText: "Sil", cancelText: "İptal");
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, $"{customer.FirstName} {customer.LastName} isimli müşteriyi silmek istediğinizden emin misiniz?" },
+            { x => x.ButtonText, "Sil" },
+            { x => x.Color, Color.Error }
+        };
 
-        if (confirm == true)
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Müşteri Sil", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
         {
             try
             {
                 await CustomerService.DeleteCustomerAsync(customer.Id);
+                Snackbar.Add("Müşteri başarıyla silindi", MudBlazor.Severity.Success);
                 await LoadCustomers();
-                Snackbar.Add("Müşteri başarıyla silindi!", MudBlazor.Severity.Success);
             }
             catch (Exception ex)
             {
@@ -304,8 +244,29 @@
         }
     }
 
-    public void Dispose()
+    private Color GetStatusColor(CustomerStatus status)
     {
-        _searchTimer?.Dispose();
+        return status switch
+        {
+            CustomerStatus.Active => Color.Success,
+            CustomerStatus.Inactive => Color.Default,
+            CustomerStatus.Suspended => Color.Warning,
+            CustomerStatus.Blacklisted => Color.Error,
+            CustomerStatus.Former => Color.Surface,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusText(CustomerStatus status)
+    {
+        return status switch
+        {
+            CustomerStatus.Active => "Aktif",
+            CustomerStatus.Inactive => "Pasif",
+            CustomerStatus.Suspended => "Iptal edilmiş",
+            CustomerStatus.Blacklisted => "Kara listede",
+            CustomerStatus.Former => "Eski",
+            _ => "Bilinmiyor"
+        };
     }
 }

@@ -1,11 +1,31 @@
-﻿@using IAMS.Web.Components.Account.Shared
-<Router AppAssembly="typeof(Program).Assembly">
+﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                <RedirectToLogin />
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <PageTitle>Sayfa Bulunamadı</PageTitle>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+                <MudPaper Class="pa-8 text-center" Elevation="2">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff"
+                             Style="font-size: 5rem;"
+                             Color="Color.Secondary"
+                             Class="mb-4" />
+                    <MudText Typo="Typo.h4" Class="mb-4">
+                        Sayfa Bulunamadı
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+                        Aradığınız sayfa mevcut değil veya taşınmış olabilir.
+                    </MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Href="/"
+                               StartIcon="@Icons.Material.Filled.Home">
+                        Ana Sayfaya Dön
+                    </MudButton>
+                </MudPaper>
+            </MudContainer>
+        </LayoutView>
+    </NotFound>
 </Router>

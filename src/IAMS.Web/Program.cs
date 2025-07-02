@@ -1,82 +1,145 @@
-using IAMS.Application.Services.Customers;
-using IAMS.Application.Services.Policies;
+using IAMS.Application.Extensions;
+using IAMS.Infrastructure.Data;
+using IAMS.Infrastructure.Extensions;
+using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Extensions;
+using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Middleware;
+using IAMS.Persistence.Contexts;
 using IAMS.Web.Components;
-using IAMS.Web.Components.Account;
-using IAMS.Web.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using IAMS.Web.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
+using MudBlazor.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/iams-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 // Add services to the container
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
-// Configuration
-builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-
-// Tenant services
-builder.Services.AddMultiTenancy(builder.Configuration);
-
-// Database
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
-    // Configure identity options
-})
-.AddEntityFrameworkStores<IdentityDbContext>()
-.AddDefaultTokenProviders();
-
-// Authentication
-builder.Services.AddAuthentication(options => {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options => {
-    // Configure JWT options
+// Add Entity Framework DbContexts
+// Master Database (for tenant management)
+builder.Services.AddDbContext<TenantDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MasterConnection"));
 });
 
-// Application services
-builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<IPolicyService, PolicyService>();
-// Add other services
+// Application Database (for business data) - will be tenant-specific
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
-// Infrastructure
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Add application services
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddMultiTenancyServices(builder.Configuration);
 
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+// Add MudBlazor
+builder.Services.AddMudServices();
 
-// Controllers
-builder.Services.AddControllers();
+// Add Blazor-specific services
+builder.Services.AddScoped<ICustomerComponentService, CustomerComponentService>();
+builder.Services.AddScoped<IPolicyComponentService, PolicyComponentService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IJSInteropService, JSInteropService>();
 
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add authentication
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireReportingModule", policy =>
+        policy.RequireAssertion(context =>
+            context.User.Identity.IsAuthenticated &&
+            context.HttpContext.RequestServices
+                .GetRequiredService<ITenantContextAccessor>()
+                .IsModuleEnabled("Reporting")));
+
+    options.AddPolicy("RequireAccountingModule", policy =>
+        policy.RequireAssertion(context =>
+            context.User.Identity.IsAuthenticated &&
+            context.HttpContext.RequestServices
+                .GetRequiredService<ITenantContextAccessor>()
+                .IsModuleEnabled("Accounting")));
+});
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseAntiforgery();
 
-// Add tenant middleware - IMPORTANT: before auth middleware
+// Custom middleware
 app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
 
-app.Run();
+// Database initialization
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var masterContext = scope.ServiceProvider.GetRequiredService<MasterDbContext>();
+        var appContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        // Ensure databases are created
+        await masterContext.Database.EnsureCreatedAsync();
+        await appContext.Database.EnsureCreatedAsync();
+
+        Log.Information("Databases initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error initializing databases");
+    }
+}
+
+try
+{
+    Log.Information("Starting IAMS Blazor Application");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

@@ -1,7 +1,315 @@
 ﻿@page "/"
+@using IAMS.Application.Interfaces
+@using IAMS.Application.Services.Customers
+@using MudBlazor
+@inject ICustomerService CustomerService
+@inject IPolicyService PolicyService
+@inject ITenantContextAccessor TenantContext
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard - IAMS</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <!-- Welcome Header -->
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h4" Class="mb-2">
+                    Hoş Geldiniz! 👋
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    @if (TenantContext.CurrentTenant != null)
+                    {
+                        <span>@TenantContext.CurrentTenant.Name - Sigorta Yönetim Sistemi</span>
+                    }
+                    else
+                    {
+                        <span>IAMS Sigorta Yönetim Sistemi</span>
+                    }
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex justify-end align-center">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @DateTime.Now.ToString("dd MMMM yyyy, dddd", new System.Globalization.CultureInfo("tr-TR"))
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
 
-Welcome to your new app.
+    <!-- Statistics Cards -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent Class="pb-0">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h4" Color="Color.Primary">
+                                @_totalCustomers
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Toplam Müşteri
+                            </MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.People" 
+                                 Color="Color.Primary" 
+                                 Style="font-size: 3rem;" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent Class="pb-0">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h4" Color="Color.Success">
+                                @_totalPolicies
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Aktif Poliçe
+                            </MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Description" 
+                                 Color="Color.Success" 
+                                 Style="font-size: 3rem;" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent Class="pb-0">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h4" Color="Color.Warning">
+                                @_expiringPolicies
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Yakında Bitecek
+                            </MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Schedule" 
+                                 Color="Color.Warning" 
+                                 Style="font-size: 3rem;" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent Class="pb-0">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h4" Color="Color.Info">
+                                @_monthlyRevenue.ToString("C", new System.Globalization.CultureInfo("tr-TR"))
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Aylık Gelir
+                            </MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" 
+                                 Color="Color.Info" 
+                                 Style="font-size: 3rem;" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid>
+        <!-- Recent Customers -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                            Son Eklenen Müşteriler
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_recentCustomers.Any())
+                    {
+                        <MudList T="string">
+                            @foreach (var customer in _recentCustomers)
+                            {
+                                <MudListItem>
+                                    <div class="d-flex align-center">
+                                        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-3">
+                                            @customer.FirstName.First()@customer.LastName.First()
+                                        </MudAvatar>
+                                        <div class="flex-grow-1">
+                                            <MudText Typo="Typo.body2">@customer.FullName</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @customer.Email
+                                            </MudText>
+                                        </div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @customer.CreatedDate.ToString("dd/MM")
+                                        </MudText>
+                                    </div>
+                                </MudListItem>
+                            }
+                        </MudList>
+                        <div class="d-flex justify-end mt-2">
+                            <MudButton Color="Color.Primary" 
+                                       Variant="Variant.Text" 
+                                       Size="Size.Small"
+                                       Href="/customers">
+                                Tümünü Gör
+                            </MudButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column align-center pa-4">
+                            <MudIcon Icon="@Icons.Material.Filled.People" 
+                                     Color="Color.Secondary" 
+                                     Style="font-size: 2rem;" 
+                                     Class="mb-2" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Henüz müşteri eklenmemiş
+                            </MudText>
+                        </div>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Quick Actions -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.FlashOn" Class="mr-2" />
+                            Hızlı İşlemler
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="6">
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Primary" 
+                                       FullWidth="true" 
+                                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                                       Href="/customers"
+                                       Class="mb-2">
+                                Yeni Müşteri
+                            </MudButton>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Success" 
+                                       FullWidth="true" 
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       Href="/policies"
+                                       Class="mb-2">
+                                Yeni Poliçe
+                            </MudButton>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Warning" 
+                                       FullWidth="true" 
+                                       StartIcon="@Icons.Material.Filled.Search"
+                                       Href="/customers"
+                                       Class="mb-2">
+                                Müşteri Ara
+                            </MudButton>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Info" 
+                                       FullWidth="true" 
+                                       StartIcon="@Icons.Material.Filled.Assessment"
+                                       Href="/reports"
+                                       Class="mb-2"
+                                       Disabled="@(!TenantContext.IsModuleEnabled("Reporting"))">
+                                Raporlar
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Module Status -->
+    <MudPaper Class="pa-4 mt-4" Elevation="1">
+        <MudText Typo="Typo.h6" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.Extension" Class="mr-2" />
+            Aktif Modüller
+        </MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <IMudChip Color="Color.Success" 
+                         Size="Size.Medium" 
+                         Icon="@Icons.Material.Filled.Check">
+                    Temel Sistem
+                </IMudChip>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <IMudChip Color="@(TenantContext.IsModuleEnabled("Reporting") ? Color.Success : Color.Default)" 
+                         Size="Size.Medium" 
+                         Icon="@(TenantContext.IsModuleEnabled("Reporting") ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                    Raporlama
+                </IMudChip>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <IMudChip Color="@(TenantContext.IsModuleEnabled("Accounting") ? Color.Success : Color.Default)" 
+                         Size="Size.Medium" 
+                         Icon="@(TenantContext.IsModuleEnabled("Accounting") ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                    Muhasebe
+                </IMudChip>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <IMudChip Color="@(TenantContext.IsModuleEnabled("Integration") ? Color.Success : Color.Default)" 
+                         Size="Size.Medium" 
+                         Icon="@(TenantContext.IsModuleEnabled("Integration") ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
+                    Entegrasyon
+                </IMudChip>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private int _totalCustomers = 0;
+    private int _totalPolicies = 0;
+    private int _expiringPolicies = 0;
+    private decimal _monthlyRevenue = 0;
+    private List<CustomerDto> _recentCustomers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            // Load dashboard statistics
+            //_totalCustomers = await CustomerService.GetTotalCustomersCountAsync();
+            // _totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
+            // _expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
+            // _monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
+            
+            // Load recent customers
+           // _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).ToList();
+        }
+        catch (Exception ex)
+        {
+            // Log error or show notification
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
+        }
+    }
+}

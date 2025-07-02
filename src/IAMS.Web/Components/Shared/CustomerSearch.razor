@@ -1,0 +1,102 @@
+﻿@using IAMS.Application.DTOs.Customer
+@using IAMS.Application.Interfaces
+@using IAMS.Application.Services.Customers
+@inject ICustomerService CustomerService
+@inject ISnackbar Snackbar
+
+<MudAutocomplete T="CustomerDto"
+                Label="@Label"
+                @bind-Value="Value"
+                 SearchFuncWithCancel="@SearchCustomers"
+                ToStringFunc="@(e => e == null ? null : $"{e.FirstName} {e.LastName} ({e.CustomerCode})")"
+                Variant="@Variant"
+                Dense="@Dense"
+                Required="@Required"
+                Disabled="@Disabled"
+                Clearable="@Clearable"
+                ResetValueOnEmptyText="@ResetValueOnEmptyText"
+                CoerceText="@CoerceText"
+                CoerceValue="@CoerceValue"
+                AdornmentIcon="@Icons.Material.Filled.Search"
+                AdornmentColor="Color.Primary">
+    <ItemTemplate Context="customer">
+        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+            <MudAvatar Size="Size.Small" Color="Color.Primary">
+                @customer.FirstName.FirstOrDefault()@customer.LastName.FirstOrDefault()
+            </MudAvatar>
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.body2">
+                    <strong>@customer.FirstName @customer.LastName</strong>
+                </MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    @customer.CustomerCode - @customer.Email
+                </MudText>
+            </MudStack>
+        </MudStack>
+    </ItemTemplate>
+    
+    <MoreItemsTemplate>
+        <MudText Align="Align.Center" Class="px-4 py-1">
+            Daha fazla sonuç için daha spesifik arama yapın...
+        </MudText>
+    </MoreItemsTemplate>
+    
+    <NoItemsTemplate>
+        <MudText Align="Align.Center" Class="px-4 py-1">
+            "Müşteri bulunamadı
+        </MudText>
+    </NoItemsTemplate>
+    
+    <ProgressIndicatorTemplate>
+        <MudProgressLinear Size="Size.Small" Indeterminate="true" Class="my-7" />
+    </ProgressIndicatorTemplate>
+</MudAutocomplete>
+
+@code {
+    [Parameter] public CustomerDto? Value { get; set; }
+    [Parameter] public EventCallback<CustomerDto?> ValueChanged { get; set; }
+    [Parameter] public string Label { get; set; } = "Müşteri Seç";
+    [Parameter] public Variant Variant { get; set; } = Variant.Outlined;
+    [Parameter] public bool Dense { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Clearable { get; set; } = true;
+    [Parameter] public bool ResetValueOnEmptyText { get; set; } = false;
+    [Parameter] public bool CoerceText { get; set; } = false;
+    [Parameter] public bool CoerceValue { get; set; } = true;
+    [Parameter] public int MaxItems { get; set; } = 10;
+    [Parameter] public int MinSearchLength { get; set; } = 2;
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string value)
+    {
+        // If no value or value is less than minimum search length, return empty result
+        if (string.IsNullOrEmpty(value) || value.Length < MinSearchLength)
+        {
+            return new List<CustomerDto>();
+        }
+
+        try
+        {
+            var result = await CustomerService.GetCustomersAsync(new CustomerQueryParams
+            {
+                SearchTerm = value,
+                PageSize = MaxItems,
+                PageNumber = 1
+            });
+
+            return result.Data.Items;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Müşteri arama sırasında hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            return new List<CustomerDto>();
+        }
+    }
+
+    // Handle value changes
+    private async Task OnValueChanged(CustomerDto? customer)
+    {
+        Value = customer;
+        await ValueChanged.InvokeAsync(customer);
+    }
+}

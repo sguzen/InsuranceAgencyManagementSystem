@@ -3,7 +3,7 @@ using IAMS.Application.DTOs.Customer;
 
 namespace IAMS.Application.Validators.Customer
 {
-    public class UpdateCustomerValidator : AbstractValidator<UpdateCustomerDto>
+    public class UpdateCustomerValidator : AbstractValidator<CreateOrUpdateCustomerDto>
     {
         public UpdateCustomerValidator()
         {
@@ -20,13 +20,13 @@ namespace IAMS.Application.Validators.Customer
                 .EmailAddress().WithMessage("Email format is invalid")
                 .MaximumLength(255).WithMessage("Email must not exceed 255 characters");
 
-            RuleFor(x => x.Phone)
+            RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("Phone is required")
                 .MaximumLength(20).WithMessage("Phone must not exceed 20 characters");
 
-            RuleFor(x => x.Address)
-                .NotEmpty().WithMessage("Address is required")
-                .MaximumLength(500).WithMessage("Address must not exceed 500 characters");
+            //RuleFor(x => x.Address)
+            //    .NotEmpty().WithMessage("Address is required")
+            //    .MaximumLength(500).WithMessage("Address must not exceed 500 characters");
 
             RuleFor(x => x.DateOfBirth)
                 .NotEmpty().WithMessage("Date of birth is required")

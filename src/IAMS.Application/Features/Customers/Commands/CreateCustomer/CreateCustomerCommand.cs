@@ -6,9 +6,9 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
 {
     public class CreateCustomerCommand : IRequest<Result<CustomerDto>>
     {
-        public CreateCustomerDto CustomerDto { get; set; }
+        public CreateOrUpdateCustomerDto CustomerDto { get; set; }
 
-        public CreateCustomerCommand(CreateCustomerDto customerDto)
+        public CreateCustomerCommand(CreateOrUpdateCustomerDto customerDto)
         {
             CustomerDto = customerDto;
         }

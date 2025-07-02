@@ -11,7 +11,7 @@ namespace IAMS.Application.Mappings
         {
             // Existing Customer mappings
             CreateMap<Customer, CustomerDto>();
-            CreateMap<CreateCustomerDto, Customer>()
+            CreateMap<CreateOrUpdateCustomerDto, Customer>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore())
@@ -27,7 +27,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CustomerInsuranceCompanies, opt => opt.Ignore())
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true));
 
-            CreateMap<UpdateCustomerDto, Customer>()
+            CreateMap<CreateOrUpdateCustomerDto, Customer>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore())

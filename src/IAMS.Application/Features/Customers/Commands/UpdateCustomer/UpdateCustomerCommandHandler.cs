@@ -13,13 +13,13 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<UpdateCustomerDto> _validator;
+        private readonly IValidator<CreateOrUpdateCustomerDto> _validator;
         private readonly ILogger<UpdateCustomerCommandHandler> _logger;
 
         public UpdateCustomerCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<UpdateCustomerDto> validator,
+            IValidator<CreateOrUpdateCustomerDto> validator,
             ILogger<UpdateCustomerCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -48,9 +48,9 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 }
 
                 // Check if KKTC No is being changed and if it already exists
-                if (existingCustomer.KktcNo != request.CustomerDto.KktcNo && !string.IsNullOrEmpty(request.CustomerDto.KktcNo))
+                if (existingCustomer.KktcNo != request.CustomerDto.KktcNumber && !string.IsNullOrEmpty(request.CustomerDto.KktcNumber))
                 {
-                    var duplicateCustomer = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNo, request.Id);
+                    var duplicateCustomer = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNumber, request.Id);
                     if (duplicateCustomer != null)
                     {
                         return Result<CustomerDto>.Failure("A customer with this KKTC number already exists.");

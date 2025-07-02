@@ -26,12 +26,12 @@ using MediatR;
             return Result<PagedResult<CustomerDto>>.Success(PagedResult<CustomerDto>.Empty());
         }
 
-        public async Task<Result<CustomerDto>> CreateCustomerAsync(CreateCustomerDto createCustomerDto)
+        public async Task<Result<CustomerDto>> CreateCustomerAsync(CreateOrUpdateCustomerDto createCustomerDto)
         {
             return await _mediator.Send(new CreateCustomerCommand(createCustomerDto));
         }
 
-        public async Task<Result<CustomerDto>> UpdateCustomerAsync(int id, UpdateCustomerDto updateCustomerDto)
+        public async Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto updateCustomerDto)
         {
             return Result<CustomerDto>.NotFound("Update not implemented yet");
         }

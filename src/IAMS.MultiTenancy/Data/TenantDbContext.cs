@@ -61,6 +61,9 @@ namespace IAMS.MultiTenancy.Data
 
         private void SeedData(ModelBuilder modelBuilder)
         {
+            // Use static date instead of DateTime.UtcNow
+            var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
             // Seed a default tenant for development
             modelBuilder.Entity<TenantEntity>().HasData(
                 new TenantEntity
@@ -68,9 +71,9 @@ namespace IAMS.MultiTenancy.Data
                     Id = 1,
                     Name = "Default Insurance Agency",
                     Identifier = "default",
-                    ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=IAMS_Default;Trusted_Connection=true;MultipleActiveResultSets=true",
+                    ConnectionString = "Data Source=localhost;Initial Catalog=TenantDb;Integrated Security=True;Trust Server Certificate=True",
                     IsActive = true,
-                    CreatedOn = DateTime.UtcNow,
+                    CreatedOn = seedDate, // Static date instead of DateTime.UtcNow
                     SubscriptionPlan = "Premium",
                     MaxUsers = 50,
                     MaxStorageBytes = 5L * 1024 * 1024 * 1024, // 5GB
@@ -81,23 +84,49 @@ namespace IAMS.MultiTenancy.Data
                 }
             );
 
-            // Seed default modules
-            var moduleNames = new[] { "Policy", "Customer", "Reporting", "Accounting", "Integration" };
-            var moduleData = new List<TenantModule>();
-
-            for (int i = 0; i < moduleNames.Length; i++)
-            {
-                moduleData.Add(new TenantModule
+            // Seed default modules with static dates
+            modelBuilder.Entity<TenantModule>().HasData(
+                new TenantModule
                 {
-                    Id = i + 1,
+                    Id = 1,
                     TenantId = 1,
-                    ModuleName = moduleNames[i],
+                    ModuleName = "Policy",
                     IsEnabled = true,
-                    CreatedOn = DateTime.UtcNow
-                });
-            }
-
-            modelBuilder.Entity<TenantModule>().HasData(moduleData);
+                    CreatedOn = seedDate // Static date instead of DateTime.UtcNow
+                },
+                new TenantModule
+                {
+                    Id = 2,
+                    TenantId = 1,
+                    ModuleName = "Customer",
+                    IsEnabled = true,
+                    CreatedOn = seedDate
+                },
+                new TenantModule
+                {
+                    Id = 3,
+                    TenantId = 1,
+                    ModuleName = "Reporting",
+                    IsEnabled = true,
+                    CreatedOn = seedDate
+                },
+                new TenantModule
+                {
+                    Id = 4,
+                    TenantId = 1,
+                    ModuleName = "Accounting",
+                    IsEnabled = true,
+                    CreatedOn = seedDate
+                },
+                new TenantModule
+                {
+                    Id = 5,
+                    TenantId = 1,
+                    ModuleName = "Integration",
+                    IsEnabled = true,
+                    CreatedOn = seedDate
+                }
+            );
         }
     }
 }

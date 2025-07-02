@@ -24,7 +24,7 @@ namespace IAMS.MultiTenancy.Entities
         [MaxLength(50)]
         public string SettingType { get; set; } = "string";
 
-        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedOn { get; set; }
 
         public DateTime? LastUpdated { get; set; }
 

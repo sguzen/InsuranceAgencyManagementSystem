@@ -24,7 +24,7 @@ namespace IAMS.MultiTenancy.Entities
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedOn { get; set; } 
 
         public DateTime? LastUpdated { get; set; }
 

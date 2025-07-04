@@ -23,10 +23,10 @@ builder.Host.UseSerilog();
 builder.Services.AddControllers();
 
 // Add layers
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddPersistence(builder.Configuration);
-builder.Services.AddIdentity(builder.Configuration);
+//builder.Services.AddApplication();
+//builder.Services.AddInfrastructure(builder.Configuration);
+//builder.Services.AddPersistence(builder.Configuration);
+//builder.Services.AddIdentity(builder.Configuration);
 builder.Services.AddMultiTenancy(builder.Configuration);
 
 // Add JWT Authentication

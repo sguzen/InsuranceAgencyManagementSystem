@@ -1,6 +1,6 @@
 ﻿@page "/customers/create"
 @page "/customers/{CustomerId:int}/edit"
-@layout Layout.MainLayout
+
 
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.Interfaces
@@ -10,10 +10,9 @@
 @inject ICustomerService CustomerService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-@inject IDialogService DialogService
-@inject IPopoverService PopoverService
 
 <PageTitle>@(IsEdit ? "Müşteri Düzenle" : "Yeni Müşteri")</PageTitle>
+
 <MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
     <MudStack Spacing="4">
         <!-- Header -->
@@ -28,8 +27,11 @@
                 Geri
             </MudButton>
         </MudStack>
+
         <!-- Form -->
-        <EditForm Model=@model OnValidSubmit=@OnValidSubmit FormName="customerForm">
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit" FormName="customerForm">
+            <FluentValidationValidator />
+            
             <MudGrid>
                 <!-- Personal Information -->
                 <MudItem xs="12">
@@ -44,7 +46,7 @@
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.FirstName"
                                                 Label="Ad *"
-                                                Variant="Variant.Text"
+                                                Variant="Variant.Outlined"
                                                 Required="true"
                                                 For="@(() => model.FirstName)" />
                                 </MudItem>
@@ -57,7 +59,7 @@
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.KktcNumber"
-                                                Label="TC Kimlik No"
+                                                Label="KKTC Kimlik No"
                                                 Variant="Variant.Outlined"
                                                 Mask="@(new PatternMask("00000000000"))"
                                                 For="@(() => model.KktcNumber)" />
@@ -70,13 +72,14 @@
                                                  For="@(() => model.DateOfBirth)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="_gender" Label="Gender">
-                                        @foreach (var gender in Enum.GetValues(typeof(Gender)).Cast<Gender>())
-                                        {
-                                            <MudSelectItem Value="gender">@gender</MudSelectItem>
-                                        }
+                                    <MudSelect @bind-Value="model.Gender"
+                                             Label="Cinsiyet"
+                                             Variant="Variant.Outlined"
+                                             T="Gender"
+                                             For="@(() => model.Gender)">
+                                        <MudSelectItem T="Gender" Value="@Gender.Male">Erkek</MudSelectItem>
+                                        <MudSelectItem T="Gender" Value="@Gender.Female">Kadın</MudSelectItem>
                                     </MudSelect>
-                                                                           
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudSelect @bind-Value="model.Status"
@@ -85,11 +88,10 @@
                                              Required="true"
                                              T="CustomerStatus"
                                              For="@(() => model.Status)">
-                                        <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Active">Aktif</MudSelectItem>
-                                        <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Inactive">Pasif</MudSelectItem>
-                                        <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Suspended">Iptal edilmiş</MudSelectItem>
-                                        <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Blacklisted">Kara Listede</MudSelectItem>
-                                        <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Former">Eski</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Active">Aktif</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Inactive">Pasif</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Prospect">Aday Müşteri</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Former">Eski Müşteri</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
                             </MudGrid>
@@ -122,99 +124,6 @@
                                                 Required="true"
                                                 Mask="@(new PatternMask("(000) 000-0000"))"
                                                 For="@(() => model.PhoneNumber)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.AlternativePhone"
-                                                Label="Alternatif Telefon"
-                                                Variant="Variant.Outlined"
-                                                Mask="@(new PatternMask("(000) 000-0000"))"
-                                                For="@(() => model.AlternativePhone)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Website"
-                                                Label="Web Sitesi"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.Website)" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-
-                <!-- Address Information -->
-                <MudItem xs="12">
-                    <MudCard>
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Adres Bilgileri</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudGrid>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address.Street"
-                                                Label="Sokak/Cadde"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.Address.Street)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address.District"
-                                                Label="İlçe"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.Address.District)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address.City"
-                                                Label="Şehir"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.Address.City)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address.Country"
-                                                Label="Ülke"
-                                                Variant="Variant.Outlined"
-                                                ReadOnly="true"
-                                                For="@(() => model.Address.Country)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address.PostalCode"
-                                                Label="Posta Kodu"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.Address.PostalCode)" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-
-                <!-- Additional Information -->
-                <MudItem xs="12">
-                    <MudCard>
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Ek Bilgiler</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudGrid>
-                                <MudItem xs="12">
-                                    <MudTextField @bind-Value="model.Notes"
-                                                Label="Notlar"
-                                                Variant="Variant.Outlined"
-                                                Lines="3"
-                                                For="@(() => model.Notes)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Occupation"
-                                                Label="Meslek"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.Occupation)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.CompanyName"
-                                                Label="Şirket Adı"
-                                                Variant="Variant.Outlined"
-                                                For="@(() => model.CompanyName)" />
                                 </MudItem>
                             </MudGrid>
                         </MudCardContent>
@@ -253,20 +162,14 @@
 
 @code {
     [Parameter] public int? CustomerId { get; set; }
-    private string testGender = "";
+
     private CreateOrUpdateCustomerDto model = new();
     private bool saving = false;
-    private Gender _gender;
+
     private bool IsEdit => CustomerId.HasValue;
 
     protected override async Task OnInitializedAsync()
     {
-        // Initialize address if null
-        model.Address ??= new AddressDto 
-        { 
-            Country = "Kuzey Kıbrıs"
-        };
-
         if (IsEdit)
         {
             await LoadCustomer();
@@ -275,6 +178,7 @@
         {
             // Set default values for new customer
             model.Status = CustomerStatus.Active;
+            model.Gender = Gender.Male; // Set default
         }
     }
 
@@ -291,16 +195,10 @@
                     LastName = customer.Data.LastName,
                     Email = customer.Data.Email,
                     PhoneNumber = customer.Data.Phone,
-                    AlternativePhone = customer.Data.Phone,
                     KktcNumber = customer.Data.KktcNo,
                     DateOfBirth = customer.Data.DateOfBirth,
                     Gender = customer.Data.Gender,
-                    Status = customer.Data.Status,
-                    //Address = customer.Data.Address ?? new AddressDto { Country = "Kuzey Kıbrıs" },
-                    Notes = customer.Data.Notes,
-                    // Occupation = customer.Data.Occupation,
-                    // CompanyName = customer.Data.CompanyName,
-                    // Website = customer.Data.Website
+                    Status = customer.Data.Status
                 };
             }
         }
@@ -318,20 +216,48 @@
         {
             if (IsEdit)
             {
-                await CustomerService.UpdateCustomerAsync(CustomerId!.Value, model);
-                Snackbar.Add("Müşteri başarıyla güncellendi", MudBlazor.Severity.Success);
+                var updateResult = await CustomerService.UpdateCustomerAsync(CustomerId!.Value, model);
+                if (updateResult.IsSuccess)
+                {
+                    Snackbar.Add("Müşteri başarıyla güncellendi", MudBlazor.Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    // If there are validation errors, show them
+                    if (updateResult.Errors?.Any() == true)
+                    {
+                        foreach (var error in updateResult.Errors)
+                        {
+                            Snackbar.Add(error, MudBlazor.Severity.Warning);
+                        }
+                    }
+                }
             }
             else
             {
-                await CustomerService.CreateCustomerAsync(model);
-                Snackbar.Add("Müşteri başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                var createResult = await CustomerService.CreateCustomerAsync(model);
+                if (createResult.IsSuccess)
+                {
+                    Snackbar.Add("Müşteri başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    // If there are validation errors, show them
+                    if (createResult.Errors?.Any() == true)
+                    {
+                        foreach (var error in createResult.Errors)
+                        {
+                            Snackbar.Add(error, MudBlazor.Severity.Warning);
+                        }
+                    }
+                }
             }
-
-            GoBack();
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Kayıt sırasında hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            Snackbar.Add($"Beklenmeyen hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -342,36 +268,5 @@
     private void GoBack()
     {
         Navigation.NavigateTo("/customers");
-    }
-
-    public class CreateOrUpdateCustomerDtoValidator : AbstractValidator<CreateOrUpdateCustomerDto>
-    {
-        public CreateOrUpdateCustomerDtoValidator()
-        {
-            RuleFor(x => x.FirstName)
-                .NotEmpty().WithMessage("Ad alanı gereklidir")
-                .MaximumLength(100).WithMessage("Ad en fazla 100 karakter olabilir");
-
-            RuleFor(x => x.LastName)
-                .NotEmpty().WithMessage("Soyad alanı gereklidir")
-                .MaximumLength(100).WithMessage("Soyad en fazla 100 karakter olabilir");
-
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("E-posta alanı gereklidir")
-                .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz")
-                .MaximumLength(255).WithMessage("E-posta en fazla 255 karakter olabilir");
-
-            RuleFor(x => x.PhoneNumber)
-                .NotEmpty().WithMessage("Telefon numarası gereklidir")
-                .Matches(@"^\(\d{3}\) \d{3}-\d{4}$").WithMessage("Telefon numarası formatı: (XXX) XXX-XXXX");
-
-            RuleFor(x => x.KktcNumber)
-                .Length(10).WithMessage("TC Kimlik numarası 10 haneli olmalıdır")
-                .When(x => !string.IsNullOrEmpty(x.KktcNumber));
-
-            RuleFor(x => x.DateOfBirth)
-                .LessThan(DateTime.Today).WithMessage("Doğum tarihi bugünden küçük olmalıdır")
-                .When(x => x.DateOfBirth.HasValue);
-        }
     }
 }

@@ -14,5 +14,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<Policy?> GetByPolicyNumberAsync(string policyNumber);
         Task<decimal> GetTotalPremiumByCustomerAsync(int customerId);
         Task<decimal> GetTotalCommissionByCustomerAsync(int customerId);
+        Task<DateTime?> GetLastActivityDateAsync(int customerId);
     }
 }

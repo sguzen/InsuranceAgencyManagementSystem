@@ -46,7 +46,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicies
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving policies");
-                return Result<PagedResult<PolicyDto>>.Failure("An error occurred while retrieving policies");
+                return Result<PagedResult<PolicyDto>>.InternalError("An error occurred while retrieving policies");
             }
         }
     }

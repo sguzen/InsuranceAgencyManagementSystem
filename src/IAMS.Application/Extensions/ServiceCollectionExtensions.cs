@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using IAMS.Application.Behaviors;
+using IAMS.Application.Services;
 using IAMS.Application.Services.Customers;
 using IAMS.Application.Services.InsuranceCompanies;
 using IAMS.Application.Services.Policies;
@@ -32,6 +33,8 @@ namespace IAMS.Application.Extensions
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IPolicyService, PolicyService>();
             services.AddScoped<IInsuranceCompanyService, InsuranceCompanyService>();
+            services.AddScoped<ICustomerCodeGenerator, CustomerCodeGenerator>();
+
 
             return services;
         }

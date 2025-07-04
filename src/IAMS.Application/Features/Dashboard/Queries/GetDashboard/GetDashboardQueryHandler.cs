@@ -45,7 +45,7 @@ namespace IAMS.Application.Features.Dashboard.Queries.GetDashboard
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving dashboard data");
-                return Result<DashboardDto>.Failure("An error occurred while retrieving dashboard data");
+                return Result<DashboardDto>.InternalError("An error occurred while retrieving dashboard data");
             }
         }
     }

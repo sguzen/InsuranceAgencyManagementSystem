@@ -31,6 +31,9 @@ namespace IAMS.MultiTenancy.Extensions
             // Register module management service
             services.AddScoped<IModuleService, ModuleService>();
 
+            services.AddScoped<Application.Interfaces.ICurrentTenantService, CurrentTenantService>();
+
+
             // Configure multi-tenancy options
             services.Configure<MultiTenancyOptions>(configuration.GetSection("MultiTenancy"));
 

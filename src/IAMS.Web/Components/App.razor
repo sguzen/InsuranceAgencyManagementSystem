@@ -22,7 +22,13 @@
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
 
     <!-- MudBlazor JS -->
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
@@ -30,7 +36,7 @@
     <!-- Blazor framework -->
     <script src="_framework/blazor.server.js"></script>
 
-    <!-- Custom TypeScript (compiled to JS) - Use the correct file name -->
+    <!-- Custom JavaScript -->
     <script type="module" src="js/compiled/blazor-interop.js"></script>
 </body>
 

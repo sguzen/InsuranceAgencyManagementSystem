@@ -17,4 +17,5 @@ public interface IPolicyService
     Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason = null);
     Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null);
     Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto);
+    Task ProcessExpiringPoliciesAsync();
 }

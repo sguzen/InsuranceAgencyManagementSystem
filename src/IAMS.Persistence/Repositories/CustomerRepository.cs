@@ -34,13 +34,6 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Customer?> GetByEmailAsync(string email)
-        {
-            return await _dbSet
-                .Where(c => !c.IsDeleted && c.Email == email)
-                .FirstOrDefaultAsync();
-        }
-
         public async Task<Customer?> GetByCustomerCodeAsync(string customerCode, int tenantId)
         {
             return await _dbSet
@@ -154,6 +147,170 @@ namespace IAMS.Persistence.Repositories
             }
 
             return await query.AnyAsync();
+        }
+
+        public async Task<List<Customer>> GetCustomersCreatedBetweenAsync(int tenantId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                return await _dbSet
+                    .Where(c => !c.IsDeleted &&
+                               c.TenantId == tenantId &&
+                               c.CreatedOn >= startDate &&
+                               c.CreatedOn <= endDate)
+                    .OrderBy(c => c.CreatedOn)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if you have access to logger
+                // _logger?.LogError(ex, "Error retrieving customers created between {StartDate} and {EndDate} for tenant {TenantId}", startDate, endDate, tenantId);
+                throw; // Re-throw to let the caller handle it
+            }
+        }
+
+        // Also add the GetLastCustomerAsync method that's referenced in the original code
+        public async Task<Customer?> GetLastCustomerAsync(int tenantId)
+        {
+            try
+            {
+                return await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .OrderByDescending(c => c.Id)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if you have access to logger
+                // _logger?.LogError(ex, "Error retrieving last customer for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        // And add the GetByPhoneAsync method that's also referenced
+        public async Task<Customer?> GetByPhoneAsync(string phoneNumber, int tenantId)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return null;
+
+            try
+            {
+                // Clean the phone number for comparison (remove formatting)
+                var cleanedPhone = CleanPhoneNumber(phoneNumber);
+
+                return await _dbSet
+                    .Where(c => !c.IsDeleted &&
+                               c.TenantId == tenantId &&
+                               (c.Phone == phoneNumber ||
+                                c.Phone == cleanedPhone ||
+                                c.Phone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "") == cleanedPhone))
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if you have access to logger
+                // _logger?.LogError(ex, "Error retrieving customer by phone {PhoneNumber} for tenant {TenantId}", phoneNumber, tenantId);
+                throw;
+            }
+        }
+
+        // Helper method to clean phone numbers for comparison
+        private static string CleanPhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return string.Empty;
+
+            return phoneNumber
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace("-", "")
+                .Replace(" ", "")
+                .Replace("+", "")
+                .Trim();
+        }
+
+        // Update the existing GetByEmailAsync to include tenantId parameter
+        public async Task<Customer?> GetByEmailAsync(string email, int tenantId)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return null;
+
+            try
+            {
+                return await _dbSet
+                    .Where(c => !c.IsDeleted &&
+                               c.TenantId == tenantId &&
+                               c.Email.ToLower() == email.ToLower())
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if you have access to logger
+                // _logger?.LogError(ex, "Error retrieving customer by email {Email} for tenant {TenantId}", email, tenantId);
+                throw;
+            }
+        }
+
+        // Enhanced version with better performance for large datasets
+        public async Task<List<Customer>> GetCustomersCreatedBetweenAsyncOptimized(int tenantId, DateTime startDate, DateTime endDate, bool includeDeleted = false)
+        {
+            try
+            {
+                var query = _dbSet.AsQueryable();
+
+                // Apply filters
+                if (!includeDeleted)
+                {
+                    query = query.Where(c => !c.IsDeleted);
+                }
+
+                query = query.Where(c => c.TenantId == tenantId &&
+                                       c.CreatedOn >= startDate &&
+                                       c.CreatedOn <= endDate);
+
+                // For better performance with large datasets, only select required fields
+                return await query
+                    .Select(c => new Customer
+                    {
+                        Id = c.Id,
+                        CustomerCode = c.CustomerCode,
+                        FirstName = c.FirstName,
+                        LastName = c.LastName,
+                        Email = c.Email,
+                        Phone = c.Phone,
+                        CreatedOn = c.CreatedOn,
+                        TenantId = c.TenantId
+                    })
+                    .OrderBy(c => c.CreatedOn)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if you have access to logger
+                throw new InvalidOperationException($"Error retrieving customers created between {startDate:yyyy-MM-dd} and {endDate:yyyy-MM-dd} for tenant {tenantId}", ex);
+            }
+        }
+
+        // Bulk version for better performance when checking many customers
+        public async Task<Dictionary<string, Customer>> GetCustomersByCodesAsync(List<string> customerCodes, int tenantId)
+        {
+            if (customerCodes == null || !customerCodes.Any())
+                return new Dictionary<string, Customer>();
+
+            try
+            {
+                var customers = await _dbSet
+                    .Where(c => !c.IsDeleted &&
+                               c.TenantId == tenantId &&
+                               customerCodes.Contains(c.CustomerCode))
+                    .ToListAsync();
+
+                return customers.ToDictionary(c => c.CustomerCode, c => c);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving customers by codes for tenant {tenantId}", ex);
+            }
         }
     }
 }

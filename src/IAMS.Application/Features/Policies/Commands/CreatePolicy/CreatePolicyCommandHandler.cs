@@ -38,28 +38,28 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
                 if (!validationResult.IsValid)
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    return Result<PolicyDto>.Failure("Validation failed", errors);
+                    return Result<PolicyDto>.InternalError("Validation failed", errors);
                 }
 
                 // Check if customer exists
                 var customer = await _unitOfWork.Customers.GetByIdAsync(request.PolicyDto.CustomerId);
                 if (customer == null)
                 {
-                    return Result<PolicyDto>.Failure("Customer not found");
+                    return Result<PolicyDto>.InternalError("Customer not found");
                 }
 
                 // Check if insurance company exists
                 var insuranceCompany = await _unitOfWork.InsuranceCompanies.GetByIdAsync(request.PolicyDto.InsuranceCompanyId);
                 if (insuranceCompany == null)
                 {
-                    return Result<PolicyDto>.Failure("Insurance company not found");
+                    return Result<PolicyDto>.InternalError("Insurance company not found");
                 }
 
                 // Check if policy number already exists
                 var existingPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(request.PolicyDto.PolicyNumber);
                 if (existingPolicy != null)
                 {
-                    return Result<PolicyDto>.Failure("A policy with this number already exists");
+                    return Result<PolicyDto>.InternalError("A policy with this number already exists");
                 }
 
                 // Create the policy
@@ -81,7 +81,7 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating policy");
-                return Result<PolicyDto>.Failure("An error occurred while creating the policy");
+                return Result<PolicyDto>.InternalError("An error occurred while creating the policy");
             }
         }
     }

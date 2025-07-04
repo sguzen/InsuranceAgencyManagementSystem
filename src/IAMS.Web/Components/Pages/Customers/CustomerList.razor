@@ -1,6 +1,7 @@
 ﻿@page "/customers"
 @page "/customers/list"
 @layout Layout.MainLayout
+
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
@@ -53,6 +54,7 @@
                                    Clearable="true">
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Active">Aktif</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Inactive">Pasif</MudSelectItem>
+                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Prospect">Aday</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Suspended">Iptal edilmiş</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Blacklisted">Kara Listede</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Former">Eski</MudSelectItem>
@@ -262,6 +264,7 @@
         {
             CustomerStatus.Active => "Aktif",
             CustomerStatus.Inactive => "Pasif",
+            CustomerStatus.Prospect => "Aday",
             CustomerStatus.Suspended => "Iptal edilmiş",
             CustomerStatus.Blacklisted => "Kara listede",
             CustomerStatus.Former => "Eski",

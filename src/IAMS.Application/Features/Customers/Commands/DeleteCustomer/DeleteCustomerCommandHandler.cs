@@ -33,7 +33,7 @@ namespace IAMS.Application.Features.Customers.Commands.DeleteCustomer
                 var customerPolicies = await _unitOfWork.Policies.GetPoliciesByCustomerIdAsync(request.Id);
                 if (customerPolicies.Any())
                 {
-                    return Result.Failure("Cannot delete customer with existing policies");
+                    return Result.InternalError("Cannot delete customer with existing policies");
                 }
 
                 _unitOfWork.Customers.Remove(customer);
@@ -45,7 +45,7 @@ namespace IAMS.Application.Features.Customers.Commands.DeleteCustomer
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting customer with ID: {CustomerId}", request.Id);
-                return Result.Failure("An error occurred while deleting the customer");
+                return Result.InternalError("An error occurred while deleting the customer");
             }
         }
     }

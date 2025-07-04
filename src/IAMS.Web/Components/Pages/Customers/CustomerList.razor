@@ -1,5 +1,6 @@
 ﻿@page "/customers"
 @page "/customers/list"
+@layout Layout.MainLayout
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
@@ -11,6 +12,7 @@
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IPopoverService PopoverService
 
 <PageTitle>Müşteriler</PageTitle>
 
@@ -48,9 +50,7 @@
                         <MudSelect @bind-Value="selectedStatus"
                                    Label="Durum"
                                    Variant="Variant.Outlined"
-                                   T="CustomerStatus?"
                                    Clearable="true">
-                            <MudSelectItem Value="@((IAMS.Domain.Enums.CustomerStatus?)null)">Tümü</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Active">Aktif</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Inactive">Pasif</MudSelectItem>
                             <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Suspended">Iptal edilmiş</MudSelectItem>
@@ -156,7 +156,7 @@
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
-    private CustomerStatus? selectedStatus;
+    private CustomerStatus selectedStatus;
     private DateTime? fromDate;
 
     protected override async Task OnInitializedAsync()
@@ -197,7 +197,6 @@
     private async Task ClearFilters()
     {
         searchTerm = string.Empty;
-        selectedStatus = null;
         fromDate = null;
         await LoadCustomers();
     }

@@ -1,16 +1,19 @@
 ﻿@page "/customers/create"
 @page "/customers/{CustomerId:int}/edit"
+@layout Layout.MainLayout
+
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.Interfaces
+@using IAMS.Domain.Enums
 @using FluentValidation
 @using IAMS.Application.Services.Customers
-@using IAMS.Domain.Enums
 @inject ICustomerService CustomerService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IPopoverService PopoverService
 
 <PageTitle>@(IsEdit ? "Müşteri Düzenle" : "Yeni Müşteri")</PageTitle>
-
 <MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
     <MudStack Spacing="4">
         <!-- Header -->
@@ -25,11 +28,8 @@
                 Geri
             </MudButton>
         </MudStack>
-
         <!-- Form -->
         <EditForm Model=@model OnValidSubmit=@OnValidSubmit FormName="customerForm">
-            <@FluentValidationValidator />
-            
             <MudGrid>
                 <!-- Personal Information -->
                 <MudItem xs="12">
@@ -44,7 +44,7 @@
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.FirstName"
                                                 Label="Ad *"
-                                                Variant="Variant.Outlined"
+                                                Variant="Variant.Text"
                                                 Required="true"
                                                 For="@(() => model.FirstName)" />
                                 </MudItem>
@@ -57,7 +57,7 @@
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.KktcNumber"
-                                                Label="KKTC Kimlik No"
+                                                Label="TC Kimlik No"
                                                 Variant="Variant.Outlined"
                                                 Mask="@(new PatternMask("00000000000"))"
                                                 For="@(() => model.KktcNumber)" />
@@ -70,22 +70,20 @@
                                                  For="@(() => model.DateOfBirth)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.Gender"
-                                               Label="Cinsiyet"
-                                               Variant="Variant.Outlined"
-                                               T="IAMS.Domain.Enums.Gender?"
-                                               For="@(() => model.Gender)">
-                                        <MudSelectItem T="IAMS.Domain.Enums.Gender?" Value="@((IAMS.Domain.Enums.Gender?)null)">Seçiniz</MudSelectItem>
-                                        <MudSelectItem T="IAMS.Domain.Enums.Gender?" Value="@IAMS.Domain.Enums.Gender.Male">Erkek</MudSelectItem>
-                                        <MudSelectItem T="IAMS.Domain.Enums.Gender?" Value="@IAMS.Domain.Enums.Gender.Female">Kadın</MudSelectItem>
+                                    <MudSelect @bind-Value="_gender" Label="Gender">
+                                        @foreach (var gender in Enum.GetValues(typeof(Gender)).Cast<Gender>())
+                                        {
+                                            <MudSelectItem Value="gender">@gender</MudSelectItem>
+                                        }
                                     </MudSelect>
+                                                                           
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudSelect @bind-Value="model.Status"
                                              Label="Durum *"
                                              Variant="Variant.Outlined"
                                              Required="true"
-                                             T="IAMS.Domain.Enums.CustomerStatus"
+                                             T="CustomerStatus"
                                              For="@(() => model.Status)">
                                         <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Active">Aktif</MudSelectItem>
                                         <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Inactive">Pasif</MudSelectItem>
@@ -254,12 +252,11 @@
 </MudContainer>
 
 @code {
-    [Parameter] 
-    public int? CustomerId { get; set; }
-
+    [Parameter] public int? CustomerId { get; set; }
+    private string testGender = "";
     private CreateOrUpdateCustomerDto model = new();
     private bool saving = false;
-
+    private Gender _gender;
     private bool IsEdit => CustomerId.HasValue;
 
     protected override async Task OnInitializedAsync()
@@ -269,7 +266,7 @@
         { 
             Country = "Kuzey Kıbrıs"
         };
-        
+
         if (IsEdit)
         {
             await LoadCustomer();
@@ -329,7 +326,7 @@
                 await CustomerService.CreateCustomerAsync(model);
                 Snackbar.Add("Müşteri başarıyla oluşturuldu", MudBlazor.Severity.Success);
             }
-            
+
             GoBack();
         }
         catch (Exception ex)
@@ -360,21 +357,21 @@
                 .MaximumLength(100).WithMessage("Soyad en fazla 100 karakter olabilir");
 
             RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("E-posta alanı gereklidir")
-            .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz")
-            .MaximumLength(255).WithMessage("E-posta en fazla 255 karakter olabilir");
+                .NotEmpty().WithMessage("E-posta alanı gereklidir")
+                .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz")
+                .MaximumLength(255).WithMessage("E-posta en fazla 255 karakter olabilir");
 
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Telefon numarası gereklidir")
-            .Matches(@"^\(\d{3}\) \d{3}-\d{4}$").WithMessage("Telefon numarası formatı: (XXX) XXX-XXXX");
+            RuleFor(x => x.PhoneNumber)
+                .NotEmpty().WithMessage("Telefon numarası gereklidir")
+                .Matches(@"^\(\d{3}\) \d{3}-\d{4}$").WithMessage("Telefon numarası formatı: (XXX) XXX-XXXX");
 
-        RuleFor(x => x.KktcNumber)
-            .Length(10).WithMessage("KKTC Kimlik numarası 10 haneli olmalıdır")
-            .When(x => !string.IsNullOrEmpty(x.KktcNumber));
+            RuleFor(x => x.KktcNumber)
+                .Length(10).WithMessage("TC Kimlik numarası 10 haneli olmalıdır")
+                .When(x => !string.IsNullOrEmpty(x.KktcNumber));
 
-        RuleFor(x => x.DateOfBirth)
-            .LessThan(DateTime.Today).WithMessage("Doğum tarihi bugünden küçük olmalıdır")
-            .When(x => x.DateOfBirth.HasValue);
+            RuleFor(x => x.DateOfBirth)
+                .LessThan(DateTime.Today).WithMessage("Doğum tarihi bugünden küçük olmalıdır")
+                .When(x => x.DateOfBirth.HasValue);
+        }
     }
-}
 }

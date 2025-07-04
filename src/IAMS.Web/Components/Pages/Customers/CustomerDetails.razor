@@ -1,4 +1,5 @@
 ﻿@page "/customers/{CustomerId:int}"
+@layout Layout.MainLayout
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.Interfaces
@@ -101,13 +102,12 @@ else
                                             </MudStack>
                                         }
                                         
-                                        @if (customer.Gender.HasValue)
-                                        {
+
                                             <MudStack Row Justify="Justify.SpaceBetween">
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Cinsiyet:</MudText>
-                                                <MudText Typo="Typo.body1">@GetGenderText(customer.Gender.Value)</MudText>
+                                                <MudText Typo="Typo.body1">@GetGenderText(customer.Gender)</MudText>
                                             </MudStack>
-                                        }
+                                        
                                         
                                        @*  @if (!string.IsNullOrEmpty(customer.Occupation))
                                         {

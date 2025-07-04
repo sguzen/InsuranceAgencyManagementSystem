@@ -13,7 +13,7 @@ namespace IAMS.Application.DTOs.Customer
         public string? KktcNo { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public int? Age => DateOfBirth?.CalculateAge();
-        public Gender? Gender { get; set; }
+        public Gender Gender { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public string? Address { get; set; }

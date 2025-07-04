@@ -9,7 +9,7 @@ public class CreateOrUpdateCustomerDto
     public string? AlternativePhone { get; set; }
     public string? KktcNumber { get; set; }
     public DateTime? DateOfBirth { get; set; }
-    public Gender? Gender { get; set; }
+    public Gender Gender { get; set; }
     public CustomerStatus Status { get; set; }
     public AddressDto? Address { get; set; }
     public string? Notes { get; set; }

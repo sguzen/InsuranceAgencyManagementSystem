@@ -12,7 +12,14 @@
     <None Remove="src\components\auth\requirePermission.tsx" />
     <None Remove="src\services\authService.ts" />
   </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\ts\**\*.ts" />
+    <TypeScriptCompile Include="wwwroot\ts\**\*.ts" />
+  </ItemGroup>
 
+  <Target Name="CompileTypeScript" BeforeTargets="Build">
+    <Exec Command="tsc wwwroot/ts/blazor-interop.ts --outDir wwwroot/js/compiled --target es2015" ContinueOnError="false" />
+  </Target>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />

@@ -25,9 +25,9 @@
         <!-- Tenant Info -->
         @if (TenantContext.CurrentTenant != null)
         {
-            <IMudChip Color="Color.Secondary" Size="Size.Small">
+            <MudChip T="string" Color="Color.Secondary" Size="Size.Small">
                 @TenantContext.CurrentTenant.Name
-            </IMudChip>
+            </MudChip>
         }
         
         <!-- User Menu -->

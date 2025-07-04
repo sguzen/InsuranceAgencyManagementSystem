@@ -9,5 +9,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<IEnumerable<PolicyClaim>> GetClaimsByStatusAsync(ClaimStatus status);
         Task<IEnumerable<PolicyClaim>> GetClaimsByDateRangeAsync(DateTime fromDate, DateTime toDate);
         Task<decimal> GetTotalClaimAmountByPolicyIdAsync(int policyId);
+        Task<DateTime?> GetLastClaimDateAsync(int customerId);
     }
 }

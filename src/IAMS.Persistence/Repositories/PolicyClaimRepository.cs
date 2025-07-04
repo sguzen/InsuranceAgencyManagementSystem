@@ -58,5 +58,10 @@ namespace IAMS.Persistence.Repositories
                             pc.Status == ClaimStatus.Approved)
                 .SumAsync(pc => pc.ClaimAmount);
         }
+
+        public Task<DateTime?> GetLastClaimDateAsync(int customerId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

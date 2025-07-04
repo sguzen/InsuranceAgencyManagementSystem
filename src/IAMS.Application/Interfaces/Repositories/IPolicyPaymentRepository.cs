@@ -9,5 +9,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<IEnumerable<PolicyPayment>> GetOverduePaymentsAsync();
         Task<IEnumerable<PolicyPayment>> GetPaymentsByDateRangeAsync(DateTime fromDate, DateTime toDate);
         Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId);
+        Task<DateTime?> GetLastPaymentDateAsync(int customerId);
     }
 }

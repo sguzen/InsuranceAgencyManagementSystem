@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using IAMS.Infrastructure.Interfaces;
 using IAMS.MultiTenancy.Interfaces;
 using Microsoft.Extensions.Configuration;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Infrastructure.Services
 {
@@ -118,6 +120,76 @@ namespace IAMS.Infrastructure.Services
         {
             // Placeholder - would update your policy database
             await Task.CompletedTask;
+        }
+
+        public Task<Result<PolicyDto>> GetPolicyByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PagedResult<PolicyDto>>> GetPoliciesAsync(PolicyQueryParams queryParams)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> CreatePolicyAsync(CreatePolicyDto createPolicyDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> UpdatePolicyAsync(int id, UpdatePolicyDto updatePolicyDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> DeletePolicyAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> GetPolicyByNumberAsync(string policyNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<List<PolicyDto>>> GetPoliciesByCustomerAsync(int customerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<List<PolicyDto>>> GetActivePoliciesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<Result<List<PolicyDto>>> IPolicyService.GetExpiringPoliciesAsync(int daysAhead)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<List<PolicyDto>>> GetExpiredPoliciesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> ActivatePolicyAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto)
+        {
+            throw new NotImplementedException();
         }
     }
 

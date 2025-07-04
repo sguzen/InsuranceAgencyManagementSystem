@@ -13,7 +13,8 @@ namespace IAMS.Application.Interfaces.Repositories
     {
         Task<Customer?> GetByIdWithDetailsAsync(int id);
         Task<Customer?> GetByKktcNoAsync(string kktcNo, int tenantId);
-        Task<Customer?> GetByEmailAsync(string email);
+        Task<Customer?> GetByPhoneAsync(string phoneNumber, int tenantId);
+        Task<Customer?> GetByEmailAsync(string email, int tenantId);
         Task<Customer?> GetByCustomerCodeAsync(string customerCode, int tenantId);
         Task<List<Customer>> GetCustomersWithActivePoliciesAsync(int tenantId);
         Task<List<Policy>> GetActivePoliciesAsync(int customerId);
@@ -21,5 +22,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<bool> KktcNoExistsAsync(string kktcNo, int tenantId, int? excludeCustomerId = null);
         Task<bool> EmailExistsAsync(string email, int tenantId, int? excludeCustomerId = null);
         Task<bool> CustomerCodeExistsAsync(string customerCode, int tenantId, int? excludeCustomerId = null);
+        Task<List<Customer>> GetCustomersCreatedBetweenAsync(int tenantId, DateTime startDate, DateTime endDate);
     }
 }

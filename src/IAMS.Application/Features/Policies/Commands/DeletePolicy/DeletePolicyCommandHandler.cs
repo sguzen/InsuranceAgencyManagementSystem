@@ -36,7 +36,7 @@ namespace IAMS.Application.Features.Policies.Commands.DeletePolicy
                 // Business rule: Cannot delete active policies, must cancel first
                 if (policy.Status == Domain.Enums.PolicyStatus.Active)
                 {
-                    return Result.Failure("Cannot delete active policy. Cancel the policy first.");
+                    return Result.InternalError("Cannot delete active policy. Cancel the policy first.");
                 }
 
                 // Soft delete
@@ -51,7 +51,7 @@ namespace IAMS.Application.Features.Policies.Commands.DeletePolicy
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting policy with ID: {PolicyId}", request.Id);
-                return Result.Failure("An error occurred while deleting the policy");
+                return Result.InternalError("An error occurred while deleting the policy");
             }
         }
     }

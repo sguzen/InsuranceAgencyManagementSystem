@@ -179,7 +179,7 @@ namespace IAMS.Application.Services.Policies
                 return Result<PolicyDto>.NotFound("Original policy not found");
 
             if (!originalPolicy.Data.CanRenew)
-                return Result<PolicyDto>.Failure("Policy cannot be renewed in its current state");
+                return Result<PolicyDto>.InternalError("Policy cannot be renewed in its current state");
 
             // Set renewal-specific properties
             renewalDto.PolicyNumber = $"{originalPolicy.Data.PolicyNumber}-R{DateTime.Now:yyyyMMdd}";
@@ -189,6 +189,11 @@ namespace IAMS.Application.Services.Policies
             renewalDto.Notes = $"Renewal of policy {originalPolicy.Data.PolicyNumber}";
 
             return await CreatePolicyAsync(renewalDto);
+        }
+
+        public Task ProcessExpiringPoliciesAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

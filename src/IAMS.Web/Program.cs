@@ -5,6 +5,7 @@ using IAMS.MultiTenancy.Interfaces;
 using IAMS.Persistence.Extensions;
 using IAMS.Web.Components;
 using IAMS.Web.Extensions;
+using MudBlazor;
 using MudBlazor.Services;
 using Serilog;
 
@@ -23,7 +24,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add MudBlazor
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.NewestOnTop = false;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 10000;
+    config.SnackbarConfiguration.HideTransitionDuration = 500;
+    config.SnackbarConfiguration.ShowTransitionDuration = 500;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+});
 
 // Add HTTP Context Accessor (needed for multi-tenancy)
 builder.Services.AddHttpContextAccessor();

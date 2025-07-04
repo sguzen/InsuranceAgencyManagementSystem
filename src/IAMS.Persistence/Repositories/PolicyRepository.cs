@@ -120,5 +120,10 @@ namespace IAMS.Persistence.Repositories
                 .Where(p => p.CustomerId == customerId && !p.IsDeleted && p.IsActive)
                 .SumAsync(p => p.CommissionAmount);
         }
+
+        public Task<DateTime?> GetLastActivityDateAsync(int customerId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

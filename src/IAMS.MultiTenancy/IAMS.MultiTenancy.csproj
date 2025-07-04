@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\IAMS.Application\IAMS.Application.csproj" />
     <ProjectReference Include="..\IAMS.Domain\IAMS.Domain.csproj" />
   </ItemGroup>
 

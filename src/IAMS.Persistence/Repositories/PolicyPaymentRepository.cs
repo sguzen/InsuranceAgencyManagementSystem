@@ -58,5 +58,10 @@ namespace IAMS.Persistence.Repositories
                 .Where(pp => pp.PolicyId == policyId && !pp.IsDeleted && !pp.IsOverdue)
                 .SumAsync(pp => pp.Amount);
         }
+
+        public Task<DateTime?> GetLastPaymentDateAsync(int customerId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

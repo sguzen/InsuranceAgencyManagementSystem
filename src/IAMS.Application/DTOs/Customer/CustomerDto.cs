@@ -31,7 +31,43 @@ namespace IAMS.Application.DTOs.Customer
         public DateTime? LastPolicyDate { get; set; }
         public int PolicyCount { get; set; }
 
+        public int ActivePolicyCount { get; set; }
+        public int TotalPolicyCount { get; set; }
+        public bool HasActivePolicies { get; set; }
+        public string? LastPolicyNumber { get; set; }
+        public int InsuranceCompanyCount { get; set; }
+        public int CustomerTenureInDays { get; set; }
+        public decimal? CustomerScore { get; set; }
+        public DateTime? LastActivityDate { get; set; }
+
+
+        // Computed properties
+        public string TenureDisplay => CustomerTenureInDays switch
+        {
+            < 30 => "Yeni müşteri",
+            < 365 => $"{CustomerTenureInDays / 30} ay",
+            _ => $"{CustomerTenureInDays / 365} yıl"
+        };
+
+        public string ScoreDisplay => CustomerScore switch
+        {
+            null => "Hesaplanmamış",
+            >= 80 => "Mükemmel",
+            >= 60 => "İyi",
+            >= 40 => "Orta",
+            >= 20 => "Düşük",
+            _ => "Zayıf"
+        };
+
+        public string ActivityStatus => LastActivityDate switch
+        {
+            null => "Aktivite yok",
+            var date when date > DateTime.UtcNow.AddDays(-30) => "Aktif",
+            var date when date > DateTime.UtcNow.AddDays(-90) => "Az aktif",
+            _ => "Pasif"
+        };
     }
+
 
     public static class DateTimeExtensions
     {

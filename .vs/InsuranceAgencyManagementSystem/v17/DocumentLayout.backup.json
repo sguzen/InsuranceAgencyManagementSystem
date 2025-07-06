@@ -3,20 +3,52 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getmonthlyrevenue\\getmonthlyrevenuequeryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getmonthlyrevenue\\getmonthlyrevenuequeryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\customers\\customerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\customers\\customerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getmonthlyrevenue\\getmonthlyrevenuequery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getmonthlyrevenue\\getmonthlyrevenuequery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getrecentpolicies\\getrecentpoliciesquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getrecentpolicies\\getrecentpoliciesquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getexpiringpoliciescount\\getexpiringpoliciescountqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getexpiringpoliciescount\\getexpiringpoliciescountqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\customers\\icustomerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\customers\\icustomerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getexpiringpoliciescount\\getexpiringpoliciescountquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getexpiringpoliciescount\\getexpiringpoliciescountquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\policies\\policyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\policies\\policyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\dtos\\policy\\policystatisticsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\dtos\\policy\\policystatisticsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\dtos\\customer\\customerstatisticsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\dtos\\customer\\customerstatisticsdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\customers\\commands\\updatecustomer\\updatecustomercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\customers\\commands\\updatecustomer\\updatecustomercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\gettoppoliciesbypremium\\gettoppoliciesbypremiumquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\gettoppoliciesbypremium\\gettoppoliciesbypremiumquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getrevenuebymonth\\getrevenuebymonthquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getrevenuebymonth\\getrevenuebymonthquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getpoliciesbystatus\\getpoliciesbystatusquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getpoliciesbystatus\\getpoliciesbystatusquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getpolicystatistics\\getpolicystatisticsquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getpolicystatistics\\getpolicystatisticsquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getpoliciesbycustomer\\getpoliciesbycustomerquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getpoliciesbycustomer\\getpoliciesbycustomerquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,8 +58,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ICustomerService.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Customers\\ICustomerService.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\Customers\\ICustomerService.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Customers\\ICustomerService.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Services\\Customers\\ICustomerService.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:08:49.989Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
@@ -35,53 +80,144 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "GetMonthlyRevenueQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQueryHandler.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAIwC8AAAABAAAAAAAAAA==",
+              "Title": "CustomerService.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Customers\\CustomerService.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\Customers\\CustomerService.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Customers\\CustomerService.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Services\\Customers\\CustomerService.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABgAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-06T07:33:31.901Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "GetMonthlyRevenueQuery.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQuery.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQuery.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQuery.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetMonthlyRevenue\\GetMonthlyRevenueQuery.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-06T07:33:16.798Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "GetExpiringPoliciesCountQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQueryHandler.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAIwC8AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-06T07:32:48.308Z",
+              "WhenOpened": "2025-07-06T08:07:14.714Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "GetExpiringPoliciesCountQuery.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQuery.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQuery.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQuery.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetExpiringPoliciesCount\\GetExpiringPoliciesCountQuery.cs",
+              "Title": "PolicyService.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Policies\\PolicyService.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\Policies\\PolicyService.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Policies\\PolicyService.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Services\\Policies\\PolicyService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEgAAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:05:43.433Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PolicyStatisticsDto.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\DTOs\\Policy\\PolicyStatisticsDto.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\DTOs\\Policy\\PolicyStatisticsDto.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\DTOs\\Policy\\PolicyStatisticsDto.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\DTOs\\Policy\\PolicyStatisticsDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:05:08.323Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CustomerStatisticsDto.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\DTOs\\Customer\\CustomerStatisticsDto.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\DTOs\\Customer\\CustomerStatisticsDto.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\DTOs\\Customer\\CustomerStatisticsDto.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\DTOs\\Customer\\CustomerStatisticsDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:04:54.653Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "UpdateCustomerCommand.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommand.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommand.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommand.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:04:16.488Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "GetTopPoliciesByPremiumQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetTopPoliciesByPremium\\GetTopPoliciesByPremiumQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetTopPoliciesByPremium\\GetTopPoliciesByPremiumQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetTopPoliciesByPremium\\GetTopPoliciesByPremiumQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetTopPoliciesByPremium\\GetTopPoliciesByPremiumQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:03:48.819Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "GetRevenueByMonthQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetRevenueByMonth\\GetRevenueByMonthQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetRevenueByMonth\\GetRevenueByMonthQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetRevenueByMonth\\GetRevenueByMonthQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetRevenueByMonth\\GetRevenueByMonthQuery.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-06T07:32:33.951Z",
+              "WhenOpened": "2025-07-06T08:03:27.102Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "GetPoliciesByStatusQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:03:04.865Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "GetRecentPoliciesQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetRecentPolicies\\GetRecentPoliciesQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetRecentPolicies\\GetRecentPoliciesQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetRecentPolicies\\GetRecentPoliciesQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetRecentPolicies\\GetRecentPoliciesQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:02:44.525Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "GetPolicyStatisticsQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPolicyStatistics\\GetPolicyStatisticsQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPolicyStatistics\\GetPolicyStatisticsQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPolicyStatistics\\GetPolicyStatisticsQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPolicyStatistics\\GetPolicyStatisticsQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:02:25.47Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "GetPoliciesByCustomerQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByCustomer\\GetPoliciesByCustomerQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByCustomer\\GetPoliciesByCustomerQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByCustomer\\GetPoliciesByCustomerQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByCustomer\\GetPoliciesByCustomerQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T08:02:02.948Z",
               "EditorCaption": ""
             }
           ]

@@ -15,11 +15,11 @@ namespace IAMS.Application.Services.Customers
         Task<Result<CustomerDto>> CreateCustomerAsync(CreateOrUpdateCustomerDto createCustomerDto);
         Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto updateCustomerDto);
         Task<Result> DeleteCustomerAsync(int id);
-        Task<Result<CustomerDto>> GetCustomerByTcNoAsync(string tcNo);
+        Task<Result<CustomerDto>> GetCustomerByKktcNoAsync(string tcNo);
         Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email);
         Task<Result<CustomerDto>> GetCustomerByCodeAsync(string customerCode);
         Task<Result<List<CustomerDto>>> GetCustomersWithActivePoliciesAsync();
-        Task<Result<bool>> ValidateTcNoAsync(string tcNo, int? excludeCustomerId = null);
+        Task<Result<bool>> ValidateKktcNoAsync(string tcNo, int? excludeCustomerId = null);
         Task<Result<bool>> ValidateEmailAsync(string email, int? excludeCustomerId = null);
         // Dashboard statistics methods
         Task<Result<int>> GetTotalCustomersCountAsync(int tenantId);

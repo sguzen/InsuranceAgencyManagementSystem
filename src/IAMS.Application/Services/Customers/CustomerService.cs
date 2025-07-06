@@ -1,18 +1,27 @@
 ﻿using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
+using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomer;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByCode;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByEmail;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByKktcNo;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
+using IAMS.Application.Features.Customers.Queries.GetCustomersByStatus;
+using IAMS.Application.Features.Customers.Queries.GetCustomersCreatedByMonth;
 using IAMS.Application.Features.Customers.Queries.GetCustomerStatistics;
+using IAMS.Application.Features.Customers.Queries.GetCustomersWithActivePolicies;
 using IAMS.Application.Features.Customers.Queries.GetRecentCustomers;
+using IAMS.Application.Features.Customers.Queries.GetTopCustomersByPolicyCount;
 using IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount;
-using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Features.Customers.Queries.ValidateEmail;
+using IAMS.Application.Features.Customers.Queries.ValidateKktcNo;
 using IAMS.Application.Models;
-using IAMS.Application.Services.Customers;
 using IAMS.Domain.Enums;
 using MediatR;
 
+namespace IAMS.Application.Services.Customers
+{
     public class CustomerService : ICustomerService
     {
         private readonly IMediator _mediator;
@@ -29,26 +38,23 @@ using MediatR;
 
         public async Task<Result<PagedResult<CustomerDto>>> GetCustomersAsync(CustomerQueryParams queryParams)
         {
-        //return Result<PagedResult<CustomerDto>>.Success(PagedResult<CustomerDto>.Empty());
-        try
-        {
-
-            // Use MediatR to get customers
-            var query = new GetCustomersQuery(queryParams);
-            var result = await _mediator.Send(query);
-
-            if (result.IsSuccess)
+            try
             {
-                return Result<PagedResult<CustomerDto>>.Success(result.Data!, "Müşteriler başarıyla getirildi");
-            }
+                var query = new GetCustomersQuery(queryParams);
+                var result = await _mediator.Send(query);
 
-            return Result<PagedResult<CustomerDto>>.Failure(result.Message ?? "Müşteriler getirilemedi", result.Errors);
+                if (result.IsSuccess)
+                {
+                    return Result<PagedResult<CustomerDto>>.Success(result.Data!, "Müşteriler başarıyla getirildi");
+                }
+
+                return Result<PagedResult<CustomerDto>>.Failure(result.Message ?? "Müşteriler getirilemedi", result.Errors);
+            }
+            catch (Exception ex)
+            {
+                return Result<PagedResult<CustomerDto>>.InternalError($"Müşteriler getirilirken hata oluştu: {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            return Result<PagedResult<CustomerDto>>.InternalError($"Müşteriler getirilirken hata oluştu: {ex.Message}");
-        }
-    }
 
         public async Task<Result<CustomerDto>> CreateCustomerAsync(CreateOrUpdateCustomerDto createCustomerDto)
         {
@@ -57,7 +63,7 @@ using MediatR;
 
         public async Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto updateCustomerDto)
         {
-            return Result<CustomerDto>.NotFound("Update not implemented yet");
+            return await _mediator.Send(new UpdateCustomerCommand(id, updateCustomerDto));
         }
 
         public async Task<Result> DeleteCustomerAsync(int id)
@@ -65,87 +71,65 @@ using MediatR;
             return await _mediator.Send(new DeleteCustomerCommand(id));
         }
 
-        public async Task<Result<CustomerDto>> GetCustomerByTcNoAsync(string tcNo)
+        public async Task<Result<CustomerDto>> GetCustomerByKktcNoAsync(string tcNo)
         {
-            return Result<CustomerDto>.NotFound("Customer not found");
+            return await _mediator.Send(new GetCustomerByKktcNoQuery(tcNo));
         }
 
         public async Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email)
         {
-            return Result<CustomerDto>.NotFound("Customer not found");
+            return await _mediator.Send(new GetCustomerByEmailQuery(email));
         }
 
         public async Task<Result<CustomerDto>> GetCustomerByCodeAsync(string customerCode)
         {
-            return Result<CustomerDto>.NotFound("Customer not found");
+            return await _mediator.Send(new GetCustomerByCodeQuery(customerCode));
         }
 
         public async Task<Result<List<CustomerDto>>> GetCustomersWithActivePoliciesAsync()
         {
-            return Result<List<CustomerDto>>.Success(new List<CustomerDto>());
+            return await _mediator.Send(new GetCustomersWithActivePoliciesQuery());
         }
 
-        public async Task<Result<bool>> ValidateTcNoAsync(string tcNo, int? excludeCustomerId = null)
+        public async Task<Result<bool>> ValidateKktcNoAsync(string tcNo, int? excludeCustomerId = null)
         {
-            return Result<bool>.Success(true);
+            return await _mediator.Send(new ValidateKktcNoQuery(tcNo, excludeCustomerId));
         }
 
         public async Task<Result<bool>> ValidateEmailAsync(string email, int? excludeCustomerId = null)
         {
-            return Result<bool>.Success(true);
+            return await _mediator.Send(new ValidateEmailQuery(email, excludeCustomerId));
         }
 
-    public async Task<Result<int>> GetTotalCustomersCountAsync(int tenantId)
-    {
-        try
+        // Dashboard statistics methods
+        public async Task<Result<int>> GetTotalCustomersCountAsync(int tenantId)
         {
-            var query = new GetTotalCustomersCountQuery(tenantId);
-            return await _mediator.Send(query);
+            return await _mediator.Send(new GetTotalCustomersCountQuery(tenantId));
         }
-        catch (Exception ex)
-        {
-            return Result<int>.InternalError($"Müşteri sayısı alınırken hata oluştu: {ex.Message}");
-        }
-    }
 
-    public async Task<Result<List<CustomerDto>>> GetRecentCustomersAsync(int count = 5)
-    {
-        try
+        public async Task<Result<List<CustomerDto>>> GetRecentCustomersAsync(int count = 5)
         {
-            var query = new GetRecentCustomersQuery(count);
-            return await _mediator.Send(query);
+            return await _mediator.Send(new GetRecentCustomersQuery(count));
         }
-        catch (Exception ex)
+
+        public async Task<Result<CustomerStatisticsDto>> GetCustomerStatisticsAsync()
         {
-            return Result<List<CustomerDto>>.InternalError($"Son müşteriler alınırken hata oluştu: {ex.Message}");
+            return await _mediator.Send(new GetCustomerStatisticsQuery());
         }
-    }
 
-    public async Task<Result<CustomerStatisticsDto>> GetCustomerStatisticsAsync()
-    {
-        try
+        public async Task<Result<List<CustomerDto>>> GetTopCustomersByPolicyCountAsync(int count = 10)
         {
-            var query = new GetCustomerStatisticsQuery();
-            return await _mediator.Send(query);
+            return await _mediator.Send(new GetTopCustomersByPolicyCountQuery(count));
         }
-        catch (Exception ex)
+
+        public async Task<Result<Dictionary<CustomerStatus, int>>> GetCustomersByStatusAsync()
         {
-            return Result<CustomerStatisticsDto>.InternalError($"Müşteri istatistikleri alınırken hata oluştu: {ex.Message}");
+            return await _mediator.Send(new GetCustomersByStatusQuery());
         }
-    }
 
-    public Task<Result<List<CustomerDto>>> GetTopCustomersByPolicyCountAsync(int count = 10)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Result<Dictionary<CustomerStatus, int>>> GetCustomersByStatusAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Result<Dictionary<string, int>>> GetCustomersCreatedByMonthAsync(int months = 12)
-    {
-        throw new NotImplementedException();
+        public async Task<Result<Dictionary<string, int>>> GetCustomersCreatedByMonthAsync(int months = 12)
+        {
+            return await _mediator.Send(new GetCustomersCreatedByMonthQuery(months));
+        }
     }
 }

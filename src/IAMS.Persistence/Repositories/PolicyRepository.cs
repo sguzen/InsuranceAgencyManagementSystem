@@ -13,47 +13,35 @@ namespace IAMS.Persistence.Repositories
         {
         }
 
-        public async Task<IEnumerable<Policy>> GetPoliciesByCustomerIdAsync(int customerId)
+        public async Task<Policy?> GetByPolicyNumberAsync(string policyNumber)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber && !p.IsDeleted);
+        }
+
+        public async Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId)
         {
             return await _dbSet
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Include(p => p.Customer)
                 .Where(p => p.CustomerId == customerId && !p.IsDeleted)
-                .OrderByDescending(p => p.StartDate)
+                .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Policy>> GetPoliciesByCompanyIdAsync(int companyId)
+        public async Task<bool> PolicyNumberExistsAsync(string policyNumber, int tenantId, int? excludePolicyId = null)
         {
-            return await _dbSet
-                .Include(p => p.Customer)
-                .Include(p => p.PolicyType)
-                .Where(p => p.InsuranceCompanyId == companyId && !p.IsDeleted)
-                .OrderByDescending(p => p.StartDate)
-                .ToListAsync();
-        }
+            var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber && p.TenantId == tenantId);
 
-        public async Task<IEnumerable<Policy>> GetPoliciesByStatusAsync(PolicyStatus status)
-        {
-            return await _dbSet
-                .Include(p => p.Customer)
-                .Include(p => p.InsuranceCompany)
-                .Include(p => p.PolicyType)
-                .Where(p => p.Status == status && !p.IsDeleted)
-                .OrderByDescending(p => p.StartDate)
-                .ToListAsync();
-        }
+            if (excludePolicyId.HasValue)
+            {
+                query = query.Where(p => p.Id != excludePolicyId.Value);
+            }
 
-        public async Task<IEnumerable<Policy>> GetExpiringPoliciesAsync(DateTime date)
-        {
-            return await _dbSet
-                .Include(p => p.Customer)
-                .Include(p => p.InsuranceCompany)
-                .Include(p => p.PolicyType)
-                .Where(p => p.EndDate <= date && p.Status == PolicyStatus.Active && !p.IsDeleted)
-                .OrderBy(p => p.EndDate)
-                .ToListAsync();
+            return await query.AnyAsync();
         }
 
         public async Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
@@ -76,12 +64,10 @@ namespace IAMS.Persistence.Repositories
                     p.PolicyType.Name.ToLower().Contains(search));
             }
 
-            // Get total count
             var totalCount = await query.CountAsync();
 
-            // Apply pagination and ordering
             var policies = await query
-                .OrderByDescending(p => p.StartDate)
+                .OrderByDescending(p => p.CreatedOn)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -95,324 +81,368 @@ namespace IAMS.Persistence.Repositories
             };
         }
 
-        public async Task<Policy?> GetByPolicyNumberAsync(string policyNumber)
+        public async Task<List<Policy>> GetActivePoliciesAsync(int tenantId)
         {
             return await _dbSet
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Include(p => p.PolicyPayments)
-                .Include(p => p.PolicyClaims)
-                .Where(p => !p.IsDeleted)
-                .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber);
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == PolicyStatus.Active)
+                .OrderBy(p => p.EndDate)
+                .ToListAsync();
         }
 
-        public async Task<decimal> GetTotalPremiumByCustomerAsync(int customerId)
+        public async Task<List<Policy>> GetPoliciesByStatusAsync(PolicyStatus status, int tenantId)
         {
             return await _dbSet
-                .Where(p => p.CustomerId == customerId && !p.IsDeleted && p.IsActive)
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == status)
+                .OrderByDescending(p => p.CreatedOn)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> GetExpiringPoliciesAsync(int daysAhead, int tenantId)
+        {
+            var cutoffDate = DateTime.Now.AddDays(daysAhead);
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.Status == PolicyStatus.Active &&
+                           p.EndDate <= cutoffDate &&
+                           p.EndDate >= DateTime.Now)
+                .OrderBy(p => p.EndDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> GetExpiredPoliciesAsync(int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           (p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now))
+                .OrderByDescending(p => p.EndDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> GetRecentPoliciesAsync(int count, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted)
+                .OrderByDescending(p => p.CreatedOn)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> GetTopPoliciesByPremiumAsync(int count, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == PolicyStatus.Active)
+                .OrderByDescending(p => p.PremiumAmount)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        // Count methods
+        public async Task<int> GetPolicyCountAsync(int tenantId)
+        {
+            return await _dbSet
+                .CountAsync(p => p.TenantId == tenantId && !p.IsDeleted);
+        }
+
+        public async Task<int> GetActivePolicyCountAsync(int tenantId)
+        {
+            return await _dbSet
+                .CountAsync(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == PolicyStatus.Active);
+        }
+
+        public async Task<int> GetExpiringPolicyCountAsync(int daysAhead, int tenantId)
+        {
+            var cutoffDate = DateTime.Now.AddDays(daysAhead);
+            return await _dbSet
+                .CountAsync(p => p.TenantId == tenantId &&
+                               !p.IsDeleted &&
+                               p.Status == PolicyStatus.Active &&
+                               p.EndDate <= cutoffDate &&
+                               p.EndDate >= DateTime.Now);
+        }
+
+        public async Task<int> GetExpiredPolicyCountAsync(int tenantId)
+        {
+            return await _dbSet
+                .CountAsync(p => p.TenantId == tenantId &&
+                               !p.IsDeleted &&
+                               (p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now));
+        }
+
+        public async Task<Dictionary<PolicyStatus, int>> GetPolicyCountByStatusAsync(int tenantId)
+        {
+            return await _dbSet
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted)
+                .GroupBy(p => p.Status)
+                .ToDictionaryAsync(g => g.Key, g => g.Count());
+        }
+
+        // Revenue methods
+        public async Task<decimal> GetMonthlyRevenueAsync(int tenantId, DateTime? month = null)
+        {
+            var targetMonth = month ?? DateTime.Now;
+            var startOfMonth = new DateTime(targetMonth.Year, targetMonth.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+            return await _dbSet
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.Status == PolicyStatus.Active &&
+                           p.StartDate >= startOfMonth &&
+                           p.StartDate <= endOfMonth)
                 .SumAsync(p => p.PremiumAmount);
         }
 
-        public async Task<decimal> GetTotalCommissionByCustomerAsync(int customerId)
+        public async Task<decimal> GetYearlyRevenueAsync(int tenantId, int? year = null)
         {
+            var targetYear = year ?? DateTime.Now.Year;
+            var startOfYear = new DateTime(targetYear, 1, 1);
+            var endOfYear = new DateTime(targetYear, 12, 31);
+
             return await _dbSet
-                .Where(p => p.CustomerId == customerId && !p.IsDeleted && p.IsActive)
-                .SumAsync(p => p.CommissionAmount);
-        }
-
-        public async Task<int> GetPolicyCountAsync(int tenantId)
-        {
-            try
-            {
-                return await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId)
-                    .CountAsync();
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting policy count for tenant {TenantId}", tenantId);
-                throw;
-            }
-        }
-
-        public async Task<int> GetExpiringPoliciesCountAsync(int tenantId, int daysAhead = 30)
-        {
-            try
-            {
-                var cutoffDate = DateTime.Today.AddDays(daysAhead);
-
-                return await _dbSet
-                    .Where(p => !p.IsDeleted &&
-                               p.TenantId == tenantId &&
-                               p.Status == PolicyStatus.Active &&
-                               p.EndDate <= cutoffDate &&
-                               p.EndDate >= DateTime.Today)
-                    .CountAsync();
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting expiring policies count for tenant {TenantId}", tenantId);
-                throw;
-            }
-        }
-
-        public async Task<decimal> GetMonthlyRevenueAsync(int tenantId)
-        {
-            try
-            {
-                var startOfMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
-
-                return await _dbSet
-                    .Where(p => !p.IsDeleted &&
-                               p.TenantId == tenantId &&
-                               p.Status == PolicyStatus.Active &&
-                               p.StartDate >= startOfMonth &&
-                               p.StartDate <= endOfMonth)
-                    .SumAsync(p => p.PremiumAmount);
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting monthly revenue for tenant {TenantId}", tenantId);
-                throw;
-            }
-        }
-
-        public async Task<PolicyStatisticsDto> GetPolicyStatisticsAsync(int tenantId)
-        {
-            try
-            {
-                var now = DateTime.UtcNow;
-                var startOfMonth = new DateTime(now.Year, now.Month, 1);
-                var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
-                var startOfYear = new DateTime(now.Year, 1, 1);
-                var lastMonth = startOfMonth.AddMonths(-1);
-                var endOfLastMonth = startOfMonth.AddDays(-1);
-
-                var totalPolicies = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId)
-                    .CountAsync();
-
-                var activePolicies = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.Status == PolicyStatus.Active)
-                    .CountAsync();
-
-                var expiredPolicies = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.Status == PolicyStatus.Expired)
-                    .CountAsync();
-
-                var cancelledPolicies = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.Status == PolicyStatus.Cancelled)
-                    .CountAsync();
-
-                var expiringPolicies = await GetExpiringPoliciesCountAsync(tenantId, 30);
-
-                var totalPremiumAmount = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.Status == PolicyStatus.Active)
-                    .SumAsync(p => p.PremiumAmount);
-
-                var averagePremiumAmount = activePolicies > 0 ? totalPremiumAmount / activePolicies : 0;
-
-                var monthlyRevenue = await GetMonthlyRevenueAsync(tenantId);
-
-                var yearlyRevenue = await _dbSet
-                    .Where(p => !p.IsDeleted &&
-                               p.TenantId == tenantId &&
-                               p.Status == PolicyStatus.Active &&
-                               p.StartDate >= startOfYear)
-                    .SumAsync(p => p.PremiumAmount);
-
-                var lastMonthRevenue = await _dbSet
-                    .Where(p => !p.IsDeleted &&
-                               p.TenantId == tenantId &&
-                               p.Status == PolicyStatus.Active &&
-                               p.StartDate >= lastMonth &&
-                               p.StartDate <= endOfLastMonth)
-                    .SumAsync(p => p.PremiumAmount);
-
-                var revenueGrowthPercentage = lastMonthRevenue > 0
-                    ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-                    : monthlyRevenue > 0 ? 100 : 0;
-
-                var newPoliciesThisMonth = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.CreatedOn >= startOfMonth)
-                    .CountAsync();
-
-                var newPoliciesThisWeek = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.CreatedOn >= startOfWeek)
-                    .CountAsync();
-
-                var policiesByStatus = await GetPoliciesByStatusAsync(tenantId);
-
-                var policiesByType = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId)
-                    .Include(p => p.PolicyType)
-                    .GroupBy(p => p.PolicyType.Name)
-                    .Select(g => new { TypeName = g.Key, Count = g.Count() })
-                    .ToListAsync();
-
-                var premiumByInsuranceCompany = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.Status == PolicyStatus.Active)
-                    .Include(p => p.InsuranceCompany)
-                    .GroupBy(p => p.InsuranceCompany.Name)
-                    .Select(g => new { CompanyName = g.Key, TotalPremium = g.Sum(p => p.PremiumAmount) })
-                    .ToListAsync();
-
-                return new PolicyStatisticsDto
-                {
-                    TotalPolicies = totalPolicies,
-                    ActivePolicies = activePolicies,
-                    ExpiredPolicies = expiredPolicies,
-                    ExpiringPolicies = expiringPolicies,
-                    CancelledPolicies = cancelledPolicies,
-                    TotalPremiumAmount = totalPremiumAmount,
-                    AveragePremiumAmount = averagePremiumAmount,
-                    MonthlyRevenue = monthlyRevenue,
-                    YearlyRevenue = yearlyRevenue,
-                    RevenueGrowthPercentage = revenueGrowthPercentage,
-                    NewPoliciesThisMonth = newPoliciesThisMonth,
-                    NewPoliciesThisWeek = newPoliciesThisWeek,
-                    PoliciesByStatus = policiesByStatus,
-                    PoliciesByType = policiesByType.ToDictionary(x => x.TypeName, x => x.Count),
-                    PremiumByInsuranceCompany = premiumByInsuranceCompany.ToDictionary(x => x.CompanyName, x => x.TotalPremium)
-                };
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting policy statistics for tenant {TenantId}", tenantId);
-                throw;
-            }
-        }
-
-        public async Task<List<Policy>> GetRecentPoliciesAsync(int tenantId, int count = 10)
-        {
-            try
-            {
-                return await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId)
-                    .OrderByDescending(p => p.CreatedOn)
-                    .Take(count)
-                    .Include(p => p.Customer)
-                    .Include(p => p.PolicyType)
-                    .Include(p => p.InsuranceCompany)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting recent policies for tenant {TenantId}", tenantId);
-                throw;
-            }
-        }
-
-        public async Task<Dictionary<PolicyStatus, int>> GetPoliciesByStatusAsync(int tenantId)
-        {
-            try
-            {
-                var statusCounts = await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId)
-                    .GroupBy(p => p.Status)
-                    .Select(g => new { Status = g.Key, Count = g.Count() })
-                    .ToListAsync();
-
-                return statusCounts.ToDictionary(x => x.Status, x => x.Count);
-            }
-            catch (Exception ex)
-            {
-                //_logger?.LogError(ex, "Error getting policies by status for tenant {TenantId}", tenantId);
-                throw;
-            }
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.Status == PolicyStatus.Active &&
+                           p.StartDate >= startOfYear &&
+                           p.StartDate <= endOfYear)
+                .SumAsync(p => p.PremiumAmount);
         }
 
         public async Task<Dictionary<string, decimal>> GetRevenueByMonthAsync(int tenantId, int months = 12)
         {
-            try
-            {
-                var startDate = DateTime.UtcNow.AddMonths(-months);
+            var startDate = DateTime.Now.AddMonths(-months);
 
-                var monthlyRevenue = await _dbSet
-                    .Where(p => !p.IsDeleted &&
-                               p.TenantId == tenantId &&
-                               p.Status == PolicyStatus.Active &&
-                               p.StartDate >= startDate)
-                    .GroupBy(p => new { p.StartDate.Year, p.StartDate.Month })
-                    .Select(g => new {
-                        Year = g.Key.Year,
-                        Month = g.Key.Month,
-                        Revenue = g.Sum(p => p.PremiumAmount)
-                    })
-                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
-                    .ToListAsync();
+            var revenues = await _dbSet
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.Status == PolicyStatus.Active &&
+                           p.StartDate >= startDate)
+                .GroupBy(p => new { p.StartDate.Year, p.StartDate.Month })
+                .Select(g => new {
+                    Key = $"{g.Key.Year}-{g.Key.Month:00}",
+                    Revenue = g.Sum(p => p.PremiumAmount)
+                })
+                .ToDictionaryAsync(x => x.Key, x => x.Revenue);
 
-                return monthlyRevenue.ToDictionary(
-                    x => $"{x.Year}-{x.Month:D2}",
-                    x => x.Revenue);
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting revenue by month for tenant {TenantId}", tenantId);
-                throw;
-            }
+            return revenues;
         }
 
-        public async Task<List<Policy>> GetTopPoliciesByPremiumAsync(int tenantId, int count = 10)
+        public async Task<decimal> GetTotalPremiumByCustomerAsync(int customerId, int tenantId)
         {
-            try
-            {
-                return await _dbSet
-                    .Where(p => !p.IsDeleted && p.TenantId == tenantId && p.Status == PolicyStatus.Active)
-                    .OrderByDescending(p => p.PremiumAmount)
-                    .Take(count)
-                    .Include(p => p.Customer)
-                    .Include(p => p.PolicyType)
-                    .Include(p => p.InsuranceCompany)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting top policies by premium for tenant {TenantId}", tenantId);
-                throw;
-            }
+            return await _dbSet
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.CustomerId == customerId &&
+                           p.Status == PolicyStatus.Active)
+                .SumAsync(p => p.PremiumAmount);
         }
 
-        public async Task<List<Policy>> GetActivePoliciesByCustomerIdAsync(int customerId)
+        // Business rule validation methods
+        public async Task<bool> HasOverduePaymentsAsync(int policyId)
         {
-            try
-            {
-                return await _dbSet
-                    .Where(p => !p.IsDeleted &&
-                               p.CustomerId == customerId &&
-                               p.Status == PolicyStatus.Active)
-                    .Include(p => p.PolicyType)
-                    .Include(p => p.InsuranceCompany)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting active policies for customer {CustomerId}", customerId);
-                throw;
-            }
+            // This would need to check against a Payments table
+            // Placeholder implementation
+            return false;
         }
 
-        public async Task<DateTime?> GetLastActivityDateAsync(int customerId)
+        public async Task<bool> CanBeCancelledAsync(int policyId)
         {
-            try
-            {
-                var lastPolicyDate = await _dbSet
-                    .Where(p => !p.IsDeleted && p.CustomerId == customerId)
-                    .OrderByDescending(p => p.ModifiedOn ?? p.CreatedOn)
-                    .Select(p => p.ModifiedOn ?? p.CreatedOn)
-                    .FirstOrDefaultAsync();
+            var policy = await GetByIdAsync(policyId);
+            return policy != null &&
+                   policy.Status == PolicyStatus.Active &&
+                   !policy.IsDeleted;
+        }
 
-                return lastPolicyDate;
-            }
-            catch (Exception ex)
+        public async Task<bool> CanBeRenewedAsync(int policyId)
+        {
+            var policy = await GetByIdAsync(policyId);
+            return policy != null &&
+                   (policy.Status == PolicyStatus.Active || policy.Status == PolicyStatus.Expired) &&
+                   !policy.IsDeleted;
+        }
+
+        // Advanced query methods
+        public async Task<List<Policy>> GetPoliciesExpiringInDateRangeAsync(DateTime startDate, DateTime endDate, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.Status == PolicyStatus.Active &&
+                           p.EndDate >= startDate &&
+                           p.EndDate <= endDate)
+                .OrderBy(p => p.EndDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> SearchPoliciesAsync(string searchTerm, int tenantId)
+        {
+            var search = searchTerm.ToLower();
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted &&
+                           (p.PolicyNumber.ToLower().Contains(search) ||
+                            p.Customer.FirstName.ToLower().Contains(search) ||
+                            p.Customer.LastName.ToLower().Contains(search) ||
+                            p.InsuranceCompany.Name.ToLower().Contains(search) ||
+                            p.PolicyType.Name.ToLower().Contains(search)))
+                .OrderByDescending(p => p.CreatedOn)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.InsuranceCompanyId == insuranceCompanyId)
+                .OrderByDescending(p => p.CreatedOn)
+                .ToListAsync();
+        }
+
+        public async Task<List<Policy>> GetPoliciesByPolicyTypeAsync(int policyTypeId, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.PolicyTypeId == policyTypeId)
+                .OrderByDescending(p => p.CreatedOn)
+                .ToListAsync();
+        }
+
+        // Reporting methods
+        public async Task<List<Policy>> GetPoliciesForReportAsync(DateTime? startDate, DateTime? endDate, PolicyStatus? status, int tenantId)
+        {
+            var query = _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId && !p.IsDeleted);
+
+            if (startDate.HasValue)
+                query = query.Where(p => p.StartDate >= startDate.Value);
+
+            if (endDate.HasValue)
+                query = query.Where(p => p.StartDate <= endDate.Value);
+
+            if (status.HasValue)
+                query = query.Where(p => p.Status == status.Value);
+
+            return await query
+                .OrderBy(p => p.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<string, object>> GetPolicyAnalyticsAsync(int tenantId)
+        {
+            var totalPolicies = await GetPolicyCountAsync(tenantId);
+            var activePolicies = await GetActivePolicyCountAsync(tenantId);
+            var monthlyRevenue = await GetMonthlyRevenueAsync(tenantId);
+            var yearlyRevenue = await GetYearlyRevenueAsync(tenantId);
+
+            return new Dictionary<string, object>
             {
-               // _logger?.LogError(ex, "Error getting last activity date for customer {CustomerId}", customerId);
-                return null;
+                { "TotalPolicies", totalPolicies },
+                { "ActivePolicies", activePolicies },
+                { "MonthlyRevenue", monthlyRevenue },
+                { "YearlyRevenue", yearlyRevenue },
+                { "AveragePremium", totalPolicies > 0 ? yearlyRevenue / totalPolicies : 0 }
+            };
+        }
+
+        // Integration support methods
+        public async Task<List<Policy>> GetPoliciesModifiedAfterAsync(DateTime modifiedDate, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => p.TenantId == tenantId &&
+                           !p.IsDeleted &&
+                           p.ModifiedOn > modifiedDate)
+                .OrderBy(p => p.ModifiedOn)
+                .ToListAsync();
+        }
+
+        public async Task<Policy?> GetPolicyByExternalIdAsync(string externalId, int insuranceCompanyId, int tenantId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .FirstOrDefaultAsync(p => p.TenantId == tenantId &&
+                                        !p.IsDeleted &&
+                                        //p.ExternalReference == externalId &&
+                                        p.InsuranceCompanyId == insuranceCompanyId);
+        }
+
+        public async Task UpdateExternalSyncStatusAsync(int policyId, bool synced, DateTime? lastSyncDate = null)
+        {
+            var policy = await GetByIdAsync(policyId);
+            if (policy != null)
+            {
+                // Add sync status fields to Policy entity if needed
+                // policy.IsSynced = synced;
+                // policy.LastSyncDate = lastSyncDate ?? DateTime.UtcNow;
+                Update(policy);
             }
         }
 
+        public async Task<PagedResult<Policy>> GetPoliciesByStatusPagedAsync(PolicyStatus status, int pageNumber, int pageSize)
+        {
+            var query = _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Where(p => !p.IsDeleted && p.Status == status);
 
+            var totalCount = await query.CountAsync();
+
+            var policies = await query
+                .OrderByDescending(p => p.CreatedOn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Policy>
+            {
+                Items = policies,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
+        public Task<int> GetExpiringPoliciesCountAsync(int tenantId, int daysAhead)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

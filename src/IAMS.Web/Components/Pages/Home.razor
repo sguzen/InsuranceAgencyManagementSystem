@@ -298,10 +298,14 @@
         try
         {
             // Load dashboard statistics
-            _totalCustomers = await CustomerService.GetTotalCustomersCountAsync(TenantContext.CurrentTenant.Id);
-            _totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
-            _expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
-            _monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
+            var totalCustomers = await CustomerService.GetTotalCustomersCountAsync(TenantContext.CurrentTenant.Id);
+            _totalCustomers = totalCustomers.Data;
+            var totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
+            _totalPolicies = totalPolicies.Data;
+            var expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
+            _expiringPolicies = expiringPolicies.Data;
+            var monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
+            _monthlyRevenue = monthlyRevenue.Data;
 
             // Load recent customers
             _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;

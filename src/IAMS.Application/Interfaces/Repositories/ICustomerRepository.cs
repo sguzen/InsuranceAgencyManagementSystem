@@ -35,5 +35,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<int> GetNewCustomersCountAsync(int tenantId, DateTime fromDate);
         Task<double> GetAverageCustomerAgeAsync(int tenantId);
         Task<Dictionary<Gender, int>> GetCustomersByGenderAsync(int tenantId);
+        Task<Customer?> GetLastCustomerAsync(int tenantId);
     }
 }

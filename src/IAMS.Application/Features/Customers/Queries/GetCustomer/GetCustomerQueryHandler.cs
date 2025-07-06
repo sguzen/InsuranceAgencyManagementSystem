@@ -196,13 +196,13 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
             try
             {
                 // Get the most recent activity across policies, payments, claims, etc.
-                var lastPolicyActivity = await _unitOfWork.Policies.GetLastActivityDateAsync(customerId);
+               // var lastPolicyActivity = await _unitOfWork.Policies.GetRecentPoliciesAsync(1, tenantId);
                 var lastPaymentActivity = await _unitOfWork.PolicyPayments.GetLastPaymentDateAsync(customerId);
                 var lastClaimActivity = await _unitOfWork.PolicyClaims.GetLastClaimDateAsync(customerId);
 
                 var activities = new List<DateTime?>
                 {
-                    lastPolicyActivity,
+                  //  lastPolicyActivity,
                     lastPaymentActivity,
                     lastClaimActivity
                 }.Where(d => d.HasValue).ToList();

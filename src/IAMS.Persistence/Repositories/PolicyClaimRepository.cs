@@ -3,6 +3,7 @@ using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace IAMS.Persistence.Repositories
 {
@@ -60,6 +61,26 @@ namespace IAMS.Persistence.Repositories
         }
 
         public Task<DateTime?> GetLastClaimDateAsync(int customerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ExistsByPolicyIdAsync(int policyId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<Claim>> GetClaimsByCustomerIdAsync(int customerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> GetClaimCountByStatusAsync(ClaimStatus status, int tenantId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> GetTotalClaimAmountAsync(int tenantId, DateTime? startDate = null, DateTime? endDate = null)
         {
             throw new NotImplementedException();
         }

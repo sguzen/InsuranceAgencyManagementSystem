@@ -2,6 +2,7 @@
 using FluentValidation;
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Services;
@@ -12,23 +13,23 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
 {
     public class UpdatePolicyCommandHandler : IRequestHandler<UpdatePolicyCommand, Result<PolicyDto>>
     {
-        private readonly IPolicyRepository _policyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<UpdatePolicyDto> _policyValidator;
+        private readonly IValidator<UpdatePolicyDto> _validator;
+        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<UpdatePolicyCommandHandler> _logger;
 
         public UpdatePolicyCommandHandler(
-            IPolicyRepository policyRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<UpdatePolicyDto> policyValidator,
+            IValidator<UpdatePolicyDto> validator,
+            ICurrentTenantService currentTenantService,
             ILogger<UpdatePolicyCommandHandler> logger)
         {
-            _policyRepository = policyRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _policyValidator = policyValidator;
+            _validator = validator;
+            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -36,64 +37,92 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         {
             try
             {
-                _logger.LogInformation("Updating policy with ID: {PolicyId}", request.Id);
+                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
+                {
+                    return Result<PolicyDto>.Unauthorized("Kiracı bağlamı bulunamadı");
+                }
 
-                // Validate updated policy
-                var validationResult = await _policyValidator.ValidateAsync(request.PolicyDto, cancellationToken);
+                // Validate the request
+                var validationResult = await _validator.ValidateAsync(request.PolicyDto, cancellationToken);
                 if (!validationResult.IsValid)
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    return Result<PolicyDto>.Failure("Validation failed", errors);
+                    return Result<PolicyDto>.ValidationFailure("Doğrulama hatası", errors);
                 }
 
-                // Get existing policy
-                var policy = await _policyRepository.GetByIdAsync(request.Id);
-                if (policy == null)
+                var existingPolicy = await _unitOfWork.Policies.GetByIdAsync(request.Id);
+                if (existingPolicy == null)
                 {
-                    return Result<PolicyDto>.NotFound("Policy not found");
+                    return Result<PolicyDto>.NotFound("Poliçe bulunamadı");
                 }
 
-                // Update policy properties
-                policy.UpdateDates(request.PolicyDto.StartDate, request.PolicyDto.EndDate, "System");
-                policy.UpdatePremium(request.PolicyDto.PremiumAmount, "System");
-                //policy.CalculateCommission(request.PolicyDto.CommissionRate, "System"); //TODO
-                policy.UpdateNotes(request.PolicyDto.Notes, "System");
-
-                // Handle status changes
-                if (request.PolicyDto.Status != policy.Status)
+                // Check business rules
+                var businessRuleErrors = await ValidateBusinessRulesAsync(request, existingPolicy);
+                if (businessRuleErrors.Any())
                 {
-                    switch (request.PolicyDto.Status)
-                    {
-                        case Domain.Enums.PolicyStatus.Active:
-                            policy.ActivatePolicy("System");
-                            break;
-                        case Domain.Enums.PolicyStatus.Cancelled:
-                            policy.CancelPolicy("System", "Updated via API");
-                            break;
-                        case Domain.Enums.PolicyStatus.Suspended:
-                            policy.SuspendPolicy("System", "Updated via API");
-                            break;
-                    }
+                    return Result<PolicyDto>.ValidationFailure("İş kuralları ihlali", businessRuleErrors);
                 }
 
-                
+                // Map the updated values
+                _mapper.Map(request.PolicyDto, existingPolicy);
+                existingPolicy.ModifiedOn = DateTime.UtcNow;
 
-                // Save changes
-                _policyRepository.Update(policy);
+                _unitOfWork.Policies.Update(existingPolicy);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Map to DTO and return
-                var policyDto = _mapper.Map<PolicyDto>(policy);
+                var updatedPolicyDto = _mapper.Map<PolicyDto>(existingPolicy);
+                _logger.LogInformation("Policy updated successfully with ID: {PolicyId}", request.Id);
 
-                _logger.LogInformation("Policy updated successfully: {PolicyId}", policy.Id);
-
-                return Result<PolicyDto>.Success(policyDto, "Policy updated successfully");
+                return Result<PolicyDto>.Success(updatedPolicyDto, "Poliçe başarıyla güncellendi");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating policy with ID: {PolicyId}", request.Id);
-                return Result<PolicyDto>.InternalError("An error occurred while updating the policy");
+                return Result<PolicyDto>.InternalError("Poliçe güncellenirken beklenmeyen bir hata oluştu");
             }
+        }
+
+        private async Task<List<string>> ValidateBusinessRulesAsync(UpdatePolicyCommand request, Domain.Entities.Policy existingPolicy)
+        {
+            var errors = new List<string>();
+
+            try
+            {
+                // Business rule: Cannot change policy number if it's already active
+                if (existingPolicy.Status == Domain.Enums.PolicyStatus.Active &&
+                    existingPolicy.PolicyNumber != request.PolicyDto.PolicyNumber)
+                {
+                    errors.Add("Aktif poliçenin numarası değiştirilemez");
+                }
+
+                // Business rule: Cannot change to expired status if not yet expired
+                if (request.PolicyDto.Status == Domain.Enums.PolicyStatus.Expired &&
+                    existingPolicy.EndDate > DateTime.Now)
+                {
+                    errors.Add("Henüz süresi dolmamış poliçe 'Süresi Dolmuş' durumuna getirilemez");
+                }
+
+                // Business rule: Cannot reactivate if premium payment is overdue
+                if (request.PolicyDto.Status == Domain.Enums.PolicyStatus.Active &&
+                    existingPolicy.Status != Domain.Enums.PolicyStatus.Active)
+                {
+                    // Check if there are overdue payments
+                    var hasOverduePayments = await _unitOfWork.Policies.HasOverduePaymentsAsync(existingPolicy.Id);
+                    if (hasOverduePayments)
+                    {
+                        errors.Add("Gecikmiş ödeme bulunan poliçe aktif duruma getirilemez");
+                    }
+                }
+
+                // Add more business rules as needed...
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error during business rule validation for policy {PolicyId}", request.Id);
+                errors.Add("İş kuralları doğrulanırken bir hata oluştu");
+            }
+
+            return errors;
         }
     }
 }

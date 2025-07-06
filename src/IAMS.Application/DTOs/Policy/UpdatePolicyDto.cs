@@ -4,6 +4,7 @@ namespace IAMS.Application.DTOs.Policy
 {
     public class UpdatePolicyDto
     {
+        public string PolicyNumber { get; set; }    
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal PremiumAmount { get; set; }

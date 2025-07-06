@@ -3,5 +3,13 @@ using MediatR;
 
 namespace IAMS.Application.Features.Policies.Queries.GetRevenueByMonth
 {
-    public record GetRevenueByMonthQuery(int Months = 12) : IRequest<Result<Dictionary<string, decimal>>>;
+    public class GetRevenueByMonthQuery : IRequest<Result<Dictionary<string, decimal>>>
+    {
+        public int Months { get; }
+
+        public GetRevenueByMonthQuery(int months = 12)
+        {
+            Months = months;
+        }
+    }
 }

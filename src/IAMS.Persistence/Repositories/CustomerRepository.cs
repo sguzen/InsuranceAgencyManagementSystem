@@ -155,23 +155,34 @@ namespace IAMS.Persistence.Repositories
         {
             try
             {
-                return await _dbSet
-                    .Where(c => !c.IsDeleted &&
-                               c.TenantId == tenantId &&
-                               c.CreatedOn >= startDate &&
-                               c.CreatedOn <= endDate)
+                var query = _dbSet.AsQueryable();
+
+                query = query.Where(c => c.TenantId == tenantId &&
+                                       c.CreatedOn >= startDate &&
+                                       c.CreatedOn <= endDate);
+
+                // For better performance with large datasets, only select required fields
+                return await query
+                    .Select(c => new Customer
+                    {
+                        Id = c.Id,
+                        CustomerCode = c.CustomerCode,
+                        FirstName = c.FirstName,
+                        LastName = c.LastName,
+                        Email = c.Email,
+                        Phone = c.Phone,
+                        CreatedOn = c.CreatedOn,
+                        TenantId = c.TenantId
+                    })
                     .OrderBy(c => c.CreatedOn)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                // Log the exception if you have access to logger
-                // _logger?.LogError(ex, "Error retrieving customers created between {StartDate} and {EndDate} for tenant {TenantId}", startDate, endDate, tenantId);
-                throw; // Re-throw to let the caller handle it
+                throw new InvalidOperationException($"Error retrieving customers created between {startDate:yyyy-MM-dd} and {endDate:yyyy-MM-dd} for tenant {tenantId}", ex);
             }
         }
 
-        // Also add the GetLastCustomerAsync method that's referenced in the original code
         public async Task<Customer?> GetLastCustomerAsync(int tenantId)
         {
             try
@@ -189,7 +200,6 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        // And add the GetByPhoneAsync method that's also referenced
         public async Task<Customer?> GetByPhoneAsync(string phoneNumber, int tenantId)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))
@@ -216,22 +226,6 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        // Helper method to clean phone numbers for comparison
-        private static string CleanPhoneNumber(string phoneNumber)
-        {
-            if (string.IsNullOrWhiteSpace(phoneNumber))
-                return string.Empty;
-
-            return phoneNumber
-                .Replace("(", "")
-                .Replace(")", "")
-                .Replace("-", "")
-                .Replace(" ", "")
-                .Replace("+", "")
-                .Trim();
-        }
-
-        // Update the existing GetByEmailAsync to include tenantId parameter
         public async Task<Customer?> GetByEmailAsync(string email, int tenantId)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -253,68 +247,6 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        // Enhanced version with better performance for large datasets
-        public async Task<List<Customer>> GetCustomersCreatedBetweenAsyncOptimized(int tenantId, DateTime startDate, DateTime endDate, bool includeDeleted = false)
-        {
-            try
-            {
-                var query = _dbSet.AsQueryable();
-
-                // Apply filters
-                if (!includeDeleted)
-                {
-                    query = query.Where(c => !c.IsDeleted);
-                }
-
-                query = query.Where(c => c.TenantId == tenantId &&
-                                       c.CreatedOn >= startDate &&
-                                       c.CreatedOn <= endDate);
-
-                // For better performance with large datasets, only select required fields
-                return await query
-                    .Select(c => new Customer
-                    {
-                        Id = c.Id,
-                        CustomerCode = c.CustomerCode,
-                        FirstName = c.FirstName,
-                        LastName = c.LastName,
-                        Email = c.Email,
-                        Phone = c.Phone,
-                        CreatedOn = c.CreatedOn,
-                        TenantId = c.TenantId
-                    })
-                    .OrderBy(c => c.CreatedOn)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                // Log the exception if you have access to logger
-                throw new InvalidOperationException($"Error retrieving customers created between {startDate:yyyy-MM-dd} and {endDate:yyyy-MM-dd} for tenant {tenantId}", ex);
-            }
-        }
-
-        // Bulk version for better performance when checking many customers
-        public async Task<Dictionary<string, Customer>> GetCustomersByCodesAsync(List<string> customerCodes, int tenantId)
-        {
-            if (customerCodes == null || !customerCodes.Any())
-                return new Dictionary<string, Customer>();
-
-            try
-            {
-                var customers = await _dbSet
-                    .Where(c => !c.IsDeleted &&
-                               c.TenantId == tenantId &&
-                               customerCodes.Contains(c.CustomerCode))
-                    .ToListAsync();
-
-                return customers.ToDictionary(c => c.CustomerCode, c => c);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error retrieving customers by codes for tenant {tenantId}", ex);
-            }
-        }
-
         public async Task<int> GetCustomerCountAsync(int tenantId)
         {
             try
@@ -325,7 +257,7 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting customer count for tenant {TenantId}", tenantId);
+                //_logger?.LogError(ex, "Error getting customer count for tenant {TenantId}", tenantId);
                 throw;
             }
         }
@@ -343,7 +275,7 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting recent customers for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error getting recent customers for tenant {TenantId}", tenantId);
                 throw;
             }
         }
@@ -420,7 +352,7 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting customer statistics for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error getting customer statistics for tenant {TenantId}", tenantId);
                 throw;
             }
         }
@@ -438,7 +370,7 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting top customers by policy count for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error getting top customers by policy count for tenant {TenantId}", tenantId);
                 throw;
             }
         }
@@ -457,7 +389,7 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting customers by status for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error getting customers by status for tenant {TenantId}", tenantId);
                 throw;
             }
         }
@@ -485,7 +417,7 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting customers by month for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error getting customers by month for tenant {TenantId}", tenantId);
                 throw;
             }
         }
@@ -497,15 +429,15 @@ namespace IAMS.Persistence.Repositories
                 var today = DateTime.Today;
 
                 var ages = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.DateOfBirth.HasValue)
-                    .Select(c => EF.Functions.DateDiffYear(c.DateOfBirth!.Value, today))
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Select(c => EF.Functions.DateDiffYear(c.DateOfBirth, today))
                     .ToListAsync();
 
                 return ages.Any() ? ages.Average() : 0;
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error calculating average customer age for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error calculating average customer age for tenant {TenantId}", tenantId);
                 return 0;
             }
         }
@@ -524,9 +456,30 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error getting customers by gender for tenant {TenantId}", tenantId);
+               // _logger?.LogError(ex, "Error getting customers by gender for tenant {TenantId}", tenantId);
                 throw;
             }
         }
+
+        public Task<int> GetNewCustomersCountAsync(int tenantId, DateTime fromDate)
+        {
+            throw new NotImplementedException();
+        }
+
+        #region private methods
+        private static string CleanPhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return string.Empty;
+
+            return phoneNumber
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace("-", "")
+                .Replace(" ", "")
+                .Replace("+", "")
+                .Trim();
+        }
+        #endregion
     }
 }

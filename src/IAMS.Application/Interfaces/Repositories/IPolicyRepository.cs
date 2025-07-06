@@ -15,5 +15,16 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<decimal> GetTotalPremiumByCustomerAsync(int customerId);
         Task<decimal> GetTotalCommissionByCustomerAsync(int customerId);
         Task<DateTime?> GetLastActivityDateAsync(int customerId);
+
+        // Dashboard and statistics methods
+        Task<int> GetPolicyCountAsync(int tenantId);
+        Task<int> GetExpiringPoliciesCountAsync(int tenantId, int daysAhead = 30);
+        Task<decimal> GetMonthlyRevenueAsync(int tenantId);
+        Task<PolicyStatisticsDto> GetPolicyStatisticsAsync(int tenantId);
+        Task<List<Policy>> GetRecentPoliciesAsync(int tenantId, int count = 10);
+        Task<Dictionary<PolicyStatus, int>> GetPoliciesByStatusAsync(int tenantId);
+        Task<Dictionary<string, decimal>> GetRevenueByMonthAsync(int tenantId, int months = 12);
+        Task<List<Policy>> GetTopPoliciesByPremiumAsync(int tenantId, int count = 10);
+        Task<List<Policy>> GetActivePoliciesByCustomerIdAsync(int customerId);
     }
 }

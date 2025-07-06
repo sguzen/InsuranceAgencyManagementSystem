@@ -6,6 +6,10 @@ using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
 using IAMS.Application.Features.Policies.Queries.GetPolicy;
 using IAMS.Application.Features.Policies.Queries.GetPolicies;
+using IAMS.Domain.Enums;
+using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue;
+using IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount;
+using IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount;
 
 namespace IAMS.Application.Services.Policies
 {
@@ -194,6 +198,110 @@ namespace IAMS.Application.Services.Policies
         public Task ProcessExpiringPoliciesAsync()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<Result<int>> GetTotalPoliciesCountAsync()
+        {
+            try
+            {
+                var query = new GetTotalPoliciesCountQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<int>.InternalError($"Poliçe sayısı alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30)
+        {
+            try
+            {
+                var query = new GetExpiringPoliciesCountQuery(daysAhead);
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<int>.InternalError($"Süresi dolacak poliçe sayısı alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<decimal>> GetMonthlyRevenueAsync()
+        {
+            try
+            {
+                var query = new GetMonthlyRevenueQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<decimal>.InternalError($"Aylık gelir alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync()
+        {
+            try
+            {
+                var query = new GetPolicyStatisticsQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<PolicyStatisticsDto>.InternalError($"Poliçe istatistikleri alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public Task<Result<List<PolicyDto>>> GetRecentPoliciesAsync(int count = 5)
+        {
+            try
+            {
+                var query = new GetRecentPoliciesQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<PolicyStatisticsDto>.InternalError($"Poliçe istatistikleri alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public Task<Result<Dictionary<PolicyStatus, int>>> GetPoliciesByStatusAsync()
+        {
+            try
+            {
+                var query = new GetPoliciesByStatusQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<PolicyStatisticsDto>.InternalError($"Poliçe istatistikleri alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public Task<Result<Dictionary<string, decimal>>> GetRevenueByMonthAsync(int months = 12)
+        {
+            try
+            {
+                var query = new GetRevenueByMonthQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<PolicyStatisticsDto>.InternalError($"Poliçe istatistikleri alınırken hata oluştu: {ex.Message}");
+            }
+        }
+
+        public Task<Result<List<PolicyDto>>> GetTopPoliciesByPremiumAsync(int count = 10)
+        {
+            try
+            {
+                var query = new GetTopPoliciesByPremiumQuery();
+                return await _mediator.Send(query);
+            }
+            catch (Exception ex)
+            {
+                return Result<PolicyStatisticsDto>.InternalError($"Poliçe istatistikleri alınırken hata oluştu: {ex.Message}");
+            }
         }
     }
 }

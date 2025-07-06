@@ -2,6 +2,7 @@
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
@@ -87,7 +88,8 @@ namespace IAMS.Persistence.Repositories
             // Apply status filter
             if (queryParams.Status == Domain.Enums.CustomerStatus.Active)
             {
-                query = query.Where(c => c.IsActive == true);
+                //query = query.Where(c => c.IsActive == true);
+                query = query.Where(c => c.Status == Domain.Enums.CustomerStatus.Active && !c.IsDeleted);
             }
 
             // Get total count
@@ -310,6 +312,220 @@ namespace IAMS.Persistence.Repositories
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Error retrieving customers by codes for tenant {tenantId}", ex);
+            }
+        }
+
+        public async Task<int> GetCustomerCountAsync(int tenantId)
+        {
+            try
+            {
+                return await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .CountAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting customer count for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<List<Customer>> GetRecentCustomersAsync(int tenantId, int count = 10)
+        {
+            try
+            {
+                return await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .OrderByDescending(c => c.CreatedOn)
+                    .Take(count)
+                    .Include(c => c.Policies.Where(p => !p.IsDeleted))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting recent customers for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<CustomerStatisticsDto> GetCustomerStatisticsAsync(int tenantId)
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                var startOfMonth = new DateTime(now.Year, now.Month, 1);
+                var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
+                var lastMonth = startOfMonth.AddMonths(-1);
+
+                var totalCustomers = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .CountAsync();
+
+                var activeCustomers = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.Status == CustomerStatus.Active)
+                    .CountAsync();
+
+                var inactiveCustomers = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.Status == CustomerStatus.Inactive)
+                    .CountAsync();
+
+                var newCustomersThisMonth = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.CreatedOn >= startOfMonth)
+                    .CountAsync();
+
+                var newCustomersThisWeek = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.CreatedOn >= startOfWeek)
+                    .CountAsync();
+
+                var newCustomersLastMonth = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
+                               c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth)
+                    .CountAsync();
+
+                // Calculate growth percentage
+                var growthPercentage = newCustomersLastMonth > 0
+                    ? ((decimal)(newCustomersThisMonth - newCustomersLastMonth) / newCustomersLastMonth) * 100
+                    : newCustomersThisMonth > 0 ? 100 : 0;
+
+                var customersWithActivePolicies = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
+                               c.Policies.Any(p => p.IsActive && !p.IsDeleted))
+                    .CountAsync();
+
+                var customersWithoutPolicies = totalCustomers - customersWithActivePolicies;
+
+                // Calculate average age
+                var averageAge = await GetAverageCustomerAgeAsync(tenantId);
+
+                // Get status breakdown
+                var customersByStatus = await GetCustomersByStatusAsync(tenantId);
+
+                // Get gender breakdown
+                var customersByGender = await GetCustomersByGenderAsync(tenantId);
+
+                return new CustomerStatisticsDto
+                {
+                    TotalCustomers = totalCustomers,
+                    ActiveCustomers = activeCustomers,
+                    InactiveCustomers = inactiveCustomers,
+                    NewCustomersThisMonth = newCustomersThisMonth,
+                    NewCustomersThisWeek = newCustomersThisWeek,
+                    CustomerGrowthPercentage = growthPercentage,
+                    CustomersWithActivePolicies = customersWithActivePolicies,
+                    CustomersWithoutPolicies = customersWithoutPolicies,
+                    AverageCustomerAge = averageAge,
+                    CustomersByStatus = customersByStatus,
+                    CustomersByGender = customersByGender
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting customer statistics for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int tenantId, int count = 10)
+        {
+            try
+            {
+                return await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Include(c => c.Policies.Where(p => !p.IsDeleted))
+                    .OrderByDescending(c => c.Policies.Count(p => !p.IsDeleted))
+                    .Take(count)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting top customers by policy count for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync(int tenantId)
+        {
+            try
+            {
+                var statusCounts = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .GroupBy(c => c.Status)
+                    .Select(g => new { Status = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                return statusCounts.ToDictionary(x => x.Status, x => x.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting customers by status for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int tenantId, int months = 12)
+        {
+            try
+            {
+                var startDate = DateTime.UtcNow.AddMonths(-months);
+
+                var monthlyData = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.CreatedOn >= startDate)
+                    .GroupBy(c => new { c.CreatedOn.Year, c.CreatedOn.Month })
+                    .Select(g => new {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Count = g.Count()
+                    })
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToListAsync();
+
+                return monthlyData.ToDictionary(
+                    x => $"{x.Year}-{x.Month:D2}",
+                    x => x.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting customers by month for tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task<double> GetAverageCustomerAgeAsync(int tenantId)
+        {
+            try
+            {
+                var today = DateTime.Today;
+
+                var ages = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.DateOfBirth.HasValue)
+                    .Select(c => EF.Functions.DateDiffYear(c.DateOfBirth!.Value, today))
+                    .ToListAsync();
+
+                return ages.Any() ? ages.Average() : 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error calculating average customer age for tenant {TenantId}", tenantId);
+                return 0;
+            }
+        }
+
+        public async Task<Dictionary<Gender, int>> GetCustomersByGenderAsync(int tenantId)
+        {
+            try
+            {
+                var genderCounts = await _dbSet
+                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .GroupBy(c => c.Gender)
+                    .Select(g => new { Gender = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                return genderCounts.ToDictionary(x => x.Gender, x => x.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error getting customers by gender for tenant {TenantId}", tenantId);
+                throw;
             }
         }
     }

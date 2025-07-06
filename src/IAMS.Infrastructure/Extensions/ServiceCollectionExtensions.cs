@@ -16,7 +16,7 @@ namespace IAMS.Infrastructure.Extensions
             // Add Integration Database for logs, reports, and file metadata
             services.AddDbContext<IntegrationDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("IntegrationConnection")
-                    ?? configuration.GetConnectionString("DefaultConnection")));
+                    ?? configuration.GetConnectionString("IntegrationConnection")));
 
             // Add HTTP Client Factory for integration services
             services.AddHttpClient();

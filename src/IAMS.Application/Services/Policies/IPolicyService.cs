@@ -1,5 +1,6 @@
 ﻿using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Models;
+using IAMS.Domain.Enums;
 
 public interface IPolicyService
 {
@@ -18,4 +19,14 @@ public interface IPolicyService
     Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null);
     Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto);
     Task ProcessExpiringPoliciesAsync();
+
+    // Dashboard statistics methods
+    Task<Result<int>> GetTotalPoliciesCountAsync();
+    Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30);
+    Task<Result<decimal>> GetMonthlyRevenueAsync();
+    Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync();
+    Task<Result<List<PolicyDto>>> GetRecentPoliciesAsync(int count = 5);
+    Task<Result<Dictionary<PolicyStatus, int>>> GetPoliciesByStatusAsync();
+    Task<Result<Dictionary<string, decimal>>> GetRevenueByMonthAsync(int months = 12);
+    Task<Result<List<PolicyDto>>> GetTopPoliciesByPremiumAsync(int count = 10);
 }

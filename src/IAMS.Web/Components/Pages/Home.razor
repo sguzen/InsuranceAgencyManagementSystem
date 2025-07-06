@@ -250,32 +250,32 @@
         </MudText>
         <MudGrid>
             <MudItem xs="12" sm="6" md="3">
-                <IMudChip Color="Color.Success" 
-                         Size="Size.Medium" 
+                <MudChip Color="Color.Success" 
+                         Size="Size.Medium" T="string"
                          Icon="@Icons.Material.Filled.Check">
                     Temel Sistem
-                </IMudChip>
+                </MudChip>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <IMudChip Color="@(TenantContext.IsModuleEnabled("Reporting") ? Color.Success : Color.Default)" 
-                         Size="Size.Medium" 
+                <MudChip Color="@(TenantContext.IsModuleEnabled("Reporting") ? Color.Success : Color.Default)" 
+                         Size="Size.Medium" T="string"
                          Icon="@(TenantContext.IsModuleEnabled("Reporting") ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
                     Raporlama
-                </IMudChip>
+                </MudChip>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <IMudChip Color="@(TenantContext.IsModuleEnabled("Accounting") ? Color.Success : Color.Default)" 
-                         Size="Size.Medium" 
+                <MudChip Color="@(TenantContext.IsModuleEnabled("Accounting") ? Color.Success : Color.Default)" 
+                         Size="Size.Medium" T="string"
                          Icon="@(TenantContext.IsModuleEnabled("Accounting") ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
                     Muhasebe
-                </IMudChip>
+                </MudChip>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
-                <IMudChip Color="@(TenantContext.IsModuleEnabled("Integration") ? Color.Success : Color.Default)" 
-                         Size="Size.Medium" 
+                <MudChip Color="@(TenantContext.IsModuleEnabled("Integration") ? Color.Success : Color.Default)" 
+                         Size="Size.Medium" T="string"
                          Icon="@(TenantContext.IsModuleEnabled("Integration") ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)">
                     Entegrasyon
-                </IMudChip>
+                </MudChip>
             </MudItem>
         </MudGrid>
     </MudPaper>
@@ -298,13 +298,13 @@
         try
         {
             // Load dashboard statistics
-            //_totalCustomers = await CustomerService.GetTotalCustomersCountAsync();
-            // _totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
-            // _expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
-            // _monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
-            
+            _totalCustomers = await CustomerService.GetTotalCustomersCountAsync(TenantContext.CurrentTenant.Id);
+            _totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
+            _expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
+            _monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
+
             // Load recent customers
-           // _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).ToList();
+            _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
         }
         catch (Exception ex)
         {

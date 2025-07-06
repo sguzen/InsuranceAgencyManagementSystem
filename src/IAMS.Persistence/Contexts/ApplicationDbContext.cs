@@ -27,6 +27,7 @@ namespace IAMS.Persistence.Contexts
         public DbSet<PolicyClaim> PolicyClaims { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

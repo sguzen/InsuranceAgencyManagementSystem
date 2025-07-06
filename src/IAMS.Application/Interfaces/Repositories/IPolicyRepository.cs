@@ -6,25 +6,55 @@ namespace IAMS.Application.Interfaces.Repositories
 {
     public interface IPolicyRepository : IRepository<Policy>
     {
-        Task<IEnumerable<Policy>> GetPoliciesByCustomerIdAsync(int customerId);
-        Task<IEnumerable<Policy>> GetPoliciesByCompanyIdAsync(int companyId);
-        Task<IEnumerable<Policy>> GetPoliciesByStatusAsync(PolicyStatus status);
-        Task<IEnumerable<Policy>> GetExpiringPoliciesAsync(DateTime date);
-        Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
+        // Basic CRUD operations
         Task<Policy?> GetByPolicyNumberAsync(string policyNumber);
-        Task<decimal> GetTotalPremiumByCustomerAsync(int customerId);
-        Task<decimal> GetTotalCommissionByCustomerAsync(int customerId);
-        Task<DateTime?> GetLastActivityDateAsync(int customerId);
+        Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId);
+        Task<bool> PolicyNumberExistsAsync(string policyNumber, int tenantId, int? excludePolicyId = null);
 
-        // Dashboard and statistics methods
+        // Paged queries
+        Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
+        Task<PagedResult<Policy>> GetPoliciesByStatusPagedAsync(PolicyStatus status, int pageNumber, int pageSize);
+
+        // Status-based queries
+        Task<List<Policy>> GetActivePoliciesAsync(int tenantId);
+        Task<List<Policy>> GetPoliciesByStatusAsync(PolicyStatus status, int tenantId);
+        Task<List<Policy>> GetExpiringPoliciesAsync(int daysAhead, int tenantId);
+        Task<List<Policy>> GetExpiredPoliciesAsync(int tenantId);
+        Task<List<Policy>> GetRecentPoliciesAsync(int count, int tenantId);
+        Task<List<Policy>> GetTopPoliciesByPremiumAsync(int count, int tenantId);
+
+        // Count queries
         Task<int> GetPolicyCountAsync(int tenantId);
-        Task<int> GetExpiringPoliciesCountAsync(int tenantId, int daysAhead = 30);
-        Task<decimal> GetMonthlyRevenueAsync(int tenantId);
-        Task<PolicyStatisticsDto> GetPolicyStatisticsAsync(int tenantId);
-        Task<List<Policy>> GetRecentPoliciesAsync(int tenantId, int count = 10);
-        Task<Dictionary<PolicyStatus, int>> GetPoliciesByStatusAsync(int tenantId);
+        Task<int> GetActivePolicyCountAsync(int tenantId);
+        Task<int> GetExpiringPolicyCountAsync(int daysAhead, int tenantId);
+        Task<int> GetExpiredPolicyCountAsync(int tenantId);
+        Task<Dictionary<PolicyStatus, int>> GetPolicyCountByStatusAsync(int tenantId);
+
+        // Revenue queries
+        Task<decimal> GetMonthlyRevenueAsync(int tenantId, DateTime? month = null);
+        Task<decimal> GetYearlyRevenueAsync(int tenantId, int? year = null);
         Task<Dictionary<string, decimal>> GetRevenueByMonthAsync(int tenantId, int months = 12);
-        Task<List<Policy>> GetTopPoliciesByPremiumAsync(int tenantId, int count = 10);
-        Task<List<Policy>> GetActivePoliciesByCustomerIdAsync(int customerId);
+        Task<decimal> GetTotalPremiumByCustomerAsync(int customerId, int tenantId);
+
+        // Business rule validation
+        Task<bool> HasOverduePaymentsAsync(int policyId);
+        Task<bool> CanBeCancelledAsync(int policyId);
+        Task<bool> CanBeRenewedAsync(int policyId);
+
+        // Advanced queries
+        Task<List<Policy>> GetPoliciesExpiringInDateRangeAsync(DateTime startDate, DateTime endDate, int tenantId);
+        Task<List<Policy>> SearchPoliciesAsync(string searchTerm, int tenantId);
+        Task<List<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId, int tenantId);
+        Task<List<Policy>> GetPoliciesByPolicyTypeAsync(int policyTypeId, int tenantId);
+
+        // Reporting queries
+        Task<List<Policy>> GetPoliciesForReportAsync(DateTime? startDate, DateTime? endDate, PolicyStatus? status, int tenantId);
+        Task<Dictionary<string, object>> GetPolicyAnalyticsAsync(int tenantId);
+
+        // Integration support
+        Task<List<Policy>> GetPoliciesModifiedAfterAsync(DateTime modifiedDate, int tenantId);
+        Task<Policy?> GetPolicyByExternalIdAsync(string externalId, int insuranceCompanyId, int tenantId);
+        Task UpdateExternalSyncStatusAsync(int policyId, bool synced, DateTime? lastSyncDate = null);
+        Task<int> GetExpiringPoliciesCountAsync(int tenantId, int daysAhead);
     }
 }

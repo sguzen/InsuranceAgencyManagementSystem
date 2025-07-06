@@ -5,6 +5,7 @@ using IAMS.MultiTenancy.Interfaces;
 using Microsoft.Extensions.Configuration;
 using IAMS.Application.Models;
 using IAMS.Application.DTOs.Policy;
+using IAMS.Domain.Enums;
 
 namespace IAMS.Infrastructure.Services
 {
@@ -188,6 +189,46 @@ namespace IAMS.Infrastructure.Services
         }
 
         public Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<int>> GetTotalPoliciesCountAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<decimal>> GetMonthlyRevenueAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<List<PolicyDto>>> GetRecentPoliciesAsync(int count = 5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<Dictionary<PolicyStatus, int>>> GetPoliciesByStatusAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<Dictionary<string, decimal>>> GetRevenueByMonthAsync(int months = 12)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<List<PolicyDto>>> GetTopPoliciesByPremiumAsync(int count = 10)
         {
             throw new NotImplementedException();
         }

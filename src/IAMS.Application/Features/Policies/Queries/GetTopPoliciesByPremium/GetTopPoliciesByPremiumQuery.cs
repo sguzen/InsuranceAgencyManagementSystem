@@ -4,5 +4,13 @@ using MediatR;
 
 namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
 {
-    public record GetTopPoliciesByPremiumQuery(int Count = 10) : IRequest<Result<List<PolicyDto>>>;
+    public class GetTopPoliciesByPremiumQuery : IRequest<Result<List<PolicyDto>>>
+    {
+        public int Count { get; }
+
+        public GetTopPoliciesByPremiumQuery(int count = 10)
+        {
+            Count = count;
+        }
+    }
 }

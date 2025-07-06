@@ -159,17 +159,27 @@ static async Task InitializeDatabasesAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var serviceProvider = scope.ServiceProvider;
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
-        // Initialize master database (this doesn't need tenant context)
+        // 1. Initialize master database (TenantDb) - for tenant management
+        logger.LogInformation("Initializing master database (TenantDb)...");
         var masterDbContext = serviceProvider.GetRequiredService<IAMS.MultiTenancy.Data.TenantDbContext>();
         await masterDbContext.Database.EnsureCreatedAsync();
+        logger.LogInformation("Master database (TenantDb) initialized successfully");
 
-        // NOTE: Don't try to initialize tenant databases here during startup
-        // They should be initialized when a tenant is first accessed
-        // or through a separate initialization process
+        // 2. Initialize application database (AppDb) - for customer data, policies, etc.
+        logger.LogInformation("Initializing application database (AppDb)...");
+        var appDbContext = serviceProvider.GetRequiredService<IAMS.Persistence.Contexts.ApplicationDbContext>();
+        await appDbContext.Database.EnsureCreatedAsync();
+        logger.LogInformation("Application database (AppDb) initialized successfully");
 
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("Master database initialized successfully");
+        // 3. Optional: Initialize integration database if you use it
+        // logger.LogInformation("Initializing integration database (IntegrationDb)...");
+        // var integrationDbContext = serviceProvider.GetRequiredService<IntegrationDbContext>();
+        // await integrationDbContext.Database.EnsureCreatedAsync();
+        // logger.LogInformation("Integration database (IntegrationDb) initialized successfully");
+
+        logger.LogInformation("All databases initialized successfully");
     }
     catch (Exception ex)
     {

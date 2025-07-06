@@ -18,7 +18,7 @@ namespace IAMS.Identity.Extensions
         {
             // Add Identity DbContext
             services.AddDbContext<IdentityDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(configuration.GetConnectionString("ItentityConnection")));
 
             // Add Identity with custom user and role
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

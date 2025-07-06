@@ -1,6 +1,7 @@
 ﻿using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +24,16 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<bool> EmailExistsAsync(string email, int tenantId, int? excludeCustomerId = null);
         Task<bool> CustomerCodeExistsAsync(string customerCode, int tenantId, int? excludeCustomerId = null);
         Task<List<Customer>> GetCustomersCreatedBetweenAsync(int tenantId, DateTime startDate, DateTime endDate);
+
+        // Dashboard and statistics methods
+        Task<int> GetCustomerCountAsync(int tenantId);
+        Task<List<Customer>> GetRecentCustomersAsync(int tenantId, int count = 10);
+        Task<CustomerStatisticsDto> GetCustomerStatisticsAsync(int tenantId);
+        Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int tenantId, int count = 10);
+        Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync(int tenantId);
+        Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int tenantId, int months = 12);
+        Task<int> GetNewCustomersCountAsync(int tenantId, DateTime fromDate);
+        Task<double> GetAverageCustomerAgeAsync(int tenantId);
+        Task<Dictionary<Gender, int>> GetCustomersByGenderAsync(int tenantId);
     }
 }

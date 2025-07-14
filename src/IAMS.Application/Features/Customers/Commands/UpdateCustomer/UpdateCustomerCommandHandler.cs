@@ -84,6 +84,9 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 var originalEmail = existingCustomer.Email;
                 var originalKktcNo = existingCustomer.KktcNo;
                 var originalPhone = existingCustomer.Phone;
+                var originalFirstName = existingCustomer.FirstName;
+                var originalLastName = existingCustomer.LastName;
+                var originalDateOfBirth = existingCustomer.DateOfBirth;
 
                 _mapper.Map(request.CustomerDto, existingCustomer);
 
@@ -139,23 +142,23 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 }
 
                 // Check if KKTC number is being changed and if new KKTC number already exists
-                if (!string.IsNullOrEmpty(request.CustomerDto.KktcNumber) &&
-                    existingCustomer.KktcNo != request.CustomerDto.KktcNumber)
+                if (!string.IsNullOrEmpty(request.CustomerDto.KktcNo) &&
+                    existingCustomer.KktcNo != request.CustomerDto.KktcNo)
                 {
-                    var duplicateKktc = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNumber, tenantId);
+                    var duplicateKktc = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNo, tenantId);
                     if (duplicateKktc != null && duplicateKktc.Id != request.Id)
                     {
-                        errors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.KktcNumber}) başka bir müşteri tarafından kullanılmaktadır");
+                        errors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.KktcNo}) başka bir müşteri tarafından kullanılmaktadır");
                     }
                 }
 
                 // Check if phone number is being changed and if new phone number already exists
-                if (existingCustomer.Phone != request.CustomerDto.PhoneNumber)
+                if (existingCustomer.Phone != request.CustomerDto.Phone)
                 {
-                    var duplicatePhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.PhoneNumber, tenantId);
+                    var duplicatePhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.Phone, tenantId);
                     if (duplicatePhone != null && duplicatePhone.Id != request.Id)
                     {
-                        errors.Add($"Bu telefon numarası ({request.CustomerDto.PhoneNumber}) başka bir müşteri tarafından kullanılmaktadır");
+                        errors.Add($"Bu telefon numarası ({request.CustomerDto.Phone}) başka bir müşteri tarafından kullanılmaktadır");
                     }
                 }
 

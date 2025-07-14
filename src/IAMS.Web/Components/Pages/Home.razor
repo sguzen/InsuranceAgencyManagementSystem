@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
 @using MudBlazor
@@ -151,7 +151,7 @@
                                             </MudText>
                                         </div>
                                         <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @customer.CreatedDate.ToString("dd/MM")
+                                            @customer.CreatedOn.ToString("dd/MM")
                                         </MudText>
                                     </div>
                                 </MudListItem>

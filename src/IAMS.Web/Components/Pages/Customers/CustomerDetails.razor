@@ -55,16 +55,16 @@ else
 
             <!-- Status Badge -->
             <MudStack Row Spacing="2">
-                <IMudChip Color="@GetStatusColor(customer.Status)" 
-                        Size="Size.Medium" 
-                        Variant="Variant.Filled">
+                <MudChip Color="@GetStatusColor(customer.Status)" 
+                        Size="Size.Medium"
+                         Variant="Variant.Filled" T="CustomerStatus">
                     @GetStatusText(customer.Status)
-                </IMudChip>
-                <IMudChip Color="Color.Info" 
+                </MudChip>
+                <MudChip Color="Color.Info" 
                         Size="Size.Medium" 
-                        Variant="Variant.Outlined">
+                        Variant="Variant.Outlined" T="int">
                     @policies.Count Poliçe
-                </IMudChip>
+                </MudChip>
             </MudStack>
 
             <!-- Tabs -->
@@ -296,20 +296,20 @@ else
                                     <MudAlert Severity="MudBlazor.Severity.Success" NoIcon="true" Dense="true">
                                         <MudText Typo="Typo.body2">
                                             <strong>Müşteri oluşturuldu</strong><br />
-                                            @customer.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+                                            @customer.CreatedOn.ToString("dd.MM.yyyy HH:mm")
                                         </MudText>
                                     </MudAlert>
                                 </ItemContent>
                             </MudTimelineItem>
                             
-                            @if (customer.UpdatedDate != customer.CreatedDate)
+                            @if (customer.UpdatedOn != customer.CreatedOn)
                             {
                                 <MudTimelineItem Color="Color.Info" Size="Size.Small">
                                     <ItemContent>
                                         <MudAlert Severity="MudBlazor.Severity.Info" NoIcon="true" Dense="true">
                                             <MudText Typo="Typo.body2">
                                                 <strong>Müşteri bilgileri güncellendi</strong><br />
-                                                @customer.UpdatedDate 
+                                                @customer.UpdatedOn 
                                             </MudText>
                                         </MudAlert>
                                     </ItemContent>

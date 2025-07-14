@@ -321,7 +321,7 @@ namespace IAMS.Persistence.Repositories
 
                 var customersWithActivePolicies = await _dbSet
                     .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
-                               c.Policies.Any(p => p.IsActive && !p.IsDeleted))
+                               c.Policies.Any(p => p.Status== PolicyStatus.Active && !p.IsDeleted))
                     .CountAsync();
 
                 var customersWithoutPolicies = totalCustomers - customersWithActivePolicies;

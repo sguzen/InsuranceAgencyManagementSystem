@@ -1,0 +1,653 @@
+﻿@page "/policies/create"
+@page "/policies/{PolicyId:int}/edit"
+@layout Layout.MainLayout
+
+@using IAMS.Application.DTOs.Policy
+@using IAMS.Application.DTOs.Customer
+@using IAMS.Application.DTOs.InsuranceCompany
+@using IAMS.Application.DTOs.PolicyType
+@using IAMS.Application.Interfaces
+@using IAMS.Application.Services.Customers
+@using IAMS.Application.Services.InsuranceCompanies
+@using IAMS.Application.Services.PolicyTypes
+@using IAMS.Domain.Enums
+@using FluentValidation
+@inject IPolicyService PolicyService
+@inject ICustomerService CustomerService
+@inject IPolicyTypeService PolicyTypeService
+@inject IInsuranceCompanyService InsuranceCompanyService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEdit ? "Poliçe Düzenle" : "Yeni Poliçe")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">
+                <MudIcon Icon="@(IsEdit ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-3" />
+                @(IsEdit ? "Poliçe Düzenle" : "Yeni Poliçe")
+            </MudText>
+            <MudButton Variant="Variant.Outlined" 
+                      StartIcon="@Icons.Material.Filled.ArrowBack"
+                      OnClick="GoBack">
+                Geri
+            </MudButton>
+        </MudStack>
+
+        @if (loading)
+        {
+            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText>@(IsEdit ? "Poliçe bilgileri yükleniyor..." : "Form hazırlanıyor...")</MudText>
+            </MudStack>
+        }
+        else
+        {
+            <!-- Form -->
+            <EditForm Model="@model" OnValidSubmit="OnValidSubmit" FormName="policyForm">
+                <FluentValidationValidator />
+                
+                <MudGrid>
+                    <!-- Basic Information -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                                        Temel Bilgiler
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="model.PolicyNumber"
+                                                    Label="Poliçe Numarası *"
+                                                    Variant="Variant.Outlined"
+                                                    Required="true"
+                                                    For="@(() => model.PolicyNumber)"
+                                                    Counter="50"
+                                                    MaxLength="50"
+                                                    HelperText="Benzersiz poliçe numarası" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudSelect @bind-Value="model.Status"
+                                                 Label="Durum *"
+                                                 Variant="Variant.Outlined"
+                                                 Required="true"
+                                                 For="@(() => model.Status)"
+                                                 T="PolicyStatus">
+                                            <MudSelectItem Value="@PolicyStatus.Draft">Taslak</MudSelectItem>
+                                            <MudSelectItem Value="@PolicyStatus.Active">Aktif</MudSelectItem>
+                                            <MudSelectItem Value="@PolicyStatus.Suspended">Askıya Alınmış</MudSelectItem>
+                                            <MudSelectItem Value="@PolicyStatus.Cancelled">İptal</MudSelectItem>
+                                            <MudSelectItem Value="@PolicyStatus.Expired">Süresi Dolmuş</MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Customer and Company Information -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                                        Müşteri ve Şirket Bilgileri
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="4">
+                                        <MudAutocomplete @bind-Value="selectedCustomer"
+                                                       SearchFunc="@SearchCustomers"
+                                                       ToStringFunc="@(customer => customer?.FirstName + " " + customer?.LastName)"
+                                                       Label="Müşteri *"
+                                                       Variant="Variant.Outlined"
+                                                       Required="true"
+                                                       ResetValueOnEmptyText="true"
+                                                       CoerceText="true"
+                                                       CoerceValue="true"
+                                                       MaxItems="50"
+                                                       HelperText="Müşteri adı ile arayın">
+                                            <ItemTemplate Context="customerItem">
+                                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                                        @customerItem.FirstName.FirstOrDefault()@customerItem.LastName.FirstOrDefault()
+                                                    </MudAvatar>
+                                                    <MudStack Spacing="0">
+                                                        <MudText Typo="Typo.body2">@customerItem.FirstName @customerItem.LastName</MudText>
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@customerItem.Email</MudText>
+                                                    </MudStack>
+                                                </MudStack>
+                                            </ItemTemplate>
+                                        </MudAutocomplete>
+                                    </MudItem>
+                                    <MudItem xs="12" md="4">
+                                        <MudSelect @bind-Value="model.InsuranceCompanyId"
+                                                 Label="Sigorta Şirketi *"
+                                                 Variant="Variant.Outlined"
+                                                 Required="true"
+                                                 For="@(() => model.InsuranceCompanyId)"
+                                                 T="int">
+                                            @if (insuranceCompanies != null)
+                                            {
+                                                @foreach (var company in insuranceCompanies)
+                                                {
+                                                    <MudSelectItem Value="@company.Id">@company.Name</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="12" md="4">
+                                        <MudSelect @bind-Value="model.PolicyTypeId"
+                                                 Label="Poliçe Tipi *"
+                                                 Variant="Variant.Outlined"
+                                                 Required="true"
+                                                 For="@(() => model.PolicyTypeId)"
+                                                 T="int">
+                                            @if (policyTypes != null)
+                                            {
+                                                @foreach (var policyType in policyTypes)
+                                                {
+                                                    <MudSelectItem Value="@policyType.Id">@policyType.Name</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Policy Period -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.DateRange" Class="mr-2" />
+                                        Poliçe Dönemi
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="6">
+                                        <MudDatePicker @bind-Date="model.StartDate"
+                                                     Label="Başlangıç Tarihi *"
+                                                     Variant="Variant.Outlined"
+                                                     Required="true"
+                                                     For="@(() => model.StartDate)"
+                                                     Culture="@(new System.Globalization.CultureInfo("tr-TR"))"
+                                                     DateChanged="OnStartDateChanged" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudDatePicker @bind-Date="model.EndDate"
+                                                     Label="Bitiş Tarihi *"
+                                                     Variant="Variant.Outlined"
+                                                     Required="true"
+                                                     For="@(() => model.EndDate)"
+                                                     Culture="@(new System.Globalization.CultureInfo("tr-TR"))"
+                                                     MinDate="model.StartDate?.AddDays(1)" />
+                                    </MudItem>
+                                </MudGrid>
+                                @if (model.StartDate.HasValue && model.EndDate.HasValue)
+                                {
+                                    <MudAlert Severity="MudBlazor.Severity.Info" Class="mt-3">
+                                        <MudText>
+                                            Poliçe süresi: @((model.EndDate.Value - model.StartDate.Value).TotalDays) gün
+                                            (@Math.Round((model.EndDate.Value - model.StartDate.Value).TotalDays / 365.25, 1) yıl)
+                                        </MudText>
+                                    </MudAlert>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Financial Information -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
+                                        Mali Bilgiler
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="4">
+                                        <MudNumericField @bind-Value="model.PremiumAmount"
+                                                       Label="Prim Tutarı *"
+                                                       Variant="Variant.Outlined"
+                                                       Required="true"
+                                                       For="@(() => model.PremiumAmount)"
+                                                       Format="N2"
+                                                       Culture="@(new System.Globalization.CultureInfo("tr-TR"))"
+                                                       Adornment="Adornment.End"
+                                                       AdornmentText="₺"
+                                                       Min="0"
+                                                       Step="0.01M"
+                                                       ValueChanged="OnPremiumAmountChanged" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="4">
+                                        <MudNumericField @bind-Value="model.CommissionRate"
+                                                       Label="Komisyon Oranı"
+                                                       Variant="Variant.Outlined"
+                                                       For="@(() => model.CommissionRate)"
+                                                       Format="N2"
+                                                       Adornment="Adornment.End"
+                                                       AdornmentText="%"
+                                                       Min="0"
+                                                       Max="100"
+                                                       Step="0.01M"
+                                                       ValueChanged="OnCommissionRateChanged" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="4">
+                                        <MudNumericField @bind-Value="model.CommissionAmount"
+                                                       Label="Komisyon Tutarı"
+                                                       Variant="Variant.Outlined"
+                                                       For="@(() => model.CommissionAmount)"
+                                                       Format="N2"
+                                                       Culture="@(new System.Globalization.CultureInfo("tr-TR"))"
+                                                       Adornment="Adornment.End"
+                                                       AdornmentText="₺"
+                                                       Min="0"
+                                                       Step="0.01M"
+                                                       ReadOnly="true"
+                                                       HelperText="Otomatik hesaplanır" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudSelect @bind-Value="model.Currency"
+                                                 Label="Para Birimi"
+                                                 Variant="Variant.Outlined"
+                                                 For="@(() => model.Currency)"
+                                                 T="string">
+                                            <MudSelectItem Value="@("TRY")">Türk Lirası (₺)</MudSelectItem>
+                                            <MudSelectItem Value="@("USD")">ABD Doları ($)</MudSelectItem>
+                                            <MudSelectItem Value="@("EUR")">Euro (€)</MudSelectItem>
+                                            <MudSelectItem Value="@("GBP")">İngiliz Sterlini (£)</MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Additional Information -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2" />
+                                        Ek Bilgiler
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="model.Notes"
+                                                    Label="Notlar"
+                                                    Variant="Variant.Outlined"
+                                                    For="@(() => model.Notes)"
+                                                    Lines="4"
+                                                    Counter="1000"
+                                                    MaxLength="1000"
+                                                    HelperText="Poliçe hakkında özel notlar" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Form Actions -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardActions Class="justify-end">
+                                <MudButton Variant="Variant.Text"
+                                          OnClick="GoBack"
+                                          Disabled="saving">
+                                    İptal
+                                </MudButton>
+                                <MudButton ButtonType="ButtonType.Submit"
+                                          Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          Loading="saving"
+                                          StartIcon="@Icons.Material.Filled.Save">
+                                    @(IsEdit ? "Güncelle" : "Kaydet")
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+
+                <!-- Validation Summary -->
+                <MudValidationSummary />
+            </EditForm>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter] public int? PolicyId { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int? CustomerId { get; set; }
+
+    private CreatePolicyDto model = new();
+    private bool loading = false;
+    private bool saving = false;
+
+    // Lookup data
+    private List<CustomerDto>? customers;
+    private List<InsuranceCompanyDto>? insuranceCompanies;
+    private List<PolicyTypeDto>? policyTypes;
+    private CustomerDto? selectedCustomer;
+
+    private bool IsEdit => PolicyId.HasValue && PolicyId.Value > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLookupData();
+
+        if (IsEdit)
+        {
+            await LoadPolicy();
+        }
+        else
+        {
+            // Set default values for new policy
+            model.Status = PolicyStatus.Draft;
+            model.Currency = "TRY";
+            model.StartDate = DateTime.Today;
+            model.EndDate = DateTime.Today.AddYears(1);
+
+            // Pre-select customer if provided
+            if (CustomerId.HasValue)
+            {
+                await LoadCustomerById(CustomerId.Value);
+            }
+        }
+    }
+
+    private async Task LoadLookupData()
+    {
+        loading = true;
+        try
+        {
+            var tasks = new List<Task>
+            {
+                LoadInsuranceCompanies(),
+                LoadPolicyTypes()
+            };
+
+            await Task.WhenAll(tasks);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadInsuranceCompanies()
+    {
+        try
+        {
+            var result = await InsuranceCompanyService.GetActiveCompaniesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                insuranceCompanies = result.Data;
+            }
+            else
+            {
+                insuranceCompanies = new List<InsuranceCompanyDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading insurance companies: {ex.Message}");
+            insuranceCompanies = new List<InsuranceCompanyDto>();
+        }
+    }
+
+    private async Task LoadPolicyTypes()
+    {
+        try
+        {
+            policyTypes = await PolicyTypeService.GetActiveTypesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading policy types: {ex.Message}");
+            policyTypes = new List<Application.DTOs.Policy.PolicyTypeDto>();
+        }
+    }
+
+    private async Task LoadCustomerById(int customerId)
+    {
+        try
+        {
+            var result = await CustomerService.GetCustomerByIdAsync(customerId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                selectedCustomer = result.Data;
+                model.CustomerId = customerId;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading customer: {ex.Message}");
+        }
+    }
+
+    private async Task LoadPolicy()
+    {
+        if (!PolicyId.HasValue) return;
+
+        loading = true;
+        try
+        {
+            var result = await PolicyService.GetPolicyByIdAsync(PolicyId.Value);
+            if (result.IsSuccess && result.Data != null)
+            {
+                var policy = result.Data;
+                model = new CreatePolicyDto
+                {
+                    PolicyNumber = policy.PolicyNumber,
+                    CustomerId = policy.CustomerId,
+                    InsuranceCompanyId = policy.InsuranceCompanyId,
+                    PolicyTypeId = policy.PolicyTypeId,
+                    StartDate = policy.StartDate,
+                    EndDate = policy.EndDate,
+                    PremiumAmount = policy.PremiumAmount,
+                    CommissionAmount = policy.CommissionAmount,
+                    CommissionRate = policy.CommissionRate,
+                    Status = policy.Status,
+                    Notes = policy.Notes,
+                    Currency = policy.Currency
+                };
+
+                // Load the selected customer
+                if (policy.Customer != null)
+                {
+                    selectedCustomer = policy.Customer;
+                }
+            }
+            else
+            {
+                Snackbar.Add("Poliçe bulunamadı", MudBlazor.Severity.Error);
+                GoBack();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Poliçe yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            GoBack();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText)
+    {
+        if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
+            return new List<CustomerDto>();
+
+        try
+        {
+            var queryParams = new CustomerQueryParams
+            {
+                SearchTerm = searchText,
+                PageSize = 50,
+                PageNumber = 1
+            };
+
+            var result = await CustomerService.GetCustomersAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching customers: {ex.Message}");
+        }
+
+        return new List<CustomerDto>();
+    }
+
+    private void OnStartDateChanged(DateTime? startDate)
+    {
+        if (startDate.HasValue && model.EndDate.HasValue)
+        {
+            // If end date is before or equal to start date, set it to one year later
+            if (model.EndDate <= startDate)
+            {
+                model.EndDate = startDate.Value.AddYears(1);
+            }
+        }
+    }
+
+    private void OnPremiumAmountChanged(decimal premiumAmount)
+    {
+        model.PremiumAmount = premiumAmount;
+        CalculateCommission();
+    }
+
+    private void OnCommissionRateChanged(decimal commissionRate)
+    {
+        model.CommissionRate = commissionRate;
+        CalculateCommission();
+    }
+
+    private void CalculateCommission()
+    {
+        if (model.PremiumAmount > 0 && model.CommissionRate > 0)
+        {
+            model.CommissionAmount = model.PremiumAmount * (model.CommissionRate / 100);
+        }
+        else
+        {
+            model.CommissionAmount = 0;
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (selectedCustomer != null)
+        {
+            model.CustomerId = selectedCustomer.Id;
+        }
+
+        saving = true;
+        try
+        {
+            if (IsEdit)
+            {
+                var updateDto = new UpdatePolicyDto
+                {
+                    PolicyNumber = model.PolicyNumber,
+                    CustomerId = model.CustomerId,
+                    InsuranceCompanyId = model.InsuranceCompanyId,
+                    PolicyTypeId = model.PolicyTypeId,
+                    StartDate = model.StartDate!.Value,
+                    EndDate = model.EndDate!.Value,
+                    PremiumAmount = model.PremiumAmount,
+                    CommissionAmount = model.CommissionAmount,
+                    CommissionRate = model.CommissionRate,
+                    Status = model.Status,
+                    Notes = model.Notes,
+                    Currency = model.Currency
+                };
+
+                var updateResult = await PolicyService.UpdatePolicyAsync(PolicyId!.Value, updateDto);
+                if (updateResult.IsSuccess)
+                {
+                    Snackbar.Add("Poliçe başarıyla güncellendi", MudBlazor.Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    if (updateResult.Errors?.Any() == true)
+                    {
+                        foreach (var error in updateResult.Errors)
+                        {
+                            Snackbar.Add(error, MudBlazor.Severity.Warning);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add(updateResult.Message ?? "Poliçe güncellenirken hata oluştu", MudBlazor.Severity.Error);
+                    }
+                }
+            }
+            else
+            {
+                var createResult = await PolicyService.CreatePolicyAsync(model);
+                if (createResult.IsSuccess)
+                {
+                    Snackbar.Add("Poliçe başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    if (createResult.Errors?.Any() == true)
+                    {
+                        foreach (var error in createResult.Errors)
+                        {
+                            Snackbar.Add(error, MudBlazor.Severity.Warning);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add(createResult.Message ?? "Poliçe oluşturulurken hata oluştu", MudBlazor.Severity.Error);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/policies");
+    }
+}

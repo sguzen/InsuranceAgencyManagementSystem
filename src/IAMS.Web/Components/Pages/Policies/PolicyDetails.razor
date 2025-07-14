@@ -1,0 +1,646 @@
+﻿@page "/policies/{PolicyId:int}"
+@layout Layout.MainLayout
+@using IAMS.Application.DTOs.Policy
+@using IAMS.Application.Interfaces
+@using IAMS.Domain.Enums
+@using IAMS.Web.Components.Shared
+@inject IPolicyService PolicyService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Poliçe Detayları</PageTitle>
+
+@if (policy == null)
+{
+    <MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <MudText>Poliçe bilgileri yükleniyor...</MudText>
+        </MudStack>
+    </MudContainer>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+        <MudStack Spacing="4">
+            <!-- Header with Policy Number and Actions -->
+            <MudCard Elevation="3">
+                <MudCardContent>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.h4" Color="Color.Primary">@policy.PolicyNumber</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Secondary">
+                                @policy.PolicyType?.Name - @policy.InsuranceCompany?.Name
+                            </MudText>
+                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                <MudChip Color="@GetStatusColor(policy.Status)" Size="Size.Medium" T="PolicyStatus">
+                                    @GetStatusText(policy.Status)
+                                </MudChip>
+                                @if (policy.IsExpired)
+                                {
+                                    <MudChip Color="Color.Error" Size="Size.Medium" T="int">
+                                        Süresi Dolmuş (@Math.Abs(policy.DaysUntilExpiry) gün geçti)
+                                    </MudChip>
+                                }
+                                else if (policy.DaysUntilExpiry <= 30)
+                                {
+                                    <MudChip Color="Color.Warning" Size="Size.Medium" T="int">
+                                        @policy.DaysUntilExpiry gün kaldı
+                                    </MudChip>
+                                }
+                            </MudStack>
+                        </MudStack>
+                        
+                        <MudStack Row Spacing="2">
+                            <MudButton Variant="Variant.Outlined" 
+                                      StartIcon="@Icons.Material.Filled.ArrowBack"
+                                      OnClick="GoBack">
+                                Geri
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" 
+                                      Color="Color.Primary"
+                                      StartIcon="@Icons.Material.Filled.Edit"
+                                      OnClick="EditPolicy">
+                                Düzenle
+                            </MudButton>
+                        </MudStack>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Financial Summary Cards -->
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudCard Class="pa-4">
+                        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Primary" />
+                            <MudText Typo="Typo.h4" Color="Color.Primary">@policy.PremiumAmount.ToString("C")</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">Prim Tutarı</MudText>
+                        </MudStack>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudCard Class="pa-4">
+                        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Paid" Size="Size.Large" Color="Color.Success" />
+                            <MudText Typo="Typo.h4" Color="Color.Success">@policy.CommissionAmount.ToString("C")</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                Komisyon (%@policy.CommissionRate.ToString("F1"))
+                            </MudText>
+                        </MudStack>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudCard Class="pa-4">
+                        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.DateRange" Size="Size.Large" Color="Color.Info" />
+                            <MudText Typo="Typo.h5" Color="Color.Info">@GetPolicyDuration()</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">Poliçe Süresi</MudText>
+                        </MudStack>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Main Information Cards -->
+            <MudGrid>
+                <!-- Policy Information -->
+                <MudItem xs="12" md="6">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Poliçe Bilgileri</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Spacing="3">
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Poliçe Numarası:</MudText>
+                                    <MudText><strong>@policy.PolicyNumber</strong></MudText>
+                                </MudStack>
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Sigorta Şirketi:</MudText>
+                                    <MudText><strong>@policy.InsuranceCompany?.Name</strong></MudText>
+                                </MudStack>
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Poliçe Tipi:</MudText>
+                                    <MudText><strong>@policy.PolicyType?.Name</strong></MudText>
+                                </MudStack>
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Para Birimi:</MudText>
+                                    <MudText><strong>@GetCurrencyText(policy.Currency)</strong></MudText>
+                                </MudStack>
+                                <MudDivider />
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Başlangıç Tarihi:</MudText>
+                                    <MudText><strong>@policy.StartDate.ToString("dd MMMM yyyy")</strong></MudText>
+                                </MudStack>
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Bitiş Tarihi:</MudText>
+                                    <MudText><strong>@policy.EndDate.ToString("dd MMMM yyyy")</strong></MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <!-- Customer Information -->
+                <MudItem xs="12" md="6">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Müşteri Bilgileri</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Primary"
+                                               OnClick="ViewCustomer"
+                                               Title="Müşteri Detayları" />
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (policy.Customer != null)
+                            {
+                                <MudStack Spacing="3">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
+                                        <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                            @policy.Customer.FirstName.FirstOrDefault()@policy.Customer.LastName.FirstOrDefault()
+                                        </MudAvatar>
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.h6">@policy.Customer.FirstName @policy.Customer.LastName</MudText>
+                                            <MudText Color="Color.Secondary">@policy.Customer.Email</MudText>
+                                        </MudStack>
+                                    </MudStack>
+                                    <MudDivider />
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>KKTC Kimlik No:</MudText>
+                                        <MudText><strong>@policy.Customer.KktcNo</strong></MudText>
+                                    </MudStack>
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Telefon:</MudText>
+                                        <MudText><strong>@policy.Customer.Phone</strong></MudText>
+                                    </MudStack>
+                                    @if (!string.IsNullOrEmpty(policy.Customer.Address))
+                                    {
+                                        <MudStack Spacing="1">
+                                            <MudText>Adres:</MudText>
+                                            <MudText><strong>@policy.Customer.Address</strong></MudText>
+                                        </MudStack>
+                                    }
+                                </MudStack>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Notes Section -->
+            @if (!string.IsNullOrEmpty(policy.Notes))
+            {
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Notlar</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Style="white-space: pre-wrap;">@policy.Notes</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+
+            <!-- Action Buttons -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">İşlemler</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudStack Spacing="2">
+                                <MudText Typo="Typo.subtitle1">Poliçe İşlemleri</MudText>
+                                
+                                @if (policy.Status == PolicyStatus.Draft)
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Success"
+                                               StartIcon="@Icons.Material.Filled.PlayArrow"
+                                               FullWidth="true"
+                                               OnClick="ActivatePolicy">
+                                        Poliçeyi Aktifleştir
+                                    </MudButton>
+                                }
+
+                                @if (policy.Status == PolicyStatus.Active)
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Warning"
+                                               StartIcon="@Icons.Material.Filled.Pause"
+                                               FullWidth="true"
+                                               OnClick="SuspendPolicy">
+                                        Askıya Al
+                                    </MudButton>
+
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Error"
+                                               StartIcon="@Icons.Material.Filled.Cancel"
+                                               FullWidth="true"
+                                               OnClick="CancelPolicy">
+                                        İptal Et
+                                    </MudButton>
+                                }
+
+                                @if (policy.CanRenew)
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Info"
+                                               StartIcon="@Icons.Material.Filled.Refresh"
+                                               FullWidth="true"
+                                               OnClick="RenewPolicy">
+                                        Poliçeyi Yenile
+                                    </MudButton>
+                                }
+
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Delete"
+                                           FullWidth="true"
+                                           OnClick="DeletePolicy">
+                                    Sil
+                                </MudButton>
+                            </MudStack>
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudStack Spacing="2">
+                                <MudText Typo="Typo.subtitle1">Belgeler ve Raporlar</MudText>
+                                
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Print"
+                                           FullWidth="true"
+                                           OnClick="PrintPolicy">
+                                    Poliçeyi Yazdır
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Secondary"
+                                           StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                           FullWidth="true"
+                                           OnClick="ExportToPdf">
+                                    PDF İndir
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Info"
+                                           StartIcon="@Icons.Material.Filled.Email"
+                                           FullWidth="true"
+                                           OnClick="SendByEmail">
+                                    E-posta Gönder
+                                </MudButton>
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Policy History -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Poliçe Geçmişi</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTimeline TimelinePosition="TimelinePosition.Start">
+                        <MudTimelineItem Color="Color.Success" Icon="@Icons.Material.Filled.Create">
+                            <ItemContent>
+                                <MudStack Spacing="1">
+                                    <MudText><strong>Poliçe Oluşturuldu</strong></MudText>
+                                    <MudText Color="Color.Secondary">
+                                        @policy.CreatedDate.ToString("dd MMMM yyyy HH:mm")
+                                    </MudText>
+                                    @if (!string.IsNullOrEmpty(policy.CreatedBy))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @policy.CreatedBy tarafından
+                                        </MudText>
+                                    }
+                                </MudStack>
+                            </ItemContent>
+                        </MudTimelineItem>
+                        
+                        @if (policy.UpdatedDate.HasValue)
+                        {
+                            <MudTimelineItem Color="Color.Info" Icon="@Icons.Material.Filled.Edit">
+                                <ItemContent>
+                                    <MudStack Spacing="1">
+                                        <MudText><strong>Son Güncelleme</strong></MudText>
+                                        <MudText Color="Color.Secondary">
+                                            @policy.UpdatedDate.Value.ToString("dd MMMM yyyy HH:mm")
+                                        </MudText>
+                                        @if (!string.IsNullOrEmpty(policy.UpdatedBy))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @policy.UpdatedBy tarafından
+                                            </MudText>
+                                        }
+                                    </MudStack>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        }
+
+                        <MudTimelineItem Color="@GetStatusColor(policy.Status)" Icon="@GetStatusIcon(policy.Status)">
+                            <ItemContent>
+                                <MudStack Spacing="1">
+                                    <MudText><strong>Mevcut Durum: @GetStatusText(policy.Status)</strong></MudText>
+                                    <MudText Color="Color.Secondary">
+                                        @DateTime.Now.ToString("dd MMMM yyyy HH:mm")
+                                    </MudText>
+                                </MudStack>
+                            </ItemContent>
+                        </MudTimelineItem>
+                    </MudTimeline>
+                </MudCardContent>
+            </MudCard>
+        </MudStack>
+    </MudContainer>
+}
+
+@code {
+    [Parameter] public int PolicyId { get; set; }
+
+    private PolicyDto? policy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPolicy();
+    }
+
+    private async Task LoadPolicy()
+    {
+        try
+        {
+            var result = await PolicyService.GetPolicyByIdAsync(PolicyId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                policy = result.Data;
+            }
+            else
+            {
+                Snackbar.Add("Poliçe bulunamadı", MudBlazor.Severity.Error);
+                Navigation.NavigateTo("/policies");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Poliçe yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            Navigation.NavigateTo("/policies");
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/policies");
+    }
+
+    private void EditPolicy()
+    {
+        Navigation.NavigateTo($"/policies/{PolicyId}/edit");
+    }
+
+    private void ViewCustomer()
+    {
+        if (policy?.Customer != null)
+        {
+            Navigation.NavigateTo($"/customers/{policy.Customer.Id}");
+        }
+    }
+
+    private void RenewPolicy()
+    {
+        Navigation.NavigateTo($"/policies/renew/{PolicyId}");
+    }
+
+    private async Task ActivatePolicy()
+    {
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi aktifleştirmek istediğinizden emin misiniz?" },
+            { x => x.ButtonText, "Aktifleştir" },
+            { x => x.Color, Color.Success }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçe Aktifleştir", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                var activateResult = await PolicyService.ActivatePolicyAsync(PolicyId);
+                if (activateResult.IsSuccess)
+                {
+                    Snackbar.Add("Poliçe başarıyla aktifleştirildi", MudBlazor.Severity.Success);
+                    await LoadPolicy();
+                }
+                else
+                {
+                    Snackbar.Add(activateResult.Message ?? "Poliçe aktifleştirilirken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Poliçe aktifleştirilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task SuspendPolicy()
+    {
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi askıya almak istediğinizden emin misiniz?" },
+            { x => x.ButtonText, "Askıya Al" },
+            { x => x.Color, Color.Warning }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçeyi Askıya Al", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                var suspendResult = await PolicyService.SuspendPolicyAsync(PolicyId, "Kullanıcı tarafından askıya alındı");
+                if (suspendResult.IsSuccess)
+                {
+                    Snackbar.Add("Poliçe başarıyla askıya alındı", MudBlazor.Severity.Success);
+                    await LoadPolicy();
+                }
+                else
+                {
+                    Snackbar.Add(suspendResult.Message ?? "Poliçe askıya alınırken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Poliçe askıya alınırken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task CancelPolicy()
+    {
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
+            { x => x.ButtonText, "İptal Et" },
+            { x => x.Color, Color.Error }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçeyi İptal Et", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                var cancelResult = await PolicyService.CancelPolicyAsync(PolicyId, "Kullanıcı tarafından iptal edildi");
+                if (cancelResult.IsSuccess)
+                {
+                    Snackbar.Add("Poliçe başarıyla iptal edildi", MudBlazor.Severity.Success);
+                    await LoadPolicy();
+                }
+                else
+                {
+                    Snackbar.Add(cancelResult.Message ?? "Poliçe iptal edilirken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Poliçe iptal edilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeletePolicy()
+    {
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
+            { x => x.ButtonText, "Sil" },
+            { x => x.Color, Color.Error }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçeyi Sil", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                var deleteResult = await PolicyService.DeletePolicyAsync(PolicyId);
+                if (deleteResult.IsSuccess)
+                {
+                    Snackbar.Add("Poliçe başarıyla silindi", MudBlazor.Severity.Success);
+                    Navigation.NavigateTo("/policies");
+                }
+                else
+                {
+                    Snackbar.Add(deleteResult.Message ?? "Poliçe silinirken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Poliçe silinirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private void PrintPolicy()
+    {
+        Snackbar.Add("Yazdırma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private void ExportToPdf()
+    {
+        Snackbar.Add("PDF dışa aktarma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private void SendByEmail()
+    {
+        Snackbar.Add("E-posta gönderme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private Color GetStatusColor(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => Color.Success,
+            PolicyStatus.Draft => Color.Info,
+            PolicyStatus.Cancelled => Color.Error,
+            PolicyStatus.Expired => Color.Warning,
+            PolicyStatus.Suspended => Color.Secondary,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusIcon(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => Icons.Material.Filled.CheckCircle,
+            PolicyStatus.Draft => Icons.Material.Filled.Edit,
+            PolicyStatus.Cancelled => Icons.Material.Filled.Cancel,
+            PolicyStatus.Expired => Icons.Material.Filled.Warning,
+            PolicyStatus.Suspended => Icons.Material.Filled.Pause,
+            _ => Icons.Material.Filled.Help
+        };
+    }
+
+    private string GetStatusText(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => "Aktif",
+            PolicyStatus.Draft => "Taslak",
+            PolicyStatus.Cancelled => "İptal",
+            PolicyStatus.Expired => "Süresi Dolmuş",
+            PolicyStatus.Suspended => "Askıya Alınmış",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    private string GetCurrencyText(string currency)
+    {
+        return currency switch
+        {
+            "TRY" => "Türk Lirası (₺)",
+            "USD" => "ABD Doları ($)",
+            "EUR" => "Euro (€)",
+            "GBP" => "İngiliz Sterlini (£)",
+            _ => currency
+        };
+    }
+
+    private string GetPolicyDuration()
+    {
+        if (policy == null) return "0 gün";
+        
+        var duration = policy.EndDate - policy.StartDate;
+        var totalDays = duration.TotalDays;
+        
+        if (totalDays < 365)
+        {
+            return $"{Math.Round(totalDays / 30, 1)} ay";
+        }
+        else
+        {
+            var years = Math.Round(totalDays / 365.25, 1);
+            return $"{years} yıl";
+        }
+    }
+}

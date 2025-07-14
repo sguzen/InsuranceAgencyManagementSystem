@@ -58,11 +58,11 @@
                                                 For="@(() => model.LastName)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.KktcNumber"
+                                    <MudTextField @bind-Value="model.KktcNo"
                                                 Label="KKTC Kimlik No"
                                                 Variant="Variant.Outlined"
                                                 Mask="@(new PatternMask("00000000000"))"
-                                                For="@(() => model.KktcNumber)" />
+                                                For="@(() => model.KktcNo)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudDatePicker @bind-Date="model.DateOfBirth"
@@ -118,12 +118,12 @@
                                                 For="@(() => model.Email)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.PhoneNumber"
+                                    <MudTextField @bind-Value="model.Phone"
                                                 Label="Telefon *"
                                                 Variant="Variant.Outlined"
                                                 Required="true"
                                                 Mask="@(new PatternMask("(000) 000-0000"))"
-                                                For="@(() => model.PhoneNumber)" />
+                                                For="@(() => model.Phone)" />
                                 </MudItem>
                             </MudGrid>
                         </MudCardContent>
@@ -194,8 +194,8 @@
                     FirstName = customer.Data.FirstName,
                     LastName = customer.Data.LastName,
                     Email = customer.Data.Email,
-                    PhoneNumber = customer.Data.Phone,
-                    KktcNumber = customer.Data.KktcNo,
+                    Phone = customer.Data.Phone,
+                    KktcNo = customer.Data.KktcNo,
                     DateOfBirth = customer.Data.DateOfBirth,
                     Gender = customer.Data.Gender,
                     Status = customer.Data.Status

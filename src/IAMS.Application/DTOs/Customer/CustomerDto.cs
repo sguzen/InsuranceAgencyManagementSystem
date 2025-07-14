@@ -19,8 +19,8 @@ namespace IAMS.Application.DTOs.Customer
         public string? Address { get; set; }
         public CustomerStatus Status { get; set; }
         public string? Notes { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime? UpdatedDate { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime? UpdatedOn { get; set; }
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
 

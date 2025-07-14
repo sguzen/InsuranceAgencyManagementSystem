@@ -1,0 +1,553 @@
+﻿@page "/policies/expiring"
+@layout Layout.MainLayout
+
+@using IAMS.Application.DTOs.Policy
+@using IAMS.Application.Interfaces
+@using IAMS.Domain.Enums
+@using IAMS.Web.Components.Shared
+@inject IPolicyService PolicyService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Süresi Dolacak Poliçeler</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-3" />
+                Süresi Dolacak Poliçeler
+            </MudText>
+            <MudStack Row Spacing="2">
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Href="/policies">
+                    Poliçe Listesi
+                </MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Href="/policies/create">
+                    Yeni Poliçe
+                </MudButton>
+            </MudStack>
+        </MudStack>
+
+        <!-- Filter Options -->
+        <MudCard>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="3">
+                        <MudSelect @bind-Value="selectedDaysFilter"
+                                   Label="Zaman Aralığı"
+                                   Variant="Variant.Outlined"
+                                   T="int"
+                                   ValueChanged="OnFilterChanged">
+                            <MudSelectItem Value="7">7 gün içinde</MudSelectItem>
+                            <MudSelectItem Value="15">15 gün içinde</MudSelectItem>
+                            <MudSelectItem Value="30">30 gün içinde</MudSelectItem>
+                            <MudSelectItem Value="60">60 gün içinde</MudSelectItem>
+                            <MudSelectItem Value="90">90 gün içinde</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudTextField @bind-Value="searchTerm"
+                                      Label="Ara..."
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Immediate="true"
+                                      OnDebounceIntervalElapsed="OnSearch"
+                                      DebounceInterval="300" />
+                    </MudItem>
+                    <MudItem xs="12" md="2">
+                        <MudSelect @bind-Value="showExpiredPolicies"
+                                   Label="Durum"
+                                   Variant="Variant.Outlined"
+                                   T="bool"
+                                   ValueChanged="OnFilterChanged">
+                            <MudSelectItem Value="false">Sadece Aktif</MudSelectItem>
+                            <MudSelectItem Value="true">Süresi Dolmuş Dahil</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="2">
+                        <MudSelect @bind-Value="sortBy"
+                                   Label="Sıralama"
+                                   Variant="Variant.Outlined"
+                                   T="string"
+                                   ValueChanged="OnFilterChanged">
+                            <MudSelectItem Value="expiry">Bitiş Tarihine Göre</MudSelectItem>
+                            <MudSelectItem Value="customer">Müşteri Adına Göre</MudSelectItem>
+                            <MudSelectItem Value="premium">Prim Tutarına Göre</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="2">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Secondary"
+                                   OnClick="ClearFilters"
+                                   FullWidth="true">
+                            Temizle
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Statistics Cards -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">7 Gün İçinde</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Error">@expiring7Days</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Error" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">30 Gün İçinde</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Warning">@expiring30Days</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="Color.Warning" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Süresi Dolmuş</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Error">@expiredCount</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.EventBusy" Size="Size.Large" Color="Color.Error" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Yenilenebilir</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Success">@renewableCount</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Refresh" Size="Size.Large" Color="Color.Success" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Quick Actions -->
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Row Spacing="2">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Email"
+                               OnClick="SendReminderEmails">
+                        Hatırlatma E-postaları Gönder
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.Print"
+                               OnClick="PrintExpiringList">
+                        Liste Yazdır
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Info"
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="ExportToExcel">
+                        Excel'e Aktar
+                    </MudButton>
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Expiring Policies Data Grid -->
+        <MudCard>
+            <MudDataGrid T="PolicyDto" 
+                         Items="@expiringPolicies" 
+                         Loading="@loading"
+                         Hover="true"
+                         Striped="true"
+                         Virtualize="true"
+                         FixedHeader="true"
+                         Height="600px"
+                         RowsPerPage="25">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Süresi Dolacak Poliçeler (@expiringPolicies.Count)</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchTerm"
+                                  Placeholder="Hızlı arama..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium"
+                                  Class="mt-0"
+                                  Immediate="true"
+                                  OnDebounceIntervalElapsed="OnSearch"
+                                  DebounceInterval="300" />
+                </ToolBarContent>
+                <Columns>
+                    <TemplateColumn Title="Öncelik" CellClass="d-flex justify-center" Sortable="false">
+                        <CellTemplate>
+                            @if (GetPriorityLevel(context.Item) == "critical")
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" Color="Color.Error" Title="Kritik" />
+                            }
+                            else if (GetPriorityLevel(context.Item) == "high")
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Title="Yüksek" />
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" Title="Normal" />
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.PolicyNumber" Title="Poliçe No" />
+                    <TemplateColumn Title="Müşteri">
+                        <CellTemplate>
+                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                    @if (context.Item.Customer != null)
+                                    {
+                                        @context.Item.Customer.FirstName.FirstOrDefault()@context.Item.Customer.LastName.FirstOrDefault()
+                                    }
+                                </MudAvatar>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body2">
+                                        @if (context.Item.Customer != null)
+                                        {
+                                            @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
+                                        }
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @context.Item.Customer?.Phone
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />
+                    <TemplateColumn Title="Bitiş Tarihi" CellClass="d-flex justify-center">
+                        <CellTemplate>
+                            <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2" 
+                                         Color="@(context.Item.IsExpired ? Color.Error : (context.Item.DaysUntilExpiry <= 7 ? Color.Error : Color.Warning))">
+                                    @context.Item.EndDate.ToString("dd.MM.yyyy")
+                                </MudText>
+                                <MudText Typo="Typo.caption" 
+                                         Color="@(context.Item.IsExpired ? Color.Error : (context.Item.DaysUntilExpiry <= 7 ? Color.Error : Color.Warning))">
+                                    @GetExpiryStatusText(context.Item)
+                                </MudText>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Prim Tutarı" CellClass="d-flex justify-end">
+                        <CellTemplate>
+                            <MudText>@context.Item.PremiumAmount.ToString("C")</MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Durum" CellClass="d-flex justify-center">
+                        <CellTemplate>
+                            <MudChip T="string" Color="@GetStatusColor(context.Item)" Size="Size.Small">
+                                @GetStatusText(context.Item)
+                            </MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
+                        <CellTemplate>
+                            <MudStack Row Spacing="1">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                               Title="Detayları Görüntüle" />
+                                
+                                @if (context.Item.CanRenew)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                                   Color="Color.Success"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => RenewPolicy(context.Item))"
+                                                   Title="Yenile" />
+                                }
+                                
+                                <MudIconButton Icon="@Icons.Material.Filled.Email"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => SendReminderEmail(context.Item))"
+                                               Title="Hatırlatma Gönder" />
+                                
+                                <MudIconButton Icon="@Icons.Material.Filled.Phone"
+                                               Color="Color.Secondary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => CallCustomer(context.Item))"
+                                               Title="Müşteriyi Ara" />
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <LoadingContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                        <MudText>Süresi dolacak poliçeler yükleniyor...</MudText>
+                    </MudStack>
+                </LoadingContent>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="4" Class="pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                 Style="font-size: 4rem;" 
+                                 Color="Color.Success" />
+                        <MudText Typo="Typo.h6" Color="Color.Success">
+                            Harika! Süresi dolacak poliçe yok
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                            Seçilen zaman aralığında süresi dolacak poliçe bulunmuyor.
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
+            </MudDataGrid>
+        </MudCard>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private List<PolicyDto> expiringPolicies = new();
+    private bool loading = true;
+
+    // Filter parameters
+    private string searchTerm = string.Empty;
+    private int selectedDaysFilter = 30;
+    private bool showExpiredPolicies = false;
+    private string sortBy = "expiry";
+
+    // Statistics
+    private int expiring7Days = 0;
+    private int expiring30Days = 0;
+    private int expiredCount = 0;
+    private int renewableCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExpiringPolicies();
+        await LoadStatistics();
+    }
+
+    private async Task LoadExpiringPolicies()
+    {
+        loading = true;
+        try
+        {
+            var result = await PolicyService.GetExpiringPoliciesAsync(selectedDaysFilter);
+            if (result.IsSuccess && result.Data != null)
+            {
+                var allPolicies = result.Data;
+                
+                // Apply additional filters
+                var filteredPolicies = allPolicies.AsEnumerable();
+                
+                if (!showExpiredPolicies)
+                {
+                    filteredPolicies = filteredPolicies.Where(p => !p.IsExpired);
+                }
+                
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    var search = searchTerm.ToLower();
+                    filteredPolicies = filteredPolicies.Where(p =>
+                        p.PolicyNumber.ToLower().Contains(search) ||
+                        (p.Customer != null && (p.Customer.FirstName + " " + p.Customer.LastName).ToLower().Contains(search)) ||
+                        p.InsuranceCompany?.Name.ToLower().Contains(search) ?? false);
+                }
+                
+                // Apply sorting
+                filteredPolicies = sortBy switch
+                {
+                    "customer" => filteredPolicies.OrderBy(p => p.Customer?.FirstName).ThenBy(p => p.Customer?.LastName),
+                    "premium" => filteredPolicies.OrderByDescending(p => p.PremiumAmount),
+                    _ => filteredPolicies.OrderBy(p => p.EndDate)
+                };
+                
+                expiringPolicies = filteredPolicies.ToList();
+            }
+            else
+            {
+                expiringPolicies = new List<PolicyDto>();
+                if (!string.IsNullOrEmpty(result.Message))
+                {
+                    Snackbar.Add(result.Message, MudBlazor.Severity.Warning);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            expiringPolicies = new List<PolicyDto>();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadStatistics()
+    {
+        try
+        {
+            var expiring7Result = await PolicyService.GetExpiringPoliciesCountAsync(7);
+            if (expiring7Result.IsSuccess) expiring7Days = expiring7Result.Data;
+
+            var expiring30Result = await PolicyService.GetExpiringPoliciesCountAsync(30);
+            if (expiring30Result.IsSuccess) expiring30Days = expiring30Result.Data;
+
+            var expiredResult = await PolicyService.GetExpiredPoliciesAsync();
+            if (expiredResult.IsSuccess && expiredResult.Data != null) expiredCount = expiredResult.Data.Count;
+
+            // Count renewable policies
+            renewableCount = expiringPolicies.Count(p => p.CanRenew);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Statistics loading error: {ex.Message}");
+        }
+    }
+
+    private async Task OnSearch()
+    {
+        await LoadExpiringPolicies();
+    }
+
+    private async Task OnFilterChanged()
+    {
+        await LoadExpiringPolicies();
+        await LoadStatistics();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedDaysFilter = 30;
+        showExpiredPolicies = false;
+        sortBy = "expiry";
+        await LoadExpiringPolicies();
+        await LoadStatistics();
+    }
+
+    private void ViewPolicy(int policyId)
+    {
+        Navigation.NavigateTo($"/policies/{policyId}");
+    }
+
+    private void RenewPolicy(PolicyDto policy)
+    {
+        Navigation.NavigateTo($"/policies/renew/{policy.Id}");
+    }
+
+    private async Task SendReminderEmail(PolicyDto policy)
+    {
+        try
+        {
+            // TODO: Implement email sending
+            Snackbar.Add($"{policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"E-posta gönderilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private void CallCustomer(PolicyDto policy)
+    {
+        if (policy.Customer?.Phone != null)
+        {
+            // Open phone dialer
+            Navigation.NavigateTo($"tel:{policy.Customer.Phone}", true);
+        }
+        else
+        {
+            Snackbar.Add("Müşteri telefon numarası bulunamadı", MudBlazor.Severity.Warning);
+        }
+    }
+
+    private async Task SendReminderEmails()
+    {
+        try
+        {
+            // TODO: Implement bulk email sending
+            Snackbar.Add($"{expiringPolicies.Count} müşteriye hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"E-postalar gönderilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private void PrintExpiringList()
+    {
+        // TODO: Implement printing
+        Snackbar.Add("Yazdırma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private void ExportToExcel()
+    {
+        // TODO: Implement Excel export
+        Snackbar.Add("Excel dışa aktarma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private string GetPriorityLevel(PolicyDto policy)
+    {
+        if (policy.IsExpired) return "critical";
+        if (policy.DaysUntilExpiry <= 7) return "critical";
+        if (policy.DaysUntilExpiry <= 30) return "high";
+        return "normal";
+    }
+
+    private string GetExpiryStatusText(PolicyDto policy)
+    {
+        if (policy.IsExpired)
+        {
+            var daysOverdue = Math.Abs(policy.DaysUntilExpiry);
+            return $"{daysOverdue} gün geçti";
+        }
+        else
+        {
+            return $"{policy.DaysUntilExpiry} gün kaldı";
+        }
+    }
+
+    private Color GetStatusColor(PolicyDto policy)
+    {
+        if (policy.IsExpired) return Color.Error;
+        if (policy.DaysUntilExpiry <= 7) return Color.Error;
+        if (policy.DaysUntilExpiry <= 30) return Color.Warning;
+        return Color.Success;
+    }
+
+    private string GetStatusText(PolicyDto policy)
+    {
+        if (policy.IsExpired) return "Süresi Dolmuş";
+        if (policy.DaysUntilExpiry <= 7) return "Kritik";
+        if (policy.DaysUntilExpiry <= 30) return "Dikkat";
+        return "Normal";
+    }
+}

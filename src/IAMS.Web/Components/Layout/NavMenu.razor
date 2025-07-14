@@ -1,4 +1,5 @@
-﻿@using MudBlazor
+﻿@* IAMS.Web/Components/Layout/NavMenu.razor *@
+@using IAMS.MultiTenancy.Interfaces
 @inject ITenantContextAccessor TenantContext
 
 <MudNavMenu>
@@ -7,76 +8,129 @@
         Dashboard
     </MudNavLink>
 
-    <!-- Customers -->
-    <MudNavLink Href="/customers" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
-        Müşteriler
-    </MudNavLink>
+    <MudDivider Class="my-2" />
 
-    <!-- Policies -->
-    <MudNavLink Href="/policies" Icon="@Icons.Material.Filled.Description">
-        Poliçeler
-    </MudNavLink>
+    <!-- Customers Section -->
+    <MudNavGroup Text="Müşteriler" Icon="@Icons.Material.Filled.People" Expanded="true">
+        <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.List" IconColor="Color.Primary">
+            Müşteri Listesi
+        </MudNavLink>
+        <MudNavLink Href="/customers/create" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Success">
+            Yeni Müşteri
+        </MudNavLink>
+    </MudNavGroup>
 
-    <!-- Insurance Companies -->
-    <MudNavLink Href="/insurance-companies" Icon="@Icons.Material.Filled.Business">
-        Sigorta Şirketleri
-    </MudNavLink>
+    <!-- Policies Section -->
+    <MudNavGroup Text="Poliçeler" Icon="@Icons.Material.Filled.Assignment" Expanded="true">
+        <MudNavLink Href="/policies" Icon="@Icons.Material.Filled.List" IconColor="Color.Primary">
+            Poliçe Listesi
+        </MudNavLink>
+        <MudNavLink Href="/policies/create" Icon="@Icons.Material.Filled.Add" IconColor="Color.Success">
+            Yeni Poliçe
+        </MudNavLink>
+        <MudNavLink Href="/policies/expiring" Icon="@Icons.Material.Filled.Schedule" IconColor="Color.Warning">
+            Süresi Dolacaklar
+        </MudNavLink>
+    </MudNavGroup>
 
-    <!-- Conditional Modules -->
-    @if (TenantContext.IsModuleEnabled("Reporting"))
+    <!-- Insurance Companies Section -->
+    <MudNavGroup Text="Sigorta Şirketleri" Icon="@Icons.Material.Filled.Business">
+        <MudNavLink Href="/insurance-companies" Icon="@Icons.Material.Filled.List" IconColor="Color.Primary">
+            Şirket Listesi
+        </MudNavLink>
+        <MudNavLink Href="/insurance-companies/create" Icon="@Icons.Material.Filled.Add" IconColor="Color.Success">
+            Yeni Şirket
+        </MudNavLink>
+    </MudNavGroup>
+
+    <!-- Reports Section (conditional based on tenant modules) -->
+    @if (IsReportingModuleEnabled)
     {
-        <MudNavGroup Text="Raporlar" Icon="@Icons.Material.Filled.Assessment" Expanded="false">
+        <MudNavGroup Text="Raporlar" Icon="@Icons.Material.Filled.Assessment">
             <MudNavLink Href="/reports/customers" Icon="@Icons.Material.Filled.PeopleAlt">
                 Müşteri Raporları
             </MudNavLink>
-            <MudNavLink Href="/reports/policies" Icon="@Icons.Material.Filled.Policy">
+            <MudNavLink Href="/reports/policies" Icon="@Icons.Material.Filled.Assignment">
                 Poliçe Raporları
             </MudNavLink>
-            <MudNavLink Href="/reports/financial" Icon="@Icons.Material.Filled.MonetizationOn">
+            <MudNavLink Href="/reports/financial" Icon="@Icons.Material.Filled.AttachMoney">
                 Mali Raporlar
             </MudNavLink>
         </MudNavGroup>
     }
 
-    @if (TenantContext.IsModuleEnabled("Accounting"))
+    <!-- Accounting Section (conditional based on tenant modules) -->
+    @if (IsAccountingModuleEnabled)
     {
-        <MudNavGroup Text="Muhasebe" Icon="@Icons.Material.Filled.Calculate" Expanded="false">
-            <MudNavLink Href="/accounting/invoices" Icon="@Icons.Material.Filled.Receipt">
-                Faturalar
+        <MudNavGroup Text="Muhasebe" Icon="@Icons.Material.Filled.AccountBalance">
+            <MudNavLink Href="/accounting/commissions" Icon="@Icons.Material.Filled.Payments">
+                Komisyonlar
             </MudNavLink>
             <MudNavLink Href="/accounting/payments" Icon="@Icons.Material.Filled.Payment">
                 Ödemeler
             </MudNavLink>
-            <MudNavLink Href="/accounting/commissions" Icon="@Icons.Material.Filled.TrendingUp">
-                Komisyonlar
+            <MudNavLink Href="/accounting/invoices" Icon="@Icons.Material.Filled.Receipt">
+                Faturalar
             </MudNavLink>
         </MudNavGroup>
     }
 
     <MudDivider Class="my-2" />
 
-    <!-- Administration -->
-    <MudNavGroup Text="Yönetim" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
-        <MudNavLink Href="/admin/users" Icon="@Icons.Material.Filled.Group">
-            Kullanıcılar
+    <!-- Settings Section -->
+    <MudNavGroup Text="Ayarlar" Icon="@Icons.Material.Filled.Settings">
+        <MudNavLink Href="/settings/general" Icon="@Icons.Material.Filled.Tune">
+            Genel Ayarlar
         </MudNavLink>
-        <MudNavLink Href="/admin/roles" Icon="@Icons.Material.Filled.Security">
-            Roller
+        <MudNavLink Href="/settings/users" Icon="@Icons.Material.Filled.ManageAccounts">
+            Kullanıcı Yönetimi
         </MudNavLink>
-        <MudNavLink Href="/admin/settings" Icon="@Icons.Material.Filled.Settings">
-            Ayarlar
+        <MudNavLink Href="/settings/modules" Icon="@Icons.Material.Filled.Extension">
+            Modül Yönetimi
         </MudNavLink>
+        @if (IsIntegrationModuleEnabled)
+        {
+            <MudNavLink Href="/settings/integrations" Icon="@Icons.Material.Filled.IntegrationInstructions">
+                Entegrasyonlar
+            </MudNavLink>
+        }
     </MudNavGroup>
+
+    <!-- Help & Support -->
+    <MudDivider Class="my-2" />
+    <MudNavLink Href="/help" Icon="@Icons.Material.Filled.Help" IconColor="Color.Info">
+        Yardım
+    </MudNavLink>
+    <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" IconColor="Color.Secondary">
+        Hakkında
+    </MudNavLink>
 </MudNavMenu>
 
-<style>
-    .mud-nav-link {
-        border-radius: 8px;
-        margin: 4px 8px;
-    }
+@code {
+    private bool IsReportingModuleEnabled => CheckModuleEnabled("Reporting");
+    private bool IsAccountingModuleEnabled => CheckModuleEnabled("Accounting");
+    private bool IsIntegrationModuleEnabled => CheckModuleEnabled("Integration");
 
-        .mud-nav-link.active {
-            background-color: var(--mud-palette-primary-lighten);
-            color: var(--mud-palette-primary);
+    private bool CheckModuleEnabled(string moduleName)
+    {
+        // For now, return true. In production, check actual module status
+        // This would be implemented by calling a module service
+        return true;
+
+        /*
+        Example implementation:
+        try
+        {
+            if (TenantContext.CurrentTenant != null)
+            {
+                return await ModuleService.IsModuleEnabledAsync(moduleName, TenantContext.CurrentTenant.Id);
+            }
+            return false;
         }
-</style>
+        catch
+        {
+            return false;
+        }
+        */
+    }
+}

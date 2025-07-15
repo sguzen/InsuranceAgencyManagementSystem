@@ -1,6 +1,16 @@
 ﻿using IAMS.Application.DTOs.Customer;
-using IAMS.Application.DTOs.Identity;
-using IAMS.Application.Services.Customers;
+using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Features.Customers.Commands.CreateCustomer;
+using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
+using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
+using IAMS.Application.Features.Customers.Queries.GetCustomer;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByKktcNo;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByPhone;
+using IAMS.Application.Features.Customers.Queries.GetCustomers;
+using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
+using IAMS.Application.Models;
+using IAMS.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,66 +21,135 @@ namespace IAMS.Api.Controllers
     [Authorize]
     public class CustomersController : ControllerBase
     {
-        private readonly ICustomerService _customerService;
+        private readonly IMediator _mediator;
 
-        public CustomersController(ICustomerService customerService)
+        public CustomersController(IMediator mediator)
         {
-            _customerService = customerService;
+            _mediator = mediator;
         }
 
+        /// <summary>
+        /// Get all customers with optional filtering
+        /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetAll()
+        public async Task<ActionResult<Result<PagedResult<CustomerDto>>>> GetCustomers(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] string? status = null)
         {
-            var customers = await _customerService.GetAllAsync();
-            return Ok(customers);
+            CustomerStatus _status;
+            var query = new CustomerQueryParams
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                Status = Enum.Parse<CustomerStatus>(status)
+            };
+
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
 
+        /// <summary>
+        /// Get customer by ID
+        /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<CustomerDto>> GetById(int id)
+        public async Task<ActionResult<Result<CustomerDto>>> GetCustomer(int id)
         {
-            var customer = await _customerService.GetByIdAsync(id);
+            var query = new GetCustomerQuery(id);
+            var result = await _mediator.Send(query);
 
-            if (customer == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return NotFound(result);
 
-            return Ok(customer);
+            return Ok(result);
         }
 
+        /// <summary>
+        /// Create a new customer
+        /// </summary>
         [HttpPost]
-        public async Task<ActionResult<CustomerDto>> Create([FromBody] CreateCustomerDto customerDto)
+        public async Task<ActionResult<Result<CustomerDto>>> CreateCustomer([FromBody] CreateOrUpdateCustomerDto customerDto)
         {
-            var createdCustomer = await _customerService.CreateAsync(customerDto);
-            return CreatedAtAction(nameof(GetById), new { id = createdCustomer.Id }, createdCustomer);
+            var command = new CreateCustomerCommand(customerDto);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return CreatedAtAction(nameof(GetCustomer), new { id = result.Data.Id }, result);
         }
 
+        /// <summary>
+        /// Update an existing customer
+        /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerDto customerDto)
+        public async Task<ActionResult<Result<CustomerDto>>> UpdateCustomer(int id, [FromBody] CreateOrUpdateCustomerDto customerDto)
         {
-            try
-            {
-                await _customerService.UpdateAsync(id, customerDto);
-                return NoContent();
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            var command = new UpdateCustomerCommand(id, customerDto);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
+        /// <summary>
+        /// Delete a customer
+        /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<Result<bool>>> DeleteCustomer(int id)
         {
-            try
-            {
-                await _customerService.DeleteAsync(id);
-                return NoContent();
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            var command = new DeleteCustomerCommand(id);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get customer policies
+        /// </summary>
+        [HttpGet("{id}/policies")]
+        public async Task<ActionResult<Result<List<PolicyDto>>>> GetCustomerPolicies(int id)
+        {
+            var query = new GetPoliciesByCustomerQuery(id );
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Search customers by phone
+        /// </summary>
+        [HttpGet("search/phone/{phone}")]
+        public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByPhone(string phone)
+        {
+            var query = new GetCustomerByPhoneQuery { Phone = phone };
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Search customers by KKTC number
+        /// </summary>
+        [HttpGet("search/kktc/{kktcNo}")]
+        public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByKktcNo(string kktcNo)
+        {
+            var query = new GetCustomerByKktcNoQuery(kktcNo, 44 );
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
         }
     }
 }

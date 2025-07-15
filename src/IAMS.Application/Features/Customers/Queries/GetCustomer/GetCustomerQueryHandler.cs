@@ -110,7 +110,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
                 // Add policy count and summary information
                 if (customer.Policies?.Any() == true)
                 {
-                    customerDto.ActivePolicyCount = customer.Policies.Count(p => p.IsActive && !p.IsDeleted);
+                    customerDto.ActivePolicyCount = customer.Policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted);
                     customerDto.TotalPolicyCount = customer.Policies.Count(p => !p.IsDeleted);
                     customerDto.HasActivePolicies = customerDto.ActivePolicyCount > 0;
 
@@ -167,7 +167,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
                     score += 20;
 
                 // Score based on number of policies
-                var activePolicyCount = customer.Policies?.Count(p => p.IsActive && !p.IsDeleted) ?? 0;
+                var activePolicyCount = customer.Policies?.Count(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted) ?? 0;
                 score += activePolicyCount * 15;
 
                 // Score based on customer tenure

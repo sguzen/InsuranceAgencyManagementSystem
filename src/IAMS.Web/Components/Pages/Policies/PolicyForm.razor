@@ -350,7 +350,7 @@
     // Lookup data
     private List<CustomerDto>? customers;
     private List<InsuranceCompanyDto>? insuranceCompanies;
-    private List<PolicyTypeDto>? policyTypes;
+    private List<Application.DTOs.PolicyType.PolicyTypeDto>? policyTypes;
     private CustomerDto? selectedCustomer;
 
     private bool IsEdit => PolicyId.HasValue && PolicyId.Value > 0;

@@ -50,7 +50,7 @@ namespace IAMS.Domain.Entities
 
         public IEnumerable<Policy> GetActivePolicies()
         {
-            return Policies.Where(p => p.IsActive && !p.IsDeleted);
+            return Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted);
         }
 
         public int GetActiveCustomerCount()

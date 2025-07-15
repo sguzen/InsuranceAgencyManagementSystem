@@ -45,12 +45,12 @@ namespace IAMS.Persistence.Repositories
         public async Task<List<Customer>> GetCustomersWithActivePoliciesAsync(int tenantId)
         {
             return await _dbSet
-                .Include(c => c.Policies.Where(p => p.IsActive && !p.IsDeleted))
+                .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.InsuranceCompany)
-                .Include(c => c.Policies.Where(p => p.IsActive && !p.IsDeleted))
+                .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.PolicyType)
                 .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
-                       c.Policies.Any(p => p.IsActive && !p.IsDeleted))
+                       c.Policies.Any(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                 .OrderBy(c => c.LastName)
                 .ThenBy(c => c.FirstName)
                 .ToListAsync();
@@ -59,14 +59,14 @@ namespace IAMS.Persistence.Repositories
         public async Task<List<Policy>> GetActivePoliciesAsync(int customerId)
         {
             var customer = await _dbSet
-                .Include(c => c.Policies.Where(p => p.IsActive && !p.IsDeleted))
+                .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.InsuranceCompany)
-                .Include(c => c.Policies.Where(p => p.IsActive && !p.IsDeleted))
+                .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.PolicyType)
                 .Where(c => c.Id == customerId && !c.IsDeleted)
                 .FirstOrDefaultAsync();
 
-            return customer?.Policies.Where(p => p.IsActive && !p.IsDeleted).ToList() ?? new List<Policy>();
+            return customer?.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted).ToList() ?? new List<Policy>();
         }
 
         public async Task<(List<Customer> customers, int totalCount)> GetPagedAsync(CustomerQueryParams queryParams)

@@ -1,5 +1,6 @@
 ﻿using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -89,7 +90,7 @@ namespace IAMS.Persistence.Repositories
         {
             return await _context.Policies
                 .Where(p => p.InsuranceCompanyId == companyId &&
-                           p.IsActive && !p.IsDeleted)
+                           p.Status == PolicyStatus.Active && !p.IsDeleted)
                 .SumAsync(p => p.PremiumAmount);
         }
 

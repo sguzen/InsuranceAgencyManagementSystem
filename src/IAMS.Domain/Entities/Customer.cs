@@ -114,7 +114,7 @@ namespace IAMS.Domain.Entities
 
         public bool HasPolicyWithInsuranceCompany(int insuranceCompanyId)
         {
-            return Policies.Any(p => p.InsuranceCompanyId == insuranceCompanyId && p.IsActive);
+            return Policies.Any(p => p.InsuranceCompanyId == insuranceCompanyId && p.Status == PolicyStatus.Active);
         }
 
         public string? GetExternalCustomerId(int insuranceCompanyId)
@@ -325,7 +325,7 @@ namespace IAMS.Domain.Entities
         // Business logic methods
         public List<Policy> GetActivePolicies()
         {
-            return Policies?.Where(p => p.IsActive && !p.IsDeleted).ToList() ?? new List<Policy>();
+            return Policies?.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted).ToList() ?? new List<Policy>();
         }
 
         public List<Policy> GetPoliciesByStatus(PolicyStatus status)

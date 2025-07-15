@@ -71,9 +71,9 @@ namespace IAMS.Application.Services.Customers
             return await _mediator.Send(new DeleteCustomerCommand(id));
         }
 
-        public async Task<Result<CustomerDto>> GetCustomerByKktcNoAsync(string tcNo)
+        public async Task<Result<CustomerDto>> GetCustomerByKktcNoAsync(string kktcNo)
         {
-            return await _mediator.Send(new GetCustomerByKktcNoQuery(tcNo));
+            return await _mediator.Send(new GetCustomerByKktcNoQuery(kktcNo, 0));// TODO fix this tennant id
         }
 
         public async Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email)

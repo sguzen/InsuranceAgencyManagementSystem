@@ -12,18 +12,15 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyByNumber
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetPolicyByNumberQueryHandler> _logger;
 
         public GetPolicyByNumberQueryHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ICurrentTenantService currentTenantService,
             ILogger<GetPolicyByNumberQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -31,11 +28,6 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyByNumber
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<PolicyDto>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
-
                 var policy = await _unitOfWork.Policies.GetByPolicyNumberAsync(request.PolicyNumber);
                 if (policy == null)
                 {
@@ -43,11 +35,11 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyByNumber
                 }
 
                 var policyDto = _mapper.Map<PolicyDto>(policy);
-                return Result<PolicyDto>.Success(policyDto, "Poliçe başarıyla getirildi");
+                return Result<PolicyDto>.Success(policyDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving policy by number {PolicyNumber}", request.PolicyNumber);
+                _logger.LogError(ex, "Error getting policy by number: {PolicyNumber}", request.PolicyNumber);
                 return Result<PolicyDto>.InternalError("Poliçe getirilirken beklenmeyen bir hata oluştu");
             }
         }

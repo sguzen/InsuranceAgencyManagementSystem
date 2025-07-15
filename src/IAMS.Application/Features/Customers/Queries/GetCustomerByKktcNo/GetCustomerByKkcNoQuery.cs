@@ -4,5 +4,5 @@ using MediatR;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomerByKktcNo
 {
-    public record GetCustomerByKktcNoQuery(string KkcNo) : IRequest<Result<CustomerDto>>;
+    public record GetCustomerByKktcNoQuery(string KktcNo, int TentantId) : IRequest<Result<CustomerDto>>;
 }

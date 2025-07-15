@@ -5,6 +5,8 @@ using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Exceptions;
+using IAMS.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -15,17 +17,20 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreatePolicyDto> _validator;
+        private readonly IPolicyNumberGenerator _policyNumberGenerator;
         private readonly ILogger<CreatePolicyCommandHandler> _logger;
 
         public CreatePolicyCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreatePolicyDto> validator,
+            IPolicyNumberGenerator policyNumberGenerator,
             ILogger<CreatePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validator = validator;
+            _policyNumberGenerator = policyNumberGenerator;
             _logger = logger;
         }
 
@@ -33,55 +38,46 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
         {
             try
             {
-                // Validate the request
+                // Validate the command
                 var validationResult = await _validator.ValidateAsync(request.PolicyDto, cancellationToken);
                 if (!validationResult.IsValid)
                 {
                     var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    return Result<PolicyDto>.InternalError("Validation failed", errors);
+                    return Result<PolicyDto>.ValidationFailure("Doğrulama hatası", errors);
                 }
 
-                // Check if customer exists
-                var customer = await _unitOfWork.Customers.GetByIdAsync(request.PolicyDto.CustomerId);
-                if (customer == null)
+                var policy = _mapper.Map<Domain.Entities.Policy>(request.PolicyDto);
+
+                // Generate policy number if not provided
+                if (string.IsNullOrEmpty(policy.PolicyNumber))
                 {
-                    return Result<PolicyDto>.InternalError("Customer not found");
+                    policy.PolicyNumber = await _policyNumberGenerator.GenerateAsync(
+                        policy.TenantId, policy.InsuranceCompanyId, policy.PolicyTypeId);
                 }
 
-                // Check if insurance company exists
-                var insuranceCompany = await _unitOfWork.InsuranceCompanies.GetByIdAsync(request.PolicyDto.InsuranceCompanyId);
-                if (insuranceCompany == null)
-                {
-                    return Result<PolicyDto>.InternalError("Insurance company not found");
-                }
+                // Calculate commission
+                policy.CalculateCommission();
 
-                // Check if policy number already exists
-                var existingPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(request.PolicyDto.PolicyNumber);
-                if (existingPolicy != null)
-                {
-                    return Result<PolicyDto>.InternalError("A policy with this number already exists");
-                }
+                // Validate business rules
+                policy.Validate();
 
-                // Create the policy
-                var policy = _mapper.Map<Policy>(request.PolicyDto);
                 policy.CreatedOn = DateTime.UtcNow;
-                policy.Status = Domain.Enums.PolicyStatus.Draft;
-
-                // Calculate commission amount
-                policy.CommissionAmount = policy.PremiumAmount * (policy.CommissionRate / 100);
-
                 await _unitOfWork.Policies.AddAsync(policy);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 var policyDto = _mapper.Map<PolicyDto>(policy);
                 _logger.LogInformation("Policy created successfully with ID: {PolicyId}", policy.Id);
 
-                return Result<PolicyDto>.Success(policyDto, "Policy created successfully");
+                return Result<PolicyDto>.Success(policyDto, "Poliçe başarıyla oluşturuldu");
+            }
+            catch (PolicyValidationException ex)
+            {
+                return Result<PolicyDto>.ValidationFailure("Poliçe doğrulama hatası", ex.ValidationErrors.ToList());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating policy");
-                return Result<PolicyDto>.InternalError("An error occurred while creating the policy");
+                return Result<PolicyDto>.InternalError("Poliçe oluşturulurken beklenmeyen bir hata oluştu");
             }
         }
     }

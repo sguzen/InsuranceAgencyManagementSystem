@@ -1,26 +1,27 @@
 ﻿using IAMS.Domain.Entities;
-using IAMS.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IAMS.Domain.Events
 {
-    public class PolicyDatesUpdatedEvent : IDomainEvent
+    public class PolicyDatesUpdatedEvent : DomainEvent
     {
         public Policy Policy { get; }
         public string UpdatedBy { get; }
+        public DateTime OldStartDate { get; }
+        public DateTime OldEndDate { get; }
+        public DateTime NewStartDate { get; }
+        public DateTime NewEndDate { get; }
 
-        public DateTime OccurredOn => throw new NotImplementedException();
-
-        public int TenantId => throw new NotImplementedException();
-
-        public PolicyDatesUpdatedEvent(Policy policy, string updatedBy)
+        public PolicyDatesUpdatedEvent(Policy policy, string updatedBy,
+            DateTime oldStartDate, DateTime oldEndDate,
+            DateTime newStartDate, DateTime newEndDate)
+            : base(policy.TenantId)
         {
             Policy = policy;
             UpdatedBy = updatedBy;
+            OldStartDate = oldStartDate;
+            OldEndDate = oldEndDate;
+            NewStartDate = newStartDate;
+            NewEndDate = newEndDate;
         }
     }
 }

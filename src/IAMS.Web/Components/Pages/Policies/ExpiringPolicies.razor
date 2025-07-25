@@ -373,11 +373,11 @@
                 
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
-                    var search = searchTerm.ToLower();
+                    string search = searchTerm.ToLower();
                     filteredPolicies = filteredPolicies.Where(p =>
                         p.PolicyNumber.ToLower().Contains(search) ||
                         (p.Customer != null && (p.Customer.FirstName + " " + p.Customer.LastName).ToLower().Contains(search)) ||
-                        p.InsuranceCompany?.Name.ToLower().Contains(search) ?? false);
+                        (p.InsuranceCompany != null && p.InsuranceCompany.Name.ToLower().Contains(search)) ?? false);
                 }
                 
                 // Apply sorting

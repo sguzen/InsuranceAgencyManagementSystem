@@ -2,7 +2,6 @@
 @page "/policies/list"
 @layout Layout.MainLayout
 
-@using IAMS.Application.DTOs.Policy
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
 @using IAMS.Application.Services.PolicyTypes
@@ -344,7 +343,7 @@
 
 @code {
     private List<PolicyDto> policies = new();
-    private List<PolicyTypeDto> policyTypes;
+    private List<IAMS.Application.DTOs.PolicyType.PolicyTypeDto> policyTypes;
     private bool loading = true;
 
     // Search and filter parameters

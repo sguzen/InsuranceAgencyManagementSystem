@@ -65,6 +65,7 @@
 
   <ItemGroup>
     <Folder Include="Components\Dialogs\" />
+    <Folder Include="wwwroot\js\compiled\" />
   </ItemGroup>
 
 </Project>

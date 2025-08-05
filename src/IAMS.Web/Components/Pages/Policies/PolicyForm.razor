@@ -107,7 +107,7 @@
                                 <MudGrid>
                                     <MudItem xs="12" md="4">
                                         <MudAutocomplete @bind-Value="selectedCustomer"
-                                                       SearchFunc="@SearchCustomers"
+                                                       SearchFuncWithCancel="@SearchCustomers"
                                                        ToStringFunc="@(customer => customer?.FirstName + " " + customer?.LastName)"
                                                        Label="Müşteri *"
                                                        Variant="Variant.Outlined"
@@ -186,8 +186,7 @@
                                                      Variant="Variant.Outlined"
                                                      Required="true"
                                                      For="@(() => model.StartDate)"
-                                                     Culture="@(new System.Globalization.CultureInfo("tr-TR"))"
-                                                     DateChanged="OnStartDateChanged" />
+                                                     Culture="@(new System.Globalization.CultureInfo("tr-TR"))"/>
                                     </MudItem>
                                     <MudItem xs="12" md="6">
                                         <MudDatePicker @bind-Date="model.EndDate"
@@ -236,8 +235,7 @@
                                                        Adornment="Adornment.End"
                                                        AdornmentText="₺"
                                                        Min="0"
-                                                       Step="0.01M"
-                                                       ValueChanged="OnPremiumAmountChanged" />
+                                                       Step="0.01M" />
                                     </MudItem>
                                     <MudItem xs="12" md="4">
                                         <MudNumericField @bind-Value="model.CommissionRate"
@@ -249,8 +247,7 @@
                                                        AdornmentText="%"
                                                        Min="0"
                                                        Max="100"
-                                                       Step="0.01M"
-                                                       ValueChanged="OnCommissionRateChanged" />
+                                                       Step="0.01M"/>
                                     </MudItem>
                                     <MudItem xs="12" md="4">
                                         <MudNumericField @bind-Value="model.CommissionAmount"
@@ -402,7 +399,7 @@
     {
         try
         {
-            var result = await InsuranceCompanyService.GetActiveCompaniesAsync();
+            var result = await InsuranceCompanyService.GetActiveInsuranceCompaniesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 insuranceCompanies = result.Data;
@@ -428,7 +425,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading policy types: {ex.Message}");
-            policyTypes = new List<Application.DTOs.Policy.PolicyTypeDto>();
+            policyTypes = new List<Application.DTOs.PolicyType.PolicyTypeDto>();
         }
     }
 

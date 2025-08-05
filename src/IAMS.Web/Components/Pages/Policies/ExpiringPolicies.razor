@@ -43,13 +43,12 @@
                         <MudSelect @bind-Value="selectedDaysFilter"
                                    Label="Zaman Aralığı"
                                    Variant="Variant.Outlined"
-                                   T="int"
-                                   ValueChanged="OnFilterChanged">
-                            <MudSelectItem Value="7">7 gün içinde</MudSelectItem>
-                            <MudSelectItem Value="15">15 gün içinde</MudSelectItem>
-                            <MudSelectItem Value="30">30 gün içinde</MudSelectItem>
-                            <MudSelectItem Value="60">60 gün içinde</MudSelectItem>
-                            <MudSelectItem Value="90">90 gün içinde</MudSelectItem>
+                                   T="int">
+                            <MudSelectItem T="int" Value="7">7 gün içinde</MudSelectItem>
+                            <MudSelectItem T="int" Value="15">15 gün içinde</MudSelectItem>
+                            <MudSelectItem T="int" Value="30">30 gün içinde</MudSelectItem>
+                            <MudSelectItem T="int" Value="60">60 gün içinde</MudSelectItem>
+                            <MudSelectItem T="int" Value="90">90 gün içinde</MudSelectItem>
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="3">
@@ -66,21 +65,19 @@
                         <MudSelect @bind-Value="showExpiredPolicies"
                                    Label="Durum"
                                    Variant="Variant.Outlined"
-                                   T="bool"
-                                   ValueChanged="OnFilterChanged">
-                            <MudSelectItem Value="false">Sadece Aktif</MudSelectItem>
-                            <MudSelectItem Value="true">Süresi Dolmuş Dahil</MudSelectItem>
+                                   T="bool">
+                            <MudSelectItem T="bool" Value="false">Sadece Aktif</MudSelectItem>
+                            <MudSelectItem T="bool" Value="true">Süresi Dolmuş Dahil</MudSelectItem>
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect @bind-Value="sortBy"
                                    Label="Sıralama"
                                    Variant="Variant.Outlined"
-                                   T="string"
-                                   ValueChanged="OnFilterChanged">
-                            <MudSelectItem Value="expiry">Bitiş Tarihine Göre</MudSelectItem>
-                            <MudSelectItem Value="customer">Müşteri Adına Göre</MudSelectItem>
-                            <MudSelectItem Value="premium">Prim Tutarına Göre</MudSelectItem>
+                                   T="string">
+                            @* <MudSelectItem T="string" Value="@ex">Bitiş Tarihine Göre</MudSelectItem>
+                            <MudSelectItem T="string" Value="@CustomerDto.">Müşteri Adına Göre</MudSelectItem>
+                            <MudSelectItem T="string" Value="premium">Prim Tutarına Göre</MudSelectItem> *@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
@@ -332,6 +329,7 @@
 </MudContainer>
 
 @code {
+
     private List<PolicyDto> expiringPolicies = new();
     private bool loading = true;
 
@@ -377,7 +375,7 @@
                     filteredPolicies = filteredPolicies.Where(p =>
                         p.PolicyNumber.ToLower().Contains(search) ||
                         (p.Customer != null && (p.Customer.FirstName + " " + p.Customer.LastName).ToLower().Contains(search)) ||
-                        (p.InsuranceCompany != null && p.InsuranceCompany.Name.ToLower().Contains(search)) ?? false);
+                        (p.InsuranceCompany != null && p.InsuranceCompany.Name.ToLower().Contains(search)));
                 }
                 
                 // Apply sorting

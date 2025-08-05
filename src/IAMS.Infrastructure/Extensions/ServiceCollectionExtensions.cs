@@ -1,9 +1,11 @@
-﻿using IAMS.Infrastructure.Interfaces;
-using IAMS.Infrastructure.Services;
+﻿using IAMS.Application.Interfaces;
+using IAMS.Domain.Services;
 using IAMS.Infrastructure.Data;
+using IAMS.Infrastructure.Interfaces;
+using IAMS.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 
 namespace IAMS.Infrastructure.Extensions
 {
@@ -26,6 +28,8 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
             services.AddScoped<IIntegrationService, IntegrationService>();
             services.AddScoped<IReportingService, ReportingService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IPolicyNumberGenerator, PolicyNumberGenerator>();
 
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));

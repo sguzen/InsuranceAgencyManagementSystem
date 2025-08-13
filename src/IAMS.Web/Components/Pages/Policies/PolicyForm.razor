@@ -85,6 +85,8 @@
                                             <MudSelectItem Value="@PolicyStatus.Suspended">Askıya Alınmış</MudSelectItem>
                                             <MudSelectItem Value="@PolicyStatus.Cancelled">İptal</MudSelectItem>
                                             <MudSelectItem Value="@PolicyStatus.Expired">Süresi Dolmuş</MudSelectItem>
+                                            <MudSelectItem Value="@PolicyStatus.Lapsed">Lapsed</MudSelectItem>
+                                            <MudSelectItem Value="@PolicyStatus.PendingRenewal">PendingRenewal</MudSelectItem>
                                         </MudSelect>
                                     </MudItem>
                                 </MudGrid>
@@ -107,7 +109,8 @@
                                 <MudGrid>
                                     <MudItem xs="12" md="4">
                                         <MudAutocomplete @bind-Value="selectedCustomer"
-                                                       SearchFuncWithCancel="@SearchCustomers"
+                                                       T="CustomerDto"
+                                                       SearchFunc="@SearchCustomers"
                                                        ToStringFunc="@(customer => customer?.FirstName + " " + customer?.LastName)"
                                                        Label="Müşteri *"
                                                        Variant="Variant.Outlined"
@@ -496,7 +499,7 @@
         }
     }
 
-    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText)
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
             return new List<CustomerDto>();

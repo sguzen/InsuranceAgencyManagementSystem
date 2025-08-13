@@ -65,20 +65,24 @@ namespace IAMS.Persistence.Repositories
             }
 
             var totalCount = await query.CountAsync();
-
-            var policies = await query
+            var policies = new List<Policy>();
+            if (totalCount > 0)
+            {
+                policies = await query
                 .OrderByDescending(p => p.CreatedOn)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+            }
+
 
             return new PagedResult<Policy>
-            {
-                Items = policies,
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+                {
+                    Items = policies,
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
         }
 
         public async Task<List<Policy>> GetActivePoliciesAsync(int tenantId)

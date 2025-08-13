@@ -10,16 +10,16 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicies
 {
     public class GetPoliciesQueryHandler : IRequestHandler<GetPoliciesQuery, Result<PagedResult<PolicyDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyRepository _policyRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<GetPoliciesQueryHandler> _logger;
 
         public GetPoliciesQueryHandler(
-            IUnitOfWork unitOfWork,
+            IPolicyRepository policyRepository,
             IMapper mapper,
             ILogger<GetPoliciesQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _policyRepository = policyRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -28,7 +28,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicies
         {
             try
             {
-                var pagedResult = await _unitOfWork.Policies.GetPoliciesPagedAsync(
+                var pagedResult = await _policyRepository.GetPoliciesPagedAsync(
                     request.QueryParams.PageNumber,
                     request.QueryParams.PageSize,
                     request.QueryParams.SearchTerm);

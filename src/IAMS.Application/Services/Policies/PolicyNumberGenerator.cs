@@ -2,7 +2,7 @@
 using IAMS.Domain.Services;
 using Microsoft.Extensions.Logging;
 
-namespace IAMS.Infrastructure.Services
+namespace IAMS.Application.Services.Policies
 {
     public class PolicyNumberGenerator : IPolicyNumberGenerator
     {

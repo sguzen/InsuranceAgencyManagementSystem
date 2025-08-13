@@ -3,6 +3,7 @@ using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
+using IAMS.MultiTenancy.Models;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
@@ -56,14 +57,14 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetActivePoliciesAsync(int customerId)
+        public async Task<List<Policy>> GetActivePoliciesAsync(int customerId, int tenantId)
         {
             var customer = await _dbSet
                 .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.InsuranceCompany)
                 .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.PolicyType)
-                .Where(c => c.Id == customerId && !c.IsDeleted)
+                .Where(c => c.Id == customerId && !c.IsDeleted && c.TenantId == tenantId)
                 .FirstOrDefaultAsync();
 
             return customer?.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted).ToList() ?? new List<Policy>();

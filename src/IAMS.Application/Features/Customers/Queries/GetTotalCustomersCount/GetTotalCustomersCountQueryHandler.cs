@@ -1,4 +1,6 @@
-﻿using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,13 +10,16 @@ namespace IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount
     public class GetTotalCustomersCountQueryHandler : IRequestHandler<GetTotalCustomersCountQuery, Result<int>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetTotalCustomersCountQueryHandler> _logger;
 
         public GetTotalCustomersCountQueryHandler(
             IUnitOfWork unitOfWork,
+            ICurrentTenantService currentTenantService,
             ILogger<GetTotalCustomersCountQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
+            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -22,6 +27,12 @@ namespace IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount
         {
             try
             {
+                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
+                {
+                    return Result<int>.Unauthorized("Kiracı bağlamı bulunamadı");
+                }
+
+                var tenantId = _currentTenantService.TenantId.Value;
                 var count = await _unitOfWork.Customers.GetCustomerCountAsync(request.TenantId);
                 _logger.LogDebug("Retrieved customer count {Count} for tenant {TenantId}", count, request.TenantId);
 

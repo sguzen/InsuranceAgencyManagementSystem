@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
+﻿using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Entities;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
-using IAMS.MultiTenancy.Data;
-using IAMS.MultiTenancy.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace IAMS.MultiTenancy.Services
 {
@@ -16,17 +17,20 @@ namespace IAMS.MultiTenancy.Services
         private readonly ITenantContextAccessor _tenantContextAccessor;
         private const string CacheKeyPrefix = "tenant_";
         private const int CacheExpirationMinutes = 30;
+        private readonly IConfiguration _configuration;
 
         public TenantService(
             TenantDbContext masterDbContext,
             IMemoryCache cache,
             ILogger<TenantService> logger,
-            ITenantContextAccessor tenantContextAccessor)
+            ITenantContextAccessor tenantContextAccessor,
+            IConfiguration configuration)
         {
             _masterDbContext = masterDbContext;
             _cache = cache;
             _logger = logger;
             _tenantContextAccessor = tenantContextAccessor;
+            _configuration = configuration;
         }
 
         public async Task<Tenant> GetTenantAsync(string identifier)
@@ -227,7 +231,7 @@ namespace IAMS.MultiTenancy.Services
                 Id = tenantEntity.Id,
                 Name = tenantEntity.Name,
                 Identifier = tenantEntity.Identifier,
-                ConnectionString = tenantEntity.ConnectionString,
+                ConnectionString = GetTenantConnectionString(tenantEntity.Identifier),
                 IsActive = tenantEntity.IsActive,
                 CreatedOn = tenantEntity.CreatedOn,
                 LastUpdated = tenantEntity.LastUpdated,
@@ -251,6 +255,36 @@ namespace IAMS.MultiTenancy.Services
             await LoadTenantSettingsAsync(tenant);
 
             return tenant;
+        }
+
+        private string GetTenantConnectionString(string tenantIdentifier)
+        {
+            // Try tenant-specific connection string first
+            var tenantConnectionString = _configuration.GetConnectionString($"TenantConnections:{tenantIdentifier}");
+
+            if (!string.IsNullOrEmpty(tenantConnectionString))
+            {
+                return tenantConnectionString;
+            }
+
+            // Try from TenantConnections section
+            var tenantConnections = _configuration.GetSection("TenantConnections");
+            var connectionString = tenantConnections[tenantIdentifier];
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                return connectionString;
+            }
+
+            // Fallback: generate based on pattern
+            var defaultConnection = _configuration.GetConnectionString("DefaultConnection");
+            if (!string.IsNullOrEmpty(defaultConnection))
+            {
+                // Replace database name with tenant-specific database
+                return defaultConnection.Replace("IAMS_Default", $"IAMS_{tenantIdentifier}");
+            }
+
+            throw new InvalidOperationException($"No connection string found for tenant '{tenantIdentifier}'");
         }
 
         private async Task LoadTenantModulesAsync(Tenant tenant)

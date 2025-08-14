@@ -1,12 +1,14 @@
-﻿// IAMS.Persistence/Extensions/ServiceCollectionExtensions.cs - FIXED VERSION
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
-using IAMS.Persistence.Repositories;
-using IAMS.Persistence.UnitOfWork;
+﻿// IAMS.Persistence/Extensions/ServiceCollectionExtensions.cs
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
-using IAMS.Persistence.Contexts;
 using IAMS.MultiTenancy.Interfaces;
+using IAMS.Persistence.Contexts;
+using IAMS.Persistence.Repositories;
+using IAMS.Persistence.Services;
+using IAMS.Persistence.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IAMS.Persistence.Extensions
 {
@@ -16,18 +18,35 @@ namespace IAMS.Persistence.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Register ApplicationDbContext with FIXED connection string
-            // Always use AppDb for shared customer data with tenant isolation via TenantId column
+            // Register ApplicationDbContext with TENANT-SPECIFIC connection string
             services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
-                // ALWAYS use the default connection string for ApplicationDbContext
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                var tenantContextAccessor = serviceProvider.GetService<ITenantContextAccessor>();
 
-                if (string.IsNullOrEmpty(connectionString))
+                string connectionString;
+
+                // Try to get tenant-specific connection string
+                if (tenantContextAccessor?.TenantContext?.Tenant != null)
                 {
-                    throw new InvalidOperationException(
-                        "DefaultConnection string is required for ApplicationDbContext. " +
-                        "Please ensure it's configured in appsettings.json");
+                    connectionString = tenantContextAccessor.GetConnectionString();
+
+                    if (string.IsNullOrEmpty(connectionString))
+                    {
+                        throw new InvalidOperationException(
+                            $"No connection string found for tenant '{tenantContextAccessor.TenantContext.TenantIdentifier}'");
+                    }
+                }
+                else
+                {
+                    // Fallback to default connection (for migrations, seeding, etc.)
+                    connectionString = configuration.GetConnectionString("DefaultConnection");
+
+                    if (string.IsNullOrEmpty(connectionString))
+                    {
+                        throw new InvalidOperationException(
+                            "DefaultConnection string is required when no tenant context is available. " +
+                            "Please ensure it's configured in appsettings.json");
+                    }
                 }
 
                 options.UseSqlServer(connectionString);
@@ -43,15 +62,11 @@ namespace IAMS.Persistence.Extensions
             // Register generic repository and unit of work
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
-
+            services.AddScoped<ITenantDatabaseService, TenantDatabaseService>();
             // Register specialized repositories
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IPolicyRepository, PolicyRepository>();
             services.AddScoped<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
-            //services.AddScoped<IClaimRepository, ClaimRepository>();
-            //services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-            //services.AddScoped<IPaymentRepository, PaymentRepository>();
-            //services.AddScoped<ICommissionRepository, CommissionRepository>();
 
             return services;
         }

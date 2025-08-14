@@ -14,7 +14,7 @@ namespace IAMS.Domain.Events
         public PolicyDatesUpdatedEvent(Policy policy, string updatedBy,
             DateTime oldStartDate, DateTime oldEndDate,
             DateTime newStartDate, DateTime newEndDate)
-            : base(policy.TenantId)
+            : base()
         {
             Policy = policy;
             UpdatedBy = updatedBy;

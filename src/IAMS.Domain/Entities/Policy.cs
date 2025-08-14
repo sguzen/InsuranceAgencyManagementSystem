@@ -39,14 +39,12 @@ namespace IAMS.Domain.Entities
             if (Status != PolicyStatus.Draft)
                 throw new InvalidOperationDomainException(
                     "ActivatePolicy",
-                    "Only draft policies can be activated",
-                    TenantId);
+                    "Only draft policies can be activated");
 
             if (StartDate > DateTime.Today)
                 throw new BusinessRuleViolationException(
                     "PolicyActivation",
-                    "Cannot activate a policy with a future start date",
-                    TenantId);
+                    "Cannot activate a policy with a future start date");
 
             Status = PolicyStatus.Active;
             UpdateAuditInfo(activatedBy);
@@ -58,8 +56,7 @@ namespace IAMS.Domain.Entities
             if (Status != PolicyStatus.Active && Status != PolicyStatus.Suspended)
                 throw new InvalidOperationDomainException(
                     "CancelPolicy",
-                    "Only active or suspended policies can be cancelled",
-                    TenantId);
+                    "Only active or suspended policies can be cancelled");
 
             Status = PolicyStatus.Cancelled;
             UpdateAuditInfo(cancelledBy);
@@ -71,8 +68,7 @@ namespace IAMS.Domain.Entities
             if (Status != PolicyStatus.Active)
                 throw new InvalidOperationDomainException(
                     "SuspendPolicy",
-                    "Only active policies can be suspended",
-                    TenantId);
+                    "Only active policies can be suspended");
 
             Status = PolicyStatus.Suspended;
             UpdateAuditInfo(suspendedBy);
@@ -84,14 +80,12 @@ namespace IAMS.Domain.Entities
             if (Status != PolicyStatus.Suspended)
                 throw new InvalidOperationDomainException(
                     "ReactivatePolicy",
-                    "Only suspended policies can be reactivated",
-                    TenantId);
+                    "Only suspended policies can be reactivated");
 
             if (EndDate < DateTime.Today)
                 throw new BusinessRuleViolationException(
                     "PolicyReactivation",
-                    "Cannot reactivate an expired policy",
-                    TenantId);
+                    "Cannot reactivate an expired policy");
 
             Status = PolicyStatus.Active;
             UpdateAuditInfo(reactivatedBy);
@@ -103,14 +97,12 @@ namespace IAMS.Domain.Entities
             if (Status != PolicyStatus.Active && Status != PolicyStatus.Suspended)
                 throw new InvalidOperationDomainException(
                     "ExpirePolicy",
-                    "Only active or suspended policies can be expired",
-                    TenantId);
+                    "Only active or suspended policies can be expired");
 
             if (EndDate > DateTime.Today)
                 throw new BusinessRuleViolationException(
                     "PolicyExpiry",
-                    "Cannot expire a policy before its end date",
-                    TenantId);
+                    "Cannot expire a policy before its end date");
 
             Status = PolicyStatus.Expired;
             AddDomainEvent(new PolicyExpiredEvent(this));
@@ -122,14 +114,12 @@ namespace IAMS.Domain.Entities
             if (Status != PolicyStatus.Active && Status != PolicyStatus.Expired)
                 throw new InvalidOperationDomainException(
                     "CreateRenewal",
-                    "Only active or expired policies can be renewed",
-                    TenantId);
+                    "Only active or expired policies can be renewed");
 
             if (newStartDate >= newEndDate)
                 throw new BusinessRuleViolationException(
                     "PolicyRenewal",
-                    "Renewal start date must be before end date",
-                    TenantId);
+                    "Renewal start date must be before end date");
 
             var renewalPolicy = new Policy
             {
@@ -143,7 +133,6 @@ namespace IAMS.Domain.Entities
                 CommissionRate = this.CommissionRate,
                 Currency = this.Currency,
                 Status = PolicyStatus.Draft,
-                TenantId = this.TenantId
             };
 
             renewalPolicy.CalculateCommission();
@@ -160,20 +149,17 @@ namespace IAMS.Domain.Entities
             if (IsDeleted)
                 throw new InvalidOperationDomainException(
                     "UpdateDates",
-                    "Cannot update deleted policy",
-                    TenantId);
+                    "Cannot update deleted policy");
 
             if (Status == PolicyStatus.Cancelled)
                 throw new InvalidOperationDomainException(
                     "UpdateDates",
-                    "Cannot update dates of cancelled policy",
-                    TenantId);
+                    "Cannot update dates of cancelled policy");
 
             if (startDate >= endDate)
                 throw new BusinessRuleViolationException(
                     "PolicyDates",
-                    "Start date must be before end date",
-                    TenantId);
+                    "Start date must be before end date");
 
             var oldStartDate = StartDate;
             var oldEndDate = EndDate;
@@ -191,14 +177,12 @@ namespace IAMS.Domain.Entities
             if (newPremiumAmount <= 0)
                 throw new BusinessRuleViolationException(
                     "PremiumUpdate",
-                    "Premium amount must be greater than zero",
-                    TenantId);
+                    "Premium amount must be greater than zero");
 
             if (Status == PolicyStatus.Cancelled)
                 throw new InvalidOperationDomainException(
                     "UpdatePremium",
-                    "Cannot update premium of cancelled policy",
-                    TenantId);
+                    "Cannot update premium of cancelled policy");
 
             var oldPremium = PremiumAmount;
             PremiumAmount = newPremiumAmount;
@@ -218,8 +202,7 @@ namespace IAMS.Domain.Entities
             if (newCommissionRate < 0 || newCommissionRate > 100)
                 throw new BusinessRuleViolationException(
                     "CommissionRateUpdate",
-                    "Commission rate must be between 0 and 100",
-                    TenantId);
+                    "Commission rate must be between 0 and 100");
 
             var oldRate = CommissionRate;
             CommissionRate = newCommissionRate;

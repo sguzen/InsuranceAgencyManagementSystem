@@ -9,7 +9,7 @@ namespace IAMS.Domain.Events
         public DateTime ReactivationDate { get; }
 
         public PolicyReactivatedEvent(Policy policy, string reactivatedBy)
-            : base(policy.TenantId)
+            : base()
         {
             Policy = policy;
             ReactivatedBy = reactivatedBy;

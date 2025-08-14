@@ -18,7 +18,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.TenantId, opt => opt.Ignore())
                 .ForMember(dest => dest.Policy, opt => opt.Ignore());
         }
     }

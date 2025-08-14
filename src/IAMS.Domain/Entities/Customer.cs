@@ -38,8 +38,7 @@ namespace IAMS.Domain.Entities
             if (Status == CustomerStatus.Blacklisted)
                 throw new InvalidOperationDomainException(
                     "ActivateCustomer",
-                    "Cannot activate a blacklisted customer",
-                    TenantId);
+                    "Cannot activate a blacklisted customer");
 
             Status = CustomerStatus.Active;
             UpdateAuditInfo(activatedBy);
@@ -65,14 +64,12 @@ namespace IAMS.Domain.Entities
             if (!IsValidEmail(email))
                 throw new BusinessRuleViolationException(
                     "EmailValidation",
-                    "Invalid email format",
-                    TenantId);
+                    "Invalid email format");
 
             if (!IsValidPhone(phone))
                 throw new BusinessRuleViolationException(
                     "PhoneValidation",
-                    "Invalid phone format",
-                    TenantId);
+                    "Invalid phone format");
 
             Email = email;
             Phone = phone;
@@ -98,7 +95,6 @@ namespace IAMS.Domain.Entities
                     InsuranceCompanyId = insuranceCompanyId,
                     ExternalCustomerId = externalCustomerId,
                     RegisteredDate = DateTime.UtcNow,
-                    TenantId = TenantId,
                     CreatedBy = mappedBy
                 };
 
@@ -199,7 +195,6 @@ namespace IAMS.Domain.Entities
             string kktcNo,
             DateTime dateOfBirth,
             string createdBy,
-            int tenantId,
             CustomerType type = CustomerType.Individual,
             string? address = null)
         {
@@ -215,7 +210,6 @@ namespace IAMS.Domain.Entities
                 Type = type,
                 Address = address,
                 Status = CustomerStatus.Active,
-                TenantId = tenantId,
                 CreatedBy = createdBy
             };
 
@@ -235,8 +229,7 @@ namespace IAMS.Domain.Entities
             if (IsDeleted)
                 throw new InvalidOperationDomainException(
                     "UpdatePersonalInfo",
-                    "Cannot update deleted customer",
-                    TenantId);
+                    "Cannot update deleted customer");
 
             FirstName = firstName;
             LastName = lastName;
@@ -256,8 +249,7 @@ namespace IAMS.Domain.Entities
             if (IsDeleted)
                 throw new InvalidOperationDomainException(
                     "UpdateStatus",
-                    "Cannot update deleted customer",
-                    TenantId);
+                    "Cannot update deleted customer");
 
             var oldStatus = Status;
             Status = status;
@@ -276,8 +268,7 @@ namespace IAMS.Domain.Entities
             if (IsDeleted)
                 throw new InvalidOperationDomainException(
                     "UpdateNotes",
-                    "Cannot update deleted customer",
-                    TenantId);
+                    "Cannot update deleted customer");
 
             Notes = notes;
             UpdateAuditInfo(updatedBy);
@@ -295,8 +286,7 @@ namespace IAMS.Domain.Entities
             {
                 throw new BusinessRuleViolationException(
                     "CustomerDeletion",
-                    "Cannot delete customer with active policies",
-                    TenantId);
+                    "Cannot delete customer with active policies");
             }
 
             IsDeleted = true;

@@ -7,7 +7,7 @@ namespace IAMS.Domain.Events
         public PolicyPayment Payment { get; }
         public string ProcessedBy { get; }
 
-        public PaymentProcessedEvent(PolicyPayment payment, string processedBy) : base(payment.TenantId)
+        public PaymentProcessedEvent(PolicyPayment payment, string processedBy) : base()
         {
             Payment = payment;
             ProcessedBy = processedBy;

@@ -10,7 +10,7 @@ namespace IAMS.Domain.Events
         public string CalculatedBy { get; }
 
         public CommissionCalculatedEvent(int tenantId, int policyId, Money commissionAmount, decimal commissionRate, string calculatedBy)
-            : base(tenantId)
+            : base()
         {
             PolicyId = policyId;
             CommissionAmount = commissionAmount;

@@ -10,7 +10,7 @@ namespace IAMS.Domain.Events
         public DateTime SuspensionDate { get; }
 
         public PolicySuspendedEvent(Policy policy, string suspendedBy, string? suspensionReason = null)
-            : base(policy.TenantId)
+            : base()
         {
             Policy = policy;
             SuspendedBy = suspendedBy;

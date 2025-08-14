@@ -15,7 +15,7 @@ namespace IAMS.Application.Services.Policies
             _logger = logger;
         }
 
-        public async Task<string> GenerateAsync(int tenantId, int insuranceCompanyId, int policyTypeId)
+        public async Task<string> GenerateAsync(int insuranceCompanyId, int policyTypeId)
         {
             try
             {
@@ -27,7 +27,7 @@ namespace IAMS.Application.Services.Policies
                 var year = DateTime.Now.Year.ToString().Substring(2);
 
                 // Get next sequence number
-                var sequence = await GetNextSequenceAsync(tenantId, insuranceCompanyId);
+                var sequence = await GetNextSequenceAsync(insuranceCompanyId);
 
                 // Format: PREFIX-YY-XXXXXX (e.g., AXA-24-000001)
                 var policyNumber = $"{prefix}-{year}-{sequence:D6}";
@@ -87,7 +87,7 @@ namespace IAMS.Application.Services.Policies
             return true;
         }
 
-        private async Task<int> GetNextSequenceAsync(int tenantId, int insuranceCompanyId)
+        private async Task<int> GetNextSequenceAsync(int insuranceCompanyId)
         {
             try
             {

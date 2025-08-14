@@ -8,7 +8,7 @@ namespace IAMS.Domain.Events
         public string MappedBy { get; }
 
         public CustomerMappedToInsuranceCompanyEvent(CustomerInsuranceCompany mapping, string mappedBy)
-            : base(mapping.TenantId)
+            : base()
         {
             Mapping = mapping;
             MappedBy = mappedBy;

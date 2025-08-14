@@ -10,7 +10,7 @@ namespace IAMS.Domain.Events
         public DateTime CancellationDate { get; }
 
         public PolicyCancelledEvent(Policy policy, string cancelledBy, string? cancellationReason = null)
-            : base(policy.TenantId)
+            : base()
         {
             Policy = policy;
             CancelledBy = cancelledBy;

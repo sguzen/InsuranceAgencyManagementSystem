@@ -7,7 +7,7 @@ namespace IAMS.Domain.Events
         public Policy Policy { get; }
         public string CreatedBy { get; }
 
-        public PolicyCreatedEvent(Policy policy, string createdBy) : base(policy.TenantId)
+        public PolicyCreatedEvent(Policy policy, string createdBy) : base()
         {
             Policy = policy;
             CreatedBy = createdBy;

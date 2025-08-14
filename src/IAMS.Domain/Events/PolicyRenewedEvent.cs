@@ -9,7 +9,7 @@ namespace IAMS.Domain.Events
         public string RenewedBy { get; }
 
         public PolicyRenewedEvent(Policy originalPolicy, Policy renewalPolicy, string renewedBy)
-            : base(originalPolicy.TenantId)
+            : base()
         {
             OriginalPolicy = originalPolicy;
             RenewalPolicy = renewalPolicy;

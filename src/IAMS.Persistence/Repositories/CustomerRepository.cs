@@ -32,14 +32,14 @@ namespace IAMS.Persistence.Repositories
         public async Task<Customer?> GetByKktcNoAsync(string kktcNo, int tenantId)
         {
             return await _dbSet
-                .Where(c => !c.IsDeleted && c.KktcNo == kktcNo && c.TenantId == tenantId)
+                .Where(c => !c.IsDeleted && c.KktcNo == kktcNo)
                 .FirstOrDefaultAsync();
         }
 
         public async Task<Customer?> GetByCustomerCodeAsync(string customerCode, int tenantId)
         {
             return await _dbSet
-                .Where(c => !c.IsDeleted && c.CustomerCode == customerCode && c.TenantId == tenantId)
+                .Where(c => !c.IsDeleted && c.CustomerCode == customerCode)
                 .FirstOrDefaultAsync();
         }
 
@@ -50,7 +50,7 @@ namespace IAMS.Persistence.Repositories
                     .ThenInclude(p => p.InsuranceCompany)
                 .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.PolicyType)
-                .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
+                .Where(c => !c.IsDeleted &&
                        c.Policies.Any(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                 .OrderBy(c => c.LastName)
                 .ThenBy(c => c.FirstName)
@@ -64,7 +64,7 @@ namespace IAMS.Persistence.Repositories
                     .ThenInclude(p => p.InsuranceCompany)
                 .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
                     .ThenInclude(p => p.PolicyType)
-                .Where(c => c.Id == customerId && !c.IsDeleted && c.TenantId == tenantId)
+                .Where(c => c.Id == customerId && !c.IsDeleted)
                 .FirstOrDefaultAsync();
 
             return customer?.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted).ToList() ?? new List<Policy>();
@@ -118,7 +118,7 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<bool> KktcNoExistsAsync(string kktcNo, int tenantId, int? excludeCustomerId = null)
         {
-            var query = _dbSet.Where(c => !c.IsDeleted && c.KktcNo == kktcNo && c.TenantId == tenantId);
+            var query = _dbSet.Where(c => !c.IsDeleted && c.KktcNo == kktcNo);
 
             if (excludeCustomerId.HasValue)
             {
@@ -130,7 +130,7 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<bool> EmailExistsAsync(string email, int tenantId, int? excludeCustomerId = null)
         {
-            var query = _dbSet.Where(c => !c.IsDeleted && c.Email == email && c.TenantId == tenantId);
+            var query = _dbSet.Where(c => !c.IsDeleted && c.Email == email);
 
             if (excludeCustomerId.HasValue)
             {
@@ -142,7 +142,7 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<bool> CustomerCodeExistsAsync(string customerCode, int tenantId, int? excludeCustomerId = null)
         {
-            var query = _dbSet.Where(c => !c.IsDeleted && c.CustomerCode == customerCode && c.TenantId == tenantId);
+            var query = _dbSet.Where(c => !c.IsDeleted && c.CustomerCode == customerCode);
 
             if (excludeCustomerId.HasValue)
             {
@@ -158,8 +158,7 @@ namespace IAMS.Persistence.Repositories
             {
                 var query = _dbSet.AsQueryable();
 
-                query = query.Where(c => c.TenantId == tenantId &&
-                                       c.CreatedOn >= startDate &&
+                query = query.Where(c => c.CreatedOn >= startDate &&
                                        c.CreatedOn <= endDate);
 
                 // For better performance with large datasets, only select required fields
@@ -172,8 +171,7 @@ namespace IAMS.Persistence.Repositories
                         LastName = c.LastName,
                         Email = c.Email,
                         Phone = c.Phone,
-                        CreatedOn = c.CreatedOn,
-                        TenantId = c.TenantId
+                        CreatedOn = c.CreatedOn
                     })
                     .OrderBy(c => c.CreatedOn)
                     .ToListAsync();
@@ -189,7 +187,7 @@ namespace IAMS.Persistence.Repositories
             try
             {
                 return await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .OrderByDescending(c => c.Id)
                     .FirstOrDefaultAsync();
             }
@@ -213,7 +211,6 @@ namespace IAMS.Persistence.Repositories
 
                 return await _dbSet
                     .Where(c => !c.IsDeleted &&
-                               c.TenantId == tenantId &&
                                (c.Phone == phoneNumber ||
                                 c.Phone == cleanedPhone ||
                                 c.Phone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "") == cleanedPhone))
@@ -236,7 +233,6 @@ namespace IAMS.Persistence.Repositories
             {
                 return await _dbSet
                     .Where(c => !c.IsDeleted &&
-                               c.TenantId == tenantId &&
                                c.Email.ToLower() == email.ToLower())
                     .FirstOrDefaultAsync();
             }
@@ -253,7 +249,7 @@ namespace IAMS.Persistence.Repositories
             try
             {
                 return await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .CountAsync();
             }
             catch (Exception ex)
@@ -268,7 +264,7 @@ namespace IAMS.Persistence.Repositories
             try
             {
                 return await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .OrderByDescending(c => c.CreatedOn)
                     .Take(count)
                     .Include(c => c.Policies.Where(p => !p.IsDeleted))
@@ -291,27 +287,27 @@ namespace IAMS.Persistence.Repositories
                 var lastMonth = startOfMonth.AddMonths(-1);
 
                 var totalCustomers = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .CountAsync();
 
                 var activeCustomers = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.Status == CustomerStatus.Active)
+                    .Where(c => !c.IsDeleted && c.Status == CustomerStatus.Active)
                     .CountAsync();
 
                 var inactiveCustomers = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.Status == CustomerStatus.Inactive)
+                    .Where(c => !c.IsDeleted && c.Status == CustomerStatus.Inactive)
                     .CountAsync();
 
                 var newCustomersThisMonth = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.CreatedOn >= startOfMonth)
+                    .Where(c => !c.IsDeleted && c.CreatedOn >= startOfMonth)
                     .CountAsync();
 
                 var newCustomersThisWeek = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.CreatedOn >= startOfWeek)
+                    .Where(c => !c.IsDeleted && c.CreatedOn >= startOfWeek)
                     .CountAsync();
 
                 var newCustomersLastMonth = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
+                    .Where(c => !c.IsDeleted &&
                                c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth)
                     .CountAsync();
 
@@ -321,7 +317,7 @@ namespace IAMS.Persistence.Repositories
                     : newCustomersThisMonth > 0 ? 100 : 0;
 
                 var customersWithActivePolicies = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId &&
+                    .Where(c => !c.IsDeleted &&
                                c.Policies.Any(p => p.Status== PolicyStatus.Active && !p.IsDeleted))
                     .CountAsync();
 
@@ -363,7 +359,7 @@ namespace IAMS.Persistence.Repositories
             try
             {
                 return await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .Include(c => c.Policies.Where(p => !p.IsDeleted))
                     .OrderByDescending(c => c.Policies.Count(p => !p.IsDeleted))
                     .Take(count)
@@ -381,7 +377,7 @@ namespace IAMS.Persistence.Repositories
             try
             {
                 var statusCounts = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .GroupBy(c => c.Status)
                     .Select(g => new { Status = g.Key, Count = g.Count() })
                     .ToListAsync();
@@ -402,7 +398,7 @@ namespace IAMS.Persistence.Repositories
                 var startDate = DateTime.UtcNow.AddMonths(-months);
 
                 var monthlyData = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId && c.CreatedOn >= startDate)
+                    .Where(c => !c.IsDeleted && c.CreatedOn >= startDate)
                     .GroupBy(c => new { c.CreatedOn.Year, c.CreatedOn.Month })
                     .Select(g => new {
                         Year = g.Key.Year,
@@ -430,7 +426,7 @@ namespace IAMS.Persistence.Repositories
                 var today = DateTime.Today;
 
                 var ages = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .Select(c => EF.Functions.DateDiffYear(c.DateOfBirth, today))
                     .ToListAsync();
 
@@ -448,7 +444,7 @@ namespace IAMS.Persistence.Repositories
             try
             {
                 var genderCounts = await _dbSet
-                    .Where(c => !c.IsDeleted && c.TenantId == tenantId)
+                    .Where(c => !c.IsDeleted)
                     .GroupBy(c => c.Gender)
                     .Select(g => new { Gender = g.Key, Count = g.Count() })
                     .ToListAsync();

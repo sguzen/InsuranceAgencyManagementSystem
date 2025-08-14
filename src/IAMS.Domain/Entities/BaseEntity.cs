@@ -3,12 +3,11 @@ using System.Security.Principal;
 
 namespace IAMS.Domain.Entities
 {
-    public abstract class BaseEntity : ITenantEntity, IEntity, IAuditable, ISoftDeletable, IHasDomainEvents
+    public abstract class BaseEntity : IEntity, IAuditable, ISoftDeletable, IHasDomainEvents
     {
         private readonly List<IDomainEvent> _domainEvents = new();
 
         public int Id { get; set; }
-        public int TenantId { get; set; }
 
         // Auditable properties
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

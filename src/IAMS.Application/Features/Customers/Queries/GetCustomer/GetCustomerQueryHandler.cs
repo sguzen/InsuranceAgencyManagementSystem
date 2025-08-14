@@ -54,22 +54,14 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
 
                 if (customer == null)
                 {
-                    _logger.LogInformation("Customer with ID {CustomerId} not found for tenant {TenantId}", request.Id, tenantId);
+                    _logger.LogInformation("Customer with ID {CustomerId} not found", request.Id);
                     return Result<CustomerDto>.NotFound("Müşteri bulunamadı");
-                }
-
-                // Verify tenant ownership - critical security check
-                if (customer.TenantId != tenantId)
-                {
-                    _logger.LogWarning("Attempted to access customer {CustomerId} from different tenant. Current: {CurrentTenant}, Customer's: {CustomerTenant}",
-                        request.Id, tenantId, customer.TenantId);
-                    return Result<CustomerDto>.Forbidden("Bu müşteriyi görüntüleme yetkiniz bulunmamaktadır");
                 }
 
                 // Check if customer is soft deleted
                 if (customer.IsDeleted)
                 {
-                    _logger.LogInformation("Attempted to access deleted customer {CustomerId} for tenant {TenantId}", request.Id, tenantId);
+                    _logger.LogInformation("Attempted to access deleted customer {CustomerId}}", request.Id);
                     return Result<CustomerDto>.NotFound("Müşteri bulunamadı (silinmiş)");
                 }
 

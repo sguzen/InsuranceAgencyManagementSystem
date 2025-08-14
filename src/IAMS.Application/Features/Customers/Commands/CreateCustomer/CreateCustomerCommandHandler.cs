@@ -81,7 +81,6 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
 
                 // Map and create customer
                 var customer = _mapper.Map<Customer>(request.CustomerDto);
-                customer.TenantId = tenantId; // Set the tenant ID
                 customer.CreatedBy = "System"; // TODO: Get from current user context
                 customer.CreatedOn = DateTime.UtcNow;
 

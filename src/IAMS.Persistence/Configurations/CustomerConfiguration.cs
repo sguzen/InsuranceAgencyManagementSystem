@@ -40,7 +40,6 @@ namespace IAMS.Persistence.Configurations
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 
-            builder.HasIndex(c => c.TenantId);
 
             // Configure relationships
             builder.HasMany(c => c.Policies)
@@ -84,9 +83,8 @@ namespace IAMS.Persistence.Configurations
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 
-            builder.HasIndex(p => new { p.CustomerId, p.TenantId });
-            builder.HasIndex(p => new { p.InsuranceCompanyId, p.TenantId });
-            builder.HasIndex(p => p.TenantId);
+            builder.HasIndex(p => new { p.CustomerId});
+            builder.HasIndex(p => new { p.InsuranceCompanyId });
 
             // Configure relationships
             builder.HasOne(p => p.Customer)
@@ -155,7 +153,6 @@ namespace IAMS.Persistence.Configurations
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 
-            builder.HasIndex(ic => ic.TenantId);
 
             // Configure relationships
             builder.HasMany(ic => ic.Policies)

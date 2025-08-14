@@ -18,7 +18,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.TenantId, opt => opt.Ignore())
                 .ForMember(dest => dest.Policies, opt => opt.Ignore())
                 .ForMember(dest => dest.CommissionRates, opt => opt.Ignore());
 
@@ -29,7 +28,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.TenantId, opt => opt.Ignore())
                 .ForMember(dest => dest.Policies, opt => opt.Ignore())
                 .ForMember(dest => dest.CommissionRates, opt => opt.Ignore());
         }

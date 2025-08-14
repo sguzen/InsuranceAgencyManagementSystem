@@ -7,7 +7,7 @@ namespace IAMS.Domain.Events
         public PolicyClaim Claim { get; }
         public string SubmittedBy { get; }
 
-        public ClaimSubmittedEvent(PolicyClaim claim, string submittedBy) : base(claim.TenantId)
+        public ClaimSubmittedEvent(PolicyClaim claim, string submittedBy) : base()
         {
             Claim = claim;
             SubmittedBy = submittedBy;

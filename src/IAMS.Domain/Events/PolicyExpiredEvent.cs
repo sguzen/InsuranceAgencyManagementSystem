@@ -7,7 +7,7 @@ namespace IAMS.Domain.Events
         public Policy Policy { get; }
         public DateTime ExpiryDate { get; }
 
-        public PolicyExpiredEvent(Policy policy) : base(policy.TenantId)
+        public PolicyExpiredEvent(Policy policy) : base()
         {
             Policy = policy;
             ExpiryDate = policy.EndDate;

@@ -10,7 +10,7 @@ namespace IAMS.Domain.Events
         public string UpdatedBy { get; }
 
         public PolicyCommissionRateUpdatedEvent(Policy policy, decimal oldCommissionRate, decimal newCommissionRate, string updatedBy)
-            : base(policy.TenantId)
+            : base()
         {
             Policy = policy;
             OldCommissionRate = oldCommissionRate;

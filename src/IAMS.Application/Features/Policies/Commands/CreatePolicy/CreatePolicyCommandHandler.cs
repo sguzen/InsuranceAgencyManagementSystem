@@ -51,8 +51,7 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
                 // Generate policy number if not provided
                 if (string.IsNullOrEmpty(policy.PolicyNumber))
                 {
-                    policy.PolicyNumber = await _policyNumberGenerator.GenerateAsync(
-                        policy.TenantId, policy.InsuranceCompanyId, policy.PolicyTypeId);
+                    policy.PolicyNumber = await _policyNumberGenerator.GenerateAsync(policy.InsuranceCompanyId, policy.PolicyTypeId);
                 }
 
                 // Calculate commission

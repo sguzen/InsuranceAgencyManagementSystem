@@ -11,7 +11,7 @@ namespace IAMS.Domain.Events
         public DateTime SettlementDate { get; }
 
         public ClaimSettledEvent(PolicyClaim claim, Money settledAmount, string settledBy)
-            : base(claim.TenantId)
+            : base()
         {
             Claim = claim;
             SettledAmount = settledAmount;

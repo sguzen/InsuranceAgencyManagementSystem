@@ -18,7 +18,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.TenantId, opt => opt.Ignore())
                 .ForMember(dest => dest.Policies, opt => opt.Ignore())
                 .ForMember(dest => dest.CustomerCode, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Domain.Enums.CustomerStatus.Active))
@@ -40,7 +39,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.TenantId, opt => opt.Ignore())
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())
                 .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
                 .ForMember(dest => dest.LastSyncDate, opt => opt.Ignore());
@@ -52,7 +50,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.TenantId, opt => opt.Ignore())
                 .ForMember(dest => dest.CustomerId, opt => opt.Ignore())
                 .ForMember(dest => dest.InsuranceCompanyId, opt => opt.Ignore())
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())

@@ -10,7 +10,7 @@ namespace IAMS.Domain.Events
         public string UpdatedBy { get; }
 
         public PolicyPremiumUpdatedEvent(Policy policy, decimal oldPremium, decimal newPremium, string updatedBy)
-            : base(policy.TenantId)
+            : base()
         {
             Policy = policy;
             OldPremium = oldPremium;

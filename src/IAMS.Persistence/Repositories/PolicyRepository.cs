@@ -34,7 +34,7 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<bool> PolicyNumberExistsAsync(string policyNumber, int tenantId, int? excludePolicyId = null)
         {
-            var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber && p.TenantId == tenantId);
+            var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber);
 
             if (excludePolicyId.HasValue)
             {
@@ -91,7 +91,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == PolicyStatus.Active)
+                .Where(p => !p.IsDeleted && p.Status == PolicyStatus.Active)
                 .OrderBy(p => p.EndDate)
                 .ToListAsync();
         }
@@ -102,7 +102,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == status)
+                .Where(p => !p.IsDeleted && p.Status == status)
                 .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();
         }
@@ -114,8 +114,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId &&
-                           !p.IsDeleted &&
+                .Where(p => !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.EndDate <= cutoffDate &&
                            p.EndDate >= DateTime.Now)
@@ -129,8 +128,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId &&
-                           !p.IsDeleted &&
+                .Where(p => !p.IsDeleted &&
                            (p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now))
                 .OrderByDescending(p => p.EndDate)
                 .ToListAsync();
@@ -142,7 +140,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted)
+                .Where(p => !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedOn)
                 .Take(count)
                 .ToListAsync();
@@ -154,7 +152,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == PolicyStatus.Active)
+                .Where(p => !p.IsDeleted && p.Status == PolicyStatus.Active)
                 .OrderByDescending(p => p.PremiumAmount)
                 .Take(count)
                 .ToListAsync();
@@ -164,20 +162,20 @@ namespace IAMS.Persistence.Repositories
         public async Task<int> GetPolicyCountAsync(int tenantId)
         {
             return await _dbSet
-                .CountAsync(p => p.TenantId == tenantId && !p.IsDeleted);
+                .CountAsync(p =>!p.IsDeleted);
         }
 
         public async Task<int> GetActivePolicyCountAsync(int tenantId)
         {
             return await _dbSet
-                .CountAsync(p => p.TenantId == tenantId && !p.IsDeleted && p.Status == PolicyStatus.Active);
+                .CountAsync(p => !p.IsDeleted && p.Status == PolicyStatus.Active);
         }
 
         public async Task<int> GetExpiringPolicyCountAsync(int daysAhead, int tenantId)
         {
             var cutoffDate = DateTime.Now.AddDays(daysAhead);
             return await _dbSet
-                .CountAsync(p => p.TenantId == tenantId &&
+                .CountAsync(p =>
                                !p.IsDeleted &&
                                p.Status == PolicyStatus.Active &&
                                p.EndDate <= cutoffDate &&
@@ -187,7 +185,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<int> GetExpiredPolicyCountAsync(int tenantId)
         {
             return await _dbSet
-                .CountAsync(p => p.TenantId == tenantId &&
+                .CountAsync(p => 
                                !p.IsDeleted &&
                                (p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now));
         }
@@ -195,7 +193,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<Dictionary<PolicyStatus, int>> GetPolicyCountByStatusAsync(int tenantId)
         {
             return await _dbSet
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted)
+                .Where(p => !p.IsDeleted)
                 .GroupBy(p => p.Status)
                 .ToDictionaryAsync(g => g.Key, g => g.Count());
         }
@@ -208,7 +206,7 @@ namespace IAMS.Persistence.Repositories
             var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
             return await _dbSet
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.StartDate >= startOfMonth &&
@@ -223,7 +221,7 @@ namespace IAMS.Persistence.Repositories
             var endOfYear = new DateTime(targetYear, 12, 31);
 
             return await _dbSet
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.StartDate >= startOfYear &&
@@ -236,7 +234,7 @@ namespace IAMS.Persistence.Repositories
             var startDate = DateTime.Now.AddMonths(-months);
 
             var revenues = await _dbSet
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p => 
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.StartDate >= startDate)
@@ -253,7 +251,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<decimal> GetTotalPremiumByCustomerAsync(int customerId, int tenantId)
         {
             return await _dbSet
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p => 
                            !p.IsDeleted &&
                            p.CustomerId == customerId &&
                            p.Status == PolicyStatus.Active)
@@ -291,7 +289,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p => 
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.EndDate >= startDate &&
@@ -307,7 +305,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted &&
+                .Where(p => !p.IsDeleted &&
                            (p.PolicyNumber.ToLower().Contains(search) ||
                             p.Customer.FirstName.ToLower().Contains(search) ||
                             p.Customer.LastName.ToLower().Contains(search) ||
@@ -322,7 +320,7 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .Include(p => p.Customer)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p =>
                            !p.IsDeleted &&
                            p.InsuranceCompanyId == insuranceCompanyId)
                 .OrderByDescending(p => p.CreatedOn)
@@ -334,7 +332,7 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p =>
                            !p.IsDeleted &&
                            p.PolicyTypeId == policyTypeId)
                 .OrderByDescending(p => p.CreatedOn)
@@ -348,7 +346,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId && !p.IsDeleted);
+                .Where(p => !p.IsDeleted);
 
             if (startDate.HasValue)
                 query = query.Where(p => p.StartDate >= startDate.Value);
@@ -388,7 +386,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => p.TenantId == tenantId &&
+                .Where(p => 
                            !p.IsDeleted &&
                            p.ModifiedOn > modifiedDate)
                 .OrderBy(p => p.ModifiedOn)
@@ -401,7 +399,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .FirstOrDefaultAsync(p => p.TenantId == tenantId &&
+                .FirstOrDefaultAsync(p =>
                                         !p.IsDeleted &&
                                         //p.ExternalReference == externalId &&
                                         p.InsuranceCompanyId == insuranceCompanyId);

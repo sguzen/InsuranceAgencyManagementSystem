@@ -7,7 +7,7 @@ namespace IAMS.Domain.Events
         public Customer Customer { get; }
         public string RegisteredBy { get; }
 
-        public CustomerRegisteredEvent(Customer customer, string registeredBy) : base(customer.TenantId)
+        public CustomerRegisteredEvent(Customer customer, string registeredBy) : base()
         {
             Customer = customer;
             RegisteredBy = registeredBy;

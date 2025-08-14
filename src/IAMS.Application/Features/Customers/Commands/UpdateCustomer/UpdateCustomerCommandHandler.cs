@@ -63,14 +63,6 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                     return Result<CustomerDto>.NotFound("Güncellenecek müşteri bulunamadı");
                 }
 
-                // Verify tenant ownership - critical security check
-                if (existingCustomer.TenantId != tenantId)
-                {
-                    _logger.LogWarning("Attempted to update customer {CustomerId} from different tenant. Current: {CurrentTenant}, Customer's: {CustomerTenant}",
-                        request.Id, tenantId, existingCustomer.TenantId);
-                    return Result<CustomerDto>.Forbidden("Bu müşteriyi güncelleme yetkiniz bulunmamaktadır");
-                }
-
                 // Check for business rule violations
                 var businessValidationErrors = await ValidateBusinessRulesAsync(request, existingCustomer, tenantId);
                 if (businessValidationErrors.Any())
@@ -91,7 +83,6 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 _mapper.Map(request.CustomerDto, existingCustomer);
 
                 // Preserve system fields
-                existingCustomer.TenantId = tenantId; // Ensure tenant ID is preserved
                 existingCustomer.ModifiedOn = DateTime.UtcNow;
                 existingCustomer.ModifiedBy = "System"; // TODO: Get from current user context
 

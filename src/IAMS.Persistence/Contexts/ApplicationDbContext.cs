@@ -42,43 +42,8 @@ namespace IAMS.Persistence.Contexts
             {
                 property.SetColumnType("decimal(18,2)");
             }
-
-            // Apply global query filters for multi-tenancy (soft delete is handled in base entity)
-            ApplyGlobalFilters(modelBuilder);
         }
 
-        private void ApplyGlobalFilters(ModelBuilder modelBuilder)
-        {
-            // Only apply tenant filtering if we have a tenant context
-            if (_tenantContextAccessor?.TenantContext?.Tenant != null)
-            {
-                var tenantId = _tenantContextAccessor.TenantContext.Tenant.Id;
-
-                // Apply tenant filter to all entities that implement ITenantEntity
-                foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-                {
-                    var clrType = entityType.ClrType;
-
-                    // Check if entity has TenantId property
-                    if (clrType.GetProperty("TenantId") != null)
-                    {
-                        var method = typeof(ApplicationDbContext)
-                            .GetMethod(nameof(GetTenantFilter))!
-                            .MakeGenericMethod(clrType);
-
-                        var filter = method.Invoke(this, new object[] { tenantId });
-                        entityType.SetQueryFilter((LambdaExpression)filter!);
-                    }
-                }
-            }
-        }
-
-        public static LambdaExpression GetTenantFilter<TEntity>(int tenantId)
-            where TEntity : class
-        {
-            Expression<Func<TEntity, bool>> filter = e => EF.Property<int>(e, "TenantId") == tenantId;
-            return filter;
-        }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

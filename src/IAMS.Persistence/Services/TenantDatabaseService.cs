@@ -36,7 +36,7 @@ namespace IAMS.Persistence.Services
                 if (!canConnect)
                 {
                     _logger.LogInformation("Creating database for tenant {TenantIdentifier}", tenantIdentifier);
-                    await context.Database.EnsureCreatedAsync();
+                    await context.Database.MigrateAsync();
                 }
                 else
                 {
@@ -82,7 +82,7 @@ namespace IAMS.Persistence.Services
             var defaultConnection = _configuration.GetConnectionString("DefaultConnection");
             if (!string.IsNullOrEmpty(defaultConnection))
             {
-                return defaultConnection.Replace("IAMS_Default", $"IAMS_{tenantIdentifier}");
+                return defaultConnection.Replace("ApplicationDb", $"{tenantIdentifier}");
             }
 
             throw new InvalidOperationException($"No connection string found for tenant '{tenantIdentifier}'");

@@ -25,16 +25,6 @@ namespace IAMS.Identity.Data
         {
             base.OnModelCreating(builder);
 
-            // Configure tenant filtering for ApplicationUser
-            if (_tenantContextAccessor?.TenantContext?.Tenant != null)
-            {
-                builder.Entity<ApplicationUser>()
-                    .HasQueryFilter(u => u.TenantId == _tenantContextAccessor.TenantContext.Tenant.Id);
-
-                builder.Entity<ApplicationRole>()
-                    .HasQueryFilter(r => r.TenantId == _tenantContextAccessor.TenantContext.Tenant.Id);
-            }
-
             // Identity table renaming
             builder.Entity<ApplicationUser>().ToTable("Users");
             builder.Entity<ApplicationRole>().ToTable("Roles");
@@ -76,14 +66,14 @@ namespace IAMS.Identity.Data
             {
                 entity.Property(u => u.FirstName).HasMaxLength(100);
                 entity.Property(u => u.LastName).HasMaxLength(100);
-                entity.HasIndex(u => new { u.Email, u.TenantId }).IsUnique();
+                entity.HasIndex(u => u.Email).IsUnique();
             });
 
             // Additional configurations for ApplicationRole
             builder.Entity<ApplicationRole>(entity =>
             {
                 entity.Property(r => r.Description).HasMaxLength(500);
-                entity.HasIndex(r => new { r.Name, r.TenantId }).IsUnique();
+                entity.HasIndex(r => r.Name).IsUnique();
             });
         }
     }

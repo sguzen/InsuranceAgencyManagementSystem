@@ -128,7 +128,7 @@ namespace IAMS.Identity.Data
         private async Task SeedRolesAsync(int tenantId)
         {
             // Check if this tenant already has roles
-            var hasRoles = await _roleManager.Roles.AnyAsync(r => r.TenantId == tenantId);
+            var hasRoles = await _roleManager.Roles.AnyAsync();
 
             if (hasRoles)
             {
@@ -145,10 +145,8 @@ namespace IAMS.Identity.Data
                 NormalizedName = "ADMINISTRATOR",
                 Description = "Full access to all system functions",
                 IsDefault = false,
-                IsSystem = true,
-                TenantId = tenantId
+                IsSystem = true
             };
-
             await _roleManager.CreateAsync(adminRole);
 
             // Assign all permissions to admin role
@@ -170,8 +168,7 @@ namespace IAMS.Identity.Data
                 NormalizedName = "MANAGER",
                 Description = "Management access with limited administrative functions",
                 IsDefault = false,
-                IsSystem = true,
-                TenantId = tenantId
+                IsSystem = true
             };
 
             await _roleManager.CreateAsync(managerRole);
@@ -213,8 +210,7 @@ namespace IAMS.Identity.Data
                 NormalizedName = "AGENT",
                 Description = "Standard agent with customer and policy management",
                 IsDefault = true, // Default role for new users
-                IsSystem = true,
-                TenantId = tenantId
+                IsSystem = true
             };
 
             await _roleManager.CreateAsync(agentRole);
@@ -251,8 +247,7 @@ namespace IAMS.Identity.Data
                 NormalizedName = "READONLY",
                 Description = "Read-only access to system data",
                 IsDefault = false,
-                IsSystem = true,
-                TenantId = tenantId
+                IsSystem = true
             };
 
             await _roleManager.CreateAsync(readOnlyRole);
@@ -278,7 +273,7 @@ namespace IAMS.Identity.Data
         {
             // Check if admin user already exists
             var adminEmail = $"admin@tenant{tenantId}.local";
-            var adminExists = await _userManager.Users.AnyAsync(u => u.Email == adminEmail && u.TenantId == tenantId);
+            var adminExists = await _userManager.Users.AnyAsync(u => u.Email == adminEmail);
 
             if (adminExists)
             {
@@ -294,7 +289,6 @@ namespace IAMS.Identity.Data
                 LastName = "Administrator",
                 EmailConfirmed = true,
                 IsActive = true,
-                TenantId = tenantId,
                 CreatedOn = DateTime.UtcNow
             };
 

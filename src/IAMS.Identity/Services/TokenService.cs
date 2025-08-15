@@ -1,5 +1,5 @@
-﻿using IAMS.Identity.Interfaces;
-using IAMS.Identity.Models;
+﻿using IAMS.Domain.Entities;
+using IAMS.MultiTenancy.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;

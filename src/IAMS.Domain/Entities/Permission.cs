@@ -1,5 +1,4 @@
-﻿// Updated Permission.cs and ApplicationRole.cs in single file
-namespace IAMS.Identity.Models
+﻿namespace IAMS.Domain.Entities
 {
     // Permission.cs
     public class Permission

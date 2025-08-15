@@ -1,5 +1,4 @@
 ﻿using IAMS.Application.DTOs.Identity;
-using IAMS.Identity.Models;
 using Microsoft.Identity.Client;
 using System.Threading.Tasks;
 

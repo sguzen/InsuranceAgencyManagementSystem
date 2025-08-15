@@ -4,10 +4,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using IAMS.Identity.Models;
 using IAMS.Application.DTOs.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using IAMS.Domain.Entities;
 
 namespace IAMS.Identity.Services
 {

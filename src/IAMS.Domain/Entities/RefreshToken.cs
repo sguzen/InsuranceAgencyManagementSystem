@@ -1,4 +1,4 @@
-﻿namespace IAMS.Identity.Models
+﻿namespace IAMS.Domain.Entities
 {
     public class RefreshToken
     {

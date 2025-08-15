@@ -1,5 +1,5 @@
-﻿using IAMS.Identity.Interfaces;
-using IAMS.Identity.Models;
+﻿using IAMS.Domain.Entities;
+using IAMS.MultiTenancy.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -32,7 +32,6 @@ namespace IAMS.Identity.Services
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("tenant_id", user.TenantId.ToString()),
             new Claim("first_name", user.FirstName ?? string.Empty),
             new Claim("last_name", user.LastName ?? string.Empty)
         };

@@ -40,7 +40,7 @@ namespace IAMS.Identity.Authorization
         {
             _configuration = configuration;
         }
-
+        
         public override async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
             // If the policy name starts with "Permission:", it's a permission policy

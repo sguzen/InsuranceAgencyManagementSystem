@@ -26,8 +26,21 @@ builder.Services.AddControllers();
 //builder.Services.AddApplication();
 //builder.Services.AddInfrastructure(builder.Configuration);
 //builder.Services.AddPersistence(builder.Configuration);
-//builder.Services.AddIdentity(builder.Configuration);
-builder.Services.AddMultiTenancy(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration);
+// Add HTTP Context Accessor (needed for multi-tenancy)
+builder.Services.AddHttpContextAccessor();
+
+// Add Multi-Tenancy Services (must be first)
+builder.Services.AddMultiTenancyServices(builder.Configuration);
+
+// Add Persistence Services (repositories, Unit of Work, tenant-aware DbContext)
+builder.Services.AddPersistenceServices(builder.Configuration);
+
+// Add Application Services (business logic, MediatR, validators)
+builder.Services.AddApplicationServices();
+
+// Add Infrastructure Services (email, file storage, integrations)
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -106,6 +119,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage(); // Shows detailed error pages
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {

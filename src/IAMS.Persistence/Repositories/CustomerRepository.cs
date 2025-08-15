@@ -286,30 +286,15 @@ namespace IAMS.Persistence.Repositories
                 var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
                 var lastMonth = startOfMonth.AddMonths(-1);
 
-                var totalCustomers = await _dbSet
-                    .Where(c => !c.IsDeleted)
-                    .CountAsync();
+                var allCustomers = await _dbSet.Where(c => !c.IsDeleted).ToListAsync();
 
-                var activeCustomers = await _dbSet
-                    .Where(c => !c.IsDeleted && c.Status == CustomerStatus.Active)
-                    .CountAsync();
+                var totalCustomers = allCustomers.Count;
+                var activeCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Active);
+                var inactiveCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Inactive);
+                var newCustomersThisMonth = allCustomers.Count(c => c.CreatedOn >= startOfMonth);
+                var newCustomersThisWeek = allCustomers.Count(c => c.CreatedOn >= startOfWeek);
+                var newCustomersLastMonth = allCustomers.Count(c => c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth);
 
-                var inactiveCustomers = await _dbSet
-                    .Where(c => !c.IsDeleted && c.Status == CustomerStatus.Inactive)
-                    .CountAsync();
-
-                var newCustomersThisMonth = await _dbSet
-                    .Where(c => !c.IsDeleted && c.CreatedOn >= startOfMonth)
-                    .CountAsync();
-
-                var newCustomersThisWeek = await _dbSet
-                    .Where(c => !c.IsDeleted && c.CreatedOn >= startOfWeek)
-                    .CountAsync();
-
-                var newCustomersLastMonth = await _dbSet
-                    .Where(c => !c.IsDeleted &&
-                               c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth)
-                    .CountAsync();
 
                 // Calculate growth percentage
                 var growthPercentage = newCustomersLastMonth > 0

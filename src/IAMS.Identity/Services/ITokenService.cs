@@ -1,4 +1,5 @@
-﻿using IAMS.Identity.Models;
+﻿
+using IAMS.Domain.Entities;
 
 namespace IAMS.Identity.Services
 {

@@ -1,11 +1,12 @@
 ﻿using IAMS.Domain.Entities;
 using IAMS.MultiTenancy.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace IAMS.Persistence.Contexts
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
         private readonly ITenantContextAccessor? _tenantContextAccessor;
 
@@ -16,7 +17,7 @@ namespace IAMS.Persistence.Contexts
             _tenantContextAccessor = tenantContextAccessor;
         }
 
-        // DbSets
+        // Business entities
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Policy> Policies { get; set; }
         public DbSet<InsuranceCompany> InsuranceCompanies { get; set; }
@@ -25,14 +26,19 @@ namespace IAMS.Persistence.Contexts
         public DbSet<CommissionRate> CommissionRates { get; set; }
         public DbSet<PolicyPayment> PolicyPayments { get; set; }
         public DbSet<PolicyClaim> PolicyClaims { get; set; }
-        public DbSet<Tenant> Tenants { get; set; }
 
+        // Identity entities (inherited from IdentityDbContext)
+        // Users, Roles, UserRoles, etc. are already included
+
+        // Custom Identity entities
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Apply all configurations from the assembly
+            // Apply business entity configurations
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
             // Configure decimal precision globally
@@ -43,46 +49,61 @@ namespace IAMS.Persistence.Contexts
                 property.SetColumnType("decimal(18,2)");
             }
 
-            // Apply global query filters for multi-tenancy (soft delete is handled in base entity)
-            ApplyGlobalFilters(modelBuilder);
-        }
+            // Identity table renaming
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users");
+            modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
+            modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
+            modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
 
-        private void ApplyGlobalFilters(ModelBuilder modelBuilder)
-        {
-            // Only apply tenant filtering if we have a tenant context
-            if (_tenantContextAccessor?.TenantContext?.Tenant != null)
+            // Configure Permission entity
+            modelBuilder.Entity<Permission>(entity =>
             {
-                var tenantId = _tenantContextAccessor.TenantContext.Tenant.Id;
+                entity.HasKey(p => p.Id);
+                entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
+                entity.Property(p => p.DisplayName).IsRequired().HasMaxLength(200);
+                entity.Property(p => p.Description).HasMaxLength(500);
+                entity.Property(p => p.Module).HasMaxLength(100);
+                entity.HasIndex(p => p.Name).IsUnique();
+            });
 
-                // Apply tenant filter to all entities that implement ITenantEntity
-                foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-                {
-                    var clrType = entityType.ClrType;
+            // Configure RolePermission entity (many-to-many)
+            modelBuilder.Entity<RolePermission>(entity =>
+            {
+                entity.HasKey(rp => new { rp.RoleId, rp.PermissionId });
 
-                    // Check if entity has TenantId property
-                    if (clrType.GetProperty("TenantId") != null)
-                    {
-                        var method = typeof(ApplicationDbContext)
-                            .GetMethod(nameof(GetTenantFilter))!
-                            .MakeGenericMethod(clrType);
+                entity.HasOne(rp => rp.Role)
+                    .WithMany(r => r.Permissions)
+                    .HasForeignKey(rp => rp.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                        var filter = method.Invoke(this, new object[] { tenantId });
-                        entityType.SetQueryFilter((LambdaExpression)filter!);
-                    }
-                }
-            }
-        }
+                entity.HasOne(rp => rp.Permission)
+                    .WithMany(p => p.RolePermissions)
+                    .HasForeignKey(rp => rp.PermissionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
-        public static LambdaExpression GetTenantFilter<TEntity>(int tenantId)
-            where TEntity : class
-        {
-            Expression<Func<TEntity, bool>> filter = e => EF.Property<int>(e, "TenantId") == tenantId;
-            return filter;
+            // Additional configurations for ApplicationUser
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.Property(u => u.FirstName).HasMaxLength(100);
+                entity.Property(u => u.LastName).HasMaxLength(100);
+                entity.HasIndex(u => u.Email).IsUnique();
+            });
+
+            // Additional configurations for ApplicationRole
+            modelBuilder.Entity<ApplicationRole>(entity =>
+            {
+                entity.Property(r => r.Description).HasMaxLength(500);
+                entity.HasIndex(r => r.Name).IsUnique();
+            });
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // Set audit information and tenant info before saving
+            // Set audit information before saving
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())
             {
                 switch (entry.State)
@@ -90,27 +111,11 @@ namespace IAMS.Persistence.Contexts
                     case EntityState.Added:
                         entry.Entity.CreatedOn = DateTime.UtcNow;
                         entry.Entity.ModifiedOn = DateTime.UtcNow;
-
-                        // Set tenant ID if applicable and not already set
-                        if (entry.Entity.GetType().GetProperty("TenantId") != null &&
-                            _tenantContextAccessor?.TenantContext?.Tenant != null)
-                        {
-                            var tenantIdProperty = entry.Entity.GetType().GetProperty("TenantId");
-                            if (tenantIdProperty != null && (int)tenantIdProperty.GetValue(entry.Entity)! == 0)
-                            {
-                                tenantIdProperty.SetValue(entry.Entity, _tenantContextAccessor.TenantContext.Tenant.Id);
-                            }
-                        }
                         break;
 
                     case EntityState.Modified:
                         entry.Entity.ModifiedOn = DateTime.UtcNow;
-                        // Prevent modification of CreatedOn and TenantId
                         entry.Property(e => e.CreatedOn).IsModified = false;
-                        if (entry.Entity.GetType().GetProperty("TenantId") != null)
-                        {
-                            entry.Property("TenantId").IsModified = false;
-                        }
                         break;
                 }
             }

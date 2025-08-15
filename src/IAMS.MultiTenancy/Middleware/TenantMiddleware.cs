@@ -92,6 +92,10 @@ namespace IAMS.MultiTenancy.Middleware
             if (host.Contains('.'))
             {
                 var parts = host.Split('.');
+                if (parts.Length == 2 && parts[1].Contains("localhost"))
+                {
+                    return parts[0];
+                }
                 if (parts.Length >= 3 && parts[0] != "www")
                 {
                     return parts[0];

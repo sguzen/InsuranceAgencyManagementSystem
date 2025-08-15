@@ -4,10 +4,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using IAMS.Identity.Models;
 using IAMS.Application.DTOs.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using IAMS.Domain.Entities;
 
 namespace IAMS.Identity.Services
 {
@@ -137,7 +137,6 @@ namespace IAMS.Identity.Services
                 FirstName = registerDto.FirstName,
                 LastName = registerDto.LastName,
                 EmailConfirmed = true, // For now, auto-confirm emails
-                TenantId = 1 // TODO: Get from current tenant context
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -184,8 +183,7 @@ namespace IAMS.Identity.Services
             {
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Email, user.Email!),
-                new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new("tenant_id", user.TenantId.ToString())
+                new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
             };
 
             // Add role claims

@@ -1,7 +1,7 @@
 ﻿// IAMS.Identity/Services/PermissionService.cs
 using IAMS.Application.DTOs.Identity;
-using IAMS.Identity.Data;
-using IAMS.Identity.Models;
+using IAMS.Domain.Entities;
+using IAMS.Persistence.Contexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +9,12 @@ namespace IAMS.Identity.Services
 {
     public class PermissionService : IPermissionService
     {
-        private readonly IdentityDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
 
         public PermissionService(
-            IdentityDbContext context,
+            ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager)
         {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace IAMS.Identity.Models
+namespace IAMS.Domain.Entities
 {
     public class ApplicationUser : IdentityUser
     {
@@ -11,6 +11,5 @@ namespace IAMS.Identity.Models
         public DateTime? LastLogin { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
-        public int TenantId { get; set; }
     }
 }

@@ -1,0 +1,85 @@
+﻿
+@using IAMS.Web.Services
+@using MudBlazor
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle"
+                 Color="Color.Inherit"
+                 Direction="Direction.Left"
+                 OffsetX="true">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Text"
+                           StartIcon="@Icons.Material.Filled.AccountCircle"
+                           Color="Color.Inherit">
+                    @GetDisplayName(context.User)
+                </MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Filled.Person"
+                             OnClick="@NavigateToProfile">
+                    Profile
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Settings"
+                             OnClick="@NavigateToSettings">
+                    Settings
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Icon="@Icons.Material.Filled.Logout"
+                             OnClick="@HandleLogout">
+                    Logout
+                </MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </Authorized>
+    <NotAuthorized>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Login"
+                   OnClick="@NavigateToLogin">
+            Login
+        </MudButton>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string GetDisplayName(System.Security.Claims.ClaimsPrincipal user)
+    {
+        var name = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        if (!string.IsNullOrEmpty(name))
+            return name;
+
+        var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        return email ?? "User";
+    }
+
+    private void NavigateToProfile()
+    {
+        Navigation.NavigateTo("/Account/Profile");
+    }
+
+    private void NavigateToSettings()
+    {
+        Navigation.NavigateTo("/Account/Settings");
+    }
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+
+        if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            customProvider.NotifyUserLogout();
+        }
+
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

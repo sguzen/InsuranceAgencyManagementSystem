@@ -11,7 +11,7 @@ namespace IAMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+  //  [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;

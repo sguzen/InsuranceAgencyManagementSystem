@@ -1,367 +1,214 @@
-﻿@* IAMS.Web/Components/Pages/Dashboard.razor *@
-@page "/"
-@layout Layout.MainLayout
+﻿@page "/"
+@rendermode InteractiveServer
 @using IAMS.Application.Services.Customers
-@using IAMS.Application.Interfaces
-@using IAMS.Application.DTOs.Customer
-@using IAMS.Application.DTOs.Policy
-@using IAMS.MultiTenancy.Interfaces
+@using IAMS.Web.Services
+@using MudBlazor
+@attribute [Authorize]
 @inject ICustomerService CustomerService
 @inject IPolicyService PolicyService
 @inject ITenantContextAccessor TenantContext
+@inject NavigationManager Navigation
 
 <PageTitle>Dashboard - IAMS</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
-    <MudStack Spacing="4">
-        <!-- Header -->
-        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudStack Spacing="1">
-                <MudText Typo="Typo.h4">
-                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-3" />
-                    Dashboard
-                </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    @if (TenantContext.CurrentTenant != null)
+<MudContainer MaxWidth="MaxWidth.False">
+    <div class="d-flex justify-space-between align-center mb-6">
+        <MudText Typo="Typo.h3">Dashboard</MudText>
+        
+        <AuthorizeView>
+            <Authorized>
+                <MudText Typo="Typo.h6">Welcome, @context.User.Identity?.Name</MudText>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+    
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mb-4" />
+    }
+    
+    <MudGrid>
+        <MudItem xs="12" md="6" lg="3">
+            <MudCard Elevation="4">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h6">Total Customers</MudText>
+                            <MudText Typo="Typo.h4">@_totalCustomers</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6" lg="3">
+            <MudCard Elevation="4">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h6">Active Policies</MudText>
+                            <MudText Typo="Typo.h4">@_totalPolicies</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Success" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6" lg="3">
+            <MudCard Elevation="4">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h6">Expiring Soon</MudText>
+                            <MudText Typo="Typo.h4">@_expiringPolicies</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6" lg="3">
+            <MudCard Elevation="4">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h6">Monthly Revenue</MudText>
+                            <MudText Typo="Typo.h4">@_monthlyRevenue.ToString("C")</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Recent Customers -->
+    <MudGrid Class="mt-8">
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="4">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Recent Customers</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton Color="Color.Primary" 
+                                  Variant="Variant.Text"
+                                  OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
+                            Add New
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_recentCustomers?.Any() == true)
                     {
-                        <text>@TenantContext.CurrentTenant.Name - Özet Bilgiler</text>
+                        <MudList T="CustomerDto">
+                            @foreach (var customer in _recentCustomers)
+                            {
+                                <MudListItem>
+                                    <div class="d-flex justify-space-between align-center w-100">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle1">@customer.FirstName @customer.LastName</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@customer.Email</MudText>
+                                        </div>
+                                        <MudChip Size="Size.Small" Color="Color.Success">Active</MudChip>
+                                    </div>
+                                </MudListItem>
+                            }
+                        </MudList>
                     }
                     else
                     {
-                        <text>Sigorta Acentesi Yönetim Sistemi</text>
+                        <MudText Color="Color.Secondary">No recent customers</MudText>
                     }
-                </MudText>
-            </MudStack>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                @DateTime.Now.ToString("dd MMMM yyyy, dddd", new System.Globalization.CultureInfo("tr-TR"))
-            </MudText>
-        </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
 
         <!-- Quick Actions -->
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="12" sm="6" md="3">
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   FullWidth="true"
-                                   StartIcon="@Icons.Material.Filled.PersonAdd"
-                                   Href="/customers/create">
-                            Yeni Müşteri
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="4">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Quick Actions</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudButton Color="Color.Primary"
+                                  Variant="Variant.Filled"
+                                  StartIcon="@Icons.Material.Filled.PersonAdd"
+                                  OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
+                            Add Customer
                         </MudButton>
-                    </MudItem>
-                    <MudItem xs="12" sm="6" md="3">
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Success"
-                                   FullWidth="true"
-                                   StartIcon="@Icons.Material.Filled.Add"
-                                   Href="/policies/create">
-                            Yeni Poliçe
+                        
+                        <MudButton Color="Color.Secondary"
+                                  Variant="Variant.Outlined"
+                                  StartIcon="@Icons.Material.Filled.Add"
+                                  OnClick="@(() => Navigation.NavigateTo("/policies/create"))">
+                            Create Policy
                         </MudButton>
-                    </MudItem>
-                    <MudItem xs="12" sm="6" md="3">
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Warning"
-                                   FullWidth="true"
-                                   StartIcon="@Icons.Material.Filled.Schedule"
-                                   Href="/policies/expiring">
-                            Süresi Dolacaklar
-                        </MudButton>
-                    </MudItem>
-                    <MudItem xs="12" sm="6" md="3">
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Info"
-                                   FullWidth="true"
-                                   StartIcon="@Icons.Material.Filled.Assessment"
-                                   Href="/reports">
-                            Raporlar
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
 
-        <!-- Statistics Cards -->
-        <MudGrid>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2" Class="pa-4">
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Müşteri</MudText>
-                            <MudText Typo="Typo.h4">@totalCustomers</MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Success">
-                                +@newCustomersThisMonth bu ay
-                            </MudText>
-                        </MudStack>
-                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
+                        <!-- Admin only button -->
+                        <AuthorizeView Roles="Admin">
+                            <MudButton Color="Color.Warning"
+                                      Variant="Variant.Text"
+                                      StartIcon="@Icons.Material.Filled.Settings"
+                                      OnClick="@(() => Navigation.NavigateTo("/admin"))">
+                                Admin Panel
+                            </MudButton>
+                        </AuthorizeView>
                     </MudStack>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2" Class="pa-4">
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Poliçe</MudText>
-                            <MudText Typo="Typo.h4" Color="Color.Success">@activePolicies</MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                @totalPolicies toplam
-                            </MudText>
-                        </MudStack>
-                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Success" />
-                    </MudStack>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2" Class="pa-4">
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Süresi Dolacak</MudText>
-                            <MudText Typo="Typo.h4" Color="Color.Warning">@expiringPolicies</MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                30 gün içinde
-                            </MudText>
-                        </MudStack>
-                        <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="Color.Warning" />
-                    </MudStack>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2" Class="pa-4">
-                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aylık Gelir</MudText>
-                            <MudText Typo="Typo.h4" Color="Color.Info">@monthlyRevenue.ToString("C")</MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                Bu ay
-                            </MudText>
-                        </MudStack>
-                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
-                    </MudStack>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-
-        <MudGrid>
-            <!-- Recent Customers -->
-            <MudItem xs="12" md="6">
-                <MudCard>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.h6">Son Müşteriler</MudText>
-                                <MudButton Variant="Variant.Text" 
-                                           Size="Size.Small" 
-                                           Href="/customers">
-                                    Tümünü Gör
-                                </MudButton>
-                            </MudStack>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        @if (loadingRecentCustomers)
-                        {
-                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                <MudProgressCircular Size="Size.Small" />
-                                <MudText>Yükleniyor...</MudText>
-                            </MudStack>
-                        }
-                        else if (recentCustomers?.Any() == true)
-                        {
-                            <MudList T="string">
-                                @foreach (var customer in recentCustomers)
-                                {
-                                    <MudListItem T="string">
-                                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                                <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                                    @customer.FirstName.FirstOrDefault()@customer.LastName.FirstOrDefault()
-                                                </MudAvatar>
-                                                <MudStack Spacing="0">
-                                                    <MudText Typo="Typo.body1">@customer.FirstName @customer.LastName</MudText>
-                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@customer.Email</MudText>
-                                                </MudStack>
-                                            </MudStack>
-                                            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
-                                                           Size="Size.Small"
-                                                           Href="@($"/customers/{customer.Id}")" />
-                                        </MudStack>
-                                    </MudListItem>
-                                    <MudDivider />
-                                }
-                            </MudList>
-                        }
-                        else
-                        {
-                            <MudText Align="Align.Center" Color="Color.Secondary">
-                                Henüz müşteri bulunmuyor
-                            </MudText>
-                        }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-
-            <!-- Recent Policies -->
-            <MudItem xs="12" md="6">
-                <MudCard>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.h6">Son Poliçeler</MudText>
-                                <MudButton Variant="Variant.Text" 
-                                           Size="Size.Small" 
-                                           Href="/policies">
-                                    Tümünü Gör
-                                </MudButton>
-                            </MudStack>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        @if (loadingRecentPolicies)
-                        {
-                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                <MudProgressCircular Size="Size.Small" />
-                                <MudText>Yükleniyor...</MudText>
-                            </MudStack>
-                        }
-                        else if (recentPolicies?.Any() == true)
-                        {
-                            <MudList T="string">
-                                @foreach (var policy in recentPolicies)
-                                {
-                                    <MudListItem T="string">
-                                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                            <MudStack Spacing="0">
-                                                <MudText Typo="Typo.body1">@policy.PolicyNumber</MudText>
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                                    @policy.Customer.FullName - @policy.PremiumAmount.ToString("C")
-                                                </MudText>
-                                            </MudStack>
-                                            <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
-                                                           Size="Size.Small"
-                                                           Href="@($"/policies/{policy.Id}")" />
-                                        </MudStack>
-                                    </MudListItem>
-                                    <MudDivider />
-                                }
-                            </MudList>
-                        }
-                        else
-                        {
-                            <MudText Align="Align.Center" Color="Color.Secondary">
-                                Henüz poliçe bulunmuyor
-                            </MudText>
-                        }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 @code {
-    // Statistics
-    private int totalCustomers = 0;
-    private int newCustomersThisMonth = 0;
-    private int totalPolicies = 0;
-    private int activePolicies = 0;
-    private int expiringPolicies = 0;
-    private decimal monthlyRevenue = 0;
-
-    // Recent data
-    private List<CustomerDto>? recentCustomers;
-    private List<PolicyDto>? recentPolicies;
-    private bool loadingRecentCustomers = true;
-    private bool loadingRecentPolicies = true;
+    private bool _isLoading = true;
+    private int _totalCustomers = 0;
+    private int _totalPolicies = 0;
+    private int _expiringPolicies = 0;
+    private decimal _monthlyRevenue = 0;
+    private List<IAMS.Application.DTOs.Customer.CustomerDto>? _recentCustomers;
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(
-            LoadStatistics(),
-            LoadRecentCustomers(),
-            LoadRecentPolicies()
-        );
+        await LoadDashboardData();
     }
 
-    private async Task LoadStatistics()
+    private async Task LoadDashboardData()
     {
+        _isLoading = true;
+        
         try
         {
-            // Load customer statistics
-            var customerStats = await CustomerService.GetCustomerStatisticsAsync();
-            if (customerStats.IsSuccess && customerStats.Data != null)
-            {
-                totalCustomers = customerStats.Data.TotalCustomers;
-                newCustomersThisMonth = customerStats.Data.NewCustomersThisMonth;
-            }
-
-            // Load policy statistics
-            var policyStats = await PolicyService.GetPolicyStatisticsAsync();
-            if (policyStats.IsSuccess && policyStats.Data != null)
-            {
-                totalPolicies = policyStats.Data.TotalPolicies;
-                activePolicies = policyStats.Data.ActivePolicies;
-                expiringPolicies = policyStats.Data.ExpiringPolicies;
-                monthlyRevenue = policyStats.Data.MonthlyRevenue;
-            }
+            // Load dashboard statistics using your existing services
+            var totalCustomers = await CustomerService.GetTotalCustomersCountAsync(TenantContext.CurrentTenant.Id);
+            _totalCustomers = totalCustomers.Data;
+            
+            var totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
+            _totalPolicies = totalPolicies.Data;
+            
+            var expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
+            _expiringPolicies = expiringPolicies.Data;
+            
+            var monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
+            _monthlyRevenue = monthlyRevenue.Data;
+            
+            // Load recent customers
+            _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading statistics: {ex.Message}");
-        }
-    }
-
-    private async Task LoadRecentCustomers()
-    {
-        try
-        {
-            var result = await CustomerService.GetRecentCustomersAsync(5);
-            if (result.IsSuccess && result.Data != null)
-            {
-                recentCustomers = result.Data;
-            }
-            else
-            {
-                recentCustomers = new List<CustomerDto>();
-            }
-        }
-        catch (Exception ex)
-        {
-            recentCustomers = new List<CustomerDto>();
-            Console.WriteLine($"Error loading recent customers: {ex.Message}");
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
         }
         finally
         {
-            loadingRecentCustomers = false;
-        }
-    }
-
-    private async Task LoadRecentPolicies()
-    {
-        try
-        {
-            var result = await PolicyService.GetRecentPoliciesAsync(5);
-            if (result.IsSuccess && result.Data != null)
-            {
-                recentPolicies = result.Data;
-            }
-            else
-            {
-                recentPolicies = new List<PolicyDto>();
-            }
-        }
-        catch (Exception ex)
-        {
-            recentPolicies = new List<PolicyDto>();
-            Console.WriteLine($"Error loading recent policies: {ex.Message}");
-        }
-        finally
-        {
-            loadingRecentPolicies = false;
+            _isLoading = false;
         }
     }
 }

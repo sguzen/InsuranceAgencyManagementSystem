@@ -7,6 +7,7 @@ using IAMS.Web.Services;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Serilog;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +20,14 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
+builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
+
+builder.Services.AddAntiforgery();
 // Add MudBlazor
 builder.Services.AddMudServices();
 
@@ -75,16 +81,18 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Authentication & Authorization BEFORE tenant middleware
 app.UseAuthentication();
 app.UseAuthorization();
-
 // Add tenant middleware AFTER auth
 app.UseMiddleware<IAMS.MultiTenancy.Middleware.TenantMiddleware>();
 
-app.UseAntiforgery();
 
+
+app.MapRazorPages(); 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+app.UseAntiforgery();
 app.Run();

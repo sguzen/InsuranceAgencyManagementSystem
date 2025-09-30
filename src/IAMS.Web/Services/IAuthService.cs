@@ -7,7 +7,7 @@ namespace IAMS.Web.Services
 {
     public interface IAuthService
     {
-        Task<bool> LoginAsync(string email, string password);
+        Task<AuthResponse?> LoginAsync(string email, string password);
         Task LogoutAsync();
         Task<bool> IsAuthenticatedAsync();
     }
@@ -31,7 +31,7 @@ namespace IAMS.Web.Services
             _httpClient.BaseAddress = new Uri("https://localhost:44390/");
         }
 
-        public async Task<bool> LoginAsync(string email, string password)
+        public async Task<AuthResponse?> LoginAsync(string email, string password)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace IAMS.Web.Services
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Login failed for {Email}: {StatusCode}", email, response.StatusCode);
-                    return false;
+                    return null;
                 }
 
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -55,59 +55,13 @@ namespace IAMS.Web.Services
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (authResult == null)
-                {
-                    _logger.LogError("Failed to deserialize login response");
-                    return false;
-                }
-
-                // Create claims for cookie authentication
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, authResult.UserId),
-                    new(ClaimTypes.Email, authResult.Email),
-                    new(ClaimTypes.GivenName, authResult.FirstName),
-                    new(ClaimTypes.Surname, authResult.LastName),
-                    new(ClaimTypes.Name, $"{authResult.FirstName} {authResult.LastName}".Trim())
-                };
-
-                // Add roles
-                foreach (var role in authResult.Roles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-                }
-
-                // Add permissions
-                foreach (var permission in authResult.Permissions)
-                {
-                    claims.Add(new Claim("permission", permission));
-                }
-
-                // Create identity and sign in
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-
-                var httpContext = _httpContextAccessor.HttpContext;
-                if (httpContext != null)
-                {
-                    await httpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        principal,
-                        new AuthenticationProperties
-                        {
-                            IsPersistent = true,
-                            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
-                        });
-                }
-
-                _logger.LogInformation("User {Email} logged in successfully", email);
-                return true;
+                _logger.LogInformation("User {Email} authenticated successfully", email);
+                return authResult;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during login for {Email}", email);
-                //return false;
-                throw; // Re-throw to see what's really happening
+                return null;
             }
         }
 

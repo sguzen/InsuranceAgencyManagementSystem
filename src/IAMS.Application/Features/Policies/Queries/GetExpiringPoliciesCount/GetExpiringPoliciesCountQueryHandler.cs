@@ -31,10 +31,10 @@ namespace IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount
                     return Result<int>.Unauthorized("Kiracı bağlamı bulunamadı");
                 }
 
-                var tenantId = _currentTenantService.TenantId.Value;
-                var count = await _unitOfWork.Policies.GetExpiringPoliciesCountAsync(tenantId, request.DaysAhead);
+               // var tenantId = _currentTenantService.TenantId.Value;
+                var count = await _unitOfWork.Policies.GetExpiringPoliciesCountAsync(request.DaysAhead);
 
-                _logger.LogDebug("Retrieved expiring policies count {Count} for tenant {TenantId}", count, tenantId);
+                _logger.LogDebug("Retrieved expiring policies count {Count} for tenant", count);
 
                 return Result<int>.Success(count, $"{request.DaysAhead} gün içinde süresi dolacak {count} poliçe");
             }

@@ -442,9 +442,10 @@ namespace IAMS.Persistence.Repositories
             };
         }
 
-        public Task<int> GetExpiringPoliciesCountAsync(int tenantId, int daysAhead)
+        public async Task<int> GetExpiringPoliciesCountAsync(int daysAhead)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .CountAsync(p => p.IsExpiring(daysAhead) && !p.IsDeleted);
         }
     }
 }

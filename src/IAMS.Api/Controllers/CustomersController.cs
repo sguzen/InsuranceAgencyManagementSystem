@@ -140,10 +140,10 @@ namespace IAMS.Api.Controllers
         /// <summary>
         /// Search customers by KKTC number
         /// </summary>
-        [HttpGet("search/kktc/{kktcNo}")]
-        public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByKktcNo(string kktcNo)
+        [HttpGet("search/kktc/{KktcNo}")]
+        public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByKktcNo(string KktcNo)
         {
-            var query = new GetCustomerByKktcNoQuery(kktcNo, 44 );
+            var query = new GetCustomerByKktcNoQuery(KktcNo, 44 );
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

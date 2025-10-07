@@ -19,7 +19,7 @@ namespace IAMS.Domain.Entities
         public DateTime DateOfBirth { get; set; }
         public CustomerStatus Status { get; set; } = CustomerStatus.Active;
         public CustomerType Type { get; set; } = CustomerType.Individual;
-        public IdentificationType IdentificationType { get; set; } = IdentificationType.KkTcNo;
+        public IdentificationType IdentificationType { get; set; } = IdentificationType.KktcNo;
         public Gender Gender { get; set; } = Gender.Male;
         public string? Notes { get; set; }
 
@@ -149,12 +149,12 @@ namespace IAMS.Domain.Entities
             return Regex.IsMatch(cleanPhone, @"^\d{7,15}$");
         }
 
-        private static bool IsValidTcNo(string kktcNo)
+        private static bool IsValidTcNo(string KktcNo)
         {
-            if (string.IsNullOrWhiteSpace(kktcNo) || kktcNo.Length != 11)
+            if (string.IsNullOrWhiteSpace(KktcNo) || KktcNo.Length != 11)
                 return false;
 
-            return kktcNo.All(char.IsDigit);
+            return KktcNo.All(char.IsDigit);
         }
 
         protected override void Validate()
@@ -173,7 +173,7 @@ namespace IAMS.Domain.Entities
             if (!IsValidPhone(Phone))
                 errors.Add("Valid phone number is required");
 
-            if (IdentificationType == IdentificationType.KkTcNo && !IsValidTcNo(KktcNo))
+            if (IdentificationType == IdentificationType.KktcNo && !IsValidTcNo(KktcNo))
                 errors.Add("Valid TC number is required");
 
             if (DateOfBirth >= DateTime.Today)
@@ -192,7 +192,7 @@ namespace IAMS.Domain.Entities
             string lastName,
             string email,
             string phone,
-            string kktcNo,
+            string KktcNo,
             DateTime dateOfBirth,
             string createdBy,
             CustomerType type = CustomerType.Individual,
@@ -205,7 +205,7 @@ namespace IAMS.Domain.Entities
                 LastName = lastName,
                 Email = email,
                 Phone = phone,
-                KktcNo = kktcNo,
+                KktcNo = KktcNo,
                 DateOfBirth = dateOfBirth,
                 Type = type,
                 Address = address,
@@ -221,7 +221,7 @@ namespace IAMS.Domain.Entities
     public void UpdatePersonalInfo(
             string firstName,
             string lastName,
-            string? kktcNo,
+            string? KktcNo,
             DateTime? dateOfBirth,
             Gender? gender,
             string updatedBy)
@@ -233,7 +233,7 @@ namespace IAMS.Domain.Entities
 
             FirstName = firstName;
             LastName = lastName;
-            KktcNo = kktcNo;
+            KktcNo = KktcNo;
             if (dateOfBirth != null)
                 DateOfBirth = dateOfBirth.Value;
             Gender = gender ?? Gender.Male;

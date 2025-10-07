@@ -1,0 +1,54 @@
+﻿@page
+@model IAMS.Web.Pages.LoginModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link href="~/bootstrap/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Login</h2>
+
+                        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                        {
+                            <div class="alert alert-danger">@Model.ErrorMessage</div>
+                        }
+
+                        <form method="post">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+
+                            <div class="mb-3">
+                                <label for="Email" class="form-label">Email</label>
+                                <input type="text" id="Email" name="Email" class="form-control" value="@Model.Email" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Password" class="form-label">Password</label>
+                                <input type="password" id="Password" name="Password" class="form-control" />
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" id="RememberMe" name="RememberMe" class="form-check-input" value="true" />
+                                <input type="hidden" name="RememberMe" value="false" />
+                                <label for="RememberMe" class="form-check-label">Remember Me</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -91,8 +91,5 @@ app.UseMiddleware<IAMS.MultiTenancy.Middleware.TenantMiddleware>();
 app.MapRazorPages(); 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
 app.UseAntiforgery();
 app.Run();

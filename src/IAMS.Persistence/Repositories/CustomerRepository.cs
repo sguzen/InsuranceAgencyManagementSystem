@@ -29,10 +29,10 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Customer?> GetByKktcNoAsync(string kktcNo, int tenantId)
+        public async Task<Customer?> GetByKktcNoAsync(string KktcNo, int tenantId)
         {
             return await _dbSet
-                .Where(c => !c.IsDeleted && c.KktcNo == kktcNo)
+                .Where(c => !c.IsDeleted && c.KktcNo == KktcNo)
                 .FirstOrDefaultAsync();
         }
 
@@ -116,9 +116,9 @@ namespace IAMS.Persistence.Repositories
             return (customers, totalCount);
         }
 
-        public async Task<bool> KktcNoExistsAsync(string kktcNo, int tenantId, int? excludeCustomerId = null)
+        public async Task<bool> KktcNoExistsAsync(string KktcNo, int tenantId, int? excludeCustomerId = null)
         {
-            var query = _dbSet.Where(c => !c.IsDeleted && c.KktcNo == kktcNo);
+            var query = _dbSet.Where(c => !c.IsDeleted && c.KktcNo == KktcNo);
 
             if (excludeCustomerId.HasValue)
             {

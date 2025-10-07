@@ -1,5 +1,6 @@
 ﻿@page "/customers/create"
 @page "/customers/{CustomerId:int}/edit"
+@rendermode InteractiveServer
 
 
 @using IAMS.Application.DTOs.Customer
@@ -59,7 +60,7 @@
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.KktcNo"
-                                                Label="KKTC Kimlik No"
+                                                Label="Kimlik No"
                                                 Variant="Variant.Outlined"
                                                 Mask="@(new PatternMask("00000000000"))"
                                                 For="@(() => model.KktcNo)" />
@@ -75,10 +76,9 @@
                                     <MudSelect @bind-Value="model.Gender"
                                              Label="Cinsiyet"
                                              Variant="Variant.Outlined"
-                                             T="Gender"
                                              For="@(() => model.Gender)">
-                                        <MudSelectItem T="Gender" Value="@Gender.Male">Erkek</MudSelectItem>
-                                        <MudSelectItem T="Gender" Value="@Gender.Female">Kadın</MudSelectItem>
+                                        <MudSelectItem Value="@(Gender.Female)">Erkek</MudSelectItem>
+                                        <MudSelectItem Value="@(Gender.Female)">Kadın</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">

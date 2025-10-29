@@ -2,7 +2,7 @@
 using IAMS.Application.Models;
 using MediatR;
 
-namespace IAMS.Application.Features.Customers.Queries.GetCustomerByKktcNo
+namespace IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificationNo
 {
-    public record GetCustomerByKktcNoQuery(string KktcNo, int TentantId) : IRequest<Result<CustomerDto>>;
+    public record GetCustomerByIdentificationNoQuery(string IdentificationNo, int TentantId) : IRequest<Result<CustomerDto>>;
 }

@@ -5,7 +5,7 @@ using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByCode;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByEmail;
-using IAMS.Application.Features.Customers.Queries.GetCustomerByKktcNo;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificationNo;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
 using IAMS.Application.Features.Customers.Queries.GetCustomersByStatus;
 using IAMS.Application.Features.Customers.Queries.GetCustomersCreatedByMonth;
@@ -15,7 +15,7 @@ using IAMS.Application.Features.Customers.Queries.GetRecentCustomers;
 using IAMS.Application.Features.Customers.Queries.GetTopCustomersByPolicyCount;
 using IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount;
 using IAMS.Application.Features.Customers.Queries.ValidateEmail;
-using IAMS.Application.Features.Customers.Queries.ValidateKktcNo;
+using IAMS.Application.Features.Customers.Queries.ValidateIdentificationNo;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
 using MediatR;
@@ -71,9 +71,9 @@ namespace IAMS.Application.Services.Customers
             return await _mediator.Send(new DeleteCustomerCommand(id));
         }
 
-        public async Task<Result<CustomerDto>> GetCustomerByKktcNoAsync(string KktcNo)
+        public async Task<Result<CustomerDto>> GetCustomerByIdentificationNoAsync(string IdentificationNo)
         {
-            return await _mediator.Send(new GetCustomerByKktcNoQuery(KktcNo, 0));// TODO fix this tennant id
+            return await _mediator.Send(new GetCustomerByIdentificationNoQuery(IdentificationNo, 0));// TODO fix this tennant id
         }
 
         public async Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email)
@@ -91,9 +91,9 @@ namespace IAMS.Application.Services.Customers
             return await _mediator.Send(new GetCustomersWithActivePoliciesQuery());
         }
 
-        public async Task<Result<bool>> ValidateKktcNoAsync(string tcNo, int? excludeCustomerId = null)
+        public async Task<Result<bool>> ValidateIdentificationNoAsync(string tcNo, int? excludeCustomerId = null)
         {
-            return await _mediator.Send(new ValidateKktcNoQuery(tcNo, excludeCustomerId));
+            return await _mediator.Send(new ValidateIdentificationNoQuery(tcNo, excludeCustomerId));
         }
 
         public async Task<Result<bool>> ValidateEmailAsync(string email, int? excludeCustomerId = null)

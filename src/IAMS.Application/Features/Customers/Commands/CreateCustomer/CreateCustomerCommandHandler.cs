@@ -54,21 +54,21 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 }
 
                 // Check if customer with KKTC number already exists for this tenant (if provided)
-                if (!string.IsNullOrEmpty(request.CustomerDto.KktcNo))
+                if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNumber))
                 {
-                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNo, tenantId);
+                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber, tenantId);
                     
                     if (existingCustomerByKktc != null)
                     {
-                        validationErrors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.KktcNo}) zaten kullanılmaktadır");
+                        validationErrors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.IdentificationNumber}) zaten kullanılmaktadır");
                     }
                 }
 
                 // Check if customer with phone number already exists for this tenant
-                var existingCustomerByPhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.Phone, tenantId);
+                var existingCustomerByPhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber, tenantId);
                 if (existingCustomerByPhone != null)
                 {
-                    validationErrors.Add($"Bu telefon numarası ({request.CustomerDto.Phone}) zaten kullanılmaktadır");
+                    validationErrors.Add($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) zaten kullanılmaktadır");
                 }
 
                 // If there are validation errors, return them

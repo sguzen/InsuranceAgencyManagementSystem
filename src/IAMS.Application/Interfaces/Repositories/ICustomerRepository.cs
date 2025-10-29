@@ -13,14 +13,14 @@ namespace IAMS.Application.Interfaces.Repositories
     public interface ICustomerRepository : IRepository<Customer>
     {
         Task<Customer?> GetByIdWithDetailsAsync(int id);
-        Task<Customer?> GetByKktcNoAsync(string KktcNo, int tenantId);
+        Task<Customer?> GetByIdentificationNoAsync(string IdentificationNo, int tenantId);
         Task<Customer?> GetByPhoneAsync(string phoneNumber, int tenantId);
         Task<Customer?> GetByEmailAsync(string email, int tenantId);
         Task<Customer?> GetByCustomerCodeAsync(string customerCode, int tenantId);
         Task<List<Customer>> GetCustomersWithActivePoliciesAsync(int tenantId);
         Task<List<Policy>> GetActivePoliciesAsync(int customerId, int tenandId);
         Task<(List<Customer> customers, int totalCount)> GetPagedAsync(CustomerQueryParams queryParams);
-        Task<bool> KktcNoExistsAsync(string KktcNo, int tenantId, int? excludeCustomerId = null);
+        Task<bool> IdentificationNoExistsAsync(string IdentificationNo, int tenantId, int? excludeCustomerId = null);
         Task<bool> EmailExistsAsync(string email, int tenantId, int? excludeCustomerId = null);
         Task<bool> CustomerCodeExistsAsync(string customerCode, int tenantId, int? excludeCustomerId = null);
         Task<List<Customer>> GetCustomersCreatedBetweenAsync(int tenantId, DateTime startDate, DateTime endDate);

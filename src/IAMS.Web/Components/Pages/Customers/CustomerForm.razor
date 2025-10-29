@@ -3,11 +3,13 @@
 @layout Layout.MainLayout
 
 @using IAMS.Application.DTOs.Customer
+@using IAMS.Application.DTOs.Parametric
 @using IAMS.Application.Interfaces
 @using IAMS.Domain.Enums
 @using FluentValidation
 @using IAMS.Application.Services.Customers
 @inject ICustomerService CustomerService
+@inject IParametricService ParametricService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -33,6 +35,53 @@
             <FluentValidationValidator />
             
             <MudGrid>
+                <!-- Customer Type & Basic Info -->
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Temel Bilgiler</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" md="4">
+                                    <MudSelect @bind-Value="model.Type"
+                                             Label="Kişi Türü *"
+                                             Variant="Variant.Outlined"
+                                             Required="true"
+                                             T="CustomerType">
+                                        <MudSelectItem T="CustomerType" Value="@CustomerType.Individual">Bireysel</MudSelectItem>
+                                        <MudSelectItem T="CustomerType" Value="@CustomerType.Corporate">Kurumsal</MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudSelect @bind-Value="model.Gender"
+                                             Label="Cinsiyet *"
+                                             Variant="Variant.Outlined"
+                                             Required="true"
+                                             T="Gender">
+                                        <MudSelectItem T="Gender" Value="@Gender.Male">Erkek (E)</MudSelectItem>
+                                        <MudSelectItem T="Gender" Value="@Gender.Female">Kadın (K)</MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudSelect @bind-Value="model.Status"
+                                             Label="Durum *"
+                                             Variant="Variant.Outlined"
+                                             Required="true"
+                                             T="CustomerStatus">
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Active">Aktif</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Inactive">Pasif</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Prospect">Aday Müşteri</MudSelectItem>
+                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Former">Eski Müşteri</MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
                 <!-- Personal Information -->
                 <MudItem xs="12">
                     <MudCard>
@@ -58,40 +107,57 @@
                                                 For="@(() => model.LastName)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.KktcNo"
-                                                Label="Kimlik No"
-                                                Variant="Variant.Outlined"
-                                                Mask="@(new PatternMask("00000000000"))"
-                                                For="@(() => model.KktcNo)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
                                     <MudDatePicker @bind-Date="model.DateOfBirth"
                                                  Label="Doğum Tarihi"
                                                  Variant="Variant.Outlined"
-                                                 MaxDate="DateTime.Today"
+                                                 Editable="true"
+                                                 DateFormat="dd/MM/yyyy"
                                                  For="@(() => model.DateOfBirth)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.Gender"
-                                             Label="Cinsiyet"
+                                    <MudSelect @bind-Value="model.NationalityCountryId"
+                                             Label="Uyruk"
                                              Variant="Variant.Outlined"
-                                             For="@(() => model.Gender)">
-                                        <MudSelectItem Value="@(Gender.Female)">Erkek</MudSelectItem>
-                                        <MudSelectItem Value="@(Gender.Female)">Kadın</MudSelectItem>
+                                             T="int?"
+                                             Clearable="true">
+                                        @foreach (var country in countries)
+                                        {
+                                            <MudSelectItem T="int?" Value="@country.Id">@country.NameTr (@country.Code)</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <!-- Identity Information -->
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Kimlik Bilgileri</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.IdentificationType"
+                                             Label="Kimlik Türü *"
+                                             Variant="Variant.Outlined"
+                                             Required="true"
+                                             T="IdentificationType">
+                                        <MudSelectItem T="IdentificationType" Value="@IdentificationType.IdCard">Kimlik No (KN)</MudSelectItem>
+                                        <MudSelectItem T="IdentificationType" Value="@IdentificationType.Passport">Pasaport No (PN)</MudSelectItem>
+                                        <MudSelectItem T="IdentificationType" Value="@IdentificationType.TradeLicense">Mali Şirket (MŞ)</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.Status"
-                                             Label="Durum *"
-                                             Variant="Variant.Outlined"
-                                             Required="true"
-                                             T="CustomerStatus"
-                                             For="@(() => model.Status)">
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Active">Aktif</MudSelectItem>
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Inactive">Pasif</MudSelectItem>
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Prospect">Aday Müşteri</MudSelectItem>
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Former">Eski Müşteri</MudSelectItem>
-                                    </MudSelect>
+                                    <MudTextField @bind-Value="model.IdentificationNumber"
+                                                Label="Kimlik Numarası *"
+                                                Variant="Variant.Outlined"
+                                                Required="true"
+                                                For="@(() => model.IdentificationNumber)" />
                                 </MudItem>
                             </MudGrid>
                         </MudCardContent>
@@ -117,14 +183,159 @@
                                                 For="@(() => model.Email)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Phone"
-                                                Label="Telefon *"
+                                    <MudTextField @bind-Value="model.HomePhone"
+                                                Label="Ev Telefonu"
                                                 Variant="Variant.Outlined"
-                                                Required="true"
                                                 Mask="@(new PatternMask("(000) 000-0000"))"
-                                                For="@(() => model.Phone)" />
+                                                For="@(() => model.HomePhone)" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.MobilePhoneCountryCode"
+                                             Label="Cep Tel. Ülke Kodu"
+                                             Variant="Variant.Outlined"
+                                             T="string"
+                                             Clearable="true">
+                                        @foreach (var country in countries.Where(c => !string.IsNullOrEmpty(c.PhoneCode)))
+                                        {
+                                            <MudSelectItem T="string" Value="@country.PhoneCode">@country.PhoneCode - @country.NameTr</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="model.MobilePhoneNumber"
+                                                Label="Cep Telefonu No"
+                                                Variant="Variant.Outlined"
+                                                For="@(() => model.MobilePhoneNumber)" />
                                 </MudItem>
                             </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <!-- Address Information -->
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Adres Bilgileri</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="model.Address1"
+                                                Label="Adres 1"
+                                                Variant="Variant.Outlined"
+                                                Lines="2"
+                                                For="@(() => model.Address1)" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="model.Address2"
+                                                Label="Adres 2"
+                                                Variant="Variant.Outlined"
+                                                Lines="2"
+                                                For="@(() => model.Address2)" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.CityId"
+                                             Label="Şehir"
+                                             Variant="Variant.Outlined"
+                                             T="int?"
+                                             Clearable="true">
+@*                                              ValueChanged="OnCityChanged">
+ *@                                        @foreach (var city in cities)
+                                        {
+                                            <MudSelectItem T="int?" Value="@city.Id">@city.NameTr</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.DistrictId"
+                                             Label="Mahalle"
+                                             Variant="Variant.Outlined"
+                                             T="int?"
+                                             Clearable="true"
+                                             Disabled="@(!model.CityId.HasValue)">
+                                            @*  ValueChanged="OnDistrictChanged"> *@
+                                        @foreach (var district in filteredDistricts)
+                                        {
+                                            <MudSelectItem T="int?" Value="@district.Id">@district.NameTr</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.SubdistrictId"
+                                             Label="Bucak"
+                                             Variant="Variant.Outlined"
+                                             T="int?"
+                                             Clearable="true"
+                                             Disabled="@(!model.DistrictId.HasValue)">
+                                             @* ValueChanged="OnSubdistrictChanged"> *@
+                                        @foreach (var subdistrict in filteredSubdistricts)
+                                        {
+                                            <MudSelectItem T="int?" Value="@subdistrict.Id">@subdistrict.NameTr</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.VillageId"
+                                             Label="Köy"
+                                             Variant="Variant.Outlined"
+                                             T="int?"
+                                             Clearable="true"
+                                             Disabled="@(!model.SubdistrictId.HasValue)">
+                                        @foreach (var village in filteredVillages)
+                                        {
+                                            <MudSelectItem T="int?" Value="@village.Id">@village.NameTr</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <!-- Professional Information -->
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Mesleki Bilgiler</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.OccupationId"
+                                             Label="Meslek"
+                                             Variant="Variant.Outlined"
+                                             T="int?"
+                                             Clearable="true">
+                                        @foreach (var occupation in occupations)
+                                        {
+                                            <MudSelectItem T="int?" Value="@occupation.Id">@occupation.NameTr</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <!-- Notes -->
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Notlar</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudTextField @bind-Value="model.Notes"
+                                        Label="Notlar"
+                                        Variant="Variant.Outlined"
+                                        Lines="4"
+                                        For="@(() => model.Notes)" />
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -165,10 +376,36 @@
     private CreateOrUpdateCustomerDto model = new();
     private bool saving = false;
 
+    // Parametric data
+    private List<CountryDto> countries = new();
+    private List<OccupationDto> occupations = new();
+    private List<CityDto> cities = new();
+    private List<DistrictDto> districts = new();
+    private List<SubdistrictDto> subdistricts = new();
+    private List<VillageDto> villages = new();
+
+    // Filtered hierarchical data
+    private List<DistrictDto> filteredDistricts => 
+        model.CityId.HasValue 
+            ? districts.Where(d => d.CityId == model.CityId.Value).ToList() 
+            : new List<DistrictDto>();
+
+    private List<SubdistrictDto> filteredSubdistricts => 
+        model.DistrictId.HasValue 
+            ? subdistricts.Where(s => s.DistrictId == model.DistrictId.Value).ToList() 
+            : new List<SubdistrictDto>();
+
+    private List<VillageDto> filteredVillages => 
+        model.SubdistrictId.HasValue 
+            ? villages.Where(v => v.SubdistrictId == model.SubdistrictId.Value).ToList() 
+            : new List<VillageDto>();
+
     private bool IsEdit => CustomerId.HasValue;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadParametricData();
+
         if (IsEdit)
         {
             await LoadCustomer();
@@ -176,8 +413,38 @@
         else
         {
             // Set default values for new customer
+            model.Type = CustomerType.Individual;
+            model.Gender = Gender.Male;
             model.Status = CustomerStatus.Active;
-            model.Gender = Gender.Male; // Set default
+            model.IdentificationType = IdentificationType.IdCard;
+        }
+    }
+
+    private async Task LoadParametricData()
+    {
+        try
+        {
+            // Load all parametric data in parallel
+            var countriesTask = ParametricService.GetCountriesAsync();
+            var occupationsTask = ParametricService.GetOccupationsAsync();
+            var citiesTask = ParametricService.GetCitiesAsync();
+            var districtsTask = ParametricService.GetDistrictsAsync();
+            var subdistrictsTask = ParametricService.GetSubdistrictsAsync();
+            var villagesTask = ParametricService.GetVillagesAsync();
+
+            await Task.WhenAll(countriesTask, occupationsTask, citiesTask, 
+                              districtsTask, subdistrictsTask, villagesTask);
+
+            countries = countriesTask.Result ?? new List<CountryDto>();
+            occupations = occupationsTask.Result ?? new List<OccupationDto>();
+            cities = citiesTask.Result ?? new List<CityDto>();
+            districts = districtsTask.Result ?? new List<DistrictDto>();
+            subdistricts = subdistrictsTask.Result ?? new List<SubdistrictDto>();
+            villages = villagesTask.Result ?? new List<VillageDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Parametrik veriler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
         }
     }
 
@@ -185,19 +452,33 @@
     {
         try
         {
-            var customer = await CustomerService.GetCustomerByIdAsync(CustomerId!.Value);
-            if (customer != null)
+            var result = await CustomerService.GetCustomerByIdAsync(CustomerId!.Value);
+            if (result.IsSuccess && result.Data != null)
             {
+                var customer = result.Data;
                 model = new CreateOrUpdateCustomerDto
                 {
-                    FirstName = customer.Data.FirstName,
-                    LastName = customer.Data.LastName,
-                    Email = customer.Data.Email,
-                    Phone = customer.Data.Phone,
-                    KktcNo = customer.Data.KktcNo,
-                    DateOfBirth = customer.Data.DateOfBirth,
-                    Gender = customer.Data.Gender,
-                    Status = customer.Data.Status
+                    Type = customer.Type,
+                    FirstName = customer.FirstName,
+                    LastName = customer.LastName,
+                    Gender = customer.Gender,
+                    DateOfBirth = customer.DateOfBirth,
+                    Email = customer.Email,
+                    MobilePhoneCountryCode = customer.MobilePhoneCountryCode,
+                    MobilePhoneNumber = customer.MobilePhoneNumber,
+                    HomePhone = customer.HomePhone,
+                    Address1 = customer.Address1,
+                    Address2 = customer.Address2,
+                    CityId = customer.CityId,
+                    DistrictId = customer.DistrictId,
+                    SubdistrictId = customer.SubdistrictId,
+                    VillageId = customer.VillageId,
+                    OccupationId = customer.OccupationId,
+                    NationalityCountryId = customer.NationalityCountryId,
+                    IdentificationType = customer.IdentificationType,
+                    IdentificationNumber = customer.IdentificationNumber,
+                    Status = customer.Status,
+                    Notes = customer.Notes
                 };
             }
         }
@@ -208,6 +489,30 @@
         }
     }
 
+    private void OnCityChanged(int? cityId)
+    {
+        model.CityId = cityId;
+        // Clear dependent fields when city changes
+        model.DistrictId = null;
+        model.SubdistrictId = null;
+        model.VillageId = null;
+    }
+
+    private void OnDistrictChanged(int? districtId)
+    {
+        model.DistrictId = districtId;
+        // Clear dependent fields when district changes
+        model.SubdistrictId = null;
+        model.VillageId = null;
+    }
+
+    private void OnSubdistrictChanged(int? subdistrictId)
+    {
+        model.SubdistrictId = subdistrictId;
+        // Clear dependent field when subdistrict changes
+        model.VillageId = null;
+    }
+
     private async Task OnValidSubmit()
     {
         saving = true;
@@ -215,41 +520,47 @@
         {
             if (IsEdit)
             {
-                var updateResult = await CustomerService.UpdateCustomerAsync(CustomerId!.Value, model);
-                if (updateResult.IsSuccess)
+                var result = await CustomerService.UpdateCustomerAsync(CustomerId!.Value, model);
+                if (result.IsSuccess)
                 {
                     Snackbar.Add("Müşteri başarıyla güncellendi", MudBlazor.Severity.Success);
                     GoBack();
                 }
                 else
                 {
-                    // If there are validation errors, show them
-                    if (updateResult.Errors?.Any() == true)
+                    if (result.Errors?.Any() == true)
                     {
-                        foreach (var error in updateResult.Errors)
+                        foreach (var error in result.Errors)
                         {
                             Snackbar.Add(error, MudBlazor.Severity.Warning);
                         }
+                    }
+                    else
+                    {
+                        Snackbar.Add(result.Message ?? "Güncelleme başarısız", MudBlazor.Severity.Error);
                     }
                 }
             }
             else
             {
-                var createResult = await CustomerService.CreateCustomerAsync(model);
-                if (createResult.IsSuccess)
+                var result = await CustomerService.CreateCustomerAsync(model);
+                if (result.IsSuccess)
                 {
                     Snackbar.Add("Müşteri başarıyla oluşturuldu", MudBlazor.Severity.Success);
                     GoBack();
                 }
                 else
                 {
-                    // If there are validation errors, show them
-                    if (createResult.Errors?.Any() == true)
+                    if (result.Errors?.Any() == true)
                     {
-                        foreach (var error in createResult.Errors)
+                        foreach (var error in result.Errors)
                         {
                             Snackbar.Add(error, MudBlazor.Severity.Warning);
                         }
+                    }
+                    else
+                    {
+                        Snackbar.Add(result.Message ?? "Oluşturma başarısız", MudBlazor.Severity.Error);
                     }
                 }
             }

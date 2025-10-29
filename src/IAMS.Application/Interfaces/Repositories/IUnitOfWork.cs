@@ -13,6 +13,13 @@ namespace IAMS.Application.Interfaces.Repositories
         IPolicyClaimRepository PolicyClaims { get; }
         ICommissionRateRepository CommissionRates { get; }
 
+        ICountryRepository Countries { get; }
+        IOccupationRepository Occupations { get; }
+        ICityRepository Cities { get; }
+        IDistrictRepository Districts { get; }
+        ISubdistrictRepository Subdistricts { get; }
+        IVillageRepository Villages { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

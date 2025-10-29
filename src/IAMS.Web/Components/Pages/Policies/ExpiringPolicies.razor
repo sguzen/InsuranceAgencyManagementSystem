@@ -238,7 +238,7 @@
                                         }
                                     </MudText>
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        @context.Item.Customer?.Phone
+                                        @context.Item.Customer?.MobilePhoneNumber
                                     </MudText>
                                 </MudStack>
                             </MudStack>
@@ -476,10 +476,10 @@
 
     private void CallCustomer(PolicyDto policy)
     {
-        if (policy.Customer?.Phone != null)
+        if (policy.Customer?.MobilePhoneNumber != null)
         {
             // Open phone dialer
-            Navigation.NavigateTo($"tel:{policy.Customer.Phone}", true);
+            Navigation.NavigateTo($"tel:{policy.Customer.MobilePhoneNumber}", true);
         }
         else
         {

@@ -31,7 +31,7 @@ else
                         @customer.FirstName.FirstOrDefault()@customer.LastName.FirstOrDefault()
                     </MudAvatar>
                     <MudStack Spacing="1">
-                        <MudText Typo="Typo.h4">@customer.FirstName @customer.LastName</MudText>
+                        <MudText Typo="Typo.h4">@customer.FullName</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
                             Müşteri Kodu: @customer.CustomerCode
                         </MudText>
@@ -53,17 +53,22 @@ else
                 </MudStack>
             </MudStack>
 
-            <!-- Status Badge -->
+            <!-- Status Badges -->
             <MudStack Row Spacing="2">
-                <MudChip Color="@GetStatusColor(customer.Status)" 
+                <MudChip Color="@GetStatusColor(customer.Status)" T="CustomerStatus"
                         Size="Size.Medium"
-                         Variant="Variant.Filled" T="CustomerStatus">
+                        Variant="Variant.Filled">
                     @GetStatusText(customer.Status)
                 </MudChip>
-                <MudChip Color="Color.Info" 
+                <MudChip Color="Color.Info" T="int"
                         Size="Size.Medium" 
-                        Variant="Variant.Outlined" T="int">
-                    @policies.Count Poliçe
+                        Variant="Variant.Outlined">
+                    @customer.PolicyCount Poliçe
+                </MudChip>
+                <MudChip Color="@(customer.Type == CustomerType.Individual ? Color.Primary : Color.Secondary)" T="CustomerType"
+                        Size="Size.Medium" 
+                        Variant="Variant.Outlined">
+                    @GetCustomerTypeText(customer.Type)
                 </MudChip>
             </MudStack>
 
@@ -83,16 +88,15 @@ else
                                     <MudStack Spacing="3">
                                         <MudStack Row Justify="Justify.SpaceBetween">
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">Ad Soyad:</MudText>
-                                            <MudText Typo="Typo.body1">@customer.FirstName @customer.LastName</MudText>
+                                            <MudText Typo="Typo.body1">@customer.FullName</MudText>
                                         </MudStack>
+
+                                        <MudDivider />
                                         
-                                        @if (!string.IsNullOrEmpty(customer.IdentificationNumber))
-                                        {
-                                            <MudStack Row Justify="Justify.SpaceBetween">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">TC Kimlik No:</MudText>
-                                                <MudText Typo="Typo.body1">@customer.IdentificationNumber</MudText>
-                                            </MudStack>
-                                        }
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Cinsiyet:</MudText>
+                                            <MudText Typo="Typo.body1">@GetGenderText(customer.Gender)</MudText>
+                                        </MudStack>
                                         
                                         @if (customer.DateOfBirth.HasValue)
                                         {
@@ -100,30 +104,47 @@ else
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Doğum Tarihi:</MudText>
                                                 <MudText Typo="Typo.body1">@customer.DateOfBirth.Value.ToString("dd.MM.yyyy")</MudText>
                                             </MudStack>
+                                            
+                                            @if (customer.Age.HasValue)
+                                            {
+                                                <MudStack Row Justify="Justify.SpaceBetween">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Yaş:</MudText>
+                                                    <MudText Typo="Typo.body1">@customer.Age</MudText>
+                                                </MudStack>
+                                            }
+                                        }
+
+                                        <MudDivider />
+                                        
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Kimlik Türü:</MudText>
+                                            <MudText Typo="Typo.body1">@GetIdentificationTypeText(customer.IdentificationType)</MudText>
+                                        </MudStack>
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.IdentificationNumber))
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Kimlik No:</MudText>
+                                                <MudText Typo="Typo.body1">@customer.IdentificationNumber</MudText>
+                                            </MudStack>
                                         }
                                         
-
-                                            <MudStack Row Justify="Justify.SpaceBetween">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Cinsiyet:</MudText>
-                                                <MudText Typo="Typo.body1">@GetGenderText(customer.Gender)</MudText>
-                                            </MudStack>
-                                        
-                                        
-                                       @*  @if (!string.IsNullOrEmpty(customer.Occupation))
+                                        @if (!string.IsNullOrEmpty(customer.NationalityCountryName))
                                         {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Uyruk:</MudText>
+                                                <MudText Typo="Typo.body1">@customer.NationalityCountryName</MudText>
+                                            </MudStack>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.OccupationName))
+                                        {
+                                            <MudDivider />
                                             <MudStack Row Justify="Justify.SpaceBetween">
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Meslek:</MudText>
-                                                <MudText Typo="Typo.body1">@customer.Occupation</MudText>
+                                                <MudText Typo="Typo.body1">@customer.OccupationName</MudText>
                                             </MudStack>
                                         }
-                                        
-                                        @if (!string.IsNullOrEmpty(customer.CompanyName))
-                                        {
-                                            <MudStack Row Justify="Justify.SpaceBetween">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Şirket:</MudText>
-                                                <MudText Typo="Typo.body1">@customer.CompanyName</MudText>
-                                            </MudStack>
-                                        } *@
                                     </MudStack>
                                 </MudCardContent>
                             </MudCard>
@@ -138,57 +159,88 @@ else
                                 </MudCardHeader>
                                 <MudCardContent>
                                     <MudStack Spacing="3">
-                                        <MudStack Row Justify="Justify.SpaceBetween">
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">E-posta:</MudText>
-                                            <MudLink Href="@($"mailto:{customer.Email}")" Typo="Typo.body1">
-                                                @customer.Email
-                                            </MudLink>
-                                        </MudStack>
-                                        
-                                        <MudStack Row Justify="Justify.SpaceBetween">
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Telefon:</MudText>
-                                            <MudLink Href="@($"tel:{customer.MobilePhoneNumber}")" Typo="Typo.body1">
-                                                @customer.MobilePhoneNumber
-                                            </MudLink>
-                                        </MudStack>
-                                        
-                                        @* @if (!string.IsNullOrEmpty(customer.AlternativePhone))
+                                        @if (!string.IsNullOrEmpty(customer.Email))
                                         {
                                             <MudStack Row Justify="Justify.SpaceBetween">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Alternatif Telefon:</MudText>
-                                                <MudLink Href="@($"tel:{customer.AlternativePhone}")" Typo="Typo.body1">
-                                                    @customer.AlternativePhone
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">E-posta:</MudText>
+                                                <MudLink Href="@($"mailto:{customer.Email}")">@customer.Email</MudLink>
+                                            </MudStack>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.MobilePhoneNumber))
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Cep Telefonu:</MudText>
+                                                <MudLink Href="@($"tel:{customer.MobilePhoneCountryCode}{customer.MobilePhoneNumber}")">
+                                                    @customer.MobilePhoneCountryCode @customer.MobilePhoneNumber
                                                 </MudLink>
                                             </MudStack>
-                                        } *@
-
-                                        @* @if (customer.Address != null)
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.HomePhone))
                                         {
-                                            <MudDivider />
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Adres:</MudText>
-                                            <MudText Typo="Typo.body1">
-                                                @if (!string.IsNullOrEmpty(customer.Address))
-                                                {
-                                                    <span>@customer.Address.Street<br /></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(customer.Address.District))
-                                                {
-                                                    <span>@customer.Address.District<br /></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(customer.Address.City))
-                                                {
-                                                    <span>@customer.Address.City<br /></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(customer.Address.Country))
-                                                {
-                                                    <span>@customer.Address.Country</span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(customer.Address.PostalCode))
-                                                {
-                                                    <span> @customer.Address.PostalCode</span>
-                                                }
-                                            </MudText>
-                                        } *@
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Ev Telefonu:</MudText>
+                                                <MudLink Href="@($"tel:{customer.HomePhone}")">@customer.HomePhone</MudLink>
+                                            </MudStack>
+                                        }
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+
+                            <MudSpacer />
+
+                            <MudCard Class="mt-4">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">Adres Bilgileri</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudStack Spacing="2">
+                                        @if (!string.IsNullOrEmpty(customer.Address1))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Adres 1:</MudText>
+                                            <MudText Typo="Typo.body1">@customer.Address1</MudText>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.Address2))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">Adres 2:</MudText>
+                                            <MudText Typo="Typo.body1">@customer.Address2</MudText>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.CityName))
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween" Class="mt-2">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Şehir:</MudText>
+                                                <MudText Typo="Typo.body1">@customer.CityName</MudText>
+                                            </MudStack>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.DistrictName))
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Mahalle:</MudText>
+                                                <MudText Typo="Typo.body1">@customer.DistrictName</MudText>
+                                            </MudStack>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.SubdistrictName))
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Bucak:</MudText>
+                                                <MudText Typo="Typo.body1">@customer.SubdistrictName</MudText>
+                                            </MudStack>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(customer.VillageName))
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Köy:</MudText>
+                                                <MudText Typo="Typo.body1">@customer.VillageName</MudText>
+                                            </MudStack>
+                                        }
                                     </MudStack>
                                 </MudCardContent>
                             </MudCard>
@@ -204,7 +256,7 @@ else
                                         </CardHeaderContent>
                                     </MudCardHeader>
                                     <MudCardContent>
-                                        <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@customer.Notes</MudText>
+                                        <MudText Typo="Typo.body1">@customer.Notes</MudText>
                                     </MudCardContent>
                                 </MudCard>
                             </MudItem>
@@ -213,125 +265,49 @@ else
                 </MudTabPanel>
 
                 <!-- Policies Tab -->
-                <MudTabPanel Text="Poliçeler" Icon="@Icons.Material.Filled.Policy">
-                    <MudStack Spacing="3">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.h6">Poliçeler (@policies.Count)</MudText>
-                            <MudButton Variant="Variant.Filled" 
-                                      Color="Color.Primary"
-                                      StartIcon="@Icons.Material.Filled.Add"
-                                      OnClick="CreateNewPolicy">
-                                Yeni Poliçe
-                            </MudButton>
-                        </MudStack>
-
-                        @if (policies.Any())
-                        {
-                            <MudDataGrid T="PolicyDto" 
-                                        Items="@policies"
-                                        Hover="true"
-                                        Striped="true"
-                                        Dense="true">
-                                <Columns>
-                                    <PropertyColumn Property="x => x.PolicyNumber" Title="Poliçe No" />
-                                    <PropertyColumn Property="x => x.InsuranceCompany.Name" Title="Sigorta Şirketi" />
-                                    <PropertyColumn Property="x => x.PolicyType.Name" Title="Poliçe Tipi" />
-                                    <PropertyColumn Property="x => x.StartDate" Title="Başlangıç" Format="dd.MM.yyyy" />
-                                    <PropertyColumn Property="x => x.EndDate" Title="Bitiş" Format="dd.MM.yyyy" />
-                                    
-                                    <TemplateColumn Title="Durum" CellClass="d-flex justify-center">
-                                        <CellTemplate>
-                                            <MudChip Color="@GetPolicyStatusColor(context.Item.Status)" 
+                <MudTabPanel Text="Poliçeler" Icon="@Icons.Material.Filled.Description" BadgeData="@customer.PolicyCount">
+                    @if (loadingPolicies)
+                    {
+                        <MudProgressLinear Indeterminate="true" />
+                    }
+                    else if (policies.Count == 0)
+                    {
+                        <MudAlert Severity="MudBlazor.Severity.Info">Bu müşteriye ait poliçe bulunmamaktadır.</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable Items="@policies" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Poliçe No</MudTh>
+                                <MudTh>Poliçe Türü</MudTh>
+                                <MudTh>Sigorta Şirketi</MudTh>
+                                <MudTh>Başlangıç</MudTh>
+                                <MudTh>Bitiş</MudTh>
+                                <MudTh>Prim</MudTh>
+                                <MudTh>Durum</MudTh>
+                                <MudTh>İşlemler</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Poliçe No">@context.PolicyNumber</MudTd>
+                                <MudTd DataLabel="Poliçe Türü">@context.PolicyType.Name</MudTd>
+                                <MudTd DataLabel="Sigorta Şirketi">@context.InsuranceCompany.Name</MudTd>
+                                <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
+                                <MudTd DataLabel="Prim">@context.PremiumAmount.ToString("C2")</MudTd>
+                                <MudTd DataLabel="Durum">
+                                     <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(@context.Status)" T="PolicyStatus"> 
+                                        @GetPolicyStatusText(context.Status)
+                                    </MudChip> 
+                                </MudTd>
+                                <MudTd DataLabel="İşlemler">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
                                                    Size="Size.Small" 
-                                                   Variant="Variant.Filled">
-                                                @GetPolicyStatusText(context.Item.Status)
-                                            </MudChip>
-                                        </CellTemplate>
-                                    </TemplateColumn>
-                                    
-                                    <TemplateColumn CellClass="d-flex justify-end" Sortable="false">
-                                        <CellTemplate>
-                                            <MudButtonGroup>
-                                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
-                                                             Size="Size.Small" 
-                                                             Color="Color.Primary"
-                                                             OnClick="@(() => ViewPolicy(context.Item.Id))" />
-                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                                                             Size="Size.Small" 
-                                                             Color="Color.Secondary"
-                                                             OnClick="@(() => EditPolicy(context.Item.Id))" />
-                                            </MudButtonGroup>
-                                        </CellTemplate>
-                                    </TemplateColumn>
-                                </Columns>
-                                
-                                <NoRecordsContent>
-                                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
-                                        <MudIcon Icon="@Icons.Material.Filled.Policy" Size="Size.Large" Color="Color.Default" />
-                                        <MudText Typo="Typo.h6">Henüz poliçe yok</MudText>
-                                        <MudText Typo="Typo.body2" Color="Color.Default">
-                                            Bu müşteri için henüz poliçe oluşturulmamış.
-                                        </MudText>
-                                        <MudButton Variant="Variant.Filled" 
-                                                  Color="Color.Primary"
-                                                  StartIcon="@Icons.Material.Filled.Add"
-                                                  OnClick="CreateNewPolicy">
-                                            İlk Poliçeyi Oluştur
-                                        </MudButton>
-                                    </MudStack>
-                                </NoRecordsContent>
-                            </MudDataGrid>
-                        }
-                    </MudStack>
-                </MudTabPanel>
-
-                <!-- Activity Log Tab -->
-                <MudTabPanel Text="Aktivite Geçmişi" Icon="@Icons.Material.Filled.History">
-                    <MudStack Spacing="3">
-                        <MudText Typo="Typo.h6">Son Aktiviteler</MudText>
-                        
-                        <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
-                            <MudTimelineItem Color="Color.Success" Size="Size.Small">
-                                <ItemContent>
-                                    <MudAlert Severity="MudBlazor.Severity.Success" NoIcon="true" Dense="true">
-                                        <MudText Typo="Typo.body2">
-                                            <strong>Müşteri oluşturuldu</strong><br />
-                                            @customer.CreatedOn.ToString("dd.MM.yyyy HH:mm")
-                                        </MudText>
-                                    </MudAlert>
-                                </ItemContent>
-                            </MudTimelineItem>
-                            
-                            @if (customer.UpdatedOn != customer.CreatedOn)
-                            {
-                                <MudTimelineItem Color="Color.Info" Size="Size.Small">
-                                    <ItemContent>
-                                        <MudAlert Severity="MudBlazor.Severity.Info" NoIcon="true" Dense="true">
-                                            <MudText Typo="Typo.body2">
-                                                <strong>Müşteri bilgileri güncellendi</strong><br />
-                                                @customer.UpdatedOn 
-                                            </MudText>
-                                        </MudAlert>
-                                    </ItemContent>
-                                </MudTimelineItem>
-                            }
-                            
-                            @foreach (var policy in policies.OrderByDescending(p => p.CreatedDate).Take(5))
-                            {
-                                <MudTimelineItem Color="Color.Primary" Size="Size.Small">
-                                    <ItemContent>
-                                        <MudAlert Severity="MudBlazor.Severity.Normal" NoIcon="true" Dense="true">
-                                            <MudText Typo="Typo.body2">
-                                                <strong>Yeni poliçe: @policy.PolicyNumber</strong><br />
-                                                @policy.InsuranceCompany.Name - @policy.PolicyType.Name<br />
-                                                @policy.CreatedDate.ToString("dd.MM.yyyy HH:mm")
-                                            </MudText>
-                                        </MudAlert>
-                                    </ItemContent>
-                                </MudTimelineItem>
-                            }
-                        </MudTimeline>
-                    </MudStack>
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => ViewPolicy(context.Id))" />
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
                 </MudTabPanel>
             </MudTabs>
         </MudStack>
@@ -343,6 +319,7 @@ else
 
     private CustomerDto? customer;
     private List<PolicyDto> policies = new();
+    private bool loadingPolicies = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -352,34 +329,39 @@ else
 
     private async Task LoadCustomer()
     {
-        try
+        var result = await CustomerService.GetCustomerByIdAsync(CustomerId);
+        if (result.IsSuccess && result.Data != null)
         {
-            var result = await CustomerService.GetCustomerByIdAsync(CustomerId);
             customer = result.Data;
         }
-        catch (Exception ex)
+        else
         {
-            Snackbar.Add($"Müşteri bilgileri yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            Snackbar.Add("Müşteri bulunamadı", MudBlazor.Severity.Error);
             GoBack();
         }
     }
 
     private async Task LoadPolicies()
     {
+        loadingPolicies = true;
         try
         {
-            var result = await PolicyService.GetPoliciesByCustomerAsync(CustomerId);
-            policies = result.Data.ToList();
+            // TODO: Implement GetPoliciesByCustomerIdAsync in PolicyService
+            // var result = await PolicyService.GetPoliciesByCustomerIdAsync(CustomerId);
+            // if (result.IsSuccess && result.Data != null)
+            // {
+            //     policies = result.Data;
+            // }
+            policies = new List<PolicyDto>(); // Temporary
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Poliçe bilgileri yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
         }
-    }
-
-    private void GoBack()
-    {
-        Navigation.NavigateTo("/customers");
+        finally
+        {
+            loadingPolicies = false;
+        }
     }
 
     private void EditCustomer()
@@ -387,9 +369,9 @@ else
         Navigation.NavigateTo($"/customers/{CustomerId}/edit");
     }
 
-    private void CreateNewPolicy()
+    private void GoBack()
     {
-        Navigation.NavigateTo($"/policies/create?customerId={CustomerId}");
+        Navigation.NavigateTo("/customers");
     }
 
     private void ViewPolicy(int policyId)
@@ -397,68 +379,65 @@ else
         Navigation.NavigateTo($"/policies/{policyId}");
     }
 
-    private void EditPolicy(int policyId)
+    // Helper methods for display text
+    private string GetStatusText(CustomerStatus status) => status switch
     {
-        Navigation.NavigateTo($"/policies/{policyId}/edit");
-    }
+        CustomerStatus.Active => "Aktif",
+        CustomerStatus.Inactive => "Pasif",
+        CustomerStatus.Suspended => "Askıya Alınmış",
+        CustomerStatus.Blacklisted => "Silinmiş",
+        _ => status.ToString()
+    };
 
-    private Color GetStatusColor(CustomerStatus status)
+    private Color GetStatusColor(CustomerStatus status) => status switch
     {
-        return status switch
-        {
-            CustomerStatus.Active => Color.Success,
-            CustomerStatus.Inactive => Color.Default,
-            CustomerStatus.Suspended => Color.Warning,
-            CustomerStatus.Blacklisted => Color.Error,
-            CustomerStatus.Former => Color.Surface,
-            _ => Color.Default
-        };
-    }
+        CustomerStatus.Active => Color.Success,
+        CustomerStatus.Inactive => Color.Default,
+        CustomerStatus.Suspended => Color.Warning,
+        CustomerStatus.Blacklisted => Color.Error,
+        _ => Color.Default
+    };
 
-    private string GetStatusText(CustomerStatus status)
+    private string GetGenderText(Gender gender) => gender switch
     {
-        return status switch
-        {
-            CustomerStatus.Active => "Aktif",
-            CustomerStatus.Inactive => "Pasif",
-            CustomerStatus.Suspended => "Iptal edilmiş",
-            CustomerStatus.Blacklisted => "Kara listede",
-            CustomerStatus.Former => "Eski",
-            _ => "Bilinmiyor"
-        };
-    }
+        Gender.Male => "Erkek",
+        Gender.Female => "Kadın",
+        _ => gender.ToString()
+    };
 
-    private string GetGenderText(Gender gender)
+    private string GetCustomerTypeText(CustomerType type) => type switch
     {
-        return gender switch
-        {
-            Gender.Male => "Erkek",
-            Gender.Female => "Kadın",
-            _ => "Belirtilmemiş"
-        };
-    }
+        CustomerType.Individual => "Bireysel",
+        CustomerType.Corporate => "Kurumsal",
+        _ => type.ToString()
+    };
 
-    private Color GetPolicyStatusColor(PolicyStatus status)
+    private string GetIdentificationTypeText(IdentificationType type) => type switch
     {
-        return status switch
-        {
-            PolicyStatus.Active => Color.Success,
-            PolicyStatus.Expired => Color.Error,
-            PolicyStatus.Cancelled => Color.Default,
-            PolicyStatus.PendingRenewal => Color.Warning,
-            _ => Color.Default
-        };
-    }
+        IdentificationType.IdCard => "Kimlik Kartı",
+        IdentificationType.Passport => "Pasaport",
+        IdentificationType.TradeLicense => "Trade License",
+        IdentificationType.TaxNumber => "Vergi Numarası",
+        _ => type.ToString()
+    };
 
-    private string GetPolicyStatusText(PolicyStatus status)
+    private string GetPolicyStatusText(PolicyStatus status) => status switch
     {
-        return status switch
-        {
-            PolicyStatus.Active => "Aktif",
-            PolicyStatus.Expired => "Süresi Dolmuş",
-            PolicyStatus.Cancelled => "İptal Edilmiş",
-            PolicyStatus.PendingRenewal => "Beklemede",
-            _ => "Bilinmiyor"
-        };
-    }
+        PolicyStatus.Draft => "Taslak",
+        PolicyStatus.Active => "Aktif",
+        PolicyStatus.Expired => "Süresi Dolmuş",
+        PolicyStatus.Cancelled => "İptal",
+        PolicyStatus.Suspended => "Askıya Alınmış",
+        _ => status.ToString()
+    };
+
+    private Color GetPolicyStatusColor(PolicyStatus status) => status switch
+    {
+        PolicyStatus.Draft => Color.Default,
+        PolicyStatus.Active => Color.Success,
+        PolicyStatus.Expired => Color.Warning,
+        PolicyStatus.Cancelled => Color.Error,
+        PolicyStatus.Suspended => Color.Warning,
+        _ => Color.Default
+    };
 }

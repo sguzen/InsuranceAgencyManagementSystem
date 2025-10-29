@@ -237,26 +237,26 @@
                                                 For="@(() => model.Address2)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.CityId"
+                                    <MudSelect 
                                              Label="Şehir"
                                              Variant="Variant.Outlined"
                                              T="int?"
-                                             Clearable="true">
-@*                                              ValueChanged="OnCityChanged">
- *@                                        @foreach (var city in cities)
+                                             Clearable="true"
+                                               ValueChanged="@((int? value) => OnCityChanged(value))">
+                                        @foreach (var city in cities)
                                         {
                                             <MudSelectItem T="int?" Value="@city.Id">@city.NameTr</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.DistrictId"
+                                    <MudSelect 
                                              Label="Mahalle"
                                              Variant="Variant.Outlined"
                                              T="int?"
                                              Clearable="true"
-                                             Disabled="@(!model.CityId.HasValue)">
-                                            @*  ValueChanged="OnDistrictChanged"> *@
+                                             Disabled="@(!model.CityId.HasValue)"
+                                               ValueChanged="@((int? value) => OnDistrictChanged(value))">
                                         @foreach (var district in filteredDistricts)
                                         {
                                             <MudSelectItem T="int?" Value="@district.Id">@district.NameTr</MudSelectItem>
@@ -264,13 +264,13 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.SubdistrictId"
+                                    <MudSelect 
                                              Label="Bucak"
                                              Variant="Variant.Outlined"
                                              T="int?"
                                              Clearable="true"
-                                             Disabled="@(!model.DistrictId.HasValue)">
-                                             @* ValueChanged="OnSubdistrictChanged"> *@
+                                             Disabled="@(!model.DistrictId.HasValue)"
+                                               ValueChanged="@((int? value) => OnSubdistrictChanged(value))">
                                         @foreach (var subdistrict in filteredSubdistricts)
                                         {
                                             <MudSelectItem T="int?" Value="@subdistrict.Id">@subdistrict.NameTr</MudSelectItem>
@@ -425,22 +425,23 @@
         try
         {
             // Load all parametric data in parallel
-            var countriesTask = ParametricService.GetCountriesAsync();
-            var occupationsTask = ParametricService.GetOccupationsAsync();
-            var citiesTask = ParametricService.GetCitiesAsync();
-            var districtsTask = ParametricService.GetDistrictsAsync();
-            var subdistrictsTask = ParametricService.GetSubdistrictsAsync();
-            var villagesTask = ParametricService.GetVillagesAsync();
+            var countriesResult = await ParametricService.GetCountriesAsync();
+            countries = countriesResult.IsSuccess ? countriesResult.Data ?? new List<CountryDto>() : new List<CountryDto>();
 
-            await Task.WhenAll(countriesTask, occupationsTask, citiesTask, 
-                              districtsTask, subdistrictsTask, villagesTask);
+            var occupationsResult = await ParametricService.GetOccupationsAsync();
+            occupations = occupationsResult.IsSuccess ? occupationsResult.Data ?? new List<OccupationDto>() : new List<OccupationDto>();
 
-            countries = countriesTask.Result ?? new List<CountryDto>();
-            occupations = occupationsTask.Result ?? new List<OccupationDto>();
-            cities = citiesTask.Result ?? new List<CityDto>();
-            districts = districtsTask.Result ?? new List<DistrictDto>();
-            subdistricts = subdistrictsTask.Result ?? new List<SubdistrictDto>();
-            villages = villagesTask.Result ?? new List<VillageDto>();
+            var citiesResult = await ParametricService.GetCitiesAsync();
+            cities = citiesResult.IsSuccess ? citiesResult.Data ?? new List<CityDto>() : new List<CityDto>();
+
+            var districtsResult = await ParametricService.GetDistrictsAsync();
+            districts = districtsResult.IsSuccess ? districtsResult.Data ?? new List<DistrictDto>() : new List<DistrictDto>();
+
+            var subdistrictsResult = await ParametricService.GetSubdistrictsAsync();
+            subdistricts = subdistrictsResult.IsSuccess ? subdistrictsResult.Data ?? new List<SubdistrictDto>() : new List<SubdistrictDto>();
+
+            var villagesResult = await ParametricService.GetVillagesAsync();
+            villages = villagesResult.IsSuccess ? villagesResult.Data ?? new List<VillageDto>() : new List<VillageDto>();
         }
         catch (Exception ex)
         {

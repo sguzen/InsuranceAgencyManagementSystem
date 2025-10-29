@@ -87,10 +87,9 @@ namespace IAMS.Persistence.Repositories
             }
 
             // Apply status filter
-            if (queryParams.Status == Domain.Enums.CustomerStatus.Active)
+            if (queryParams.Status.HasValue)
             {
-                //query = query.Where(c => c.IsActive == true);
-                query = query.Where(c => c.Status == Domain.Enums.CustomerStatus.Active && !c.IsDeleted);
+                query = query.Where(c => c.Status == queryParams.Status.Value);
             }
 
             // Get total count

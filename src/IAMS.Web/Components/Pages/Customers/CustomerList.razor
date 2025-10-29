@@ -47,7 +47,8 @@
                                       DebounceInterval="300" />
                     </MudItem>
                     <MudItem xs="12" md="3">
-                        <MudSelect @bind-Value="selectedStatus"
+                        <MudSelect Value="@selectedStatus"
+                                   ValueChanged="@((CustomerStatus value) => OnStatusChanged(value))"
                                    Label="Durum"
                                    Variant="Variant.Outlined"
                                    T="CustomerStatus"
@@ -245,6 +246,11 @@
         await LoadStatistics();
     }
 
+    private async Task OnStatusChanged(CustomerStatus status)
+    {
+        selectedStatus = status;
+        await OnSearch();
+    }
     private async Task LoadCustomers()
     {
         loading = true;

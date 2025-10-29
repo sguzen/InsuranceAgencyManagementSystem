@@ -21,4 +21,8 @@
     <ProjectReference Include="..\IAMS.Domain\IAMS.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Parametric\Handlers\" />
+  </ItemGroup>
+
 </Project>

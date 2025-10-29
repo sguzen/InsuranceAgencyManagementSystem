@@ -42,8 +42,6 @@ namespace IAMS.Application.Mappings
                     opt => opt.MapFrom(src => src.FullName))
                 .ForMember(dest => dest.Age,
                     opt => opt.MapFrom(src => src.Age))
-                .ForMember(dest => dest.IsActive,
-                    opt => opt.MapFrom(src => src.IsActive))
                 .ForMember(dest => dest.NationalityCountryName,
                     opt => opt.MapFrom(src => src.NationalityCountry != null ? src.NationalityCountry.NameTr : null))
                 .ForMember(dest => dest.CityName,

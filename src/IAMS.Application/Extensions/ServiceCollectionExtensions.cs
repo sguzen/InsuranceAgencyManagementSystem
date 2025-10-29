@@ -4,6 +4,7 @@ using IAMS.Application.Interfaces;
 using IAMS.Application.Services;
 using IAMS.Application.Services.Customers;
 using IAMS.Application.Services.InsuranceCompanies;
+using IAMS.Application.Services.Parametric;
 using IAMS.Application.Services.Policies;
 using IAMS.Application.Services.PolicyTypes;
 using IAMS.Application.Validators.Customer;
@@ -34,6 +35,7 @@ namespace IAMS.Application.Extensions
 
             // Register Application Services
             services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IParametricService, ParametricService>();
             services.AddScoped<IPolicyService, PolicyService>();
             services.AddScoped<IPolicyTypeService, PolicyTypeService>();
             services.AddScoped<IPolicyNumberGenerator, PolicyNumberGenerator>();

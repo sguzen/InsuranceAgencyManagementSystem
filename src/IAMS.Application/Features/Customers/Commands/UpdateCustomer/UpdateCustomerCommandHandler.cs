@@ -133,23 +133,23 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 }
 
                 // Check if KKTC number is being changed and if new KKTC number already exists
-                if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNo) &&
-                    existingCustomer.IdentificationNumber != request.CustomerDto.IdentificationNo)
+                if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNumber) &&
+                    existingCustomer.IdentificationNumber != request.CustomerDto.IdentificationNumber)
                 {
-                    var duplicateKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNo, tenantId);
+                    var duplicateKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber, tenantId);
                     if (duplicateKktc != null && duplicateKktc.Id != request.Id)
                     {
-                        errors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.IdentificationNo}) başka bir müşteri tarafından kullanılmaktadır");
+                        errors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.IdentificationNumber}) başka bir müşteri tarafından kullanılmaktadır");
                     }
                 }
 
                 // Check if phone number is being changed and if new phone number already exists
-                if (existingCustomer.Phone != request.CustomerDto.Phone)
+                if (existingCustomer.Phone != request.CustomerDto.MobilePhoneNumber)
                 {
-                    var duplicatePhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.Phone, tenantId);
+                    var duplicatePhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber, tenantId);
                     if (duplicatePhone != null && duplicatePhone.Id != request.Id)
                     {
-                        errors.Add($"Bu telefon numarası ({request.CustomerDto.Phone}) başka bir müşteri tarafından kullanılmaktadır");
+                        errors.Add($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) başka bir müşteri tarafından kullanılmaktadır");
                     }
                 }
 

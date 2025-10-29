@@ -6,17 +6,37 @@ namespace IAMS.Application.DTOs.Customer
     {
         public int Id { get; set; }
         public int TenantId { get; set; }
+        public CustomerType Type { get; set; }
         public string CustomerCode { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName => $"{FirstName} {LastName}";
-        public string? IdentificationNo { get; set; }
+        public IdentificationType IdentificationType { get; set; }
+        public string IdentificationNumber { get; set; } = string.Empty;
         public DateTime? DateOfBirth { get; set; }
         public int? Age => DateOfBirth?.CalculateAge();
+        public int? NationalityCountryId { get; set; }
+        public string? NationalityCountryName { get; set; }
         public Gender Gender { get; set; }
         public string? Email { get; set; }
-        public string? Phone { get; set; }
-        public string? Address { get; set; }
+        public string? MobilePhoneCountryCode { get; set; }
+        public string? MobilePhoneNumber { get; set; }
+        public string? HomePhone { get; set; }
+        // Address
+        public string? Address1 { get; set; }
+        public string? Address2 { get; set; }
+        public int? CityId { get; set; }
+        public string? CityName { get; set; }
+        public int? DistrictId { get; set; }
+        public string? DistrictName { get; set; }
+        public int? SubdistrictId { get; set; }
+        public string? SubdistrictName { get; set; }
+        public int? VillageId { get; set; }
+        public string? VillageName { get; set; }
+
+        // Professional
+        public int? OccupationId { get; set; }
+        public string? OccupationName { get; set; }
         public CustomerStatus Status { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedOn { get; set; }

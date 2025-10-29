@@ -22,6 +22,14 @@ namespace IAMS.Persistence.UnitOfWork
         private IPolicyClaimRepository? _policyClaims;
         private ICommissionRateRepository? _commissionRates;
 
+        private ICountryRepository? _countries;
+        private IOccupationRepository? _occupations;
+        private ICityRepository? _cities;
+        private IDistrictRepository? _districts;
+        private ISubdistrictRepository? _subdistricts;
+        private IVillageRepository? _villages;
+
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
@@ -50,6 +58,24 @@ namespace IAMS.Persistence.UnitOfWork
 
         public ICommissionRateRepository CommissionRates =>
             _commissionRates ??= new CommissionRateRepository(_context);
+
+        public ICountryRepository Countries =>
+            _countries ??= new CountryRepository(_context);
+
+        public IOccupationRepository Occupations =>
+            _occupations ??= new OccupationRepository(_context);
+
+        public ICityRepository Cities =>
+            _cities ??= new CityRepository(_context);
+
+        public IDistrictRepository Districts =>
+            _districts ??= new DistrictRepository(_context);
+
+        public ISubdistrictRepository Subdistricts =>
+            _subdistricts ??= new SubdistrictRepository(_context);
+
+        public IVillageRepository Villages =>
+            _villages ??= new VillageRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

@@ -174,17 +174,17 @@ else
                                     <MudDivider />
                                     <MudStack Row Justify="Justify.SpaceBetween">
                                         <MudText>KKTC Kimlik No:</MudText>
-                                        <MudText><strong>@policy.Customer.IdentificationNo</strong></MudText>
+                                        <MudText><strong>@policy.Customer.IdentificationNumber</strong></MudText>
                                     </MudStack>
                                     <MudStack Row Justify="Justify.SpaceBetween">
                                         <MudText>Telefon:</MudText>
-                                        <MudText><strong>@policy.Customer.Phone</strong></MudText>
+                                        <MudText><strong>@policy.Customer.MobilePhoneNumber</strong></MudText>
                                     </MudStack>
-                                    @if (!string.IsNullOrEmpty(policy.Customer.Address))
+                                    @if (!string.IsNullOrEmpty(policy.Customer.Address1))
                                     {
                                         <MudStack Spacing="1">
                                             <MudText>Adres:</MudText>
-                                            <MudText><strong>@policy.Customer.Address</strong></MudText>
+                                            <MudText><strong>@policy.Customer.Address1</strong></MudText>
                                         </MudStack>
                                     }
                                 </MudStack>

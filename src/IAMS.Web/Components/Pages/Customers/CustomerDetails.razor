@@ -86,11 +86,11 @@ else
                                             <MudText Typo="Typo.body1">@customer.FirstName @customer.LastName</MudText>
                                         </MudStack>
                                         
-                                        @if (!string.IsNullOrEmpty(customer.IdentificationNo))
+                                        @if (!string.IsNullOrEmpty(customer.IdentificationNumber))
                                         {
                                             <MudStack Row Justify="Justify.SpaceBetween">
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">TC Kimlik No:</MudText>
-                                                <MudText Typo="Typo.body1">@customer.IdentificationNo</MudText>
+                                                <MudText Typo="Typo.body1">@customer.IdentificationNumber</MudText>
                                             </MudStack>
                                         }
                                         
@@ -147,8 +147,8 @@ else
                                         
                                         <MudStack Row Justify="Justify.SpaceBetween">
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">Telefon:</MudText>
-                                            <MudLink Href="@($"tel:{customer.Phone}")" Typo="Typo.body1">
-                                                @customer.Phone
+                                            <MudLink Href="@($"tel:{customer.MobilePhoneNumber}")" Typo="Typo.body1">
+                                                @customer.MobilePhoneNumber
                                             </MudLink>
                                         </MudStack>
                                         

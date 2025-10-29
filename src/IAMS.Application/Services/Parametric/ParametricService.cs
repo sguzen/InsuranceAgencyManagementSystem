@@ -5,7 +5,7 @@ using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using Microsoft.Extensions.Logging;
 
-namespace IAMS.Application.Services
+namespace IAMS.Application.Services.Parametric
 {
     public class ParametricService : IParametricService
     {
@@ -25,7 +25,7 @@ namespace IAMS.Application.Services
 
         #region Countries
 
-        public async Task<ServiceResult<List<CountryDto>>> GetCountriesAsync()
+        public async Task<Result<List<CountryDto>>> GetCountriesAsync()
         {
             try
             {
@@ -34,48 +34,48 @@ namespace IAMS.Application.Services
                     .OrderBy(c => c.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<CountryDto>>.Success(dtos);
+                return Result<List<CountryDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving countries");
-                return ServiceResult<List<CountryDto>>.Failure("Ülkeler yüklenirken hata oluştu");
+                return Result<List<CountryDto>>.Failure("Ülkeler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<CountryDto>> GetCountryByIdAsync(int id)
+        public async Task<Result<CountryDto>> GetCountryByIdAsync(int id)
         {
             try
             {
                 var country = await _unitOfWork.Countries.GetByIdAsync(id);
                 if (country == null)
-                    return ServiceResult<CountryDto>.Failure("Ülke bulunamadı");
+                    return Result<CountryDto>.Failure("Ülke bulunamadı");
 
                 var dto = _mapper.Map<CountryDto>(country);
-                return ServiceResult<CountryDto>.Success(dto);
+                return Result<CountryDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving country with ID {CountryId}", id);
-                return ServiceResult<CountryDto>.Failure("Ülke bilgisi yüklenirken hata oluştu");
+                return Result<CountryDto>.Failure("Ülke bilgisi yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<CountryDto>> GetCountryByCodeAsync(string code)
+        public async Task<Result<CountryDto>> GetCountryByCodeAsync(string code)
         {
             try
             {
                 var country = await _unitOfWork.Countries.GetByCodeAsync(code);
                 if (country == null)
-                    return ServiceResult<CountryDto>.Failure("Ülke bulunamadı");
+                    return Result<CountryDto>.Failure("Ülke bulunamadı");
 
                 var dto = _mapper.Map<CountryDto>(country);
-                return ServiceResult<CountryDto>.Success(dto);
+                return Result<CountryDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving country with code {Code}", code);
-                return ServiceResult<CountryDto>.Failure("Ülke bilgisi yüklenirken hata oluştu");
+                return Result<CountryDto>.Failure("Ülke bilgisi yüklenirken hata oluştu");
             }
         }
 
@@ -83,7 +83,7 @@ namespace IAMS.Application.Services
 
         #region Occupations
 
-        public async Task<ServiceResult<List<OccupationDto>>> GetOccupationsAsync()
+        public async Task<Result<List<OccupationDto>>> GetOccupationsAsync()
         {
             try
             {
@@ -92,30 +92,30 @@ namespace IAMS.Application.Services
                     .OrderBy(o => o.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<OccupationDto>>.Success(dtos);
+                return Result<List<OccupationDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving occupations");
-                return ServiceResult<List<OccupationDto>>.Failure("Meslekler yüklenirken hata oluştu");
+                return Result<List<OccupationDto>>.Failure("Meslekler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<OccupationDto>> GetOccupationByIdAsync(int id)
+        public async Task<Result<OccupationDto>> GetOccupationByIdAsync(int id)
         {
             try
             {
                 var occupation = await _unitOfWork.Occupations.GetByIdAsync(id);
                 if (occupation == null)
-                    return ServiceResult<OccupationDto>.Failure("Meslek bulunamadı");
+                    return Result<OccupationDto>.Failure("Meslek bulunamadı");
 
                 var dto = _mapper.Map<OccupationDto>(occupation);
-                return ServiceResult<OccupationDto>.Success(dto);
+                return Result<OccupationDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving occupation with ID {OccupationId}", id);
-                return ServiceResult<OccupationDto>.Failure("Meslek bilgisi yüklenirken hata oluştu");
+                return Result<OccupationDto>.Failure("Meslek bilgisi yüklenirken hata oluştu");
             }
         }
 
@@ -123,7 +123,7 @@ namespace IAMS.Application.Services
 
         #region Cities
 
-        public async Task<ServiceResult<List<CityDto>>> GetCitiesAsync()
+        public async Task<Result<List<CityDto>>> GetCitiesAsync()
         {
             try
             {
@@ -132,30 +132,30 @@ namespace IAMS.Application.Services
                     .OrderBy(c => c.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<CityDto>>.Success(dtos);
+                return Result<List<CityDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving cities");
-                return ServiceResult<List<CityDto>>.Failure("Şehirler yüklenirken hata oluştu");
+                return Result<List<CityDto>>.Failure("Şehirler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<CityDto>> GetCityByIdAsync(int id)
+        public async Task<Result<CityDto>> GetCityByIdAsync(int id)
         {
             try
             {
                 var city = await _unitOfWork.Cities.GetByIdAsync(id);
                 if (city == null)
-                    return ServiceResult<CityDto>.Failure("Şehir bulunamadı");
+                    return Result<CityDto>.Failure("Şehir bulunamadı");
 
                 var dto = _mapper.Map<CityDto>(city);
-                return ServiceResult<CityDto>.Success(dto);
+                return Result<CityDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving city with ID {CityId}", id);
-                return ServiceResult<CityDto>.Failure("Şehir bilgisi yüklenirken hata oluştu");
+                return Result<CityDto>.Failure("Şehir bilgisi yüklenirken hata oluştu");
             }
         }
 
@@ -163,7 +163,7 @@ namespace IAMS.Application.Services
 
         #region Districts
 
-        public async Task<ServiceResult<List<DistrictDto>>> GetDistrictsAsync()
+        public async Task<Result<List<DistrictDto>>> GetDistrictsAsync()
         {
             try
             {
@@ -172,16 +172,16 @@ namespace IAMS.Application.Services
                     .OrderBy(d => d.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<DistrictDto>>.Success(dtos);
+                return Result<List<DistrictDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving districts");
-                return ServiceResult<List<DistrictDto>>.Failure("Mahalleler yüklenirken hata oluştu");
+                return Result<List<DistrictDto>>.Failure("Mahalleler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<List<DistrictDto>>> GetDistrictsByCityIdAsync(int cityId)
+        public async Task<Result<List<DistrictDto>>> GetDistrictsByCityIdAsync(int cityId)
         {
             try
             {
@@ -190,30 +190,30 @@ namespace IAMS.Application.Services
                     .OrderBy(d => d.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<DistrictDto>>.Success(dtos);
+                return Result<List<DistrictDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving districts for city {CityId}", cityId);
-                return ServiceResult<List<DistrictDto>>.Failure("Mahalleler yüklenirken hata oluştu");
+                return Result<List<DistrictDto>>.Failure("Mahalleler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<DistrictDto>> GetDistrictByIdAsync(int id)
+        public async Task<Result<DistrictDto>> GetDistrictByIdAsync(int id)
         {
             try
             {
                 var district = await _unitOfWork.Districts.GetByIdAsync(id);
                 if (district == null)
-                    return ServiceResult<DistrictDto>.Failure("Mahalle bulunamadı");
+                    return Result<DistrictDto>.Failure("Mahalle bulunamadı");
 
                 var dto = _mapper.Map<DistrictDto>(district);
-                return ServiceResult<DistrictDto>.Success(dto);
+                return Result<DistrictDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving district with ID {DistrictId}", id);
-                return ServiceResult<DistrictDto>.Failure("Mahalle bilgisi yüklenirken hata oluştu");
+                return Result<DistrictDto>.Failure("Mahalle bilgisi yüklenirken hata oluştu");
             }
         }
 
@@ -221,7 +221,7 @@ namespace IAMS.Application.Services
 
         #region Subdistricts
 
-        public async Task<ServiceResult<List<SubdistrictDto>>> GetSubdistrictsAsync()
+        public async Task<Result<List<SubdistrictDto>>> GetSubdistrictsAsync()
         {
             try
             {
@@ -230,16 +230,16 @@ namespace IAMS.Application.Services
                     .OrderBy(s => s.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<SubdistrictDto>>.Success(dtos);
+                return Result<List<SubdistrictDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving subdistricts");
-                return ServiceResult<List<SubdistrictDto>>.Failure("Bucaklar yüklenirken hata oluştu");
+                return Result<List<SubdistrictDto>>.Failure("Bucaklar yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<List<SubdistrictDto>>> GetSubdistrictsByDistrictIdAsync(int districtId)
+        public async Task<Result<List<SubdistrictDto>>> GetSubdistrictsByDistrictIdAsync(int districtId)
         {
             try
             {
@@ -248,30 +248,30 @@ namespace IAMS.Application.Services
                     .OrderBy(s => s.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<SubdistrictDto>>.Success(dtos);
+                return Result<List<SubdistrictDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving subdistricts for district {DistrictId}", districtId);
-                return ServiceResult<List<SubdistrictDto>>.Failure("Bucaklar yüklenirken hata oluştu");
+                return Result<List<SubdistrictDto>>.Failure("Bucaklar yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<SubdistrictDto>> GetSubdistrictByIdAsync(int id)
+        public async Task<Result<SubdistrictDto>> GetSubdistrictByIdAsync(int id)
         {
             try
             {
                 var subdistrict = await _unitOfWork.Subdistricts.GetByIdAsync(id);
                 if (subdistrict == null)
-                    return ServiceResult<SubdistrictDto>.Failure("Bucak bulunamadı");
+                    return Result<SubdistrictDto>.Failure("Bucak bulunamadı");
 
                 var dto = _mapper.Map<SubdistrictDto>(subdistrict);
-                return ServiceResult<SubdistrictDto>.Success(dto);
+                return Result<SubdistrictDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving subdistrict with ID {SubdistrictId}", id);
-                return ServiceResult<SubdistrictDto>.Failure("Bucak bilgisi yüklenirken hata oluştu");
+                return Result<SubdistrictDto>.Failure("Bucak bilgisi yüklenirken hata oluştu");
             }
         }
 
@@ -279,7 +279,7 @@ namespace IAMS.Application.Services
 
         #region Villages
 
-        public async Task<ServiceResult<List<VillageDto>>> GetVillagesAsync()
+        public async Task<Result<List<VillageDto>>> GetVillagesAsync()
         {
             try
             {
@@ -288,16 +288,16 @@ namespace IAMS.Application.Services
                     .OrderBy(v => v.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<VillageDto>>.Success(dtos);
+                return Result<List<VillageDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving villages");
-                return ServiceResult<List<VillageDto>>.Failure("Köyler yüklenirken hata oluştu");
+                return Result<List<VillageDto>>.Failure("Köyler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<List<VillageDto>>> GetVillagesBySubdistrictIdAsync(int subdistrictId)
+        public async Task<Result<List<VillageDto>>> GetVillagesBySubdistrictIdAsync(int subdistrictId)
         {
             try
             {
@@ -306,30 +306,30 @@ namespace IAMS.Application.Services
                     .OrderBy(v => v.DisplayOrder)
                     .ToList());
 
-                return ServiceResult<List<VillageDto>>.Success(dtos);
+                return Result<List<VillageDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving villages for subdistrict {SubdistrictId}", subdistrictId);
-                return ServiceResult<List<VillageDto>>.Failure("Köyler yüklenirken hata oluştu");
+                return Result<List<VillageDto>>.Failure("Köyler yüklenirken hata oluştu");
             }
         }
 
-        public async Task<ServiceResult<VillageDto>> GetVillageByIdAsync(int id)
+        public async Task<Result<VillageDto>> GetVillageByIdAsync(int id)
         {
             try
             {
                 var village = await _unitOfWork.Villages.GetByIdAsync(id);
                 if (village == null)
-                    return ServiceResult<VillageDto>.Failure("Köy bulunamadı");
+                    return Result<VillageDto>.Failure("Köy bulunamadı");
 
                 var dto = _mapper.Map<VillageDto>(village);
-                return ServiceResult<VillageDto>.Success(dto);
+                return Result<VillageDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving village with ID {VillageId}", id);
-                return ServiceResult<VillageDto>.Failure("Köy bilgisi yüklenirken hata oluştu");
+                return Result<VillageDto>.Failure("Köy bilgisi yüklenirken hata oluştu");
             }
         }
 

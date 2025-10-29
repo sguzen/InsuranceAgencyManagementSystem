@@ -15,10 +15,10 @@ namespace IAMS.Application.Validators.Customer
                 .NotEmpty().WithMessage("Last name is required")
                 .MaximumLength(100).WithMessage("Last name must not exceed 100 characters");
 
-            RuleFor(x => x.KktcNo)
+            RuleFor(x => x.IdentificationNo)
                 .Length(11).WithMessage("TC number must be 10 digits")
                 .Matches(@"^\d{10}$").WithMessage("KKTC number must contain only digits")
-                .When(x => !string.IsNullOrEmpty(x.KktcNo));
+                .When(x => !string.IsNullOrEmpty(x.IdentificationNo));
 
             RuleFor(x => x.Email)
                 .EmailAddress().WithMessage("Invalid email format")

@@ -1,5 +1,6 @@
 ﻿using IAMS.Domain.Entities;
 using IAMS.MultiTenancy.Interfaces;
+using IAMS.Persistence.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,14 @@ namespace IAMS.Persistence.Contexts
         public DbSet<CommissionRate> CommissionRates { get; set; }
         public DbSet<PolicyPayment> PolicyPayments { get; set; }
         public DbSet<PolicyClaim> PolicyClaims { get; set; }
+
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Occupation> Occupations { get; set; }
+        public DbSet<City> Cities { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<Subdistrict> Subdistricts { get; set; }
+        public DbSet<Village> Villages { get; set; }
+
 
         // Identity entities (inherited from IdentityDbContext)
         // Users, Roles, UserRoles, etc. are already included
@@ -99,6 +108,9 @@ namespace IAMS.Persistence.Contexts
                 entity.Property(r => r.Description).HasMaxLength(500);
                 entity.HasIndex(r => r.Name).IsUnique();
             });
+
+            ParametricDataSeeder.SeedParametricData(modelBuilder);
+
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -14,14 +14,39 @@ namespace IAMS.Domain.Entities
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string? Address { get; set; }
-        public string KktcNo { get; set; } = string.Empty; // Turkish Cypriot ID Number
-        public DateTime DateOfBirth { get; set; }
+        // Address fields
+        public string? Address1 { get; set; }
+        public string? Address2 { get; set; }
+        public int? CityId { get; set; }
+        public int? DistrictId { get; set; }  // Mahalle
+        public int? SubdistrictId { get; set; } // Bucak
+        public int? VillageId { get; set; }   // Köy
+
+        // Contact
+        public int? OccupationId { get; set; } // Meslek kodu - parametrik
+        public int? NationalityCountryId { get; set; } // Uyruk - parametrik (052-Türkiye, 601-KKTC)
+
+        // Phone with country code
+        public string? MobilePhoneCountryCode { get; set; }
+        public string? MobilePhoneNumber { get; set; }
+        public string? HomePhone { get; set; }
+
+        public string IdentificationNumber { get; set; } = string.Empty; 
+
+        public DateTime? DateOfBirth { get; set; }
         public CustomerStatus Status { get; set; } = CustomerStatus.Active;
         public CustomerType Type { get; set; } = CustomerType.Individual;
-        public IdentificationType IdentificationType { get; set; } = IdentificationType.KktcNo;
+        public IdentificationType IdentificationType { get; set; } = IdentificationType.IdCard;
         public Gender Gender { get; set; } = Gender.Male;
         public string? Notes { get; set; }
+
+        // Navigation properties - Parametric tables
+        public virtual City? City { get; set; }
+        public virtual District? District { get; set; }
+        public virtual Subdistrict? Subdistrict { get; set; }
+        public virtual Village? Village { get; set; }
+        public virtual Occupation? Occupation { get; set; }
+        public virtual Country? NationalityCountry { get; set; }
 
         // Navigation properties
         public virtual ICollection<Policy> Policies { get; set; } = new List<Policy>();
@@ -30,7 +55,9 @@ namespace IAMS.Domain.Entities
         // Computed properties
         public string FullName => $"{FirstName} {LastName}".Trim();
         public bool IsActive => Status == CustomerStatus.Active && !IsDeleted;
-        public int Age => DateTime.Today.Year - DateOfBirth.Year - (DateTime.Today.DayOfYear < DateOfBirth.DayOfYear ? 1 : 0);
+        public int? Age => DateOfBirth.HasValue
+            ? DateTime.Today.Year - DateOfBirth.Value.Year - (DateTime.Today.DayOfYear < DateOfBirth.Value.DayOfYear ? 1 : 0)
+            : null;
 
         // Business methods
         public void Activate(string activatedBy)
@@ -57,24 +84,6 @@ namespace IAMS.Domain.Entities
             Status = CustomerStatus.Blacklisted;
             Notes = $"{Notes}\nBlacklisted: {reason}".Trim();
             UpdateAuditInfo(blacklistedBy);
-        }
-
-        public void UpdateContactInfo(string email, string phone, string? address, string updatedBy)
-        {
-            if (!IsValidEmail(email))
-                throw new BusinessRuleViolationException(
-                    "EmailValidation",
-                    "Invalid email format");
-
-            if (!IsValidPhone(phone))
-                throw new BusinessRuleViolationException(
-                    "PhoneValidation",
-                    "Invalid phone format");
-
-            Email = email;
-            Phone = phone;
-            Address = address;
-            UpdateAuditInfo(updatedBy);
         }
 
         public void MapToInsuranceCompany(int insuranceCompanyId, string externalCustomerId, string mappedBy)
@@ -149,12 +158,12 @@ namespace IAMS.Domain.Entities
             return Regex.IsMatch(cleanPhone, @"^\d{7,15}$");
         }
 
-        private static bool IsValidTcNo(string KktcNo)
+        private static bool IsValidTcNo(string IdentificationNo)
         {
-            if (string.IsNullOrWhiteSpace(KktcNo) || KktcNo.Length != 11)
+            if (string.IsNullOrWhiteSpace(IdentificationNo) || IdentificationNo.Length != 11)
                 return false;
 
-            return KktcNo.All(char.IsDigit);
+            return IdentificationNo.All(char.IsDigit);
         }
 
         protected override void Validate()
@@ -173,8 +182,8 @@ namespace IAMS.Domain.Entities
             if (!IsValidPhone(Phone))
                 errors.Add("Valid phone number is required");
 
-            if (IdentificationType == IdentificationType.KktcNo && !IsValidTcNo(KktcNo))
-                errors.Add("Valid TC number is required");
+            if (string.IsNullOrWhiteSpace(IdentificationNumber))
+                errors.Add("Identification number is required");
 
             if (DateOfBirth >= DateTime.Today)
                 errors.Add("Date of birth must be in the past");
@@ -187,28 +196,34 @@ namespace IAMS.Domain.Entities
         }
 
         public static Customer Create(
-            string customerCode,
-            string firstName,
-            string lastName,
-            string email,
-            string phone,
-            string KktcNo,
-            DateTime dateOfBirth,
-            string createdBy,
-            CustomerType type = CustomerType.Individual,
-            string? address = null)
+             string customerCode,
+             CustomerType type,
+             string firstName,
+             string lastName,
+             Gender gender,
+             string email,
+             IdentificationType identificationType,
+             string identificationNumber,
+             string createdBy,
+             DateTime? dateOfBirth = null,
+             int? nationalityCountryId = null,
+             string? address1 = null,
+             string? mobilePhoneNumber = null)
         {
             var customer = new Customer
             {
                 CustomerCode = customerCode,
+                Type = type,
                 FirstName = firstName,
                 LastName = lastName,
+                Gender = gender,
                 Email = email,
-                Phone = phone,
-                KktcNo = KktcNo,
+                IdentificationType = identificationType,
+                IdentificationNumber = identificationNumber,
                 DateOfBirth = dateOfBirth,
-                Type = type,
-                Address = address,
+                NationalityCountryId = nationalityCountryId,
+                Address1 = address1,
+                MobilePhoneNumber = mobilePhoneNumber,
                 Status = CustomerStatus.Active,
                 CreatedBy = createdBy
             };
@@ -218,12 +233,13 @@ namespace IAMS.Domain.Entities
 
             return customer;
         }
-    public void UpdatePersonalInfo(
+
+        // Business methods
+        public void UpdatePersonalInfo(
             string firstName,
             string lastName,
-            string? KktcNo,
+            Gender gender,
             DateTime? dateOfBirth,
-            Gender? gender,
             string updatedBy)
         {
             if (IsDeleted)
@@ -233,17 +249,91 @@ namespace IAMS.Domain.Entities
 
             FirstName = firstName;
             LastName = lastName;
-            KktcNo = KktcNo;
-            if (dateOfBirth != null)
-                DateOfBirth = dateOfBirth.Value;
-            Gender = gender ?? Gender.Male;
+            Gender = gender;
+            DateOfBirth = dateOfBirth;
 
             UpdateAuditInfo(updatedBy);
             Validate();
         }
 
+        public void UpdateContactInfo(
+            string email,
+            string? mobilePhoneCountryCode,
+            string? mobilePhoneNumber,
+            string? homePhone,
+            string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateContactInfo",
+                    "Cannot update deleted customer");
 
-        // Update customer status
+            Email = email;
+            MobilePhoneCountryCode = mobilePhoneCountryCode;
+            MobilePhoneNumber = mobilePhoneNumber;
+            HomePhone = homePhone;
+
+            UpdateAuditInfo(updatedBy);
+            Validate();
+        }
+
+        public void UpdateAddress(
+            string? address1,
+            string? address2,
+            int? cityId,
+            int? districtId,
+            int? subdistrictId,
+            int? villageId,
+            string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateAddress",
+                    "Cannot update deleted customer");
+
+            Address1 = address1;
+            Address2 = address2;
+            CityId = cityId;
+            DistrictId = districtId;
+            SubdistrictId = subdistrictId;
+            VillageId = villageId;
+
+            UpdateAuditInfo(updatedBy);
+        }
+
+        public void UpdateIdentification(
+            IdentificationType identificationType,
+            string identificationNumber,
+            string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateIdentification",
+                    "Cannot update deleted customer");
+
+            IdentificationType = identificationType;
+            IdentificationNumber = identificationNumber;
+
+            UpdateAuditInfo(updatedBy);
+            Validate();
+        }
+
+        public void UpdateProfessionalInfo(
+            int? occupationId,
+            int? nationalityCountryId,
+            string updatedBy)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationDomainException(
+                    "UpdateProfessionalInfo",
+                    "Cannot update deleted customer");
+
+            OccupationId = occupationId;
+            NationalityCountryId = nationalityCountryId;
+
+            UpdateAuditInfo(updatedBy);
+        }
+
         public void UpdateStatus(CustomerStatus status, string updatedBy)
         {
             if (IsDeleted)
@@ -262,7 +352,6 @@ namespace IAMS.Domain.Entities
             }
         }
 
-        // Update notes
         public void UpdateNotes(string? notes, string updatedBy)
         {
             if (IsDeleted)

@@ -58,11 +58,11 @@
                                                 For="@(() => model.LastName)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.KktcNo"
+                                    <MudTextField @bind-Value="model.IdentificationNo"
                                                 Label="Kimlik No"
                                                 Variant="Variant.Outlined"
                                                 Mask="@(new PatternMask("00000000000"))"
-                                                For="@(() => model.KktcNo)" />
+                                                For="@(() => model.IdentificationNo)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudDatePicker @bind-Date="model.DateOfBirth"
@@ -76,7 +76,7 @@
                                              Label="Cinsiyet"
                                              Variant="Variant.Outlined"
                                              For="@(() => model.Gender)">
-                                        <MudSelectItem Value="@(Gender.Female)">Erkek</MudSelectItem>
+                                        <MudSelectItem Value="@(Gender.Male)">Erkek</MudSelectItem>
                                         <MudSelectItem Value="@(Gender.Female)">Kadın</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
@@ -194,7 +194,7 @@
                     LastName = customer.Data.LastName,
                     Email = customer.Data.Email,
                     Phone = customer.Data.Phone,
-                    KktcNo = customer.Data.KktcNo,
+                    IdentificationNo = customer.Data.IdentificationNo,
                     DateOfBirth = customer.Data.DateOfBirth,
                     Gender = customer.Data.Gender,
                     Status = customer.Data.Status

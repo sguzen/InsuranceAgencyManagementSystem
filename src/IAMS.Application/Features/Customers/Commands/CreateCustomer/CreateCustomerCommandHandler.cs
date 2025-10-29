@@ -54,13 +54,13 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 }
 
                 // Check if customer with KKTC number already exists for this tenant (if provided)
-                if (!string.IsNullOrEmpty(request.CustomerDto.KktcNo))
+                if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNo))
                 {
-                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByKktcNoAsync(request.CustomerDto.KktcNo, tenantId);
+                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNo, tenantId);
                     
                     if (existingCustomerByKktc != null)
                     {
-                        validationErrors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.KktcNo}) zaten kullanılmaktadır");
+                        validationErrors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.IdentificationNo}) zaten kullanılmaktadır");
                     }
                 }
 

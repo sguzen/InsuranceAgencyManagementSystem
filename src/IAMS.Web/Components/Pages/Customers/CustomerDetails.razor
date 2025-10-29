@@ -86,11 +86,11 @@ else
                                             <MudText Typo="Typo.body1">@customer.FirstName @customer.LastName</MudText>
                                         </MudStack>
                                         
-                                        @if (!string.IsNullOrEmpty(customer.KktcNo))
+                                        @if (!string.IsNullOrEmpty(customer.IdentificationNo))
                                         {
                                             <MudStack Row Justify="Justify.SpaceBetween">
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">TC Kimlik No:</MudText>
-                                                <MudText Typo="Typo.body1">@customer.KktcNo</MudText>
+                                                <MudText Typo="Typo.body1">@customer.IdentificationNo</MudText>
                                             </MudStack>
                                         }
                                         

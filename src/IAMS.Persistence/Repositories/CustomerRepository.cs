@@ -29,10 +29,10 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Customer?> GetByKktcNoAsync(string KktcNo, int tenantId)
+        public async Task<Customer?> GetByIdentificationNoAsync(string IdentificationNo, int tenantId)
         {
             return await _dbSet
-                .Where(c => !c.IsDeleted && c.KktcNo == KktcNo)
+                .Where(c => !c.IsDeleted && c.IdentificationNumber == IdentificationNo)
                 .FirstOrDefaultAsync();
         }
 
@@ -82,7 +82,7 @@ namespace IAMS.Persistence.Repositories
                     c.FirstName.ToLower().Contains(searchTerm) ||
                     c.LastName.ToLower().Contains(searchTerm) ||
                     c.Email.ToLower().Contains(searchTerm) ||
-                    c.KktcNo.Contains(searchTerm) ||
+                    c.IdentificationNumber.Contains(searchTerm) ||
                     c.CustomerCode.Contains(searchTerm));
             }
 
@@ -116,9 +116,9 @@ namespace IAMS.Persistence.Repositories
             return (customers, totalCount);
         }
 
-        public async Task<bool> KktcNoExistsAsync(string KktcNo, int tenantId, int? excludeCustomerId = null)
+        public async Task<bool> IdentificationNoExistsAsync(string IdentificationNo, int tenantId, int? excludeCustomerId = null)
         {
-            var query = _dbSet.Where(c => !c.IsDeleted && c.KktcNo == KktcNo);
+            var query = _dbSet.Where(c => !c.IsDeleted && c.IdentificationNumber == IdentificationNo);
 
             if (excludeCustomerId.HasValue)
             {
@@ -415,7 +415,7 @@ namespace IAMS.Persistence.Repositories
                     .Select(c => EF.Functions.DateDiffYear(c.DateOfBirth, today))
                     .ToListAsync();
 
-                return ages.Any() ? ages.Average() : 0;
+                return (double)(ages.Any() ? ages.Average() : 0);
             }
             catch (Exception ex)
             {

@@ -4,7 +4,7 @@ using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomer;
-using IAMS.Application.Features.Customers.Queries.GetCustomerByKktcNo;
+using IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificationNo;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByPhone;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
@@ -140,10 +140,10 @@ namespace IAMS.Api.Controllers
         /// <summary>
         /// Search customers by KKTC number
         /// </summary>
-        [HttpGet("search/kktc/{KktcNo}")]
-        public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByKktcNo(string KktcNo)
+        [HttpGet("search/kktc/{IdentificationNo}")]
+        public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByIdentificationNo(string IdentificationNo)
         {
-            var query = new GetCustomerByKktcNoQuery(KktcNo, 44 );
+            var query = new GetCustomerByIdentificationNoQuery(IdentificationNo, 44 );
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

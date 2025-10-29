@@ -7,7 +7,7 @@ public class CreateOrUpdateCustomerDto
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string? AlternativePhone { get; set; }
-    public string? KktcNo { get; set; }
+    public string? IdentificationNo { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public Gender Gender { get; set; }
     public CustomerStatus Status { get; set; }

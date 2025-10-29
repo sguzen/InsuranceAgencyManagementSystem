@@ -10,7 +10,7 @@ namespace IAMS.Application.DTOs.Customer
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName => $"{FirstName} {LastName}";
-        public string? KktcNo { get; set; }
+        public string? IdentificationNo { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public int? Age => DateOfBirth?.CalculateAge();
         public Gender Gender { get; set; }

@@ -8,7 +8,7 @@ namespace IAMS.Domain.Enums
 {
     public enum IdentificationType
     {
-        KktcNo = 0,           // Turkish Cypriot ID
+        IdCard = 0,           // Turkish Cypriot ID
         Passport = 1,
         TaxNumber = 2,      // For corporate customers
         TradeLicense = 3    // For business customers

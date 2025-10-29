@@ -17,18 +17,15 @@ namespace IAMS.Application.Features.Policies.Queries.GetExpiringPolicies
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetExpiringPoliciesQueryHandler> _logger;
 
         public GetExpiringPoliciesQueryHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ICurrentTenantService currentTenantService,
             ILogger<GetExpiringPoliciesQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -36,13 +33,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetExpiringPolicies
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<List<PolicyDto>>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
-                var expiringPolicies = await _unitOfWork.Policies.GetExpiringPoliciesAsync(request.DaysAhead, tenantId);
+                var expiringPolicies = await _unitOfWork.Policies.GetExpiringPoliciesAsync(request.DaysAhead);
                 var policyDtos = _mapper.Map<List<PolicyDto>>(expiringPolicies);
 
                 return Result<List<PolicyDto>>.Success(policyDtos, $"{request.DaysAhead} gün içinde süresi dolacak {policyDtos.Count} poliçe");

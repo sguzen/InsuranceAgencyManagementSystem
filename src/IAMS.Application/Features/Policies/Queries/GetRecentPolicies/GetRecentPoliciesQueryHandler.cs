@@ -17,18 +17,15 @@ namespace IAMS.Application.Features.Policies.Queries.GetRecentPolicies
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetRecentPoliciesQueryHandler> _logger;
 
         public GetRecentPoliciesQueryHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ICurrentTenantService currentTenantService,
             ILogger<GetRecentPoliciesQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -36,13 +33,8 @@ namespace IAMS.Application.Features.Policies.Queries.GetRecentPolicies
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<List<PolicyDto>>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
-                var recentPolicies = await _unitOfWork.Policies.GetRecentPoliciesAsync(request.Count, tenantId);
+               
+                var recentPolicies = await _unitOfWork.Policies.GetRecentPoliciesAsync(request.Count);
                 var policyDtos = _mapper.Map<List<PolicyDto>>(recentPolicies);
 
                 return Result<List<PolicyDto>>.Success(policyDtos, $"Son {request.Count} poliçe getirildi");

@@ -9,16 +9,13 @@ namespace IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue
     public class GetMonthlyRevenueQueryHandler : IRequestHandler<GetMonthlyRevenueQuery, Result<decimal>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetMonthlyRevenueQueryHandler> _logger;
 
         public GetMonthlyRevenueQueryHandler(
             IUnitOfWork unitOfWork,
-            ICurrentTenantService currentTenantService,
             ILogger<GetMonthlyRevenueQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -26,15 +23,10 @@ namespace IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<decimal>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-                var tenantId = _currentTenantService.TenantId.Value;
-                var revenue = await _unitOfWork.Policies.GetMonthlyRevenueAsync(tenantId);
+                var revenue = await _unitOfWork.Policies.GetMonthlyRevenueAsync();
 
-                _logger.LogDebug("Retrieved monthly revenue {Revenue} for tenant {TenantId}", revenue, tenantId);
+                _logger.LogDebug("Retrieved monthly revenue {Revenue} for tenant {TenantId}", revenue);
 
                 return Result<decimal>.Success(revenue, $"Bu ay toplam gelir: {revenue:C}");
             }

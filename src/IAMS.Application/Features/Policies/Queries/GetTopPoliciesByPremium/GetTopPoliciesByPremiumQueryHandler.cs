@@ -42,7 +42,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
                 }
 
                 var tenantId = _currentTenantService.TenantId.Value;
-                var topPolicies = await _unitOfWork.Policies.GetTopPoliciesByPremiumAsync(request.Count, tenantId);
+                var topPolicies = await _unitOfWork.Policies.GetTopPoliciesByPremiumAsync(request.Count);
                 var policyDtos = _mapper.Map<List<PolicyDto>>(topPolicies);
 
                 return Result<List<PolicyDto>>.Success(policyDtos, $"En yüksek primli {request.Count} poliçe");

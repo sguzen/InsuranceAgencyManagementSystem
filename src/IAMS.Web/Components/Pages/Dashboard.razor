@@ -9,31 +9,31 @@
 @inject ITenantContextAccessor TenantContext
 @inject NavigationManager Navigation
 
-<PageTitle>Dashboard - IAMS</PageTitle>
+<PageTitle>Kontrol Paneli - IAMS</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False">
     <div class="d-flex justify-space-between align-center mb-6">
-        <MudText Typo="Typo.h3">Dashboard</MudText>
-        
+        <MudText Typo="Typo.h3">Kontrol Paneli</MudText>
+
         <AuthorizeView>
             <Authorized>
-                <MudText Typo="Typo.h6">Welcome, @context.User.Identity?.Name</MudText>
+                <MudText Typo="Typo.h6">Hoş geldiniz, @context.User.Identity?.Name</MudText>
             </Authorized>
         </AuthorizeView>
     </div>
-    
+
     @if (_isLoading)
     {
         <MudProgressLinear Indeterminate="true" Class="mb-4" />
     }
-    
+
     <MudGrid>
         <MudItem xs="12" md="6" lg="3">
             <MudCard Elevation="4">
                 <MudCardContent>
                     <div class="d-flex justify-space-between">
                         <div>
-                            <MudText Typo="Typo.h6">Total Customers</MudText>
+                            <MudText Typo="Typo.h6">Toplam Müşteri</MudText>
                             <MudText Typo="Typo.h4">@_totalCustomers</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
@@ -47,7 +47,7 @@
                 <MudCardContent>
                     <div class="d-flex justify-space-between">
                         <div>
-                            <MudText Typo="Typo.h6">Active Policies</MudText>
+                            <MudText Typo="Typo.h6">Aktif Poliçeler</MudText>
                             <MudText Typo="Typo.h4">@_totalPolicies</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Success" />
@@ -61,7 +61,7 @@
                 <MudCardContent>
                     <div class="d-flex justify-space-between">
                         <div>
-                            <MudText Typo="Typo.h6">Expiring Soon</MudText>
+                            <MudText Typo="Typo.h6">Yakında Bitenler</MudText>
                             <MudText Typo="Typo.h4">@_expiringPolicies</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" />
@@ -75,7 +75,7 @@
                 <MudCardContent>
                     <div class="d-flex justify-space-between">
                         <div>
-                            <MudText Typo="Typo.h6">Monthly Revenue</MudText>
+                            <MudText Typo="Typo.h6">Aylık Gelir</MudText>
                             <MudText Typo="Typo.h4">@_monthlyRevenue.ToString("C")</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
@@ -91,13 +91,13 @@
             <MudCard Elevation="4">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Recent Customers</MudText>
+                        <MudText Typo="Typo.h6">Son Müşteriler</MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
-                        <MudButton Color="Color.Primary" 
-                                  Variant="Variant.Text"
-                                  OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
-                            Add New
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Text"
+                                   OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
+                            Yeni Ekle
                         </MudButton>
                     </CardHeaderActions>
                 </MudCardHeader>
@@ -113,7 +113,7 @@
                                             <MudText Typo="Typo.subtitle1">@customer.FirstName @customer.LastName</MudText>
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">@customer.Email</MudText>
                                         </div>
-                                        <MudChip Size="Size.Small" Color="Color.Success">Active</MudChip>
+                                        <MudChip Size="Size.Small" Color="Color.Success">Aktif</MudChip>
                                     </div>
                                 </MudListItem>
                             }
@@ -121,7 +121,7 @@
                     }
                     else
                     {
-                        <MudText Color="Color.Secondary">No recent customers</MudText>
+                        <MudText Color="Color.Secondary">Son müşteri bulunmuyor</MudText>
                     }
                 </MudCardContent>
             </MudCard>
@@ -132,32 +132,32 @@
             <MudCard Elevation="4">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Quick Actions</MudText>
+                        <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
                     <MudStack>
                         <MudButton Color="Color.Primary"
-                                  Variant="Variant.Filled"
-                                  StartIcon="@Icons.Material.Filled.PersonAdd"
-                                  OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
-                            Add Customer
+                                   Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.PersonAdd"
+                                   OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
+                            Müşteri Ekle
                         </MudButton>
-                        
+
                         <MudButton Color="Color.Secondary"
-                                  Variant="Variant.Outlined"
-                                  StartIcon="@Icons.Material.Filled.Add"
-                                  OnClick="@(() => Navigation.NavigateTo("/policies/create"))">
-                            Create Policy
+                                   Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="@(() => Navigation.NavigateTo("/policies/create"))">
+                            Poliçe Oluştur
                         </MudButton>
 
                         <!-- Admin only button -->
                         <AuthorizeView Roles="Admin">
                             <MudButton Color="Color.Warning"
-                                      Variant="Variant.Text"
-                                      StartIcon="@Icons.Material.Filled.Settings"
-                                      OnClick="@(() => Navigation.NavigateTo("/admin"))">
-                                Admin Panel
+                                       Variant="Variant.Text"
+                                       StartIcon="@Icons.Material.Filled.Settings"
+                                       OnClick="@(() => Navigation.NavigateTo("/admin"))">
+                                Yönetim Paneli
                             </MudButton>
                         </AuthorizeView>
                     </MudStack>
@@ -183,22 +183,22 @@
     private async Task LoadDashboardData()
     {
         _isLoading = true;
-        
+
         try
         {
             // Load dashboard statistics using your existing services
             var totalCustomers = await CustomerService.GetTotalCustomersCountAsync(TenantContext.CurrentTenant.Id);
             _totalCustomers = totalCustomers.Data;
-            
+
             var totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
             _totalPolicies = totalPolicies.Data;
-            
+
             var expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
             _expiringPolicies = expiringPolicies.Data;
-            
+
             var monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
             _monthlyRevenue = monthlyRevenue.Data;
-            
+
             // Load recent customers
             _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
         }

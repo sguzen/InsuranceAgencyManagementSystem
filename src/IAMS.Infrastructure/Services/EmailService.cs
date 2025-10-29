@@ -4,6 +4,7 @@ using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using IAMS.Infrastructure.Interfaces;
+using IAMS.Application.Interfaces;
 
 namespace IAMS.Infrastructure.Services
 {

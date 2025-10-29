@@ -14,17 +14,14 @@ namespace IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus
     {
         private readonly IPolicyRepository _policyRepository;
         private readonly IMapper _mapper;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetPoliciesByStatusQueryHandler> _logger;
 
         public GetPoliciesByStatusQueryHandler(
             IPolicyRepository policyRepository,
             IMapper mapper,
-            ICurrentTenantService currentTenantService,
             ILogger<GetPoliciesByStatusQueryHandler> logger)
         {
             _policyRepository = policyRepository;
-            _currentTenantService = currentTenantService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -34,13 +31,8 @@ namespace IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<Dictionary<PolicyStatus, int>>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-                var tenantId = _currentTenantService.TenantId.Value;
-                var policy = await _policyRepository.GetPoliciesByStatusAsync(request.PolicyStatus, tenantId);
+                var policy = await _policyRepository.GetPoliciesByStatusAsync(request.PolicyStatus);
                 if (policy == null)
                 {
                     return Result<Dictionary<PolicyStatus, int>>.NotFound($"'{request.PolicyStatus}' poliçeleri bulunamadı");

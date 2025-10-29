@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IAMS.Infrastructure.Interfaces
+namespace IAMS.Application.Interfaces
 {
     public interface IEmailService
     {

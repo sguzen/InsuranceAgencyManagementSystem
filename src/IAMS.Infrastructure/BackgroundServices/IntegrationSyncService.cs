@@ -6,6 +6,8 @@ using IAMS.Infrastructure.Interfaces;
 using IAMS.Infrastructure.Data;
 using IAMS.MultiTenancy.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using IAMS.Application.Interfaces;
+using IModuleService = IAMS.Application.Interfaces.IModuleService;
 
 namespace IAMS.Infrastructure.BackgroundServices
 {

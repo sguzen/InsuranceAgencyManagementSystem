@@ -9,16 +9,13 @@ namespace IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount
     public class GetTotalPoliciesCountQueryHandler : IRequestHandler<GetTotalPoliciesCountQuery, Result<int>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetTotalPoliciesCountQueryHandler> _logger;
 
         public GetTotalPoliciesCountQueryHandler(
             IUnitOfWork unitOfWork,
-            ICurrentTenantService currentTenantService,
             ILogger<GetTotalPoliciesCountQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -26,15 +23,10 @@ namespace IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<int>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-                var tenantId = _currentTenantService.TenantId.Value;
-                var count = await _unitOfWork.Policies.GetPolicyCountAsync(tenantId);
+                var count = await _unitOfWork.Policies.GetPolicyCountAsync();
 
-                _logger.LogDebug("Retrieved policy count {Count} for tenant {TenantId}", count, tenantId);
+                _logger.LogDebug("Retrieved policy count {Count} for tenant {TenantId}", count);
 
                 return Result<int>.Success(count, $"Toplam {count} poliçe");
             }

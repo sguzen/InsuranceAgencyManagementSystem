@@ -32,7 +32,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> PolicyNumberExistsAsync(string policyNumber, int tenantId, int? excludePolicyId = null)
+        public async Task<bool> PolicyNumberExistsAsync(string policyNumber, int? excludePolicyId = null)
         {
             var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber);
 
@@ -85,7 +85,7 @@ namespace IAMS.Persistence.Repositories
                 };
         }
 
-        public async Task<List<Policy>> GetActivePoliciesAsync(int tenantId)
+        public async Task<List<Policy>> GetActivePoliciesAsync()
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -96,7 +96,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetPoliciesByStatusAsync(PolicyStatus status, int tenantId)
+        public async Task<List<Policy>> GetPoliciesByStatusAsync(PolicyStatus status)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -107,7 +107,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetExpiringPoliciesAsync(int daysAhead, int tenantId)
+        public async Task<List<Policy>> GetExpiringPoliciesAsync(int daysAhead)
         {
             var cutoffDate = DateTime.Now.AddDays(daysAhead);
             return await _dbSet
@@ -122,7 +122,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetExpiredPoliciesAsync(int tenantId)
+        public async Task<List<Policy>> GetExpiredPoliciesAsync()
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -134,7 +134,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetRecentPoliciesAsync(int count, int tenantId)
+        public async Task<List<Policy>> GetRecentPoliciesAsync(int count)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -146,7 +146,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetTopPoliciesByPremiumAsync(int count, int tenantId)
+        public async Task<List<Policy>> GetTopPoliciesByPremiumAsync(int count)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -159,19 +159,19 @@ namespace IAMS.Persistence.Repositories
         }
 
         // Count methods
-        public async Task<int> GetPolicyCountAsync(int tenantId)
+        public async Task<int> GetPolicyCountAsync()
         {
             return await _dbSet
                 .CountAsync(p =>!p.IsDeleted);
         }
 
-        public async Task<int> GetActivePolicyCountAsync(int tenantId)
+        public async Task<int> GetActivePolicyCountAsync()
         {
             return await _dbSet
                 .CountAsync(p => !p.IsDeleted && p.Status == PolicyStatus.Active);
         }
 
-        public async Task<int> GetExpiringPolicyCountAsync(int daysAhead, int tenantId)
+        public async Task<int> GetExpiringPolicyCountAsync(int daysAhead)
         {
             var cutoffDate = DateTime.Now.AddDays(daysAhead);
             return await _dbSet
@@ -182,7 +182,7 @@ namespace IAMS.Persistence.Repositories
                                p.EndDate >= DateTime.Now);
         }
 
-        public async Task<int> GetExpiredPolicyCountAsync(int tenantId)
+        public async Task<int> GetExpiredPolicyCountAsync()
         {
             return await _dbSet
                 .CountAsync(p => 
@@ -190,7 +190,7 @@ namespace IAMS.Persistence.Repositories
                                (p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now));
         }
 
-        public async Task<Dictionary<PolicyStatus, int>> GetPolicyCountByStatusAsync(int tenantId)
+        public async Task<Dictionary<PolicyStatus, int>> GetPolicyCountByStatusAsync()
         {
             return await _dbSet
                 .Where(p => !p.IsDeleted)
@@ -199,7 +199,7 @@ namespace IAMS.Persistence.Repositories
         }
 
         // Revenue methods
-        public async Task<decimal> GetMonthlyRevenueAsync(int tenantId, DateTime? month = null)
+        public async Task<decimal> GetMonthlyRevenueAsync(DateTime? month = null)
         {
             var targetMonth = month ?? DateTime.Now;
             var startOfMonth = new DateTime(targetMonth.Year, targetMonth.Month, 1);
@@ -214,7 +214,7 @@ namespace IAMS.Persistence.Repositories
                 .SumAsync(p => p.PremiumAmount);
         }
 
-        public async Task<decimal> GetYearlyRevenueAsync(int tenantId, int? year = null)
+        public async Task<decimal> GetYearlyRevenueAsync(int? year = null)
         {
             var targetYear = year ?? DateTime.Now.Year;
             var startOfYear = new DateTime(targetYear, 1, 1);
@@ -229,7 +229,7 @@ namespace IAMS.Persistence.Repositories
                 .SumAsync(p => p.PremiumAmount);
         }
 
-        public async Task<Dictionary<string, decimal>> GetRevenueByMonthAsync(int tenantId, int months = 12)
+        public async Task<Dictionary<string, decimal>> GetRevenueByMonthAsync( int months = 12)
         {
             var startDate = DateTime.Now.AddMonths(-months);
 
@@ -248,7 +248,7 @@ namespace IAMS.Persistence.Repositories
             return revenues;
         }
 
-        public async Task<decimal> GetTotalPremiumByCustomerAsync(int customerId, int tenantId)
+        public async Task<decimal> GetTotalPremiumByCustomerAsync(int customerId)
         {
             return await _dbSet
                 .Where(p => 
@@ -283,7 +283,7 @@ namespace IAMS.Persistence.Repositories
         }
 
         // Advanced query methods
-        public async Task<List<Policy>> GetPoliciesExpiringInDateRangeAsync(DateTime startDate, DateTime endDate, int tenantId)
+        public async Task<List<Policy>> GetPoliciesExpiringInDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -298,7 +298,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> SearchPoliciesAsync(string searchTerm, int tenantId)
+        public async Task<List<Policy>> SearchPoliciesAsync(string searchTerm)
         {
             var search = searchTerm.ToLower();
             return await _dbSet
@@ -315,7 +315,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId, int tenantId)
+        public async Task<List<Policy>> GetPoliciesByInsuranceCompanyAsync(int insuranceCompanyId)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -327,7 +327,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetPoliciesByPolicyTypeAsync(int policyTypeId, int tenantId)
+        public async Task<List<Policy>> GetPoliciesByPolicyTypeAsync(int policyTypeId)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -340,7 +340,7 @@ namespace IAMS.Persistence.Repositories
         }
 
         // Reporting methods
-        public async Task<List<Policy>> GetPoliciesForReportAsync(DateTime? startDate, DateTime? endDate, PolicyStatus? status, int tenantId)
+        public async Task<List<Policy>> GetPoliciesForReportAsync(DateTime? startDate, DateTime? endDate, PolicyStatus? status)
         {
             var query = _dbSet
                 .Include(p => p.Customer)
@@ -362,12 +362,12 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Dictionary<string, object>> GetPolicyAnalyticsAsync(int tenantId)
+        public async Task<Dictionary<string, object>> GetPolicyAnalyticsAsync()
         {
-            var totalPolicies = await GetPolicyCountAsync(tenantId);
-            var activePolicies = await GetActivePolicyCountAsync(tenantId);
-            var monthlyRevenue = await GetMonthlyRevenueAsync(tenantId);
-            var yearlyRevenue = await GetYearlyRevenueAsync(tenantId);
+            var totalPolicies = await GetPolicyCountAsync();
+            var activePolicies = await GetActivePolicyCountAsync();
+            var monthlyRevenue = await GetMonthlyRevenueAsync();
+            var yearlyRevenue = await GetYearlyRevenueAsync();
 
             return new Dictionary<string, object>
             {
@@ -380,7 +380,7 @@ namespace IAMS.Persistence.Repositories
         }
 
         // Integration support methods
-        public async Task<List<Policy>> GetPoliciesModifiedAfterAsync(DateTime modifiedDate, int tenantId)
+        public async Task<List<Policy>> GetPoliciesModifiedAfterAsync(DateTime modifiedDate)
         {
             return await _dbSet
                 .Include(p => p.Customer)
@@ -393,7 +393,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Policy?> GetPolicyByExternalIdAsync(string externalId, int insuranceCompanyId, int tenantId)
+        public async Task<Policy?> GetPolicyByExternalIdAsync(string externalId, int insuranceCompanyId)
         {
             return await _dbSet
                 .Include(p => p.Customer)

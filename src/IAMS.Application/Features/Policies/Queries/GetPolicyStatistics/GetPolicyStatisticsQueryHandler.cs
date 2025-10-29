@@ -15,16 +15,13 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
     public class GetPolicyStatisticsQueryHandler : IRequestHandler<GetPolicyStatisticsQuery, Result<PolicyStatisticsDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetPolicyStatisticsQueryHandler> _logger;
 
         public GetPolicyStatisticsQueryHandler(
             IUnitOfWork unitOfWork,
-            ICurrentTenantService currentTenantService,
             ILogger<GetPolicyStatisticsQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 
@@ -32,21 +29,15 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<PolicyStatisticsDto>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
 
                 var statistics = new PolicyStatisticsDto
                 {
-                    TotalPolicies = await _unitOfWork.Policies.GetPolicyCountAsync(tenantId),
-                    ActivePolicies = await _unitOfWork.Policies.GetActivePolicyCountAsync(tenantId),
-                    ExpiringPolicies = await _unitOfWork.Policies.GetExpiringPolicyCountAsync(30, tenantId),
-                    ExpiredPolicies = await _unitOfWork.Policies.GetExpiredPolicyCountAsync(tenantId),
-                    MonthlyRevenue = await _unitOfWork.Policies.GetMonthlyRevenueAsync(tenantId),
-                    YearlyRevenue = await _unitOfWork.Policies.GetYearlyRevenueAsync(tenantId)
+                    TotalPolicies = await _unitOfWork.Policies.GetPolicyCountAsync(),
+                    ActivePolicies = await _unitOfWork.Policies.GetActivePolicyCountAsync(),
+                    ExpiringPolicies = await _unitOfWork.Policies.GetExpiringPolicyCountAsync(30),
+                    ExpiredPolicies = await _unitOfWork.Policies.GetExpiredPolicyCountAsync(),
+                    MonthlyRevenue = await _unitOfWork.Policies.GetMonthlyRevenueAsync(),
+                    YearlyRevenue = await _unitOfWork.Policies.GetYearlyRevenueAsync()
                 };
 
                 return Result<PolicyStatisticsDto>.Success(statistics, "Poliçe istatistikleri başarıyla getirildi");

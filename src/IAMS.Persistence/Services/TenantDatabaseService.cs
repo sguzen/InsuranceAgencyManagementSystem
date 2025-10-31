@@ -64,7 +64,7 @@ namespace IAMS.Persistence.Services
                 .Options;
 
             using var context = new ApplicationDbContext(options, null);
-            await context.Database.EnsureCreatedAsync();
+           // await context.Database.EnsureCreatedAsync();
 
             _logger.LogInformation("Created database for tenant {TenantIdentifier}", tenantIdentifier);
         }

@@ -5,40 +5,62 @@ namespace IAMS.Domain.ValueObjects
     public class Money : IEquatable<Money>, IComparable<Money>
     {
         public decimal Amount { get; private set; }
-        public string Currency { get; private set; }
+        public int CurrencyId { get; private set; }
 
-        public Money(decimal amount, string currency = "TRY")
+        // Constructor with CurrencyId
+        public Money(decimal amount, int currencyId)
         {
             if (amount < 0)
                 throw new ArgumentException("Amount cannot be negative", nameof(amount));
-            if (string.IsNullOrWhiteSpace(currency))
-                throw new ArgumentException("Currency cannot be empty", nameof(currency));
+            if (currencyId <= 0)
+                throw new ArgumentException("CurrencyId must be greater than 0", nameof(currencyId));
 
             Amount = Math.Round(amount, 2);
-            Currency = currency.ToUpperInvariant();
+            CurrencyId = currencyId;
         }
 
-        public static Money Zero(string currency = "TRY") => new Money(0, currency);
+        // Backward compatibility: keep old constructor but marked as obsolete
+        [Obsolete("Use Money(decimal amount, int currencyId) instead. This will be removed in future versions.")]
+        public Money(decimal amount, string currency = "TRY")
+        {
+            // Default mapping: TRY=1, USD=2, EUR=3, GBP=4
+            var currencyId = currency.ToUpperInvariant() switch
+            {
+                "TRY" => 1,
+                "USD" => 2,
+                "EUR" => 3,
+                "GBP" => 4,
+                _ => 1
+            };
+
+            if (amount < 0)
+                throw new ArgumentException("Amount cannot be negative", nameof(amount));
+
+            Amount = Math.Round(amount, 2);
+            CurrencyId = currencyId;
+        }
+
+        public static Money Zero(int currencyId = 1) => new Money(0, currencyId);
 
         public Money Add(Money other)
         {
-            if (Currency != other.Currency)
-                throw new InvalidOperationException($"Cannot add different currencies: {Currency} and {other.Currency}");
+            if (CurrencyId != other.CurrencyId)
+                throw new InvalidOperationException($"Cannot add different currencies: {CurrencyId} and {other.CurrencyId}");
 
-            return new Money(Amount + other.Amount, Currency);
+            return new Money(Amount + other.Amount, CurrencyId);
         }
 
         public Money Subtract(Money other)
         {
-            if (Currency != other.Currency)
-                throw new InvalidOperationException($"Cannot subtract different currencies: {Currency} and {other.Currency}");
+            if (CurrencyId != other.CurrencyId)
+                throw new InvalidOperationException($"Cannot subtract different currencies: {CurrencyId} and {other.CurrencyId}");
 
-            return new Money(Amount - other.Amount, Currency);
+            return new Money(Amount - other.Amount, CurrencyId);
         }
 
         public Money Multiply(decimal multiplier)
         {
-            return new Money(Amount * multiplier, Currency);
+            return new Money(Amount * multiplier, CurrencyId);
         }
 
         public Money Divide(decimal divisor)
@@ -46,7 +68,7 @@ namespace IAMS.Domain.ValueObjects
             if (divisor == 0)
                 throw new DivideByZeroException("Cannot divide by zero");
 
-            return new Money(Amount / divisor, Currency);
+            return new Money(Amount / divisor, CurrencyId);
         }
 
         public decimal CalculatePercentage(decimal percentage)
@@ -56,7 +78,7 @@ namespace IAMS.Domain.ValueObjects
 
         public Money ApplyPercentage(decimal percentage)
         {
-            return new Money(Amount * (percentage / 100), Currency);
+            return new Money(Amount * (percentage / 100), CurrencyId);
         }
 
         public bool Equals(Money? other)
@@ -64,7 +86,7 @@ namespace IAMS.Domain.ValueObjects
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return Amount == other.Amount && Currency == other.Currency;
+            return Amount == other.Amount && CurrencyId == other.CurrencyId;
         }
 
         public override bool Equals(object? obj)
@@ -74,14 +96,14 @@ namespace IAMS.Domain.ValueObjects
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Amount, Currency);
+            return HashCode.Combine(Amount, CurrencyId);
         }
 
         public int CompareTo(Money? other)
         {
             if (other is null) return 1;
-            if (Currency != other.Currency)
-                throw new InvalidOperationException($"Cannot compare different currencies: {Currency} and {other.Currency}");
+            if (CurrencyId != other.CurrencyId)
+                throw new InvalidOperationException($"Cannot compare different currencies: {CurrencyId} and {other.CurrencyId}");
 
             return Amount.CompareTo(other.Amount);
         }
@@ -138,17 +160,17 @@ namespace IAMS.Domain.ValueObjects
 
         public override string ToString()
         {
-            return $"{Amount:N2} {Currency}";
+            return $"{Amount:N2}"; // Currency symbol should be added by presentation layer
         }
 
         public string ToString(string format)
         {
-            return $"{Amount.ToString(format)} {Currency}";
+            return Amount.ToString(format);
         }
 
         public string ToString(CultureInfo culture)
         {
-            return $"{Amount.ToString("N2", culture)} {Currency}";
+            return Amount.ToString("N2", culture);
         }
     }
 }

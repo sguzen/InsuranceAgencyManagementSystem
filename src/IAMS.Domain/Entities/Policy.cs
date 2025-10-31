@@ -19,7 +19,40 @@ namespace IAMS.Domain.Entities
         public decimal CommissionRate { get; set; }
         public PolicyStatus Status { get; set; }
         public string? Notes { get; set; }
-        public string Currency { get; set; } = "TRY";
+        public int CurrencyId { get; set; }
+        public virtual Currency Currency { get; set; } = null!;
+        // Exchange rate at time of policy creation (for historical accuracy)
+        public decimal? ExchangeRateToBase { get; set; } // Rate to TRY at creation time
+        public decimal? PremiumAmountInBaseCurrency { get; set; } // Calculated amount in TRY
+
+        // Vehicle Information (for car insurance)
+        public int? VehicleId { get; set; }
+        public virtual Vehicle? Vehicle { get; set; }
+
+        // Traffic Insurance Specific Fields
+        public string? TrafficPolicyNumber { get; set; } // Trafik Poliçe No (for insurance company)
+        public DateTime? TrafficStartDate { get; set; }
+        public DateTime? TrafficEndDate { get; set; }
+
+        // Comprehensive Insurance Specific Fields (Kasko)
+        public string? ComprehensivePolicyNumber { get; set; } // Kasko Poliçe No
+        public decimal? DeductibleAmount { get; set; } // Muafiyet Tutarı
+        public bool? HasGlassCoverage { get; set; } // Cam Teminatı
+        public bool? HasTheftCoverage { get; set; } // Hırsızlık Teminatı
+        public bool? HasNaturalDisasterCoverage { get; set; } // Doğal Afet Teminatı
+        public bool? HasDriverAccidentCoverage { get; set; } // Sürücü Ferdi Kaza
+        public int? DriverAccidentCoverageAmount { get; set; } // Sürücü FK Teminat Tutarı
+
+        // Discount Information
+        public decimal? NoClaimDiscountRate { get; set; } // Hasar İndirimi Oranı
+        public int? NoClaimYears { get; set; } // Hasarsız Geçen Yıl Sayısı
+        public decimal? FleetDiscountRate { get; set; } // Filo İndirimi
+
+        // Previous Policy Information
+        public string? PreviousPolicyNumber { get; set; }
+        public int? PreviousInsuranceCompanyId { get; set; }
+        public DateTime? PreviousPolicyEndDate { get; set; }
+
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;
@@ -28,9 +61,12 @@ namespace IAMS.Domain.Entities
         public virtual ICollection<PolicyPayment> PolicyPayments { get; set; } = new List<PolicyPayment>();
         public virtual ICollection<PolicyClaim> PolicyClaims { get; set; } = new List<PolicyClaim>();
 
+        public virtual InsuranceCompany? PreviousInsuranceCompany { get; set; }
+
+
         // Value objects
-        public Money GetPremiumMoney() => new Money(PremiumAmount, Currency);
-        public Money GetCommissionMoney() => new Money(CommissionAmount, Currency);
+        public Money GetPremiumMoney() => new Money(PremiumAmount, CurrencyId);
+        public Money GetCommissionMoney() => new Money(CommissionAmount, CurrencyId);
         public DateRange GetPolicyPeriod() => new DateRange(StartDate, EndDate);
 
         // Business methods
@@ -247,7 +283,7 @@ namespace IAMS.Domain.Entities
             if (CommissionRate < 0 || CommissionRate > 100)
                 errors.Add("Commission rate must be between 0 and 100");
 
-            if (string.IsNullOrEmpty(Currency?.Trim()))
+            if (CurrencyId < 0)
                 errors.Add("Currency is required");
 
             if (errors.Any())
@@ -289,6 +325,23 @@ namespace IAMS.Domain.Entities
         {
             return PolicyPayments
                 .Any(p => p.Status == PaymentStatus.Pending && p.PaymentDate < DateTime.Today);
+        }
+
+        public void SetCurrencyAndConvert(int currencyId, decimal exchangeRate)
+        {
+            CurrencyId = currencyId;
+            ExchangeRateToBase = exchangeRate;
+            PremiumAmountInBaseCurrency = PremiumAmount * exchangeRate;
+        }
+
+        public decimal GetPremiumInCurrency(int targetCurrencyId, decimal exchangeRate)
+        {
+            if (targetCurrencyId == CurrencyId)
+                return PremiumAmount;
+
+            // Convert to base first, then to target
+            var inBase = PremiumAmountInBaseCurrency ?? (PremiumAmount * (ExchangeRateToBase ?? 1));
+            return inBase / exchangeRate;
         }
     }
 }

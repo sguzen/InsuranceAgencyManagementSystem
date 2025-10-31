@@ -13,13 +13,16 @@ namespace IAMS.Domain.Entities
         public string? Reference { get; set; }
         public PaymentStatus Status { get; set; }
         public string? Notes { get; set; }
-        public string Currency { get; set; } = "TRY";
+        public int CurrencyId { get; set; }
+        public virtual Currency Currency { get; set; } = null!;
+        public decimal? ExchangeRateToBase { get; set; }
+        public decimal? AmountInBaseCurrency { get; set; }
 
         // Navigation properties
         public virtual Policy Policy { get; set; } = null!;
 
         // Value objects
-        public Money GetPaymentMoney() => new Money(Amount, Currency);
+        public Money GetPaymentMoney() => new Money(Amount, CurrencyId);
 
         // Business methods
         public void MarkAsCompleted(string processedBy)

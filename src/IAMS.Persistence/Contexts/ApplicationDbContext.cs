@@ -109,6 +109,33 @@ namespace IAMS.Persistence.Contexts
                 entity.HasIndex(r => r.Name).IsUnique();
             });
 
+            modelBuilder.Entity<Vehicle>()
+            .HasOne(v => v.Brand)
+            .WithMany(b => b.Vehicles)
+            .HasForeignKey(v => v.BrandId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(v => v.Model)
+                .WithMany(m => m.Vehicles)
+                .HasForeignKey(v => v.ModelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(v => v.Customer)
+                .WithMany(c => c.Vehicles)
+                .HasForeignKey(v => v.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<VehicleModel>()
+                .HasOne(m => m.Brand)
+                .WithMany(b => b.Models)
+                .HasForeignKey(m => m.BrandId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<PolicyPayment>()
+                .HasOne(m => m.Currency)
+                .WithMany(c => c.PolicyPayments)
+                .OnDelete(DeleteBehavior.Restrict);
+
             ParametricDataSeeder.SeedParametricData(modelBuilder);
 
         }

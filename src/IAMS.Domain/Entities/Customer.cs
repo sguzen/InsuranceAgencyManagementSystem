@@ -51,6 +51,8 @@ namespace IAMS.Domain.Entities
         // Navigation properties
         public virtual ICollection<Policy> Policies { get; set; } = new List<Policy>();
         public virtual ICollection<CustomerInsuranceCompany> CustomerInsuranceCompanies { get; set; } = new List<CustomerInsuranceCompany>();
+        public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+
 
         // Computed properties
         public string FullName => $"{FirstName} {LastName}".Trim();

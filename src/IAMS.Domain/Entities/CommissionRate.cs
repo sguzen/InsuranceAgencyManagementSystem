@@ -5,6 +5,8 @@
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }
         public decimal Rate { get; set; }
+        public int CurrencyId { get; set; }
+        
         public DateTime EffectiveDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public bool IsActive { get; set; } = true;
@@ -13,6 +15,7 @@
         // Navigation properties
         public virtual InsuranceCompany InsuranceCompany { get; set; } = null!;
         public virtual PolicyType PolicyType { get; set; } = null!;
+        public virtual Currency Currency { get; set; } = null!;
 
         // Business methods
         public void Activate(string activatedBy)

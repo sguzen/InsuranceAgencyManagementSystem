@@ -1,0 +1,16 @@
+using IAMS.Application.DTOs.Currency;
+using IAMS.Application.Models;
+using MediatR;
+
+namespace IAMS.Application.Features.Currencies.Commands.SetExchangeRates
+{
+    public class SetExchangeRatesCommand : IRequest<Result<List<ExchangeRateDto>>>
+    {
+        public List<CreateExchangeRateDto> ExchangeRates { get; set; }
+
+        public SetExchangeRatesCommand(List<CreateExchangeRateDto> exchangeRates)
+        {
+            ExchangeRates = exchangeRates;
+        }
+    }
+}

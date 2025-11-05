@@ -1,0 +1,92 @@
+using AutoMapper;
+using IAMS.Application.DTOs.Vehicle;
+using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Models;
+using IAMS.Domain.Entities;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace IAMS.Application.Features.Vehicles.Commands.CreateVehicle
+{
+    public class CreateVehicleCommandHandler : IRequestHandler<CreateVehicleCommand, Result<VehicleDto>>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly ILogger<CreateVehicleCommandHandler> _logger;
+
+        public CreateVehicleCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<CreateVehicleCommandHandler> logger)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _logger = logger;
+        }
+
+        public async Task<Result<VehicleDto>> Handle(CreateVehicleCommand request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Verify customer exists
+                var customer = await _unitOfWork.Customers.GetByIdAsync(request.VehicleDto.CustomerId);
+                if (customer == null)
+                {
+                    return Result<VehicleDto>.NotFound($"Customer with ID {request.VehicleDto.CustomerId} not found");
+                }
+
+                // Verify brand exists
+                var brand = await _unitOfWork.VehicleBrands.GetByIdAsync(request.VehicleDto.BrandId);
+                if (brand == null)
+                {
+                    return Result<VehicleDto>.NotFound($"Vehicle brand with ID {request.VehicleDto.BrandId} not found");
+                }
+
+                // Verify model exists and belongs to brand
+                var model = await _unitOfWork.VehicleModels.GetByIdAsync(request.VehicleDto.ModelId);
+                if (model == null)
+                {
+                    return Result<VehicleDto>.NotFound($"Vehicle model with ID {request.VehicleDto.ModelId} not found");
+                }
+
+                if (model.BrandId != request.VehicleDto.BrandId)
+                {
+                    return Result<VehicleDto>.ValidationError("Model does not belong to the specified brand");
+                }
+
+                // Check if plate number already exists
+                var existingVehicle = await _unitOfWork.Vehicles.GetByPlateNumberAsync(request.VehicleDto.PlateNumber);
+                if (existingVehicle != null)
+                {
+                    return Result<VehicleDto>.ValidationError($"Vehicle with plate number {request.VehicleDto.PlateNumber} already exists");
+                }
+
+                // Check if chassis number already exists
+                existingVehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(request.VehicleDto.ChassisNumber);
+                if (existingVehicle != null)
+                {
+                    return Result<VehicleDto>.ValidationError($"Vehicle with chassis number {request.VehicleDto.ChassisNumber} already exists");
+                }
+
+                var vehicle = _mapper.Map<Vehicle>(request.VehicleDto);
+                vehicle.CreatedOn = DateTime.UtcNow;
+
+                await _unitOfWork.Vehicles.AddAsync(vehicle);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("Vehicle created successfully with ID: {VehicleId}", vehicle.Id);
+
+                // Retrieve the complete vehicle with navigation properties
+                var createdVehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicle.Id);
+                var vehicleDto = _mapper.Map<VehicleDto>(createdVehicle);
+
+                return Result<VehicleDto>.Success(vehicleDto, "Vehicle created successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating vehicle with plate number: {PlateNumber}", request.VehicleDto.PlateNumber);
+                return Result<VehicleDto>.InternalError("Error creating vehicle", new List<string> { ex.Message });
+            }
+        }
+    }
+}

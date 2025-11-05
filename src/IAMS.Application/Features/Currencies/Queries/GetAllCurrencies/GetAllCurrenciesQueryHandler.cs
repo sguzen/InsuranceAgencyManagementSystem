@@ -1,0 +1,43 @@
+using AutoMapper;
+using IAMS.Application.DTOs.Currency;
+using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Models;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace IAMS.Application.Features.Currencies.Queries.GetAllCurrencies
+{
+    public class GetAllCurrenciesQueryHandler : IRequestHandler<GetAllCurrenciesQuery, Result<List<CurrencyDto>>>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly ILogger<GetAllCurrenciesQueryHandler> _logger;
+
+        public GetAllCurrenciesQueryHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<GetAllCurrenciesQueryHandler> logger)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _logger = logger;
+        }
+
+        public async Task<Result<List<CurrencyDto>>> Handle(GetAllCurrenciesQuery request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var currencies = await _unitOfWork.Currencies.GetAllAsync();
+                var currencyDtos = _mapper.Map<List<CurrencyDto>>(currencies);
+
+                _logger.LogInformation("Retrieved {Count} currencies", currencyDtos.Count);
+                return Result<List<CurrencyDto>>.Success(currencyDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all currencies");
+                return Result<List<CurrencyDto>>.InternalError("Error retrieving currencies", new List<string> { ex.Message });
+            }
+        }
+    }
+}

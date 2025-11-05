@@ -20,6 +20,15 @@ namespace IAMS.Application.Interfaces.Repositories
         ISubdistrictRepository Subdistricts { get; }
         IVillageRepository Villages { get; }
 
+        // Vehicle Management
+        IVehicleRepository Vehicles { get; }
+        IVehicleBrandRepository VehicleBrands { get; }
+        IVehicleModelRepository VehicleModels { get; }
+
+        // Currency Management
+        ICurrencyRepository Currencies { get; }
+        ICurrencyExchangeRateRepository CurrencyExchangeRates { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

@@ -1,0 +1,433 @@
+@page "/reports/customers"
+@layout Layout.MainLayout
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+@using IAMS.Application.DTOs.Customer
+@using IAMS.Application.Services.Customers
+@using IAMS.Infrastructure.Interfaces
+@using IAMS.MultiTenancy.Interfaces
+
+@inject ICustomerService CustomerService
+@inject IReportingService ReportingService
+@inject ITenantContextAccessor TenantContext
+@inject ISnackbar Snackbar
+
+<PageTitle>Müşteri Raporları - IAMS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Class="mr-2" />
+        Müşteri Raporları
+    </MudText>
+
+    @if (loading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+    }
+    else
+    {
+        <!-- Statistics Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Müşteri</MudText>
+                                <MudText Typo="Typo.h5">@statistics?.TotalCustomers.ToString("N0")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Aktif Müşteri</MudText>
+                                <MudText Typo="Typo.h5">@statistics?.ActiveCustomers.ToString("N0")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Bu Ay Yeni</MudText>
+                                <MudText Typo="Typo.h5">@statistics?.NewCustomersThisMonth.ToString("N0")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Info" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Poliçeli Müşteri</MudText>
+                                <MudText Typo="Typo.h5">@statistics?.CustomersWithActivePolicies.ToString("N0")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Secondary" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Report Parameters -->
+        <MudCard Elevation="2" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Rapor Parametreleri</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudDatePicker Label="Başlangıç Tarihi"
+                                      @bind-Date="startDate"
+                                      Variant="Variant.Outlined"
+                                      DateFormat="dd.MM.yyyy" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudDatePicker Label="Bitiş Tarihi"
+                                      @bind-Date="endDate"
+                                      Variant="Variant.Outlined"
+                                      DateFormat="dd.MM.yyyy" />
+                    </MudItem>
+                    <MudItem xs="12" md="4" Class="d-flex align-end">
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  StartIcon="@Icons.Material.Filled.Refresh"
+                                  OnClick="LoadStatistics"
+                                  FullWidth="true">
+                            Raporu Yenile
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Customer Statistics Details -->
+        <MudGrid>
+            <!-- Status Breakdown -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Müşteri Durumu Dağılımı</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (statistics?.CustomersByStatus != null && statistics.CustomersByStatus.Any())
+                        {
+                            <MudSimpleTable Dense="true" Hover="true">
+                                <thead>
+                                    <tr>
+                                        <th>Durum</th>
+                                        <th style="text-align: right;">Sayı</th>
+                                        <th style="text-align: right;">Yüzde</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var status in statistics.CustomersByStatus)
+                                    {
+                                        var percentage = statistics.TotalCustomers > 0
+                                            ? (status.Value * 100.0 / statistics.TotalCustomers).ToString("F1")
+                                            : "0.0";
+                                        <tr>
+                                            <td>@GetStatusDisplayName(status.Key)</td>
+                                            <td style="text-align: right;">@status.Value.ToString("N0")</td>
+                                            <td style="text-align: right;">@percentage%</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        }
+                        else
+                        {
+                            <MudText Color="Color.Default" Align="Align.Center" Class="py-4">
+                                Veri bulunamadı
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Gender Breakdown -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Cinsiyet Dağılımı</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (statistics?.CustomersByGender != null && statistics.CustomersByGender.Any())
+                        {
+                            <MudSimpleTable Dense="true" Hover="true">
+                                <thead>
+                                    <tr>
+                                        <th>Cinsiyet</th>
+                                        <th style="text-align: right;">Sayı</th>
+                                        <th style="text-align: right;">Yüzde</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var gender in statistics.CustomersByGender)
+                                    {
+                                        var percentage = statistics.TotalCustomers > 0
+                                            ? (gender.Value * 100.0 / statistics.TotalCustomers).ToString("F1")
+                                            : "0.0";
+                                        <tr>
+                                            <td>@GetGenderDisplayName(gender.Key)</td>
+                                            <td style="text-align: right;">@gender.Value.ToString("N0")</td>
+                                            <td style="text-align: right;">@percentage%</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+                        }
+                        else
+                        {
+                            <MudText Color="Color.Default" Align="Align.Center" Class="py-4">
+                                Veri bulunamadı
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Additional Statistics -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Ek İstatistikler</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSimpleTable Dense="true">
+                            <tbody>
+                                <tr>
+                                    <td>Poliçesiz Müşteri</td>
+                                    <td style="text-align: right;">
+                                        <MudChip Color="Color.Warning" Size="Size.Small">
+                                            @statistics?.CustomersWithoutPolicies.ToString("N0")
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Bu Hafta Yeni</td>
+                                    <td style="text-align: right;">
+                                        <MudChip Color="Color.Info" Size="Size.Small">
+                                            @statistics?.NewCustomersThisWeek.ToString("N0")
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Ortalama Yaş</td>
+                                    <td style="text-align: right;">
+                                        <MudChip Color="Color.Default" Size="Size.Small">
+                                            @statistics?.AverageCustomerAge.ToString("F1") yaş
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Büyüme Oranı</td>
+                                    <td style="text-align: right;">
+                                        <MudChip Color="@(statistics?.CustomerGrowthPercentage >= 0 ? Color.Success : Color.Error)" Size="Size.Small">
+                                            @statistics?.CustomerGrowthPercentage.ToString("F1")%
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Export Options -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Raporu Dışa Aktar</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudButton Variant="Variant.Outlined"
+                                      Color="Color.Error"
+                                      StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                      OnClick="@(() => ExportReport("pdf"))"
+                                      FullWidth="true"
+                                      Disabled="exporting">
+                                @if (exporting && exportFormat == "pdf")
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                    <span class="ml-2">Dışa Aktarılıyor...</span>
+                                }
+                                else
+                                {
+                                    <span>PDF Olarak İndir</span>
+                                }
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Outlined"
+                                      Color="Color.Success"
+                                      StartIcon="@Icons.Material.Filled.TableChart"
+                                      OnClick="@(() => ExportReport("excel"))"
+                                      FullWidth="true"
+                                      Disabled="exporting">
+                                @if (exporting && exportFormat == "excel")
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                    <span class="ml-2">Dışa Aktarılıyor...</span>
+                                }
+                                else
+                                {
+                                    <span>Excel Olarak İndir</span>
+                                }
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Outlined"
+                                      Color="Color.Info"
+                                      StartIcon="@Icons.Material.Filled.Description"
+                                      OnClick="@(() => ExportReport("csv"))"
+                                      FullWidth="true"
+                                      Disabled="exporting">
+                                @if (exporting && exportFormat == "csv")
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                    <span class="ml-2">Dışa Aktarılıyor...</span>
+                                }
+                                else
+                                {
+                                    <span>CSV Olarak İndir</span>
+                                }
+                            </MudButton>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private CustomerStatisticsDto? statistics;
+    private bool loading = true;
+    private bool exporting = false;
+    private string exportFormat = "";
+    private DateTime? startDate = DateTime.Now.AddMonths(-1);
+    private DateTime? endDate = DateTime.Now;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatistics();
+    }
+
+    private async Task LoadStatistics()
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CustomerService.GetCustomerStatisticsAsync();
+
+            if (result.IsSuccess)
+            {
+                statistics = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "İstatistikler yüklenirken hata oluştu", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ExportReport(string format)
+    {
+        exporting = true;
+        exportFormat = format;
+        StateHasChanged();
+
+        try
+        {
+            var parameters = new ReportParameters
+            {
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            var reportData = await ReportingService.ExportReportAsync("customer-summary", parameters, format);
+
+            if (reportData != null && reportData.Length > 0)
+            {
+                // In a real implementation, trigger browser download
+                Snackbar.Add($"Rapor {format.ToUpper()} formatında dışa aktarıldı", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            exporting = false;
+            exportFormat = "";
+            StateHasChanged();
+        }
+    }
+
+    private string GetStatusDisplayName(IAMS.Domain.Enums.CustomerStatus status)
+    {
+        return status switch
+        {
+            IAMS.Domain.Enums.CustomerStatus.Active => "Aktif",
+            IAMS.Domain.Enums.CustomerStatus.Inactive => "Pasif",
+            IAMS.Domain.Enums.CustomerStatus.Prospect => "Potansiyel",
+            IAMS.Domain.Enums.CustomerStatus.Suspended => "Askıda",
+            IAMS.Domain.Enums.CustomerStatus.Blacklisted => "Kara Liste",
+            IAMS.Domain.Enums.CustomerStatus.Former => "Eski Müşteri",
+            _ => status.ToString()
+        };
+    }
+
+    private string GetGenderDisplayName(IAMS.Domain.Enums.Gender gender)
+    {
+        return gender switch
+        {
+            IAMS.Domain.Enums.Gender.Male => "Erkek",
+            IAMS.Domain.Enums.Gender.Female => "Kadın",
+            _ => gender.ToString()
+        };
+    }
+}

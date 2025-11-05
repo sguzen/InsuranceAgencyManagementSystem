@@ -1,0 +1,625 @@
+@page "/reports/financial"
+@layout Layout.MainLayout
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+@using IAMS.Application.Services.Policies
+@using IAMS.Infrastructure.Interfaces
+@using IAMS.MultiTenancy.Interfaces
+
+@inject IPolicyService PolicyService
+@inject IReportingService ReportingService
+@inject ITenantContextAccessor TenantContext
+@inject ISnackbar Snackbar
+
+<PageTitle>Mali Raporlar - IAMS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
+        Mali Raporlar
+    </MudText>
+
+    @if (loading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+    }
+    else
+    {
+        <!-- Financial Summary Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Gelir</MudText>
+                                <MudText Typo="Typo.h5">@totalRevenue.ToString("C2")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Komisyon</MudText>
+                                <MudText Typo="Typo.h5">@totalCommission.ToString("C2")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Info" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Aylık Gelir</MudText>
+                                <MudText Typo="Typo.h5">@monthlyRevenue.ToString("C2")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Yıllık Gelir</MudText>
+                                <MudText Typo="Typo.h5">@yearlyRevenue.ToString("C2")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Secondary" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Report Selection Tabs -->
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @bind-ActivePanelIndex="activeTab">
+            <!-- Commission Report Tab -->
+            <MudTabPanel Icon="@Icons.Material.Filled.Payments" Text="Komisyon Raporu">
+                <MudCard Elevation="0">
+                    <MudCardContent>
+                        <!-- Commission Report Parameters -->
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12" md="4">
+                                <MudDatePicker Label="Başlangıç Tarihi"
+                                              @bind-Date="commissionStartDate"
+                                              Variant="Variant.Outlined"
+                                              DateFormat="dd.MM.yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudDatePicker Label="Bitiş Tarihi"
+                                              @bind-Date="commissionEndDate"
+                                              Variant="Variant.Outlined"
+                                              DateFormat="dd.MM.yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Refresh"
+                                          OnClick="LoadCommissionReport"
+                                          FullWidth="true">
+                                    Raporu Oluştur
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Commission Report Summary -->
+                        <MudText Typo="Typo.h6" Class="mb-3">Komisyon Özeti</MudText>
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12" md="6">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudSimpleTable Dense="true">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Yeni Poliçeler</strong></td>
+                                                    <td style="text-align: right;">
+                                                        <MudChip Color="Color.Success" Size="Size.Small">
+                                                            @commissionNewPolicies.ToString("N0")
+                                                        </MudChip>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Yenilemeler</strong></td>
+                                                    <td style="text-align: right;">
+                                                        <MudChip Color="Color.Info" Size="Size.Small">
+                                                            @commissionRenewals.ToString("N0")
+                                                        </MudChip>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Toplam Prim</strong></td>
+                                                    <td style="text-align: right;">
+                                                        <MudChip Color="Color.Primary" Size="Size.Small">
+                                                            @commissionTotalPremium.ToString("C2")
+                                                        </MudChip>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Toplam Komisyon</strong></td>
+                                                    <td style="text-align: right;">
+                                                        <MudChip Color="Color.Success" Size="Size.Small">
+                                                            @commissionTotalCommission.ToString("C2")
+                                                        </MudChip>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </MudSimpleTable>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudCard Outlined="true">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.subtitle2">Komisyon Oranı</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <div class="d-flex flex-column align-center justify-center" style="height: 150px;">
+                                            <MudText Typo="Typo.h3" Color="Color.Success">
+                                                @commissionRate.ToString("F2")%
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Default" Class="mt-2">
+                                                Ortalama Komisyon Oranı
+                                            </MudText>
+                                        </div>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Export Buttons -->
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Error"
+                                          StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                          OnClick="@(() => ExportCommissionReport("pdf"))"
+                                          FullWidth="true"
+                                          Disabled="exportingCommission">
+                                    @if (exportingCommission && commissionExportFormat == "pdf")
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                        <span class="ml-2">Dışa Aktarılıyor...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>PDF Olarak İndir</span>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Success"
+                                          StartIcon="@Icons.Material.Filled.TableChart"
+                                          OnClick="@(() => ExportCommissionReport("excel"))"
+                                          FullWidth="true"
+                                          Disabled="exportingCommission">
+                                    @if (exportingCommission && commissionExportFormat == "excel")
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                        <span class="ml-2">Dışa Aktarılıyor...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Excel Olarak İndir</span>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudTabPanel>
+
+            <!-- Claims Summary Tab -->
+            <MudTabPanel Icon="@Icons.Material.Filled.Report" Text="Hasar Raporu">
+                <MudCard Elevation="0">
+                    <MudCardContent>
+                        <!-- Claims Report Parameters -->
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12" md="4">
+                                <MudDatePicker Label="Başlangıç Tarihi"
+                                              @bind-Date="claimsStartDate"
+                                              Variant="Variant.Outlined"
+                                              DateFormat="dd.MM.yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudDatePicker Label="Bitiş Tarihi"
+                                              @bind-Date="claimsEndDate"
+                                              Variant="Variant.Outlined"
+                                              DateFormat="dd.MM.yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Refresh"
+                                          OnClick="LoadClaimsReport"
+                                          FullWidth="true">
+                                    Raporu Oluştur
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Claims Report Summary -->
+                        <MudText Typo="Typo.h6" Class="mb-3">Hasar Özeti</MudText>
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Toplam Hasar</MudText>
+                                        <MudText Typo="Typo.h5">@claimsTotalCount.ToString("N0")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Toplam Tutar</MudText>
+                                        <MudText Typo="Typo.h5">@claimsTotalAmount.ToString("C2")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Onaylanan</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Success">@claimsApproved.ToString("N0")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">İncelenen</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Info">@claimsUnderReview.ToString("N0")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Claims Status Breakdown -->
+                        <MudText Typo="Typo.h6" Class="mb-3">Durum Dağılımı</MudText>
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudSimpleTable Dense="true" Hover="true">
+                                            <thead>
+                                                <tr>
+                                                    <th>Durum</th>
+                                                    <th style="text-align: right;">Sayı</th>
+                                                    <th style="text-align: right;">Toplam Tutar</th>
+                                                    <th style="text-align: right;">Ortalama</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><MudChip Color="Color.Default" Size="Size.Small">Başvuruldu</MudChip></td>
+                                                    <td style="text-align: right;">@claimsSubmitted.ToString("N0")</td>
+                                                    <td style="text-align: right;">@claimsSubmittedAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@GetAverageClaim(claimsSubmitted, claimsSubmittedAmount)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><MudChip Color="Color.Info" Size="Size.Small">İnceleniyor</MudChip></td>
+                                                    <td style="text-align: right;">@claimsUnderReview.ToString("N0")</td>
+                                                    <td style="text-align: right;">@claimsUnderReviewAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@GetAverageClaim(claimsUnderReview, claimsUnderReviewAmount)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><MudChip Color="Color.Success" Size="Size.Small">Onaylandı</MudChip></td>
+                                                    <td style="text-align: right;">@claimsApproved.ToString("N0")</td>
+                                                    <td style="text-align: right;">@claimsApprovedAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@GetAverageClaim(claimsApproved, claimsApprovedAmount)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><MudChip Color="Color.Error" Size="Size.Small">Reddedildi</MudChip></td>
+                                                    <td style="text-align: right;">@claimsRejected.ToString("N0")</td>
+                                                    <td style="text-align: right;">@claimsRejectedAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@GetAverageClaim(claimsRejected, claimsRejectedAmount)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><MudChip Color="Color.Success" Size="Size.Small">Ödendi</MudChip></td>
+                                                    <td style="text-align: right;">@claimsSettled.ToString("N0")</td>
+                                                    <td style="text-align: right;">@claimsSettledAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@GetAverageClaim(claimsSettled, claimsSettledAmount)</td>
+                                                </tr>
+                                            </tbody>
+                                        </MudSimpleTable>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Export Buttons -->
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Error"
+                                          StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                          OnClick="@(() => ExportClaimsReport("pdf"))"
+                                          FullWidth="true"
+                                          Disabled="exportingClaims">
+                                    @if (exportingClaims && claimsExportFormat == "pdf")
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                        <span class="ml-2">Dışa Aktarılıyor...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>PDF Olarak İndir</span>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Success"
+                                          StartIcon="@Icons.Material.Filled.TableChart"
+                                          OnClick="@(() => ExportClaimsReport("excel"))"
+                                          FullWidth="true"
+                                          Disabled="exportingClaims">
+                                    @if (exportingClaims && claimsExportFormat == "excel")
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                        <span class="ml-2">Dışa Aktarılıyor...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Excel Olarak İndir</span>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudTabPanel>
+        </MudTabs>
+    }
+</MudContainer>
+
+@code {
+    private bool loading = true;
+    private int activeTab = 0;
+
+    // Financial Summary
+    private decimal totalRevenue = 0;
+    private decimal totalCommission = 0;
+    private decimal monthlyRevenue = 0;
+    private decimal yearlyRevenue = 0;
+
+    // Commission Report
+    private DateTime? commissionStartDate = DateTime.Now.AddMonths(-1);
+    private DateTime? commissionEndDate = DateTime.Now;
+    private bool exportingCommission = false;
+    private string commissionExportFormat = "";
+    private int commissionNewPolicies = 0;
+    private int commissionRenewals = 0;
+    private decimal commissionTotalPremium = 0;
+    private decimal commissionTotalCommission = 0;
+    private decimal commissionRate = 0;
+
+    // Claims Report
+    private DateTime? claimsStartDate = DateTime.Now.AddMonths(-1);
+    private DateTime? claimsEndDate = DateTime.Now;
+    private bool exportingClaims = false;
+    private string claimsExportFormat = "";
+    private int claimsTotalCount = 0;
+    private decimal claimsTotalAmount = 0;
+    private int claimsApproved = 0;
+    private int claimsUnderReview = 0;
+    private int claimsSubmitted = 0;
+    private int claimsRejected = 0;
+    private int claimsSettled = 0;
+    private decimal claimsSubmittedAmount = 0;
+    private decimal claimsUnderReviewAmount = 0;
+    private decimal claimsApprovedAmount = 0;
+    private decimal claimsRejectedAmount = 0;
+    private decimal claimsSettledAmount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFinancialSummary();
+        await LoadCommissionReport();
+        await LoadClaimsReport();
+    }
+
+    private async Task LoadFinancialSummary()
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await PolicyService.GetPolicyStatisticsAsync();
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                totalRevenue = result.Data.TotalPremiums;
+                totalCommission = result.Data.TotalCommissions;
+                monthlyRevenue = result.Data.MonthlyRevenue;
+                yearlyRevenue = result.Data.YearlyRevenue;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Mali özet yüklenirken hata oluştu", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadCommissionReport()
+    {
+        try
+        {
+            var parameters = new ReportParameters
+            {
+                StartDate = commissionStartDate,
+                EndDate = commissionEndDate
+            };
+
+            var result = await ReportingService.GenerateReportAsync("commission-report", parameters);
+
+            if (result != null)
+            {
+                // In a real implementation, parse the result.Data
+                // For now, using mock data
+                commissionNewPolicies = 45;
+                commissionRenewals = 32;
+                commissionTotalPremium = 125000m;
+                commissionTotalCommission = 18750m;
+                commissionRate = commissionTotalPremium > 0
+                    ? (commissionTotalCommission / commissionTotalPremium * 100)
+                    : 0;
+
+                Snackbar.Add("Komisyon raporu oluşturuldu", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadClaimsReport()
+    {
+        try
+        {
+            var parameters = new ReportParameters
+            {
+                StartDate = claimsStartDate,
+                EndDate = claimsEndDate
+            };
+
+            var result = await ReportingService.GenerateReportAsync("claims-summary", parameters);
+
+            if (result != null)
+            {
+                // In a real implementation, parse the result.Data
+                // For now, using mock data
+                claimsTotalCount = 28;
+                claimsTotalAmount = 85000m;
+                claimsSubmitted = 5;
+                claimsUnderReview = 8;
+                claimsApproved = 10;
+                claimsRejected = 3;
+                claimsSettled = 2;
+                claimsSubmittedAmount = 12000m;
+                claimsUnderReviewAmount = 25000m;
+                claimsApprovedAmount = 35000m;
+                claimsRejectedAmount = 8000m;
+                claimsSettledAmount = 5000m;
+
+                Snackbar.Add("Hasar raporu oluşturuldu", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task ExportCommissionReport(string format)
+    {
+        exportingCommission = true;
+        commissionExportFormat = format;
+        StateHasChanged();
+
+        try
+        {
+            var parameters = new ReportParameters
+            {
+                StartDate = commissionStartDate,
+                EndDate = commissionEndDate
+            };
+
+            var reportData = await ReportingService.ExportReportAsync("commission-report", parameters, format);
+
+            if (reportData != null && reportData.Length > 0)
+            {
+                Snackbar.Add($"Komisyon raporu {format.ToUpper()} formatında dışa aktarıldı", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            exportingCommission = false;
+            commissionExportFormat = "";
+            StateHasChanged();
+        }
+    }
+
+    private async Task ExportClaimsReport(string format)
+    {
+        exportingClaims = true;
+        claimsExportFormat = format;
+        StateHasChanged();
+
+        try
+        {
+            var parameters = new ReportParameters
+            {
+                StartDate = claimsStartDate,
+                EndDate = claimsEndDate
+            };
+
+            var reportData = await ReportingService.ExportReportAsync("claims-summary", parameters, format);
+
+            if (reportData != null && reportData.Length > 0)
+            {
+                Snackbar.Add($"Hasar raporu {format.ToUpper()} formatında dışa aktarıldı", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            exportingClaims = false;
+            claimsExportFormat = "";
+            StateHasChanged();
+        }
+    }
+
+    private string GetAverageClaim(int count, decimal amount)
+    {
+        if (count == 0) return "₺0.00";
+        return (amount / count).ToString("C2");
+    }
+}

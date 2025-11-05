@@ -29,6 +29,14 @@ namespace IAMS.Persistence.UnitOfWork
         private ISubdistrictRepository? _subdistricts;
         private IVillageRepository? _villages;
 
+        // Vehicle Management
+        private IVehicleRepository? _vehicles;
+        private IVehicleBrandRepository? _vehicleBrands;
+        private IVehicleModelRepository? _vehicleModels;
+
+        // Currency Management
+        private ICurrencyRepository? _currencies;
+        private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -76,6 +84,23 @@ namespace IAMS.Persistence.UnitOfWork
 
         public IVillageRepository Villages =>
             _villages ??= new VillageRepository(_context);
+
+        // Vehicle Management
+        public IVehicleRepository Vehicles =>
+            _vehicles ??= new VehicleRepository(_context);
+
+        public IVehicleBrandRepository VehicleBrands =>
+            _vehicleBrands ??= new VehicleBrandRepository(_context);
+
+        public IVehicleModelRepository VehicleModels =>
+            _vehicleModels ??= new VehicleModelRepository(_context);
+
+        // Currency Management
+        public ICurrencyRepository Currencies =>
+            _currencies ??= new CurrencyRepository(_context);
+
+        public ICurrencyExchangeRateRepository CurrencyExchangeRates =>
+            _currencyExchangeRates ??= new CurrencyExchangeRateRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

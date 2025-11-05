@@ -34,6 +34,14 @@ namespace IAMS.Persistence.UnitOfWork
         private ICurrencyRepository? _currencies;
         private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
+        // Vehicle Management
+        private IVehicleRepository? _vehicles;
+        private IVehicleBrandRepository? _vehicleBrands;
+        private IVehicleModelRepository? _vehicleModels;
+
+        // Currency Management
+        private ICurrencyRepository? _currencies;
+        private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
         public UnitOfWork(ApplicationDbContext context)
         {

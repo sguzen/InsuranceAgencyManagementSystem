@@ -447,5 +447,10 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .CountAsync(p => p.IsExpiring(daysAhead) && !p.IsDeleted);
         }
+
+        public async Task<List<Policy>> GetByVehicleIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,5 +1,6 @@
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
+using IAMS.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -32,10 +33,13 @@ namespace IAMS.Application.Features.Vehicles.Commands.DeleteVehicle
                 var policies = await _unitOfWork.Policies.GetByVehicleIdAsync(request.Id);
                 if (policies != null && policies.Any())
                 {
-                    return Result.ValidationError("Cannot delete vehicle with existing policies");
+                    return Result.Failure("Cannot delete vehicle with existing policies", string.Empty);
                 }
 
-                _unitOfWork.Vehicles.Delete(vehicle);
+                vehicle.IsDeleted = true;
+                vehicle.ModifiedOn = DateTime.UtcNow;
+
+                _unitOfWork.Vehicles.Update(vehicle);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("Vehicle deleted successfully with ID: {VehicleId}", request.Id);

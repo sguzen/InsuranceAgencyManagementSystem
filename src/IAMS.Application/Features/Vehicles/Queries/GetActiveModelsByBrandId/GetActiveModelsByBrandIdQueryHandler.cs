@@ -27,7 +27,7 @@ namespace IAMS.Application.Features.Vehicles.Queries.GetActiveModelsByBrandId
         {
             try
             {
-                var models = await _unitOfWork.VehicleModels.GetActiveModelsByBrandIdAsync(request.BrandId);
+                var models = await _unitOfWork.VehicleModels.GetActiveByBrandIdAsync(request.BrandId);
                 var modelDtos = _mapper.Map<List<VehicleModelDto>>(models);
 
                 return Result<List<VehicleModelDto>>.Success(modelDtos);

@@ -29,7 +29,7 @@ namespace IAMS.Application.Features.Currencies.Queries.GetExchangeRateByIds
                 }
 
                 var targetDate = request.Date ?? DateTime.UtcNow;
-                var exchangeRates = await _unitOfWork.ExchangeRates.GetAllAsync();
+                var exchangeRates = await _unitOfWork.CurrencyExchangeRates.GetAllAsync();
 
                 var rate = exchangeRates
                     .Where(er => er.FromCurrencyId == request.FromCurrencyId

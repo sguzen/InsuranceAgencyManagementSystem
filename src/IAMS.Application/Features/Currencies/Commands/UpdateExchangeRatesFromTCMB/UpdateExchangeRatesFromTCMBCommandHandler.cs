@@ -5,6 +5,7 @@ using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Net.Http;
 using System.Xml.Linq;
 
 namespace IAMS.Application.Features.Currencies.Commands.UpdateExchangeRatesFromTCMB
@@ -38,7 +39,7 @@ namespace IAMS.Application.Features.Currencies.Commands.UpdateExchangeRatesFromT
                 var baseCurrency = currencies.FirstOrDefault(c => c.IsBaseCurrency);
                 if (baseCurrency == null)
                 {
-                    return Result.Failure("No base currency configured");
+                    return Result.NotFound("No base currency configured");
                 }
 
                 // Fetch XML from TCMB

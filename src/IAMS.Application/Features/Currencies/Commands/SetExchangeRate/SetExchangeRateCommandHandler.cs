@@ -42,11 +42,11 @@ namespace IAMS.Application.Features.Currencies.Commands.SetExchangeRate
                 }
 
                 // Create exchange rate
-                var exchangeRate = _mapper.Map<ExchangeRate>(request.ExchangeRateDto);
-                exchangeRate.IsActive = true;
+                var exchangeRate = _mapper.Map<CurrencyExchangeRate>(request.ExchangeRateDto);
+               // exchangeRate.IsActive = true;
                 exchangeRate.CreatedOn = DateTime.UtcNow;
 
-                await _unitOfWork.ExchangeRates.AddAsync(exchangeRate);
+                await _unitOfWork.CurrencyExchangeRates.AddAsync(exchangeRate);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("Exchange rate created: {From} to {To} = {Rate}",

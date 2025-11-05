@@ -46,9 +46,6 @@ namespace IAMS.Application.Features.Vehicles.Commands.UpdateVehicle
                 if (request.VehicleDto.NextInspectionDate.HasValue)
                     vehicle.NextInspectionDate = request.VehicleDto.NextInspectionDate;
 
-                vehicle.HasAlarm = request.VehicleDto.HasAlarm;
-                vehicle.HasImmobilizer = request.VehicleDto.HasImmobilizer;
-
                 if (request.VehicleDto.Notes != null)
                     vehicle.Notes = request.VehicleDto.Notes;
 

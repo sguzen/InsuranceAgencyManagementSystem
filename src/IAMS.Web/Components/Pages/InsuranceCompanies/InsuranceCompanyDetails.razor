@@ -1,0 +1,409 @@
+@page "/insurance-companies/{CompanyId:int}"
+@layout Layout.MainLayout
+@rendermode InteractiveServer
+
+@using IAMS.Application.DTOs.InsuranceCompany
+@using IAMS.Application.Services.InsuranceCompanies
+@using IAMS.Web.Components.Shared
+@using MudBlazor
+
+@attribute [Authorize]
+@inject IInsuranceCompanyService InsuranceCompanyService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>@(company?.Name ?? "Şirket Detayları")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        @if (loading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mb-4" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
+        }
+        else if (company != null)
+        {
+            <!-- Header -->
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h4">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-3" />
+                        @company.Name
+                    </MudText>
+                    @if (!string.IsNullOrEmpty(company.Description))
+                    {
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">@company.Description</MudText>
+                    }
+                </MudStack>
+                <MudStack Row Spacing="2">
+                    <MudButton Variant="Variant.Outlined"
+                              StartIcon="@Icons.Material.Filled.ArrowBack"
+                              OnClick="GoBack">
+                        Geri
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                              Color="Color.Primary"
+                              StartIcon="@Icons.Material.Filled.Edit"
+                              OnClick="EditCompany">
+                        Düzenle
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                              Color="Color.Error"
+                              StartIcon="@Icons.Material.Filled.Delete"
+                              OnClick="DeleteCompany">
+                        Sil
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            <!-- Status Badge -->
+            <MudStack Row Spacing="2">
+                <MudChip Size="Size.Large"
+                         Color="@(company.IsActive ? Color.Success : Color.Default)"
+                         Variant="Variant.Filled"
+                         Icon="@(company.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                    @(company.IsActive ? "Aktif" : "Pasif")
+                </MudChip>
+            </MudStack>
+
+            <!-- Statistics Cards -->
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Article" Size="Size.Large" Color="Color.Info" />
+                                <MudText Typo="Typo.h4">@company.ActivePoliciesCount</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Poliçe</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Primary" />
+                                <MudText Typo="Typo.h4">@company.TotalPolicies</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Success" />
+                                <MudText Typo="Typo.h4">@company.TotalPremiums.ToString("C")</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Prim</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Percent" Size="Size.Large" Color="Color.Warning" />
+                                <MudText Typo="Typo.h4">@company.TotalCommissions.ToString("C")</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Tabs -->
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                <!-- Contact Information Tab -->
+                <MudTabPanel Icon="@Icons.Material.Filled.ContactMail" Text="İletişim Bilgileri">
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudCard Elevation="1">
+                                <MudCardContent>
+                                    <MudStack Spacing="3">
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">E-posta</MudText>
+                                                @if (!string.IsNullOrEmpty(company.ContactEmail))
+                                                {
+                                                    <MudLink Href="@($"mailto:{company.ContactEmail}")" Typo="Typo.body1">
+                                                        @company.ContactEmail
+                                                    </MudLink>
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.body1" Color="Color.Secondary">Belirtilmemiş</MudText>
+                                                }
+                                            </MudStack>
+                                        </MudStack>
+
+                                        <MudDivider />
+
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Phone" Color="Color.Primary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Telefon</MudText>
+                                                @if (!string.IsNullOrEmpty(company.ContactPhone))
+                                                {
+                                                    <MudLink Href="@($"tel:{company.ContactPhone}")" Typo="Typo.body1">
+                                                        @company.ContactPhone
+                                                    </MudLink>
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.body1" Color="Color.Secondary">Belirtilmemiş</MudText>
+                                                }
+                                            </MudStack>
+                                        </MudStack>
+
+                                        <MudDivider />
+
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Start">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Adres</MudText>
+                                                <MudText Typo="Typo.body1">
+                                                    @(company.Address ?? "Belirtilmemiş")
+                                                </MudText>
+                                            </MudStack>
+                                        </MudStack>
+
+                                        <MudDivider />
+
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Language" Color="Color.Primary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Website</MudText>
+                                                @if (!string.IsNullOrEmpty(company.Website))
+                                                {
+                                                    <MudLink Href="@company.Website" Target="_blank" Typo="Typo.body1">
+                                                        @company.Website <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
+                                                    </MudLink>
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.body1" Color="Color.Secondary">Belirtilmemiş</MudText>
+                                                }
+                                            </MudStack>
+                                        </MudStack>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+
+                        <!-- Metadata -->
+                        <MudItem xs="12" md="6">
+                            <MudCard Elevation="1">
+                                <MudCardContent>
+                                    <MudStack Spacing="3">
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Oluşturulma Tarihi</MudText>
+                                                <MudText Typo="Typo.body1">@company.CreatedDate.ToString("dd MMMM yyyy HH:mm")</MudText>
+                                            </MudStack>
+                                        </MudStack>
+
+                                        @if (company.UpdatedDate.HasValue)
+                                        {
+                                            <MudDivider />
+                                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                                <MudIcon Icon="@Icons.Material.Filled.Update" Color="Color.Primary" />
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Son Güncelleme</MudText>
+                                                    <MudText Typo="Typo.body1">@company.UpdatedDate.Value.ToString("dd MMMM yyyy HH:mm")</MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                        }
+
+                                        @if (company.LastPolicyDate.HasValue)
+                                        {
+                                            <MudDivider />
+                                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                                <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Primary" />
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Son Poliçe Tarihi</MudText>
+                                                    <MudText Typo="Typo.body1">@company.LastPolicyDate.Value.ToString("dd MMMM yyyy")</MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                        }
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+
+                <!-- Associated Policies Tab -->
+                <MudTabPanel Icon="@Icons.Material.Filled.Description" Text="İlişkili Poliçeler" BadgeData="@company.ActivePoliciesCount" BadgeColor="Color.Info">
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text">
+                        Bu şirketle ilişkili @company.TotalPolicies poliçe bulunmaktadır. (@company.ActivePoliciesCount aktif)
+                    </MudAlert>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">
+                        Poliçe listesi entegrasyonu yakında eklenecek...
+                    </MudText>
+                </MudTabPanel>
+
+                <!-- Statistics Tab -->
+                <MudTabPanel Icon="@Icons.Material.Filled.Analytics" Text="İstatistikler">
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudCard Elevation="1">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">Mali Özet</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudSimpleTable Hover="true">
+                                        <tbody>
+                                            <tr>
+                                                <td><MudText Typo="Typo.body1">Toplam Prim Tutarı</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right">@company.TotalPremiums.ToString("C")</MudText></td>
+                                            </tr>
+                                            <tr>
+                                                <td><MudText Typo="Typo.body1">Toplam Komisyon</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right">@company.TotalCommissions.ToString("C")</MudText></td>
+                                            </tr>
+                                            <tr>
+                                                <td><MudText Typo="Typo.body1" Color="Color.Primary"><strong>Ortalama Komisyon Oranı</strong></MudText></td>
+                                                <td>
+                                                    <MudText Typo="Typo.body1" Align="Align.Right" Color="Color.Primary">
+                                                        <strong>
+                                                            @if (company.TotalPremiums > 0)
+                                                            {
+                                                                @((company.TotalCommissions / company.TotalPremiums * 100).ToString("F2"))%
+                                                            }
+                                                            else
+                                                            {
+                                                                @("0.00%")
+                                                            }
+                                                        </strong>
+                                                    </MudText>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </MudSimpleTable>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudCard Elevation="1">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">Poliçe Özeti</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudSimpleTable Hover="true">
+                                        <tbody>
+                                            <tr>
+                                                <td><MudText Typo="Typo.body1">Toplam Poliçe</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right">@company.TotalPolicies</MudText></td>
+                                            </tr>
+                                            <tr>
+                                                <td><MudText Typo="Typo.body1">Aktif Poliçe</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right" Color="Color.Success">@company.ActivePoliciesCount</MudText></td>
+                                            </tr>
+                                            <tr>
+                                                <td><MudText Typo="Typo.body1">Pasif Poliçe</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right" Color="Color.Secondary">@(company.TotalPolicies - company.ActivePoliciesCount)</MudText></td>
+                                            </tr>
+                                        </tbody>
+                                    </MudSimpleTable>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+            </MudTabs>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error">Şirket bulunamadı.</MudAlert>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter] public int CompanyId { get; set; }
+
+    private InsuranceCompanyDto? company;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCompany();
+    }
+
+    private async Task LoadCompany()
+    {
+        loading = true;
+        try
+        {
+            var result = await InsuranceCompanyService.GetInsuranceCompanyByIdAsync(CompanyId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                company = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Şirket bulunamadı", Severity.Error);
+                GoBack();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            GoBack();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/insurance-companies");
+    private void EditCompany() => Navigation.NavigateTo($"/insurance-companies/{CompanyId}/edit");
+
+    private async Task DeleteCompany()
+    {
+        if (company == null) return;
+
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, $"{company.Name} adlı şirketi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
+            { x => x.ButtonText, "Sil" },
+            { x => x.Color, Color.Error }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Şirket Sil", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                var deleteResult = await InsuranceCompanyService.DeleteInsuranceCompanyAsync(CompanyId);
+                if (deleteResult.IsSuccess)
+                {
+                    Snackbar.Add("Şirket başarıyla silindi", Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    Snackbar.Add(deleteResult.Message ?? "Silme işlemi başarısız", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

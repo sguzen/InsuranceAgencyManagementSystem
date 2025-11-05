@@ -27,7 +27,7 @@ namespace IAMS.Application.Features.Currencies.Queries.GetLatestExchangeRate
         {
             try
             {
-                var exchangeRates = await _unitOfWork.ExchangeRates.GetAllAsync();
+                var exchangeRates = await _unitOfWork.CurrencyExchangeRates.GetAllAsync();
                 var latestRate = exchangeRates
                     .Where(er => er.FromCurrencyId == request.FromCurrencyId
                                  && er.ToCurrencyId == request.ToCurrencyId

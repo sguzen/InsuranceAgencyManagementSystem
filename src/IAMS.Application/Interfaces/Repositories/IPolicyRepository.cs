@@ -56,5 +56,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<Policy?> GetPolicyByExternalIdAsync(string externalId, int insuranceCompanyId);
         Task UpdateExternalSyncStatusAsync(int policyId, bool synced, DateTime? lastSyncDate = null);
         Task<int> GetExpiringPoliciesCountAsync(int daysAhead);
+        Task<List<Policy>> GetByVehicleIdAsync(int id);
     }
 }

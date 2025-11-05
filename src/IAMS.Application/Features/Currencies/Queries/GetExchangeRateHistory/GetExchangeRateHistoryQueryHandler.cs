@@ -27,7 +27,7 @@ namespace IAMS.Application.Features.Currencies.Queries.GetExchangeRateHistory
         {
             try
             {
-                var exchangeRates = await _unitOfWork.ExchangeRates.GetAllAsync();
+                var exchangeRates = await _unitOfWork.CurrencyExchangeRates.GetAllAsync();
                 var history = exchangeRates
                     .Where(er => er.FromCurrencyId == request.FromCurrencyId
                                  && er.ToCurrencyId == request.ToCurrencyId

@@ -51,21 +51,21 @@ namespace IAMS.Application.Features.Vehicles.Commands.CreateVehicle
 
                 if (model.BrandId != request.VehicleDto.BrandId)
                 {
-                    return Result<VehicleDto>.ValidationError("Model does not belong to the specified brand");
+                    return Result<VehicleDto>.Failure("Model does not belong to the specified brand", string.Empty);
                 }
 
                 // Check if plate number already exists
                 var existingVehicle = await _unitOfWork.Vehicles.GetByPlateNumberAsync(request.VehicleDto.PlateNumber);
                 if (existingVehicle != null)
                 {
-                    return Result<VehicleDto>.ValidationError($"Vehicle with plate number {request.VehicleDto.PlateNumber} already exists");
+                    return Result<VehicleDto>.Failure($"Vehicle with plate number {request.VehicleDto.PlateNumber} already exists", string.Empty);
                 }
 
                 // Check if chassis number already exists
                 existingVehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(request.VehicleDto.ChassisNumber);
                 if (existingVehicle != null)
                 {
-                    return Result<VehicleDto>.ValidationError($"Vehicle with chassis number {request.VehicleDto.ChassisNumber} already exists");
+                    return Result<VehicleDto>.Failure($"Vehicle with chassis number {request.VehicleDto.ChassisNumber} already exists", string.Empty);
                 }
 
                 var vehicle = _mapper.Map<Vehicle>(request.VehicleDto);

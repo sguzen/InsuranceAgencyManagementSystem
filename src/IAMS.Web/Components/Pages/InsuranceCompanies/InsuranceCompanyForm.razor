@@ -1,0 +1,292 @@
+@page "/insurance-companies/create"
+@page "/insurance-companies/{CompanyId:int}/edit"
+@layout Layout.MainLayout
+@rendermode InteractiveServer
+
+@using IAMS.Application.DTOs.InsuranceCompany
+@using IAMS.Application.Services.InsuranceCompanies
+@using FluentValidation
+@using MudBlazor
+
+@attribute [Authorize]
+@inject IInsuranceCompanyService InsuranceCompanyService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEdit ? "Şirket Düzenle" : "Yeni Şirket")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">
+                <MudIcon Icon="@(IsEdit ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-3" />
+                @(IsEdit ? "Şirket Düzenle" : "Yeni Şirket")
+            </MudText>
+            <MudButton Variant="Variant.Outlined"
+                      StartIcon="@Icons.Material.Filled.ArrowBack"
+                      OnClick="GoBack">
+                Geri
+            </MudButton>
+        </MudStack>
+
+        @if (loading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mb-4" />
+        }
+        else
+        {
+            <!-- Form -->
+            <EditForm Model="@model" OnValidSubmit="OnValidSubmit" FormName="insuranceCompanyForm">
+                <FluentValidationValidator />
+
+                <MudGrid>
+                    <!-- Basic Information -->
+                    <MudItem xs="12">
+                        <MudCard Elevation="2">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
+                                        <MudText Typo="Typo.h6">Temel Bilgiler</MudText>
+                                    </MudStack>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="8">
+                                        <MudTextField @bind-Value="model.Name"
+                                                    Label="Şirket Adı *"
+                                                    Variant="Variant.Outlined"
+                                                    Required="true"
+                                                    For="@(() => model.Name)" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="4">
+                                        <MudSwitch @bind-Checked="isActive"
+                                                  Label="Aktif"
+                                                  Color="Color.Success"
+                                                  UnCheckedColor="Color.Default" />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="model.Description"
+                                                    Label="Açıklama"
+                                                    Variant="Variant.Outlined"
+                                                    Lines="3"
+                                                    For="@(() => model.Description)" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Contact Information -->
+                    <MudItem xs="12">
+                        <MudCard Elevation="2">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.ContactMail" Color="Color.Primary" />
+                                        <MudText Typo="Typo.h6">İletişim Bilgileri</MudText>
+                                    </MudStack>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="model.ContactEmail"
+                                                    Label="E-posta"
+                                                    Variant="Variant.Outlined"
+                                                    InputType="InputType.Email"
+                                                    Adornment="Adornment.Start"
+                                                    AdornmentIcon="@Icons.Material.Filled.Email"
+                                                    For="@(() => model.ContactEmail)" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="model.ContactPhone"
+                                                    Label="Telefon"
+                                                    Variant="Variant.Outlined"
+                                                    Adornment="Adornment.Start"
+                                                    AdornmentIcon="@Icons.Material.Filled.Phone"
+                                                    For="@(() => model.ContactPhone)" />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="model.Address"
+                                                    Label="Adres"
+                                                    Variant="Variant.Outlined"
+                                                    Lines="2"
+                                                    Adornment="Adornment.Start"
+                                                    AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                                    For="@(() => model.Address)" />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="model.Website"
+                                                    Label="Website"
+                                                    Variant="Variant.Outlined"
+                                                    Placeholder="https://example.com"
+                                                    Adornment="Adornment.Start"
+                                                    AdornmentIcon="@Icons.Material.Filled.Language"
+                                                    For="@(() => model.Website)" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Form Actions -->
+                    <MudItem xs="12">
+                        <MudCard Elevation="1">
+                            <MudCardContent>
+                                <MudStack Row Spacing="3" Justify="Justify.FlexEnd">
+                                    <MudButton Variant="Variant.Outlined"
+                                             Color="Color.Default"
+                                             OnClick="GoBack"
+                                             StartIcon="@Icons.Material.Filled.Cancel">
+                                        İptal
+                                    </MudButton>
+                                    <MudButton ButtonType="ButtonType.Submit"
+                                             Variant="Variant.Filled"
+                                             Color="Color.Primary"
+                                             StartIcon="@Icons.Material.Filled.Save"
+                                             Disabled="@saving">
+                                        @if (saving)
+                                        {
+                                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                            <MudText Class="ms-2">Kaydediliyor...</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>@(IsEdit ? "Güncelle" : "Kaydet")</MudText>
+                                        }
+                                    </MudButton>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter] public int? CompanyId { get; set; }
+
+    private CreateInsuranceCompanyDto model = new();
+    private bool saving = false;
+    private bool loading = false;
+    private bool isActive = true;
+    private bool IsEdit => CompanyId.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            await LoadCompany();
+        }
+    }
+
+    private async Task LoadCompany()
+    {
+        loading = true;
+        try
+        {
+            var result = await InsuranceCompanyService.GetInsuranceCompanyByIdAsync(CompanyId!.Value);
+            if (result.IsSuccess && result.Data != null)
+            {
+                var company = result.Data;
+                model = new CreateInsuranceCompanyDto
+                {
+                    Name = company.Name,
+                    Description = company.Description,
+                    ContactEmail = company.ContactEmail,
+                    ContactPhone = company.ContactPhone,
+                    Address = company.Address,
+                    Website = company.Website
+                };
+                isActive = company.IsActive;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Şirket bulunamadı", Severity.Error);
+                GoBack();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            GoBack();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        saving = true;
+        try
+        {
+            if (IsEdit)
+            {
+                var updateDto = new UpdateInsuranceCompanyDto
+                {
+                    Name = model.Name,
+                    Description = model.Description,
+                    ContactEmail = model.ContactEmail,
+                    ContactPhone = model.ContactPhone,
+                    Address = model.Address,
+                    Website = model.Website
+                };
+
+                var result = await InsuranceCompanyService.UpdateInsuranceCompanyAsync(CompanyId!.Value, updateDto);
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Şirket başarıyla güncellendi", Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Güncelleme başarısız", Severity.Error);
+                    if (result.Errors?.Any() == true)
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            Snackbar.Add(error, Severity.Warning);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var result = await InsuranceCompanyService.CreateInsuranceCompanyAsync(model);
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Şirket başarıyla oluşturuldu", Severity.Success);
+                    GoBack();
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Oluşturma başarısız", Severity.Error);
+                    if (result.Errors?.Any() == true)
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            Snackbar.Add(error, Severity.Warning);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/insurance-companies");
+}

@@ -2,11 +2,15 @@
 using IAMS.Application.Behaviors;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Services;
+using IAMS.Application.Services.Claims;
+using IAMS.Application.Services.Currencies;
 using IAMS.Application.Services.Customers;
 using IAMS.Application.Services.InsuranceCompanies;
 using IAMS.Application.Services.Parametric;
+using IAMS.Application.Services.Payments;
 using IAMS.Application.Services.Policies;
 using IAMS.Application.Services.PolicyTypes;
+using IAMS.Application.Services.Vehicles;
 using IAMS.Application.Validators.Customer;
 using IAMS.Application.Validators.Policy;
 using IAMS.Domain.Services;
@@ -42,6 +46,11 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IInsuranceCompanyService, InsuranceCompanyService>();
             services.AddScoped<ICustomerCodeGenerator, CustomerCodeGenerator>();
 
+            // Register new services
+            services.AddScoped<IClaimService, ClaimService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<ICurrencyService, CurrencyService>();
 
             return services;
         }

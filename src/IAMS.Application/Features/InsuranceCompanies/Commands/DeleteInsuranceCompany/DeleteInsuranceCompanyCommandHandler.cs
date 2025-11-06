@@ -38,7 +38,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceC
                 var activePolicies = company.Policies?.Any(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted) ?? false;
                 if (activePolicies)
                 {
-                    return Result.Failure("Cannot delete insurance company with active policies");
+                    return Result.Failure("Cannot delete insurance company with active policies", string.Empty);
                 }
 
                 // Soft delete

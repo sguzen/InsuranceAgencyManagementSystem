@@ -1,4 +1,5 @@
 ﻿using IAMS.Domain.Enums;
+using System.Linq;
 
 namespace IAMS.Domain.Entities
 {
@@ -6,6 +7,7 @@ namespace IAMS.Domain.Entities
     {
         public string Name { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public string ContactPerson { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
@@ -58,9 +60,41 @@ namespace IAMS.Domain.Entities
             return CustomerInsuranceCompanies.Count(c => c.IsActive);
         }
 
-        public static InsuranceCompany Create(string name, string? description, string? contactEmail, string? contactPhone, string? address, string? website, string v1, int v2)
+        public static InsuranceCompany Create(string name, string? description, string? contactEmail, string? contactPhone, string? address, string? website, string createdBy, int tenantId)
         {
-            throw new NotImplementedException();
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Insurance company name is required", nameof(name));
+            }
+
+            var company = new InsuranceCompany
+            {
+                Name = name,
+                Code = GenerateCompanyCode(name),
+                Description = description,
+                Email = contactEmail ?? string.Empty,
+                Phone = contactPhone ?? string.Empty,
+                Address = address ?? string.Empty,
+                Website = website,
+                IsActive = true,
+                CreatedBy = createdBy,
+                CreatedOn = DateTime.UtcNow
+            };
+
+            return company;
+        }
+
+        private static string GenerateCompanyCode(string name)
+        {
+            // Generate a code from the company name (first 3 chars + timestamp)
+            var prefix = new string(name.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpper();
+            if (string.IsNullOrEmpty(prefix))
+            {
+                prefix = "INS";
+            }
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            return $"{prefix}-{timestamp}";
         }
     }
 }

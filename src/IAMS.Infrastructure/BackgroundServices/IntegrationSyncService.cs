@@ -4,19 +4,27 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using IAMS.Infrastructure.Interfaces;
 using IAMS.Infrastructure.Data;
-using IAMS.MultiTenancy.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using IAMS.Application.Interfaces;
 using IModuleService = IAMS.Application.Interfaces.IModuleService;
 
 namespace IAMS.Infrastructure.BackgroundServices
 {
-    public class IntegrationSyncService : TenantAwareBackgroundService
+    /// <summary>
+    /// Background service for syncing integrations with external providers
+    /// Note: No longer uses multi-tenancy context. Each tenant instance runs its own services against their own database.
+    /// </summary>
+    public class IntegrationSyncService : BackgroundService
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<IntegrationSyncService> _logger;
+
         public IntegrationSyncService(
             IServiceProvider serviceProvider,
-            ILogger<IntegrationSyncService> logger) : base(serviceProvider, logger)
+            ILogger<IntegrationSyncService> logger)
         {
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -25,34 +33,32 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 _logger.LogInformation("Starting integration sync job");
 
-                await ExecuteForAllTenantsAsync(async (tenant, scope) =>
+                try
                 {
+                    using var scope = _serviceProvider.CreateScope();
                     var integrationService = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
                     var moduleService = scope.ServiceProvider.GetRequiredService<IModuleService>();
 
                     // Only run if integration module is enabled
                     if (await moduleService.IsModuleEnabledAsync("integration"))
                     {
-                        try
-                        {
-                            // Test all provider connections
-                            var providers = await integrationService.GetAvailableProvidersAsync();
+                        // Test all provider connections
+                        var providers = await integrationService.GetAvailableProvidersAsync();
 
-                            foreach (var provider in providers.Where(p => p.IsEnabled))
-                            {
-                                var isConnected = await integrationService.TestConnectionAsync(provider.Name);
-                                _logger.LogInformation("Provider {Provider} connection test: {Status}",
-                                    provider.Name, isConnected ? "Success" : "Failed");
-                            }
-
-                            _logger.LogDebug("Completed integration sync for tenant {TenantId}", tenant.Id);
-                        }
-                        catch (Exception ex)
+                        foreach (var provider in providers.Where(p => p.IsEnabled))
                         {
-                            _logger.LogError(ex, "Error during integration sync for tenant {TenantId}", tenant.Id);
+                            var isConnected = await integrationService.TestConnectionAsync(provider.Name);
+                            _logger.LogInformation("Provider {Provider} connection test: {Status}",
+                                provider.Name, isConnected ? "Success" : "Failed");
                         }
+
+                        _logger.LogDebug("Completed integration sync");
                     }
-                });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during integration sync");
+                }
 
                 _logger.LogInformation("Completed integration sync job");
 
@@ -62,13 +68,21 @@ namespace IAMS.Infrastructure.BackgroundServices
         }
     }
 
-    // IAMS.Infrastructure/BackgroundServices/ReportSchedulerService.cs
-    public class ReportSchedulerService : TenantAwareBackgroundService
+    /// <summary>
+    /// Background service for processing scheduled reports
+    /// Note: No longer uses multi-tenancy context. Each tenant instance runs its own services against their own database.
+    /// </summary>
+    public class ReportSchedulerService : BackgroundService
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ReportSchedulerService> _logger;
+
         public ReportSchedulerService(
             IServiceProvider serviceProvider,
-            ILogger<ReportSchedulerService> logger) : base(serviceProvider, logger)
+            ILogger<ReportSchedulerService> logger)
         {
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -77,41 +91,38 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 _logger.LogInformation("Starting scheduled reports job");
 
-                await ExecuteForAllTenantsAsync(async (tenant, scope) =>
+                try
                 {
+                    using var scope = _serviceProvider.CreateScope();
                     var reportingService = scope.ServiceProvider.GetRequiredService<IReportingService>();
                     var moduleService = scope.ServiceProvider.GetRequiredService<IModuleService>();
 
                     // Only run if reporting module is enabled
                     if (await moduleService.IsModuleEnabledAsync("reporting"))
                     {
-                        try
-                        {
-                            var scheduledReports = await reportingService.GetScheduledReportsAsync();
-                            var dueReports = scheduledReports.Where(r => r.IsActive &&
-                                (r.NextRun == null || r.NextRun <= DateTime.UtcNow)).ToList();
+                        var scheduledReports = await reportingService.GetScheduledReportsAsync();
+                        var dueReports = scheduledReports.Where(r => r.IsActive &&
+                            (r.NextRun == null || r.NextRun <= DateTime.UtcNow)).ToList();
 
-                            foreach (var report in dueReports)
+                        foreach (var report in dueReports)
+                        {
+                            try
                             {
-                                try
-                                {
-                                    await ProcessScheduledReportAsync(report, reportingService, scope);
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError(ex, "Failed to process scheduled report {ReportId}", report.Id);
-                                }
+                                await ProcessScheduledReportAsync(report, reportingService, scope);
                             }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to process scheduled report {ReportId}", report.Id);
+                            }
+                        }
 
-                            _logger.LogDebug("Processed {Count} scheduled reports for tenant {TenantId}",
-                                dueReports.Count, tenant.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error processing scheduled reports for tenant {TenantId}", tenant.Id);
-                        }
+                        _logger.LogDebug("Processed {Count} scheduled reports", dueReports.Count);
                     }
-                });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing scheduled reports");
+                }
 
                 _logger.LogInformation("Completed scheduled reports job");
 
@@ -163,13 +174,21 @@ namespace IAMS.Infrastructure.BackgroundServices
         }
     }
 
-    // IAMS.Infrastructure/BackgroundServices/ClaimProcessingService.cs
-    public class ClaimProcessingService : TenantAwareBackgroundService
+    /// <summary>
+    /// Background service for processing claims
+    /// Note: No longer uses multi-tenancy context. Each tenant instance runs its own services against their own database.
+    /// </summary>
+    public class ClaimProcessingService : BackgroundService
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ClaimProcessingService> _logger;
+
         public ClaimProcessingService(
             IServiceProvider serviceProvider,
-            ILogger<ClaimProcessingService> logger) : base(serviceProvider, logger)
+            ILogger<ClaimProcessingService> logger)
         {
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -178,26 +197,24 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 _logger.LogInformation("Starting claim processing job");
 
-                await ExecuteForAllTenantsAsync(async (tenant, scope) =>
+                try
                 {
+                    using var scope = _serviceProvider.CreateScope();
                     var integrationService = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
                     var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-                    try
-                    {
-                        // Process pending claims that need to be submitted to insurance companies
-                        await ProcessPendingClaimsAsync(integrationService, emailService);
+                    // Process pending claims that need to be submitted to insurance companies
+                    await ProcessPendingClaimsAsync(integrationService, emailService);
 
-                        // Check for claim status updates
-                        await CheckClaimStatusUpdatesAsync(integrationService, emailService);
+                    // Check for claim status updates
+                    await CheckClaimStatusUpdatesAsync(integrationService, emailService);
 
-                        _logger.LogDebug("Completed claim processing ");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during claim processing ");
-                    }
-                });
+                    _logger.LogDebug("Completed claim processing");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during claim processing");
+                }
 
                 _logger.LogInformation("Completed claim processing job");
 
@@ -256,13 +273,21 @@ namespace IAMS.Infrastructure.BackgroundServices
         }
     }
 
-    // IAMS.Infrastructure/BackgroundServices/DataCleanupService.cs
-    public class DataCleanupService : TenantAwareBackgroundService
+    /// <summary>
+    /// Background service for data cleanup
+    /// Note: No longer uses multi-tenancy context. Each tenant instance runs its own services against their own database.
+    /// </summary>
+    public class DataCleanupService : BackgroundService
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<DataCleanupService> _logger;
+
         public DataCleanupService(
             IServiceProvider serviceProvider,
-            ILogger<DataCleanupService> logger) : base(serviceProvider, logger)
+            ILogger<DataCleanupService> logger)
         {
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -271,26 +296,25 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 _logger.LogInformation("Starting data cleanup job");
 
-                await ExecuteForAllTenantsAsync(async (tenant, scope) =>
+                try
                 {
-                    try
-                    {
-                        // Clean up old integration logs (older than 6 months)
-                        await CleanupIntegrationLogsAsync(scope);
+                    using var scope = _serviceProvider.CreateScope();
 
-                        // Clean up temporary files
-                        await CleanupTemporaryFilesAsync(scope);
+                    // Clean up old integration logs (older than 6 months)
+                    await CleanupIntegrationLogsAsync(scope);
 
-                        // Clean up old audit logs
-                        await CleanupAuditLogsAsync(scope);
+                    // Clean up temporary files
+                    await CleanupTemporaryFilesAsync(scope);
 
-                        _logger.LogDebug("Completed data cleanup");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during data cleanup");
-                    }
-                });
+                    // Clean up old audit logs
+                    await CleanupAuditLogsAsync(scope);
+
+                    _logger.LogDebug("Completed data cleanup");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during data cleanup");
+                }
 
                 _logger.LogInformation("Completed data cleanup job");
 
@@ -359,13 +383,21 @@ namespace IAMS.Infrastructure.BackgroundServices
         }
     }
 
-    // IAMS.Infrastructure/BackgroundServices/BackupService.cs
-    public class BackupService : TenantAwareBackgroundService
+    /// <summary>
+    /// Background service for backups
+    /// Note: No longer uses multi-tenancy context. Each tenant instance runs its own services against their own database.
+    /// </summary>
+    public class BackupService : BackgroundService
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<BackupService> _logger;
+
         public BackupService(
             IServiceProvider serviceProvider,
-            ILogger<BackupService> logger) : base(serviceProvider, logger)
+            ILogger<BackupService> logger)
         {
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -374,23 +406,22 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 _logger.LogInformation("Starting backup job");
 
-                await ExecuteForAllTenantsAsync(async (tenant, scope) =>
+                try
                 {
-                    try
-                    {
-                        // Create database backup
-                        await CreateDatabaseBackupAsync(scope, tenant);
+                    using var scope = _serviceProvider.CreateScope();
 
-                        // Backup uploaded files
-                        await BackupFilesAsync(scope, tenant);
+                    // Create database backup
+                    await CreateDatabaseBackupAsync(scope);
 
-                        _logger.LogInformation("Completed backup for tenant {TenantId}", tenant.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error during backup for tenant {TenantId}", tenant.Id);
-                    }
-                });
+                    // Backup uploaded files
+                    await BackupFilesAsync(scope);
+
+                    _logger.LogInformation("Completed backup");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during backup");
+                }
 
                 _logger.LogInformation("Completed backup job");
 
@@ -406,17 +437,17 @@ namespace IAMS.Infrastructure.BackgroundServices
             }
         }
 
-        private async Task CreateDatabaseBackupAsync(IServiceScope scope, object tenant)
+        private async Task CreateDatabaseBackupAsync(IServiceScope scope)
         {
             // Placeholder for database backup logic
-            _logger.LogInformation("Creating database backup for tenant");
+            _logger.LogInformation("Creating database backup");
             await Task.CompletedTask;
         }
 
-        private async Task BackupFilesAsync(IServiceScope scope, object tenant)
+        private async Task BackupFilesAsync(IServiceScope scope)
         {
             // Placeholder for file backup logic
-            _logger.LogInformation("Creating file backup for tenant");
+            _logger.LogInformation("Creating file backup");
             await Task.CompletedTask;
         }
     }

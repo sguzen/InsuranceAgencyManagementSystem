@@ -83,8 +83,8 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
-// Add tenant middleware AFTER auth
-app.UseMiddleware<IAMS.MultiTenancy.Middleware.TenantMiddleware>();
+// Multi-tenancy middleware removed - each tenant uses their own database via connection string
+// app.UseMiddleware<IAMS.MultiTenancy.Middleware.TenantMiddleware>();
 
 
 

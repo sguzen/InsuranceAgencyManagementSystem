@@ -4,5 +4,5 @@ using MediatR;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificationNo
 {
-    public record GetCustomerByIdentificationNoQuery(string IdentificationNo, int TentantId) : IRequest<Result<CustomerDto>>;
+    public record GetCustomerByIdentificationNoQuery(string IdentificationNo) : IRequest<Result<CustomerDto>>;
 }

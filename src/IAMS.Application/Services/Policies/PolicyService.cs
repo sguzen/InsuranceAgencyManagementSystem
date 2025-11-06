@@ -1,7 +1,12 @@
 ﻿using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Features.Policies.Commands.ActivatePolicy;
+using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
+using IAMS.Application.Features.Policies.Commands.RenewPolicy;
+using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
 using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
+using IAMS.Application.Features.Policies.Queries.GetExpiringPolicies;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount;
 using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue;
 using IAMS.Application.Features.Policies.Queries.GetPolicies;
@@ -105,44 +110,64 @@ namespace IAMS.Application.Services.Policies
             return await _mediator.Send(new GetTopPoliciesByPremiumQuery(count));
         }
 
-        public Task<Result<List<PolicyDto>>> GetActivePoliciesAsync()
+        public async Task<Result<List<PolicyDto>>> GetActivePoliciesAsync()
         {
-            throw new NotImplementedException();
+            var queryParams = new PolicyQueryParams
+            {
+                Status = PolicyStatus.Active,
+                PageSize = 1000,
+                PageNumber = 1
+            };
+            var result = await GetPoliciesAsync(queryParams);
+            return result.IsSuccess
+                ? Result<List<PolicyDto>>.Success(result.Data?.Items ?? new List<PolicyDto>())
+                : Result<List<PolicyDto>>.Failure(result.Message ?? "Failed to retrieve active policies", result.Errors);
         }
 
-        public Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30)
+        public async Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30)
         {
-            throw new NotImplementedException();
+            return await _mediator.Send(new GetExpiringPoliciesQuery(daysAhead));
         }
 
-        public Task<Result<List<PolicyDto>>> GetExpiredPoliciesAsync()
+        public async Task<Result<List<PolicyDto>>> GetExpiredPoliciesAsync()
         {
-            throw new NotImplementedException();
+            var queryParams = new PolicyQueryParams
+            {
+                Status = PolicyStatus.Expired,
+                PageSize = 1000,
+                PageNumber = 1
+            };
+            var result = await GetPoliciesAsync(queryParams);
+            return result.IsSuccess
+                ? Result<List<PolicyDto>>.Success(result.Data?.Items ?? new List<PolicyDto>())
+                : Result<List<PolicyDto>>.Failure(result.Message ?? "Failed to retrieve expired policies", result.Errors);
         }
 
-        public Task<Result<PolicyDto>> ActivatePolicyAsync(int id)
+        public async Task<Result<PolicyDto>> ActivatePolicyAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _mediator.Send(new ActivatePolicyCommand(id));
         }
 
-        public Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason = null)
+        public async Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason = null)
         {
-            throw new NotImplementedException();
+            return await _mediator.Send(new CancelPolicyCommand(id, reason));
         }
 
-        public Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null)
+        public async Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason = null)
         {
-            throw new NotImplementedException();
+            return await _mediator.Send(new SuspendPolicyCommand(id, reason));
         }
 
-        public Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto)
+        public async Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto)
         {
-            throw new NotImplementedException();
+            return await _mediator.Send(new RenewPolicyCommand(id, renewalDto));
         }
 
-        public Task ProcessExpiringPoliciesAsync()
+        public async Task ProcessExpiringPoliciesAsync()
         {
-            throw new NotImplementedException();
+            // This is typically a background job - get expiring policies and notify users
+            // For now, just return - the actual implementation would be in a background service
+            await Task.CompletedTask;
         }
     }
 }

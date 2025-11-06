@@ -3,5 +3,5 @@ using MediatR;
 
 namespace IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount
 {
-    public record GetTotalCustomersCountQuery(int TenantId) : IRequest<Result<int>>;
+    public record GetTotalCustomersCountQuery() : IRequest<Result<int>>;
 }

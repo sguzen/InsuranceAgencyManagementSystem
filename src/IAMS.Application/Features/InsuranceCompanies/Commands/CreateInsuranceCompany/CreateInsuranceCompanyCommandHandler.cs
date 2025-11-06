@@ -35,7 +35,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceC
                 _logger.LogInformation("Creating insurance company: {Name}", request.CompanyDto.Name);
 
                 // Check if company name already exists
-                var existingCompany = await _insuranceCompanyRepository.GetByNameAsync(request.CompanyDto.Name); // TODO: Get tenant from context
+                var existingCompany = await _insuranceCompanyRepository.GetByNameAsync(request.CompanyDto.Name);
                 if (existingCompany != null)
                 {
                     return Result<InsuranceCompanyDto>.InternalError("Insurance company with this name already exists");
@@ -49,8 +49,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceC
                     request.CompanyDto.ContactPhone,
                     request.CompanyDto.Address,
                     request.CompanyDto.Website,
-                    "System", // TODO: Get from current user context
-                    1); // TODO: Get from tenant context
+                    "System"); // TODO: Get from ICurrentUserService
 
                 // Save to database
                 await _insuranceCompanyRepository.AddAsync(company);

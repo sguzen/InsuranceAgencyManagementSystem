@@ -60,7 +60,7 @@ namespace IAMS.Domain.Entities
             return CustomerInsuranceCompanies.Count(c => c.IsActive);
         }
 
-        public static InsuranceCompany Create(string name, string? description, string? contactEmail, string? contactPhone, string? address, string? website, string createdBy, int tenantId)
+        public static InsuranceCompany Create(string name, string? description, string? contactEmail, string? contactPhone, string? address, string? website, string createdBy)
         {
             // Validate required fields
             if (string.IsNullOrWhiteSpace(name))

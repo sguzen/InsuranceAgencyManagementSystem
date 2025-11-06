@@ -22,7 +22,7 @@ namespace IAMS.Application.Services.Customers
         Task<Result<bool>> ValidateIdentificationNoAsync(string tcNo, int? excludeCustomerId = null);
         Task<Result<bool>> ValidateEmailAsync(string email, int? excludeCustomerId = null);
         // Dashboard statistics methods
-        Task<Result<int>> GetTotalCustomersCountAsync(int tenantId);
+        Task<Result<int>> GetTotalCustomersCountAsync();
         Task<Result<List<CustomerDto>>> GetRecentCustomersAsync(int count = 5);
         Task<Result<CustomerStatisticsDto>> GetCustomerStatisticsAsync();
         Task<Result<List<CustomerDto>>> GetTopCustomersByPolicyCountAsync(int count = 10);

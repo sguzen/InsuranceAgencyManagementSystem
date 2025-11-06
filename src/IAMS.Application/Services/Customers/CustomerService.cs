@@ -73,7 +73,7 @@ namespace IAMS.Application.Services.Customers
 
         public async Task<Result<CustomerDto>> GetCustomerByIdentificationNoAsync(string IdentificationNo)
         {
-            return await _mediator.Send(new GetCustomerByIdentificationNoQuery(IdentificationNo, 0));// TODO fix this tennant id
+            return await _mediator.Send(new GetCustomerByIdentificationNoQuery(IdentificationNo));
         }
 
         public async Task<Result<CustomerDto>> GetCustomerByEmailAsync(string email)
@@ -102,9 +102,9 @@ namespace IAMS.Application.Services.Customers
         }
 
         // Dashboard statistics methods
-        public async Task<Result<int>> GetTotalCustomersCountAsync(int tenantId)
+        public async Task<Result<int>> GetTotalCustomersCountAsync()
         {
-            return await _mediator.Send(new GetTotalCustomersCountQuery(tenantId));
+            return await _mediator.Send(new GetTotalCustomersCountQuery());
         }
 
         public async Task<Result<List<CustomerDto>>> GetRecentCustomersAsync(int count = 5)

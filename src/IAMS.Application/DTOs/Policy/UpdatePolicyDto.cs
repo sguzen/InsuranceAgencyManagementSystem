@@ -18,6 +18,9 @@ namespace IAMS.Application.DTOs.Policy
         [Required(ErrorMessage = "Poliçe tipi seçimi zorunludur")]
         public int PolicyTypeId { get; set; }
 
+        // Vehicle Information (for car insurance policies)
+        public int? VehicleId { get; set; }
+
         [Required(ErrorMessage = "Başlangıç tarihi zorunludur")]
         public DateTime StartDate { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using IAMS.Application.DTOs.Customer;
 using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Application.DTOs.Vehicle;
 using IAMS.Domain.Enums;
 
 namespace IAMS.Application.DTOs.Policy
@@ -12,6 +13,7 @@ namespace IAMS.Application.DTOs.Policy
         public int CustomerId { get; set; }
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }
+        public int? VehicleId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal PremiumAmount { get; set; }
@@ -29,6 +31,7 @@ namespace IAMS.Application.DTOs.Policy
         public CustomerDto? Customer { get; set; }
         public InsuranceCompanyDto? InsuranceCompany { get; set; }
         public PolicyTypeDto? PolicyType { get; set; }
+        public VehicleDto? Vehicle { get; set; }
 
         // Calculated properties
         public bool IsActive => Status == PolicyStatus.Active && !IsExpired;

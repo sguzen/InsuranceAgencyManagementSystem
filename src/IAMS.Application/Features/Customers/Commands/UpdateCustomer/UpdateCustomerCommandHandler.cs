@@ -64,7 +64,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 }
 
                 // Check for business rule violations
-                var businessValidationErrors = await ValidateBusinessRulesAsync(request, existingCustomer, tenantId);
+                var businessValidationErrors = await ValidateBusinessRulesAsync(request, existingCustomer);
                 if (businessValidationErrors.Any())
                 {
                     _logger.LogWarning("Customer update business rule validation failed for ID {CustomerId}: {Errors}",
@@ -116,7 +116,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
             }
         }
 
-        private async Task<List<string>> ValidateBusinessRulesAsync(UpdateCustomerCommand request, Customer existingCustomer, int tenantId)
+        private async Task<List<string>> ValidateBusinessRulesAsync(UpdateCustomerCommand request, Customer existingCustomer)
         {
             var errors = new List<string>();
 
@@ -125,7 +125,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 // Check if email is being changed and if new email already exists
                 if (existingCustomer.Email != request.CustomerDto.Email)
                 {
-                    var duplicateEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email, tenantId);
+                    var duplicateEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email);
                     if (duplicateEmail != null && duplicateEmail.Id != request.Id)
                     {
                         errors.Add($"Bu e-posta adresi ({request.CustomerDto.Email}) başka bir müşteri tarafından kullanılmaktadır");
@@ -136,7 +136,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNumber) &&
                     existingCustomer.IdentificationNumber != request.CustomerDto.IdentificationNumber)
                 {
-                    var duplicateKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber, tenantId);
+                    var duplicateKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber);
                     if (duplicateKktc != null && duplicateKktc.Id != request.Id)
                     {
                         errors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.IdentificationNumber}) başka bir müşteri tarafından kullanılmaktadır");
@@ -146,7 +146,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 // Check if phone number is being changed and if new phone number already exists
                 if (existingCustomer.Phone != request.CustomerDto.MobilePhoneNumber)
                 {
-                    var duplicatePhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber, tenantId);
+                    var duplicatePhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber);
                     if (duplicatePhone != null && duplicatePhone.Id != request.Id)
                     {
                         errors.Add($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) başka bir müşteri tarafından kullanılmaktadır");

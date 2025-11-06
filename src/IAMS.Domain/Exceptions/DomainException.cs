@@ -3,19 +3,16 @@
     public abstract class DomainException : Exception
     {
         public string Code { get; }
-        public int TenantId { get; }
 
-        protected DomainException(string code, string message, int tenantId = 0) : base(message)
+        protected DomainException(string code, string message = null) : base(message)
         {
             Code = code;
-            TenantId = tenantId;
         }
 
-        protected DomainException(string code, string message, Exception innerException, int tenantId = 0)
+        protected DomainException(string code, string message, Exception innerException = null)
             : base(message, innerException)
         {
             Code = code;
-            TenantId = tenantId;
         }
     }
 }

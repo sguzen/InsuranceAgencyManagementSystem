@@ -46,7 +46,7 @@ namespace IAMS.Infrastructure.BackgroundServices
             }
         }
 
-        protected async Task ExecuteForTenantAsync(int tenantId, Func<Tenant, IServiceScope, Task> operation)
+        protected async Task ExecuteForTenantAsync(Func<Tenant, IServiceScope, Task> operation)
         {
             using var scope = _serviceProvider.CreateScope();
             var tenantService = scope.ServiceProvider.GetRequiredService<ITenantService>();

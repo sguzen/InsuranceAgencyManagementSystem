@@ -28,7 +28,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificatio
         {
             try
             {
-                var customer = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.IdentificationNo, request.TentantId);
+                var customer = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.IdentificationNo);
                 if (customer == null)
                 {
                     return Result<CustomerDto>.NotFound($"KKTC No '{request.IdentificationNo}' ile müşteri bulunamadı");

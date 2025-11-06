@@ -24,7 +24,7 @@ namespace IAMS.Infrastructure.Services
 
         public string? LastName => _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Surname)?.Value;
 
-        public int TenantId => int.Parse(_httpContextAccessor.HttpContext?.User?.FindFirst("TenantId")?.Value ?? "1");
+      //  public  => int.Parse(_httpContextAccessor.HttpContext?.User?.FindFirst("TenantId")?.Value ?? "1");
 
         public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 

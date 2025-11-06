@@ -8,8 +8,8 @@ namespace IAMS.Application.Services
 {
     public interface ICustomerCodeGenerator
     {
-        Task<string> GenerateAsync(int tenantId);
-        Task<bool> IsCodeUniqueAsync(string code, int tenantId);
+        Task<string> GenerateAsync();
+        Task<bool> IsCodeUniqueAsync(string code);
         string GenerateFallbackCode();
     }
 
@@ -34,7 +34,7 @@ namespace IAMS.Application.Services
             _logger = logger;
         }
 
-        public async Task<string> GenerateAsync(int tenantId)
+        public async Task<string> GenerateAsync()
         {
             try
             {
@@ -43,46 +43,46 @@ namespace IAMS.Application.Services
                 var year = DateTime.Now.Year.ToString();
 
                 // Try sequence-based generation first
-                var sequenceCode = await GenerateSequenceBasedCodeAsync(tenantId, tenantPrefix, year);
+                var sequenceCode = await GenerateSequenceBasedCodeAsync(tenantPrefix, year);
                 if (!string.IsNullOrEmpty(sequenceCode))
                 {
                     return sequenceCode;
                 }
 
                 // Fallback to timestamp-based if sequence fails
-                _logger.LogWarning("Sequence-based code generation failed for tenant {TenantId}, using timestamp fallback", tenantId);
+                _logger.LogWarning("Sequence-based code generation failed for tenant {TenantId}, using timestamp fallback");
                 return GenerateTimestampBasedCode(tenantPrefix);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating customer code for tenant {TenantId}", tenantId);
+                _logger.LogError(ex, "Error generating customer code for tenant {TenantId}");
                 return GenerateFallbackCode();
             }
         }
 
-        private async Task<string> GenerateSequenceBasedCodeAsync(int tenantId, string prefix, string year)
+        private async Task<string> GenerateSequenceBasedCodeAsync(string prefix, string year)
         {
             for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++)
             {
                 try
                 {
                     // Get the highest sequence number for this tenant and year
-                    var lastCustomer = await GetLastCustomerForYearAsync(tenantId, year);
+                    var lastCustomer = await GetLastCustomerForYearAsync(year);
                     var nextSequence = ExtractSequenceFromCode(lastCustomer?.CustomerCode, prefix, year) + 1;
 
                     // Generate the code
                     var code = $"{prefix}{year}{nextSequence:D6}";
 
                     // Verify uniqueness (double-check for concurrency)
-                    if (await IsCodeUniqueAsync(code, tenantId))
+                    if (await IsCodeUniqueAsync(code))
                     {
                         _logger.LogDebug("Generated customer code {Code} for tenant {TenantId} (attempt {Attempt})",
-                            code, tenantId, attempt + 1);
+                            code, attempt + 1);
                         return code;
                     }
 
                     _logger.LogWarning("Generated code {Code} already exists for tenant {TenantId}, retrying...",
-                        code, tenantId);
+                        code);
                 }
                 catch (Exception ex)
                 {
@@ -93,7 +93,7 @@ namespace IAMS.Application.Services
             return string.Empty; // All attempts failed
         }
 
-        private async Task<Customer?> GetLastCustomerForYearAsync(int tenantId, string year)
+        private async Task<Customer?> GetLastCustomerForYearAsync(string year)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace IAMS.Application.Services
                 var yearEnd = yearStart.AddYears(1).AddDays(-1);
 
                 var customers = await _unitOfWork.Customers.GetCustomersCreatedBetweenAsync(
-                    tenantId, yearStart, yearEnd);
+                    yearStart, yearEnd);
 
                 // Filter and sort by sequence number
                 return customers
@@ -151,11 +151,11 @@ namespace IAMS.Application.Services
             return $"{CODE_PREFIX}FALLBACK{guid}";
         }
 
-        public async Task<bool> IsCodeUniqueAsync(string code, int tenantId)
+        public async Task<bool> IsCodeUniqueAsync(string code)
         {
             try
             {
-                var existing = await _unitOfWork.Customers.GetByCustomerCodeAsync(code, tenantId);
+                var existing = await _unitOfWork.Customers.GetByCustomerCodeAsync(code);
                 return existing == null;
             }
             catch (Exception ex)

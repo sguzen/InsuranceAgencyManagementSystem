@@ -75,12 +75,12 @@ namespace IAMS.Persistence.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<int> GetClaimCountByStatusAsync(ClaimStatus status, int tenantId)
+        public Task<int> GetClaimCountByStatusAsync(ClaimStatus status)
         {
             throw new NotImplementedException();
         }
 
-        public Task<decimal> GetTotalClaimAmountAsync(int tenantId, DateTime? startDate = null, DateTime? endDate = null)
+        public Task<decimal> GetTotalClaimAmountAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             throw new NotImplementedException();
         }

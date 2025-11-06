@@ -186,16 +186,16 @@ namespace IAMS.Infrastructure.BackgroundServices
                     try
                     {
                         // Process pending claims that need to be submitted to insurance companies
-                        await ProcessPendingClaimsAsync(integrationService, emailService, tenant.Id);
+                        await ProcessPendingClaimsAsync(integrationService, emailService);
 
                         // Check for claim status updates
-                        await CheckClaimStatusUpdatesAsync(integrationService, emailService, tenant.Id);
+                        await CheckClaimStatusUpdatesAsync(integrationService, emailService);
 
-                        _logger.LogDebug("Completed claim processing for tenant {TenantId}", tenant.Id);
+                        _logger.LogDebug("Completed claim processing ");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error during claim processing for tenant {TenantId}", tenant.Id);
+                        _logger.LogError(ex, "Error during claim processing ");
                     }
                 });
 
@@ -211,7 +211,7 @@ namespace IAMS.Infrastructure.BackgroundServices
             }
         }
 
-        private async Task ProcessPendingClaimsAsync(IIntegrationService integrationService, IEmailService emailService, int tenantId)
+        private async Task ProcessPendingClaimsAsync(IIntegrationService integrationService, IEmailService emailService)
         {
             // This would get pending claims from your database
             // For now, it's a placeholder
@@ -247,11 +247,11 @@ namespace IAMS.Infrastructure.BackgroundServices
             }
         }
 
-        private async Task CheckClaimStatusUpdatesAsync(IIntegrationService integrationService, IEmailService emailService, int tenantId)
+        private async Task CheckClaimStatusUpdatesAsync(IIntegrationService integrationService, IEmailService emailService)
         {
             // This would check for claim status updates from insurance companies
             // Placeholder implementation
-            _logger.LogDebug("Checking claim status updates for tenant {TenantId}", tenantId);
+            _logger.LogDebug("Checking claim status updates");
             await Task.CompletedTask;
         }
     }
@@ -276,19 +276,19 @@ namespace IAMS.Infrastructure.BackgroundServices
                     try
                     {
                         // Clean up old integration logs (older than 6 months)
-                        await CleanupIntegrationLogsAsync(scope, tenant.Id);
+                        await CleanupIntegrationLogsAsync(scope);
 
                         // Clean up temporary files
-                        await CleanupTemporaryFilesAsync(scope, tenant.Id);
+                        await CleanupTemporaryFilesAsync(scope);
 
                         // Clean up old audit logs
-                        await CleanupAuditLogsAsync(scope, tenant.Id);
+                        await CleanupAuditLogsAsync(scope);
 
-                        _logger.LogDebug("Completed data cleanup for tenant {TenantId}", tenant.Id);
+                        _logger.LogDebug("Completed data cleanup");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error during data cleanup for tenant {TenantId}", tenant.Id);
+                        _logger.LogError(ex, "Error during data cleanup");
                     }
                 });
 
@@ -306,7 +306,7 @@ namespace IAMS.Infrastructure.BackgroundServices
             }
         }
 
-        private async Task CleanupIntegrationLogsAsync(IServiceScope scope, int tenantId)
+        private async Task CleanupIntegrationLogsAsync(IServiceScope scope)
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
             var cutoffDate = DateTime.UtcNow.AddMonths(-6);
@@ -318,11 +318,11 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 dbContext.IntegrationLogs.RemoveRange(oldLogs);
                 await dbContext.SaveChangesAsync();
-                _logger.LogInformation("Cleaned up {Count} old integration logs for tenant {TenantId}", count, tenantId);
+                _logger.LogInformation("Cleaned up {Count} old integration logs", count);
             }
         }
 
-        private async Task CleanupTemporaryFilesAsync(IServiceScope scope, int tenantId)
+        private async Task CleanupTemporaryFilesAsync(IServiceScope scope)
         {
             var fileStorage = scope.ServiceProvider.GetRequiredService<IFileStorageService>();
 
@@ -347,14 +347,14 @@ namespace IAMS.Infrastructure.BackgroundServices
 
             if (filesToDelete.Any())
             {
-                _logger.LogInformation("Cleaned up {Count} temporary files for tenant {TenantId}", filesToDelete.Count, tenantId);
+                _logger.LogInformation("Cleaned up {Count} temporary files", filesToDelete.Count);
             }
         }
 
-        private async Task CleanupAuditLogsAsync(IServiceScope scope, int tenantId)
+        private async Task CleanupAuditLogsAsync(IServiceScope scope)
         {
             // Placeholder for audit log cleanup
-            _logger.LogDebug("Audit log cleanup for tenant {TenantId}", tenantId);
+            _logger.LogDebug("Audit log cleanup");
             await Task.CompletedTask;
         }
     }

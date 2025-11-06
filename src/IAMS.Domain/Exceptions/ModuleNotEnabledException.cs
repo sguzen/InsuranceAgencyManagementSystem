@@ -4,8 +4,8 @@
     {
         public string ModuleName { get; }
 
-        public ModuleNotEnabledException(string moduleName, int tenantId)
-            : base("MODULE_NOT_ENABLED", $"Module '{moduleName}' is not enabled for this tenant", tenantId)
+        public ModuleNotEnabledException(string moduleName)
+            : base("MODULE_NOT_ENABLED", $"Module '{moduleName}' is not enabled for this tenant")
         {
             ModuleName = moduleName;
         }

@@ -7,7 +7,7 @@ namespace IAMS.Application.DTOs.Policy
     public class PolicyDto
     {
         public int Id { get; set; }
-        public int TenantId { get; set; }
+        
         public string PolicyNumber { get; set; } = string.Empty;
         public int CustomerId { get; set; }
         public int InsuranceCompanyId { get; set; }

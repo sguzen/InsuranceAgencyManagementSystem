@@ -69,12 +69,12 @@ namespace IAMS.MultiTenancy.Services
             }
         }
 
-        public async Task<List<string>> GetEnabledModulesAsync(int tenantId)
+        public async Task<List<string>> GetEnabledModulesAsync()
         {
             try
             {
                 var enabledModules = await _tenantdbContext.TenantModules
-                    .Where(tm => tm.TenantId == tenantId && tm.IsEnabled)
+                    .Where(tm => tm.IsEnabled)
                     .Select(tm => tm.ModuleName)
                     .ToListAsync();
 
@@ -82,27 +82,27 @@ namespace IAMS.MultiTenancy.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting enabled modules for tenant {TenantId}", tenantId);
+                _logger.LogError(ex, "Error getting enabled modules");
                 return new List<string>();
             }
         }
 
-        public async Task EnableModuleAsync(int tenantId, string moduleName)
+        public async Task EnableModuleAsync(string moduleName)
         {
-            await SetModuleStatusAsync(tenantId, moduleName, true);
+            await SetModuleStatusAsync(moduleName, true);
         }
 
-        public async Task DisableModuleAsync(int tenantId, string moduleName)
+        public async Task DisableModuleAsync(string moduleName)
         {
-            await SetModuleStatusAsync(tenantId, moduleName, false);
+            await SetModuleStatusAsync( moduleName, false);
         }
 
-        public async Task<Dictionary<string, bool>> GetAllModulesStatusAsync(int tenantId)
+        public async Task<Dictionary<string, bool>> GetAllModulesStatusAsync()
         {
             try
             {
                 var moduleStatuses = await _tenantdbContext.TenantModules
-                    .Where(tm => tm.TenantId == tenantId)
+                   // .Where(tm => tm.TenantId == tenantId)
                     .ToDictionaryAsync(tm => tm.ModuleName, tm => tm.IsEnabled);
 
                 // Add default modules that might not be in database yet
@@ -119,12 +119,12 @@ namespace IAMS.MultiTenancy.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting all module statuses for tenant {TenantId}", tenantId);
+                _logger.LogError(ex, "Error getting all module statuses");
                 return new Dictionary<string, bool>();
             }
         }
 
-        private async Task SetModuleStatusAsync(int tenantId, string moduleName, bool isEnabled)
+        private async Task SetModuleStatusAsync(string moduleName, bool isEnabled)
         {
             if (string.IsNullOrWhiteSpace(moduleName))
             {
@@ -134,14 +134,14 @@ namespace IAMS.MultiTenancy.Services
             try
             {
                 var tenantModule = await _tenantdbContext.TenantModules
-                    .FirstOrDefaultAsync(tm => tm.TenantId == tenantId && tm.ModuleName == moduleName);
+                    .FirstOrDefaultAsync(tm => tm.ModuleName == moduleName);
 
                 if (tenantModule == null)
                 {
                     // Create new module entry
                     tenantModule = new Entities.TenantModule
                     {
-                        TenantId = tenantId,
+                       //TenantId = tenantId,
                         ModuleName = moduleName,
                         IsEnabled = isEnabled,
                         CreatedOn = DateTime.UtcNow
@@ -158,14 +158,14 @@ namespace IAMS.MultiTenancy.Services
                 await _tenantdbContext.SaveChangesAsync();
 
                 var action = isEnabled ? "enabled" : "disabled";
-                _logger.LogInformation("Module {ModuleName} {Action} for tenant {TenantId}",
-                    moduleName, action, tenantId);
+                _logger.LogInformation("Module {ModuleName} {Action}",
+                    moduleName, action);
             }
             catch (Exception ex)
             {
                 var action = isEnabled ? "enabling" : "disabling";
-                _logger.LogError(ex, "Error {Action} module {ModuleName} for tenant {TenantId}",
-                    action, moduleName, tenantId);
+                _logger.LogError(ex, "Error {Action} module {ModuleName} ",
+                    action, moduleName);
                 throw;
             }
         }

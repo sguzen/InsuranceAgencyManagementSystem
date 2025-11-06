@@ -6,8 +6,8 @@
         public int PolicyTypeId { get; }
         public DateTime EffectiveDate { get; }
 
-        public CommissionCalculationException(int insuranceCompanyId, int policyTypeId, DateTime effectiveDate, string message, int tenantId = 0)
-            : base("COMMISSION_CALCULATION_ERROR", message, tenantId)
+        public CommissionCalculationException(int insuranceCompanyId, int policyTypeId, DateTime effectiveDate, string message = null)
+            : base("COMMISSION_CALCULATION_ERROR", message)
         {
             InsuranceCompanyId = insuranceCompanyId;
             PolicyTypeId = policyTypeId;

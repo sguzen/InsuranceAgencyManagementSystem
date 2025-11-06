@@ -10,9 +10,9 @@ namespace IAMS.MultiTenancy.Extensions
             return app.UseMiddleware<TenantMiddleware>();
         }
 
-        public static IApplicationBuilder UseTenantPerformanceMonitoring(this IApplicationBuilder app)
-        {
-            return app.UseMiddleware<Services.TenantPerformanceMiddleware>();
-        }
+        //public static IApplicationBuilder UseTenantPerformanceMonitoring(this IApplicationBuilder app)
+        //{
+        //    return app.UseMiddleware<Services.TenantPerformanceMiddleware>();
+        //}
     }
 }

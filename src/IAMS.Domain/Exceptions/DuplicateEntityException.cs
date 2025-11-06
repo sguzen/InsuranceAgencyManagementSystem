@@ -6,8 +6,8 @@
         public string DuplicateField { get; }
         public string DuplicateValue { get; }
 
-        public DuplicateEntityException(string entityType, string duplicateField, string duplicateValue, int tenantId = 0)
-            : base("DUPLICATE_ENTITY", $"{entityType} with {duplicateField} '{duplicateValue}' already exists", tenantId)
+        public DuplicateEntityException(string entityType, string duplicateField, string duplicateValue = null)
+            : base("DUPLICATE_ENTITY", $"{entityType} with {duplicateField} '{duplicateValue}' already exists")
         {
             EntityType = entityType;
             DuplicateField = duplicateField;

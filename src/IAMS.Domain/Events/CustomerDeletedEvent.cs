@@ -15,8 +15,6 @@ namespace IAMS.Domain.Events
 
         public DateTime OccurredOn => throw new NotImplementedException();
 
-        public int TenantId => throw new NotImplementedException();
-
         public CustomerDeletedEvent(Customer customer, string deletedBy)
         {
             Customer = customer;

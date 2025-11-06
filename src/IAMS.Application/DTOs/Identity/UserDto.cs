@@ -16,6 +16,5 @@ namespace IAMS.Application.DTOs.Identity
         public DateTime CreatedOn { get; set; }
         public DateTime? LastLogin { get; set; }
         public List<string> Roles { get; set; } = new();
-        public int TenantId { get; set; }
     }
 }

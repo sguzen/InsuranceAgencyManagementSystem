@@ -9,7 +9,7 @@ namespace IAMS.Application.Interfaces
         string? Email { get; }
         string? FirstName { get; }
         string? LastName { get; }
-        int TenantId { get; }
+         
         bool IsAuthenticated { get; }
         List<string> Roles { get; }
         List<string> Permissions { get; }

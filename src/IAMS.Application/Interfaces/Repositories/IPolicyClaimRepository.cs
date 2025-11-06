@@ -13,7 +13,7 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<decimal> GetTotalClaimAmountByPolicyIdAsync(int policyId);
         Task<DateTime?> GetLastClaimDateAsync(int customerId);
         Task<List<Claim>> GetClaimsByCustomerIdAsync(int customerId);
-        Task<int> GetClaimCountByStatusAsync(ClaimStatus status, int tenantId);
-        Task<decimal> GetTotalClaimAmountAsync(int tenantId, DateTime? startDate = null, DateTime? endDate = null);
+        Task<int> GetClaimCountByStatusAsync(ClaimStatus status);
+        Task<decimal> GetTotalClaimAmountAsync(DateTime? startDate = null, DateTime? endDate = null);
     }
 }

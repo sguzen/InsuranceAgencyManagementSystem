@@ -2,8 +2,8 @@
 {
     public interface IClaimNumberGenerator
     {
-        string GenerateClaimNumber(int tenantId, int policyId);
-        Task<string> GenerateClaimNumberAsync(int tenantId, int policyId);
+        string GenerateClaimNumber(int policyId);
+        Task<string> GenerateClaimNumberAsync(int policyId);
         bool IsValidClaimNumber(string claimNumber);
     }
 }

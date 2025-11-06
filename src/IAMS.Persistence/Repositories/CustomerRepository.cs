@@ -29,21 +29,21 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Customer?> GetByIdentificationNoAsync(string IdentificationNo, int tenantId)
+        public async Task<Customer?> GetByIdentificationNoAsync(string IdentificationNo)
         {
             return await _dbSet
                 .Where(c => !c.IsDeleted && c.IdentificationNumber == IdentificationNo)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Customer?> GetByCustomerCodeAsync(string customerCode, int tenantId)
+        public async Task<Customer?> GetByCustomerCodeAsync(string customerCode)
         {
             return await _dbSet
                 .Where(c => !c.IsDeleted && c.CustomerCode == customerCode)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<Customer>> GetCustomersWithActivePoliciesAsync(int tenantId)
+        public async Task<List<Customer>> GetCustomersWithActivePoliciesAsync()
         {
             return await _dbSet
                 .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
@@ -57,7 +57,7 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Policy>> GetActivePoliciesAsync(int customerId, int tenantId)
+        public async Task<List<Policy>> GetActivePoliciesAsync(int customerId)
         {
             var customer = await _dbSet
                 .Include(c => c.Policies.Where(p => p.Status == PolicyStatus.Active && !p.IsDeleted))
@@ -115,7 +115,7 @@ namespace IAMS.Persistence.Repositories
             return (customers, totalCount);
         }
 
-        public async Task<bool> IdentificationNoExistsAsync(string IdentificationNo, int tenantId, int? excludeCustomerId = null)
+        public async Task<bool> IdentificationNoExistsAsync(string IdentificationNo, int? excludeCustomerId = null)
         {
             var query = _dbSet.Where(c => !c.IsDeleted && c.IdentificationNumber == IdentificationNo);
 
@@ -127,7 +127,7 @@ namespace IAMS.Persistence.Repositories
             return await query.AnyAsync();
         }
 
-        public async Task<bool> EmailExistsAsync(string email, int tenantId, int? excludeCustomerId = null)
+        public async Task<bool> EmailExistsAsync(string email, int? excludeCustomerId = null)
         {
             var query = _dbSet.Where(c => !c.IsDeleted && c.Email == email);
 
@@ -139,7 +139,7 @@ namespace IAMS.Persistence.Repositories
             return await query.AnyAsync();
         }
 
-        public async Task<bool> CustomerCodeExistsAsync(string customerCode, int tenantId, int? excludeCustomerId = null)
+        public async Task<bool> CustomerCodeExistsAsync(string customerCode, int? excludeCustomerId = null)
         {
             var query = _dbSet.Where(c => !c.IsDeleted && c.CustomerCode == customerCode);
 
@@ -151,7 +151,7 @@ namespace IAMS.Persistence.Repositories
             return await query.AnyAsync();
         }
 
-        public async Task<List<Customer>> GetCustomersCreatedBetweenAsync(int tenantId, DateTime startDate, DateTime endDate)
+        public async Task<List<Customer>> GetCustomersCreatedBetweenAsync(DateTime startDate, DateTime endDate)
         {
             try
             {
@@ -177,11 +177,11 @@ namespace IAMS.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error retrieving customers created between {startDate:yyyy-MM-dd} and {endDate:yyyy-MM-dd} for tenant {tenantId}", ex);
+                throw new InvalidOperationException($"Error retrieving customers created between {startDate:yyyy-MM-dd} and {endDate:yyyy-MM-dd}", ex);
             }
         }
 
-        public async Task<Customer?> GetLastCustomerAsync(int tenantId)
+        public async Task<Customer?> GetLastCustomerAsync()
         {
             try
             {
@@ -198,7 +198,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<Customer?> GetByPhoneAsync(string phoneNumber, int tenantId)
+        public async Task<Customer?> GetByPhoneAsync(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return null;
@@ -223,7 +223,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<Customer?> GetByEmailAsync(string email, int tenantId)
+        public async Task<Customer?> GetByEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
                 return null;
@@ -243,7 +243,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<int> GetCustomerCountAsync(int tenantId)
+        public async Task<int> GetCustomerCountAsync()
         {
             try
             {
@@ -258,7 +258,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<List<Customer>> GetRecentCustomersAsync(int tenantId, int count = 10)
+        public async Task<List<Customer>> GetRecentCustomersAsync(int count = 10)
         {
             try
             {
@@ -276,7 +276,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<CustomerStatisticsDto> GetCustomerStatisticsAsync(int tenantId)
+        public async Task<CustomerStatisticsDto> GetCustomerStatisticsAsync()
         {
             try
             {
@@ -308,13 +308,13 @@ namespace IAMS.Persistence.Repositories
                 var customersWithoutPolicies = totalCustomers - customersWithActivePolicies;
 
                 // Calculate average age
-                var averageAge = await GetAverageCustomerAgeAsync(tenantId);
+                var averageAge = await GetAverageCustomerAgeAsync();
 
                 // Get status breakdown
-                var customersByStatus = await GetCustomersByStatusAsync(tenantId);
+                var customersByStatus = await GetCustomersByStatusAsync();
 
                 // Get gender breakdown
-                var customersByGender = await GetCustomersByGenderAsync(tenantId);
+                var customersByGender = await GetCustomersByGenderAsync();
 
                 return new CustomerStatisticsDto
                 {
@@ -338,7 +338,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int tenantId, int count = 10)
+        public async Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int count = 10)
         {
             try
             {
@@ -356,7 +356,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync(int tenantId)
+        public async Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync()
         {
             try
             {
@@ -375,7 +375,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int tenantId, int months = 12)
+        public async Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int months = 12)
         {
             try
             {
@@ -403,7 +403,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<double> GetAverageCustomerAgeAsync(int tenantId)
+        public async Task<double> GetAverageCustomerAgeAsync()
         {
             try
             {
@@ -423,7 +423,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<Dictionary<Gender, int>> GetCustomersByGenderAsync(int tenantId)
+        public async Task<Dictionary<Gender, int>> GetCustomersByGenderAsync()
         {
             try
             {
@@ -442,7 +442,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public Task<int> GetNewCustomersCountAsync(int tenantId, DateTime fromDate)
+        public Task<int> GetNewCustomersCountAsync(DateTime fromDate)
         {
             throw new NotImplementedException();
         }

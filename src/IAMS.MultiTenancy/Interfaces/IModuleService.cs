@@ -4,9 +4,9 @@
     {
         Task<bool> IsModuleEnabledAsync(string moduleName);
         IEnumerable<string> GetEnabledModules();
-        Task<List<string>> GetEnabledModulesAsync(int tenantId);
-        Task EnableModuleAsync(int tenantId, string moduleName);
-        Task DisableModuleAsync(int tenantId, string moduleName);
-        Task<Dictionary<string, bool>> GetAllModulesStatusAsync(int tenantId);
+        Task<List<string>> GetEnabledModulesAsync();
+        Task EnableModuleAsync(string moduleName);
+        Task DisableModuleAsync(string moduleName);
+        Task<Dictionary<string, bool>> GetAllModulesStatusAsync();
     }
 }

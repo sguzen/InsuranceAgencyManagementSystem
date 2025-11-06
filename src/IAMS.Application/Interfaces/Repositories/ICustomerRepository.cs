@@ -13,28 +13,28 @@ namespace IAMS.Application.Interfaces.Repositories
     public interface ICustomerRepository : IRepository<Customer>
     {
         Task<Customer?> GetByIdWithDetailsAsync(int id);
-        Task<Customer?> GetByIdentificationNoAsync(string IdentificationNo, int tenantId);
-        Task<Customer?> GetByPhoneAsync(string phoneNumber, int tenantId);
-        Task<Customer?> GetByEmailAsync(string email, int tenantId);
-        Task<Customer?> GetByCustomerCodeAsync(string customerCode, int tenantId);
-        Task<List<Customer>> GetCustomersWithActivePoliciesAsync(int tenantId);
-        Task<List<Policy>> GetActivePoliciesAsync(int customerId, int tenandId);
+        Task<Customer?> GetByIdentificationNoAsync(string IdentificationNo);
+        Task<Customer?> GetByPhoneAsync(string phoneNumber);
+        Task<Customer?> GetByEmailAsync(string email);
+        Task<Customer?> GetByCustomerCodeAsync(string customerCode);
+        Task<List<Customer>> GetCustomersWithActivePoliciesAsync();
+        Task<List<Policy>> GetActivePoliciesAsync(int customerId);
         Task<(List<Customer> customers, int totalCount)> GetPagedAsync(CustomerQueryParams queryParams);
-        Task<bool> IdentificationNoExistsAsync(string IdentificationNo, int tenantId, int? excludeCustomerId = null);
-        Task<bool> EmailExistsAsync(string email, int tenantId, int? excludeCustomerId = null);
-        Task<bool> CustomerCodeExistsAsync(string customerCode, int tenantId, int? excludeCustomerId = null);
-        Task<List<Customer>> GetCustomersCreatedBetweenAsync(int tenantId, DateTime startDate, DateTime endDate);
+        Task<bool> IdentificationNoExistsAsync(string IdentificationNo, int? excludeCustomerId = null);
+        Task<bool> EmailExistsAsync(string email, int? excludeCustomerId = null);
+        Task<bool> CustomerCodeExistsAsync(string customerCode, int? excludeCustomerId = null);
+        Task<List<Customer>> GetCustomersCreatedBetweenAsync(DateTime startDate, DateTime endDate);
 
         // Dashboard and statistics methods
-        Task<int> GetCustomerCountAsync(int tenantId);
-        Task<List<Customer>> GetRecentCustomersAsync(int tenantId, int count = 10);
-        Task<CustomerStatisticsDto> GetCustomerStatisticsAsync(int tenantId);
-        Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int tenantId, int count = 10);
-        Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync(int tenantId);
-        Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int tenantId, int months = 12);
-        Task<int> GetNewCustomersCountAsync(int tenantId, DateTime fromDate);
-        Task<double> GetAverageCustomerAgeAsync(int tenantId);
-        Task<Dictionary<Gender, int>> GetCustomersByGenderAsync(int tenantId);
-        Task<Customer?> GetLastCustomerAsync(int tenantId);
+        Task<int> GetCustomerCountAsync();
+        Task<List<Customer>> GetRecentCustomersAsync(int count = 10);
+        Task<CustomerStatisticsDto> GetCustomerStatisticsAsync();
+        Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int count = 10);
+        Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync();
+        Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int months = 12);
+        Task<int> GetNewCustomersCountAsync(DateTime fromDate);
+        Task<double> GetAverageCustomerAgeAsync();
+        Task<Dictionary<Gender, int>> GetCustomersByGenderAsync();
+        Task<Customer?> GetLastCustomerAsync();
     }
 }

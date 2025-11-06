@@ -4,14 +4,14 @@
     {
         public string RuleName { get; }
 
-        public BusinessRuleViolationException(string ruleName, string message, int tenantId = 0)
-            : base("BUSINESS_RULE_VIOLATION", message, tenantId)
+        public BusinessRuleViolationException(string ruleName, string message = null)
+            : base("BUSINESS_RULE_VIOLATION", message)
         {
             RuleName = ruleName;
         }
 
-        public BusinessRuleViolationException(string ruleName, string message, Exception innerException, int tenantId = 0)
-            : base("BUSINESS_RULE_VIOLATION", message, innerException, tenantId)
+        public BusinessRuleViolationException(string ruleName, string message, Exception innerException = null)
+            : base("BUSINESS_RULE_VIOLATION", message, innerException)
         {
             RuleName = ruleName;
         }

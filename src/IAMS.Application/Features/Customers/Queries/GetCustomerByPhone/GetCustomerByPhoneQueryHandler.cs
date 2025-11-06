@@ -28,7 +28,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerByPhone
         {
             try
             {
-                var customer = await _unitOfWork.Customers.GetByPhoneAsync(request.Phone, request.TentandId);
+                var customer = await _unitOfWork.Customers.GetByPhoneAsync(request.Phone);
                 if (customer == null)
                 {
                     return Result<CustomerDto>.NotFound($"Telefon numarası '{request.Phone}' ile müşteri bulunamadı");

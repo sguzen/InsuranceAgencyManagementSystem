@@ -111,24 +111,20 @@ namespace IAMS.Infrastructure.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> GetEnabledModulesAsync(int tenantId)
+
+        public Task<Dictionary<string, bool>> GetAllModulesStatusAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task EnableModuleAsync(int tenantId, string moduleName)
+        Task IModuleService.EnableModuleAsync(string moduleName)
         {
-            throw new NotImplementedException();
+            return EnableModuleAsync(moduleName);
         }
 
-        public Task DisableModuleAsync(int tenantId, string moduleName)
+        Task IModuleService.DisableModuleAsync(string moduleName)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<Dictionary<string, bool>> GetAllModulesStatusAsync(int tenantId)
-        {
-            throw new NotImplementedException();
+            return DisableModuleAsync(moduleName);
         }
     }
 

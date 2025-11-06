@@ -18,8 +18,6 @@ namespace IAMS.Domain.Events
 
         public DateTime OccurredOn => throw new NotImplementedException();
 
-        public int TenantId => throw new NotImplementedException();
-
         public CustomerStatusChangedEvent(Customer customer, CustomerStatus oldStatus, CustomerStatus newStatus, string changedBy)
         {
             Customer = customer;

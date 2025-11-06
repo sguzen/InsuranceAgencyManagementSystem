@@ -47,7 +47,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 var validationErrors = new List<string>();
 
                 // Check if customer with email already exists for this tenant
-                var existingCustomerByEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email, tenantId);
+                var existingCustomerByEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email);
                 if (existingCustomerByEmail != null)
                 {
                     validationErrors.Add($"Bu e-posta adresi ({request.CustomerDto.Email}) zaten kullanılmaktadır");
@@ -56,7 +56,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 // Check if customer with KKTC number already exists for this tenant (if provided)
                 if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNumber))
                 {
-                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber, tenantId);
+                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber);
                     
                     if (existingCustomerByKktc != null)
                     {
@@ -65,7 +65,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 }
 
                 // Check if customer with phone number already exists for this tenant
-                var existingCustomerByPhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber, tenantId);
+                var existingCustomerByPhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber);
                 if (existingCustomerByPhone != null)
                 {
                     validationErrors.Add($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) zaten kullanılmaktadır");
@@ -85,10 +85,10 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 customer.CreatedOn = DateTime.UtcNow;
 
                 // Generate customer code using the enhanced generator
-                customer.CustomerCode = await _customerCodeGenerator.GenerateAsync(tenantId);
+                customer.CustomerCode = await _customerCodeGenerator.GenerateAsync();
 
                 // Verify the generated code is unique (extra safety check)
-                if (!await _customerCodeGenerator.IsCodeUniqueAsync(customer.CustomerCode, tenantId))
+                if (!await _customerCodeGenerator.IsCodeUniqueAsync(customer.CustomerCode))
                 {
                     _logger.LogError("Generated customer code {Code} is not unique for tenant {TenantId}",
                         customer.CustomerCode, tenantId);

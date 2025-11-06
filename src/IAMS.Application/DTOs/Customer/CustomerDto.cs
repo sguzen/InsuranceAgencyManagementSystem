@@ -5,7 +5,6 @@ namespace IAMS.Application.DTOs.Customer
     public class CustomerDto
     {
         public int Id { get; set; }
-        public int TenantId { get; set; }
         public CustomerType Type { get; set; }
         public string CustomerCode { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;

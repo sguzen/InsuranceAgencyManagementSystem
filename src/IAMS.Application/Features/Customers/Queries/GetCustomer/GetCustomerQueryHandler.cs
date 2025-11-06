@@ -45,7 +45,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
                 // Validate request
                 if (request.Id <= 0)
                 {
-                    _logger.LogWarning("Invalid customer ID {CustomerId} provided for tenant {TenantId}", request.Id, tenantId);
+                    _logger.LogWarning("Invalid customer ID {CustomerId} provided for tenant {TenantId}", request.Id);
                     return Result<CustomerDto>.ValidationFailure("Geçersiz müşteri ID", new List<string> { "Müşteri ID pozitif bir sayı olmalıdır" });
                 }
 
@@ -69,9 +69,9 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
                 var customerDto = _mapper.Map<CustomerDto>(customer);
 
                 // Enrich with additional information if needed
-                await EnrichCustomerDataAsync(customerDto, customer, tenantId, cancellationToken);
+                await EnrichCustomerDataAsync(customerDto, customer, cancellationToken);
 
-                _logger.LogDebug("Customer {CustomerId} retrieved successfully for tenant {TenantId}", request.Id, tenantId);
+                _logger.LogDebug("Customer {CustomerId} retrieved successfully for tenant {TenantId}", request.Id);
 
                 return Result<CustomerDto>.Success(customerDto, "Müşteri başarıyla getirildi");
             }
@@ -95,7 +95,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
             }
         }
 
-        private async Task EnrichCustomerDataAsync(CustomerDto customerDto, Customer customer, int tenantId, CancellationToken cancellationToken)
+        private async Task EnrichCustomerDataAsync(CustomerDto customerDto, Customer customer, CancellationToken cancellationToken)
         {
             try
             {
@@ -135,10 +135,10 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
                 customerDto.CustomerTenureInDays = (DateTime.UtcNow - customer.CreatedOn).Days;
 
                 // Add risk assessment or scoring if available
-                customerDto.CustomerScore = await CalculateCustomerScoreAsync(customer, tenantId);
+                customerDto.CustomerScore = await CalculateCustomerScoreAsync(customer);
 
                 // Add last activity information
-                customerDto.LastActivityDate = await GetLastCustomerActivityAsync(customer.Id, tenantId);
+                customerDto.LastActivityDate = await GetLastCustomerActivityAsync(customer.Id);
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
             }
         }
 
-        private async Task<decimal?> CalculateCustomerScoreAsync(Customer customer, int tenantId)
+        private async Task<decimal?> CalculateCustomerScoreAsync(Customer customer)
         {
             try
             {
@@ -183,7 +183,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
             }
         }
 
-        private async Task<DateTime?> GetLastCustomerActivityAsync(int customerId, int tenantId)
+        private async Task<DateTime?> GetLastCustomerActivityAsync(int customerId)
         {
             try
             {

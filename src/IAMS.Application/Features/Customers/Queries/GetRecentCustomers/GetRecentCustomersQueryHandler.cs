@@ -37,7 +37,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetRecentCustomers
                 }
 
                 var tenantId = _currentTenantService.TenantId.Value;
-                var customers = await _unitOfWork.Customers.GetRecentCustomersAsync(tenantId, request.Count);
+                var customers = await _unitOfWork.Customers.GetRecentCustomersAsync(request.Count);
                 var customerDtos = _mapper.Map<List<CustomerDto>>(customers);
 
                 _logger.LogDebug("Retrieved {Count} recent customers for tenant {TenantId}", customerDtos.Count, tenantId);

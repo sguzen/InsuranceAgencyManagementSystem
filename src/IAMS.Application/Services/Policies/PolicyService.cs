@@ -160,7 +160,7 @@ namespace IAMS.Application.Services.Policies
 
         public async Task<Result<PolicyDto>> RenewPolicyAsync(int id, CreatePolicyDto renewalDto)
         {
-            return await _mediator.Send(new RenewPolicyCommand(id, renewalDto));
+            return await _mediator.Send(new RenewPolicyCommand(id, renewalDto.StartDate.Value, renewalDto.EndDate.Value, renewalDto.PremiumAmount));
         }
 
         public async Task ProcessExpiringPoliciesAsync()

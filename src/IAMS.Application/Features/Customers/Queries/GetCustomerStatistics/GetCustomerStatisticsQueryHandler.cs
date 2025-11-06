@@ -27,15 +27,9 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatistics
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<CustomerStatisticsDto>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
+                var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
 
-                var tenantId = _currentTenantService.TenantId.Value;
-                var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync(tenantId);
-
-                _logger.LogDebug("Retrieved customer statistics for tenant {TenantId}", tenantId);
+                _logger.LogDebug("Retrieved customer statistics");
 
                 return Result<CustomerStatisticsDto>.Success(statistics, "Müşteri istatistikleri getirildi");
             }

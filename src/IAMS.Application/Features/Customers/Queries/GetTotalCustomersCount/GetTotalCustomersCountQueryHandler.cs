@@ -27,20 +27,15 @@ namespace IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<int>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-                var tenantId = _currentTenantService.TenantId.Value;
-                var count = await _unitOfWork.Customers.GetCustomerCountAsync(request.TenantId);
-                _logger.LogDebug("Retrieved customer count {Count} for tenant {TenantId}", count, request.TenantId);
+                var count = await _unitOfWork.Customers.GetCustomerCountAsync();
+                _logger.LogDebug("Retrieved customer count {Count}", count );
 
                 return Result<int>.Success(count, $"Toplam {count} müşteri");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting customer count for tenant {TenantId}", request.TenantId);
+                _logger.LogError(ex, "Error getting customer count}" );
                 return Result<int>.InternalError("Müşteri sayısı alınırken beklenmeyen bir hata oluştu");
             }
         }

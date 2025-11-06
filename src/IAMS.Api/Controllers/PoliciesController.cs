@@ -156,11 +156,7 @@ namespace IAMS.Api.Controllers
         [HttpPost("{id}/cancel")]
         public async Task<ActionResult<Result<PolicyDto>>> CancelPolicy(int id, [FromBody] CancelPolicyRequest request)
         {
-            var command = new CancelPolicyCommand
-            {
-                Id = id,
-                CancellationReason = request.Reason
-            };
+            var command = new CancelPolicyCommand(id,request.Reason);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -175,11 +171,7 @@ namespace IAMS.Api.Controllers
         [HttpPost("{id}/suspend")]
         public async Task<ActionResult<Result<PolicyDto>>> SuspendPolicy(int id, [FromBody] SuspendPolicyRequest request)
         {
-            var command = new SuspendPolicyCommand
-            {
-                Id = id,
-                SuspensionReason = request.Reason
-            };
+            var command = new SuspendPolicyCommand(id,request.Reason);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -209,13 +201,7 @@ namespace IAMS.Api.Controllers
         [HttpPost("{id}/renew")]
         public async Task<ActionResult<Result<PolicyDto>>> RenewPolicy(int id, [FromBody] RenewPolicyRequest request)
         {
-            var command = new RenewPolicyCommand
-            {
-                OriginalPolicyId = id,
-                NewStartDate = request.StartDate,
-                NewEndDate = request.EndDate,
-                NewPremiumAmount = request.PremiumAmount
-            };
+            var command = new RenewPolicyCommand(id,request.StartDate,request.EndDate,request.PremiumAmount);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)

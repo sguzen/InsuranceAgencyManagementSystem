@@ -143,7 +143,7 @@ namespace IAMS.Api.Controllers
         [HttpGet("search/kktc/{IdentificationNo}")]
         public async Task<ActionResult<Result<CustomerDto>>> GetCustomerByIdentificationNo(string IdentificationNo)
         {
-            var query = new GetCustomerByIdentificationNoQuery(IdentificationNo, 44 );
+            var query = new GetCustomerByIdentificationNoQuery(IdentificationNo );
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

@@ -2,7 +2,11 @@
 using IAMS.Application.DTOs.InsuranceCompany;
 using IAMS.Application.Models;
 using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany;
+using IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany;
+using IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompany;
+using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompanies;
+using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompanyByName;
 
 namespace IAMS.Application.Services.InsuranceCompanies
 {
@@ -22,8 +26,7 @@ namespace IAMS.Application.Services.InsuranceCompanies
 
         public async Task<Result<PagedResult<InsuranceCompanyDto>>> GetInsuranceCompaniesAsync(InsuranceCompanyQueryParams queryParams)
         {
-            // This would need a GetInsuranceCompaniesQuery implementation
-            return Result<PagedResult<InsuranceCompanyDto>>.Success(PagedResult<InsuranceCompanyDto>.Empty());
+            return await _mediator.Send(new GetInsuranceCompaniesQuery(queryParams));
         }
 
         public async Task<Result<InsuranceCompanyDto>> CreateInsuranceCompanyAsync(CreateInsuranceCompanyDto createCompanyDto)
@@ -33,20 +36,17 @@ namespace IAMS.Application.Services.InsuranceCompanies
 
         public async Task<Result<InsuranceCompanyDto>> UpdateInsuranceCompanyAsync(int id, UpdateInsuranceCompanyDto updateCompanyDto)
         {
-            // This would need an UpdateInsuranceCompanyCommand implementation
-            return Result<InsuranceCompanyDto>.NotFound("Update not implemented yet");
+            return await _mediator.Send(new UpdateInsuranceCompanyCommand(id, updateCompanyDto));
         }
 
         public async Task<Result> DeleteInsuranceCompanyAsync(int id)
         {
-            // This would need a DeleteInsuranceCompanyCommand implementation
-            return Result.Success("Delete not implemented yet");
+            return await _mediator.Send(new DeleteInsuranceCompanyCommand(id));
         }
 
         public async Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByNameAsync(string name)
         {
-            // This would need a specific query implementation
-            return Result<InsuranceCompanyDto>.NotFound("Company not found");
+            return await _mediator.Send(new GetInsuranceCompanyByNameQuery(name));
         }
 
         public async Task<Result<List<InsuranceCompanyDto>>> GetActiveInsuranceCompaniesAsync()

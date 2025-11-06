@@ -6,16 +6,20 @@
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.DTOs.InsuranceCompany
 @using IAMS.Application.DTOs.PolicyType
+@using IAMS.Application.DTOs.Vehicle
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
 @using IAMS.Application.Services.InsuranceCompanies
 @using IAMS.Application.Services.PolicyTypes
+@using IAMS.Application.Services.Vehicles
 @using IAMS.Domain.Enums
 @using FluentValidation
 @inject IPolicyService PolicyService
 @inject ICustomerService CustomerService
 @inject IPolicyTypeService PolicyTypeService
 @inject IInsuranceCompanyService InsuranceCompanyService
+@inject IVehicleService VehicleService
+@inject IDialogService DialogService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -119,6 +123,7 @@
                                                        CoerceText="true"
                                                        CoerceValue="true"
                                                        MaxItems="50"
+                                                       ValueChanged="OnCustomerSelected"
                                                        HelperText="Müşteri adı ile arayın">
                                             <ItemTemplate Context="customerItem">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
@@ -165,6 +170,87 @@
                                             }
                                         </MudSelect>
                                     </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <!-- Vehicle Information (Car Insurance) -->
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Class="mr-2" />
+                                        Araç Bilgileri (Kasko/Trafik Sigortası için)
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="10">
+                                        <MudSelect @bind-Value="model.VehicleId"
+                                                 Label="Araç"
+                                                 Variant="Variant.Outlined"
+                                                 T="int?"
+                                                 Clearable="true"
+                                                 ValueChanged="OnVehicleSelected"
+                                                 HelperText="Araç sigortası için gerekli">
+                                            @if (customerVehicles != null && customerVehicles.Any())
+                                            {
+                                                @foreach (var vehicle in customerVehicles)
+                                                {
+                                                    <MudSelectItem Value="@((int?)vehicle.Id)">
+                                                        @vehicle.FullName (@vehicle.ModelYear)
+                                                    </MudSelectItem>
+                                                }
+                                            }
+                                            else if (selectedCustomer != null)
+                                            {
+                                                <MudSelectItem Disabled="true" Value="@((int?)null)">
+                                                    Bu müşteriye kayıtlı araç yok
+                                                </MudSelectItem>
+                                            }
+                                            else
+                                            {
+                                                <MudSelectItem Disabled="true" Value="@((int?)null)">
+                                                    Önce müşteri seçin
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="12" md="2">
+                                        <MudButton Variant="Variant.Filled"
+                                                 Color="Color.Primary"
+                                                 StartIcon="@Icons.Material.Filled.Add"
+                                                 OnClick="OpenAddVehicleDialog"
+                                                 Disabled="@(selectedCustomer == null)"
+                                                 FullWidth="true"
+                                                 Class="mt-1">
+                                            Yeni Araç
+                                        </MudButton>
+                                    </MudItem>
+                                    @if (selectedVehicle != null)
+                                    {
+                                        <MudItem xs="12">
+                                            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                                                <MudStack Row AlignItems="AlignItems.Center" Spacing="4">
+                                                    <div>
+                                                        <strong>Plaka:</strong> @selectedVehicle.PlateNumber
+                                                    </div>
+                                                    <div>
+                                                        <strong>Şasi No:</strong> @selectedVehicle.ChassisNumber
+                                                    </div>
+                                                    @if (selectedVehicle.ModelYear.HasValue)
+                                                    {
+                                                        <div>
+                                                            <strong>Model Yılı:</strong> @selectedVehicle.ModelYear
+                                                        </div>
+                                                    }
+                                                </MudStack>
+                                            </MudAlert>
+                                        </MudItem>
+                                    }
                                 </MudGrid>
                             </MudCardContent>
                         </MudCard>
@@ -351,7 +437,9 @@
     private List<CustomerDto>? customers;
     private List<InsuranceCompanyDto>? insuranceCompanies;
     private List<Application.DTOs.PolicyType.PolicyTypeDto>? policyTypes;
+    private List<VehicleDto>? customerVehicles;
     private CustomerDto? selectedCustomer;
+    private VehicleDto? selectedVehicle;
 
     private bool IsEdit => PolicyId.HasValue && PolicyId.Value > 0;
 
@@ -441,6 +529,7 @@
             {
                 selectedCustomer = result.Data;
                 model.CustomerId = customerId;
+                await LoadCustomerVehicles(customerId);
             }
         }
         catch (Exception ex)
@@ -644,6 +733,87 @@
         {
             saving = false;
         }
+    }
+
+    // Vehicle Management
+    private async Task OnCustomerSelected(CustomerDto customer)
+    {
+        selectedCustomer = customer;
+        if (customer != null)
+        {
+            model.CustomerId = customer.Id;
+            await LoadCustomerVehicles(customer.Id);
+        }
+        else
+        {
+            model.CustomerId = 0;
+            customerVehicles = null;
+            selectedVehicle = null;
+            model.VehicleId = null;
+        }
+    }
+
+    private async Task LoadCustomerVehicles(int customerId)
+    {
+        try
+        {
+            var result = await VehicleService.GetByCustomerIdAsync(customerId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                customerVehicles = result.Data;
+
+                // If editing and vehicle is set, load selected vehicle
+                if (model.VehicleId.HasValue)
+                {
+                    selectedVehicle = customerVehicles.FirstOrDefault(v => v.Id == model.VehicleId.Value);
+                }
+            }
+            else
+            {
+                customerVehicles = new List<VehicleDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading customer vehicles: {ex.Message}");
+            customerVehicles = new List<VehicleDto>();
+        }
+    }
+
+    private void OnVehicleSelected(int? vehicleId)
+    {
+        model.VehicleId = vehicleId;
+        if (vehicleId.HasValue && customerVehicles != null)
+        {
+            selectedVehicle = customerVehicles.FirstOrDefault(v => v.Id == vehicleId.Value);
+        }
+        else
+        {
+            selectedVehicle = null;
+        }
+    }
+
+    private async Task OpenAddVehicleDialog()
+    {
+        if (selectedCustomer == null)
+        {
+            Snackbar.Add("Önce bir müşteri seçin", MudBlazor.Severity.Warning);
+            return;
+        }
+
+        Snackbar.Add("Araç ekleme özelliği yakında eklenecek. Şimdilik Araçlar menüsünden araç ekleyebilirsiniz.", MudBlazor.Severity.Info);
+
+        // TODO: Implement quick add vehicle dialog
+        // var parameters = new DialogParameters<AddVehicleDialog>
+        // {
+        //     { x => x.CustomerId, selectedCustomer.Id }
+        // };
+        // var dialog = await DialogService.ShowAsync<AddVehicleDialog>("Yeni Araç Ekle", parameters);
+        // var result = await dialog.Result;
+        // if (result != null && !result.Canceled)
+        // {
+        //     await LoadCustomerVehicles(selectedCustomer.Id);
+        // }
     }
 
     private void GoBack()

@@ -18,6 +18,9 @@ namespace IAMS.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(10);
 
+            builder.Property(ic => ic.Description)
+                .HasMaxLength(1000);
+
             builder.Property(ic => ic.ContactPerson)
                 .HasMaxLength(100);
 

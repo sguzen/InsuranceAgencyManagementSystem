@@ -1,98 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using IAMS.MultiTenancy.Interfaces;
-using IAMS.MultiTenancy.Models;
 using IAMS.Infrastructure.Interfaces;
 
 namespace IAMS.Infrastructure.BackgroundServices
 {
-    public abstract class TenantAwareBackgroundService : BackgroundService
+    /// <summary>
+    /// Example background service for policy reminders
+    /// Note: No longer uses multi-tenancy context. Each tenant instance runs its own services against their own database.
+    /// </summary>
+    public class PolicyReminderService : BackgroundService
     {
-        protected readonly IServiceProvider _serviceProvider;
-        protected readonly ILogger _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<PolicyReminderService> _logger;
 
-        protected TenantAwareBackgroundService(
+        public PolicyReminderService(
             IServiceProvider serviceProvider,
-            ILogger logger)
+            ILogger<PolicyReminderService> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
-        }
-
-        protected async Task ExecuteForAllTenantsAsync(Func<Tenant, IServiceScope, Task> operation)
-        {
-            using var scope = _serviceProvider.CreateScope();
-            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantService>();
-            var tenantContextAccessor = scope.ServiceProvider.GetRequiredService<ITenantContextAccessor>();
-
-            // Get all active tenants
-            var tenants = await GetActiveTenantsAsync(tenantService);
-
-            foreach (var tenant in tenants)
-            {
-                try
-                {
-                    await tenantContextAccessor.ExecuteWithTenantAsync(tenant, async () =>
-                    {
-                        using var tenantScope = _serviceProvider.CreateScope();
-                        await operation(tenant, tenantScope);
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error processing tenant {TenantId} in background service", tenant.Id);
-                }
-            }
-        }
-
-        protected async Task ExecuteForTenantAsync(Func<Tenant, IServiceScope, Task> operation)
-        {
-            using var scope = _serviceProvider.CreateScope();
-            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantService>();
-            var tenantContextAccessor = scope.ServiceProvider.GetRequiredService<ITenantContextAccessor>();
-
-            var tenant = await tenantService.GetTenantByIdAsync(tenantId);
-            if (tenant == null)
-            {
-                _logger.LogWarning("Tenant {TenantId} not found for background operation", tenantId);
-                return;
-            }
-
-            try
-            {
-                await tenantContextAccessor.ExecuteWithTenantAsync(tenant, async () =>
-                {
-                    using var tenantScope = _serviceProvider.CreateScope();
-                    await operation(tenant, tenantScope);
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing tenant {TenantId} in background service", tenant.Id);
-            }
-        }
-
-        private async Task<List<Tenant>> GetActiveTenantsAsync(ITenantService tenantService)
-        {
-            // This would require adding a method to ITenantService to get all active tenants
-            // For now, this is a placeholder implementation
-            var tenants = new List<Tenant>();
-
-            // You would implement this method in TenantService to query all active tenants
-            // return await tenantService.GetAllActiveTenantsAsync();
-
-            return tenants;
-        }
-    }
-
-    // Example background service
-    public class PolicyReminderService : TenantAwareBackgroundService
-    {
-        public PolicyReminderService(
-            IServiceProvider serviceProvider,
-            ILogger<PolicyReminderService> logger) : base(serviceProvider, logger)
-        {
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -101,15 +28,20 @@ namespace IAMS.Infrastructure.BackgroundServices
             {
                 _logger.LogInformation("Starting policy reminder job");
 
-                await ExecuteForAllTenantsAsync(async (tenant, scope) =>
+                try
                 {
+                    using var scope = _serviceProvider.CreateScope();
                     var policyService = scope.ServiceProvider.GetRequiredService<IPolicyService>();
 
-                    // Process expiring policies for this tenant
+                    // Process expiring policies - operates on current database context
                     await policyService.ProcessExpiringPoliciesAsync();
 
-                    _logger.LogDebug("Processed policy reminders for tenant {TenantId}", tenant.Id);
-                });
+                    _logger.LogDebug("Processed policy reminders");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing policy reminders");
+                }
 
                 _logger.LogInformation("Completed policy reminder job");
 

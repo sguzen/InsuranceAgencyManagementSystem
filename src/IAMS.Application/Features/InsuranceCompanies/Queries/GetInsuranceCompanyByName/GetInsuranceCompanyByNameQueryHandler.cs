@@ -39,11 +39,13 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
                 var companyDto = _mapper.Map<InsuranceCompanyDto>(company);
 
                 // Enhance DTO with aggregated data
-                companyDto.ActivePoliciesCount = company.Policies?.Count(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted) ?? 0;
-                companyDto.TotalPolicies = company.Policies?.Count(p => !p.IsDeleted) ?? 0;
-                companyDto.TotalPremiums = company.Policies?.Where(p => !p.IsDeleted).Sum(p => p.PremiumAmount) ?? 0;
-                companyDto.TotalCommissions = company.Policies?.Where(p => !p.IsDeleted).Sum(p => p.CommissionAmount) ?? 0;
-                companyDto.LastPolicyDate = company.Policies?.Where(p => !p.IsDeleted).Max(p => p.CreatedOn);
+                var nonDeletedPolicies = company.Policies?.Where(p => !p.IsDeleted).ToList() ?? new List<Domain.Entities.Policy>();
+
+                companyDto.ActivePoliciesCount = nonDeletedPolicies.Count(p => p.Status == Domain.Enums.PolicyStatus.Active);
+                companyDto.TotalPolicies = nonDeletedPolicies.Count;
+                companyDto.TotalPremiums = nonDeletedPolicies.Sum(p => p.PremiumAmount);
+                companyDto.TotalCommissions = nonDeletedPolicies.Sum(p => p.CommissionAmount);
+                companyDto.LastPolicyDate = nonDeletedPolicies.Any() ? nonDeletedPolicies.Max(p => p.CreatedOn) : null;
 
                 return Result<InsuranceCompanyDto>.Success(companyDto);
             }

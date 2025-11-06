@@ -28,11 +28,6 @@ namespace IAMS.Persistence.UnitOfWork
         private IDistrictRepository? _districts;
         private ISubdistrictRepository? _subdistricts;
         private IVillageRepository? _villages;
-        private IVehicleRepository? _vehicles;
-        private IVehicleBrandRepository? _vehicleBrands;
-        private IVehicleModelRepository? _vehicleModels;
-        private ICurrencyRepository? _currencies;
-        private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
         // Vehicle Management
         private IVehicleRepository? _vehicles;

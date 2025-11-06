@@ -301,12 +301,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Şirketler yüklenirken bir hata oluştu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Şirketler yüklenirken bir hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -346,17 +346,17 @@
                 var deleteResult = await InsuranceCompanyService.DeleteInsuranceCompanyAsync(company.Id);
                 if (deleteResult.IsSuccess)
                 {
-                    Snackbar.Add("Şirket başarıyla silindi", Severity.Success);
+                    Snackbar.Add("Şirket başarıyla silindi", MudBlazor.Severity.Success);
                     await LoadCompanies();
                 }
                 else
                 {
-                    Snackbar.Add(deleteResult.Message ?? "Silme işlemi başarısız", Severity.Error);
+                    Snackbar.Add(deleteResult.Message ?? "Silme işlemi başarısız", MudBlazor.Severity.Error);
                 }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
             }
         }
     }

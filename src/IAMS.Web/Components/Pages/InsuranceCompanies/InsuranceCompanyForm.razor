@@ -62,7 +62,7 @@
                                                     For="@(() => model.Name)" />
                                     </MudItem>
                                     <MudItem xs="12" md="4">
-                                        <MudSwitch @bind-Checked="isActive"
+                                        <MudSwitch @bind-Checked="isActive" T="Boolean"
                                                   Label="Aktif"
                                                   Color="Color.Success"
                                                   UnCheckedColor="Color.Default" />
@@ -207,13 +207,13 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Şirket bulunamadı", Severity.Error);
+                Snackbar.Add(result.Message ?? "Şirket bulunamadı", MudBlazor.Severity.Error);
                 GoBack();
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
             GoBack();
         }
         finally
@@ -242,17 +242,17 @@
                 var result = await InsuranceCompanyService.UpdateInsuranceCompanyAsync(CompanyId!.Value, updateDto);
                 if (result.IsSuccess)
                 {
-                    Snackbar.Add("Şirket başarıyla güncellendi", Severity.Success);
+                    Snackbar.Add("Şirket başarıyla güncellendi", MudBlazor.Severity.Success);
                     GoBack();
                 }
                 else
                 {
-                    Snackbar.Add(result.Message ?? "Güncelleme başarısız", Severity.Error);
+                    Snackbar.Add(result.Message ?? "Güncelleme başarısız", MudBlazor.Severity.Error);
                     if (result.Errors?.Any() == true)
                     {
                         foreach (var error in result.Errors)
                         {
-                            Snackbar.Add(error, Severity.Warning);
+                            Snackbar.Add(error, MudBlazor.Severity.Warning);
                         }
                     }
                 }
@@ -262,17 +262,17 @@
                 var result = await InsuranceCompanyService.CreateInsuranceCompanyAsync(model);
                 if (result.IsSuccess)
                 {
-                    Snackbar.Add("Şirket başarıyla oluşturuldu", Severity.Success);
+                    Snackbar.Add("Şirket başarıyla oluşturuldu", MudBlazor.Severity.Success);
                     GoBack();
                 }
                 else
                 {
-                    Snackbar.Add(result.Message ?? "Oluşturma başarısız", Severity.Error);
+                    Snackbar.Add(result.Message ?? "Oluşturma başarısız", MudBlazor.Severity.Error);
                     if (result.Errors?.Any() == true)
                     {
                         foreach (var error in result.Errors)
                         {
-                            Snackbar.Add(error, Severity.Warning);
+                            Snackbar.Add(error, MudBlazor.Severity.Warning);
                         }
                     }
                 }
@@ -280,7 +280,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

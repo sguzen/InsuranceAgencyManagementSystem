@@ -3,76 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\commands\\deletevehicle\\deletevehiclecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\commands\\deletevehicle\\deletevehiclecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\commands\\deletepolicy\\deletepolicycommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\commands\\deletepolicy\\deletepolicycommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\repositories\\policyrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\repositories\\policyrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\interfaces\\repositories\\ipolicyrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\interfaces\\repositories\\ipolicyrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\queries\\getactivemodelsbybrandid\\getactivemodelsbybrandidqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\queries\\getactivemodelsbybrandid\\getactivemodelsbybrandidqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\currencies\\queries\\getexchangeratebyids\\getexchangeratebyidsqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\currencies\\queries\\getexchangeratebyids\\getexchangeratebyidsqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\currencies\\queries\\getexchangeratehistory\\getexchangeratehistoryqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\currencies\\queries\\getexchangeratehistory\\getexchangeratehistoryqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\currencies\\queries\\getlatestexchangerate\\getlatestexchangeratequeryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\currencies\\queries\\getlatestexchangerate\\getlatestexchangeratequeryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\currencies\\queries\\getexchangeratebycodes\\getexchangeratebycodesqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\currencies\\queries\\getexchangeratebycodes\\getexchangeratebycodesqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\commands\\createvehicle\\createvehiclecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\commands\\createvehicle\\createvehiclecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\customers\\commands\\updatecustomer\\updatecustomercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\customers\\commands\\updatecustomer\\updatecustomercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\commands\\updatevehicle\\updatevehiclecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\commands\\updatevehicle\\updatevehiclecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\currencies\\commands\\updateexchangeratesfromtcmb\\updateexchangeratesfromtcmbcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\currencies\\commands\\updateexchangeratesfromtcmb\\updateexchangeratesfromtcmbcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\currencies\\commands\\setexchangerate\\setexchangeratecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\currencies\\commands\\setexchangerate\\setexchangeratecommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\policies\\queries\\getpoliciesbystatus\\getpoliciesbystatusqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\policies\\queries\\getpoliciesbystatus\\getpoliciesbystatusqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\insurancecompanies\\insurancecompanyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\insurancecompanies\\insurancecompanyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\customermappings\\customermappingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\customermappings\\customermappingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\vehicles\\ivehicleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\vehicles\\ivehicleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\insurancecompanies\\insurancecompanylist.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\insurancecompanies\\insurancecompanylist.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -82,34 +14,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 3,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "DeletePolicyCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Commands\\DeletePolicy\\DeletePolicyCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Commands\\DeletePolicy\\DeletePolicyCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Commands\\DeletePolicy\\DeletePolicyCommandHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Commands\\DeletePolicy\\DeletePolicyCommandHandler.cs",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAowDgAAAA0AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T08:59:38.526Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "IPolicyRepository.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Interfaces\\Repositories\\IPolicyRepository.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Interfaces\\Repositories\\IPolicyRepository.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Interfaces\\Repositories\\IPolicyRepository.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Interfaces\\Repositories\\IPolicyRepository.cs",
-              "ViewState": "AgIAADIAAAAAAAAAAAAhwDwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T08:49:32.869Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
@@ -124,207 +30,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "GetActiveModelsByBrandIdQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQueryHandler.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAA4wCIAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T07:33:36.367Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "GetExchangeRateByIdsQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByIds\\GetExchangeRateByIdsQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByIds\\GetExchangeRateByIdsQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByIds\\GetExchangeRateByIdsQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByIds\\GetExchangeRateByIdsQueryHandler.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAAmwB8AAAA+AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T07:33:12.148Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "GetExchangeRateHistoryQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateHistory\\GetExchangeRateHistoryQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateHistory\\GetExchangeRateHistoryQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateHistory\\GetExchangeRateHistoryQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateHistory\\GetExchangeRateHistoryQueryHandler.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAqwB0AAABLAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T07:33:04.215Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "GetLatestExchangeRateQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetLatestExchangeRate\\GetLatestExchangeRateQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetLatestExchangeRate\\GetLatestExchangeRateQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetLatestExchangeRate\\GetLatestExchangeRateQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetLatestExchangeRate\\GetLatestExchangeRateQueryHandler.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAqwB0AAABLAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T07:32:55.087Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "GetExchangeRateByCodesQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByCodes\\GetExchangeRateByCodesQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByCodes\\GetExchangeRateByCodesQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByCodes\\GetExchangeRateByCodesQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Currencies\\Queries\\GetExchangeRateByCodes\\GetExchangeRateByCodesQueryHandler.cs",
-              "ViewState": "AgIAAB8AAAAAAAAAAAAAADEAAABEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T07:32:44.024Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "DeleteVehicleCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\DeleteVehicle\\DeleteVehicleCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\DeleteVehicle\\DeleteVehicleCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\DeleteVehicle\\DeleteVehicleCommandHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\DeleteVehicle\\DeleteVehicleCommandHandler.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAQwCUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T07:32:07.977Z",
+              "Title": "InsuranceCompanyList.razor",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyList.razor",
+              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyList.razor",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyList.razor",
+              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyList.razor",
+              "ViewState": "AgIAACoAAAAAAAAAAAAAADYAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-06T05:51:49.148Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "UpdateCustomerCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommandHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Customers\\Commands\\UpdateCustomer\\UpdateCustomerCommandHandler.cs",
-              "ViewState": "AgIAADkAAAAAAAAAAAAAAEcAAABgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T06:55:39.271Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "CreateVehicleCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\CreateVehicle\\CreateVehicleCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\CreateVehicle\\CreateVehicleCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\CreateVehicle\\CreateVehicleCommandHandler.cs*",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\CreateVehicle\\CreateVehicleCommandHandler.cs*",
-              "ViewState": "AgIAADUAAAAAAAAAAAAAAEMAAACUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T06:55:01.84Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "UpdateVehicleCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\UpdateVehicle\\UpdateVehicleCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\UpdateVehicle\\UpdateVehicleCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\UpdateVehicle\\UpdateVehicleCommandHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\UpdateVehicle\\UpdateVehicleCommandHandler.cs",
-              "ViewState": "AgIAACMAAAAAAAAAAAAAAC4AAABXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T06:54:49.176Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "SetExchangeRateCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Commands\\SetExchangeRate\\SetExchangeRateCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Currencies\\Commands\\SetExchangeRate\\SetExchangeRateCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Commands\\SetExchangeRate\\SetExchangeRateCommandHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Currencies\\Commands\\SetExchangeRate\\SetExchangeRateCommandHandler.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAAYwDAAAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T06:52:21.851Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "UpdateExchangeRatesFromTCMBCommandHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Commands\\UpdateExchangeRatesFromTCMB\\UpdateExchangeRatesFromTCMBCommandHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Currencies\\Commands\\UpdateExchangeRatesFromTCMB\\UpdateExchangeRatesFromTCMBCommandHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Currencies\\Commands\\UpdateExchangeRatesFromTCMB\\UpdateExchangeRatesFromTCMBCommandHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Currencies\\Commands\\UpdateExchangeRatesFromTCMB\\UpdateExchangeRatesFromTCMBCommandHandler.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAAAAwCkAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T06:51:38.391Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "PolicyRepository.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs*",
-              "RelativeToolTip": "src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs*",
-              "ViewState": "AgIAALsBAAAAAAAAAAAiwMcBAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T11:13:39.913Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "GetPoliciesByStatusQueryHandler.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQueryHandler.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQueryHandler.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQueryHandler.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Queries\\GetPoliciesByStatus\\GetPoliciesByStatusQueryHandler.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAACIAAABBAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T11:13:25.219Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "InsuranceCompanyService.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\InsuranceCompanies\\InsuranceCompanyService.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\InsuranceCompanies\\InsuranceCompanyService.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\InsuranceCompanies\\InsuranceCompanyService.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Services\\InsuranceCompanies\\InsuranceCompanyService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T10:14:02.94Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "CustomerMappingService.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\CustomerMappings\\CustomerMappingService.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\CustomerMappings\\CustomerMappingService.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\CustomerMappings\\CustomerMappingService.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Services\\CustomerMappings\\CustomerMappingService.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T10:13:56.117Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "IVehicleService.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Vehicles\\IVehicleService.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\Vehicles\\IVehicleService.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Vehicles\\IVehicleService.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Services\\Vehicles\\IVehicleService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T10:13:41.719Z"
             }
           ]
         }

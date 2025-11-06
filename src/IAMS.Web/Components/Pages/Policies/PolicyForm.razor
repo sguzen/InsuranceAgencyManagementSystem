@@ -203,7 +203,7 @@
                                 </MudGrid>
                                 @if (model.StartDate.HasValue && model.EndDate.HasValue)
                                 {
-                                    <MudAlert Severity="MudBlazor.Severity.Info" Class="mt-3">
+                                    <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info" Class="mt-3">
                                         <MudText>
                                             Poliçe süresi: @((model.EndDate.Value - model.StartDate.Value).TotalDays) gün
                                             (@Math.Round((model.EndDate.Value - model.StartDate.Value).TotalDays / 365.25, 1) yıl)

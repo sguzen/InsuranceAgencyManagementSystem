@@ -224,7 +224,7 @@
                                 <tr>
                                     <td>Poliçesiz Müşteri</td>
                                     <td style="text-align: right;">
-                                        <MudChip Color="Color.Warning" Size="Size.Small">
+                                        <MudChip Color="Color.Warning" Size="Size.Small" T="String">
                                             @statistics?.CustomersWithoutPolicies.ToString("N0")
                                         </MudChip>
                                     </td>
@@ -232,7 +232,7 @@
                                 <tr>
                                     <td>Bu Hafta Yeni</td>
                                     <td style="text-align: right;">
-                                        <MudChip Color="Color.Info" Size="Size.Small">
+                                        <MudChip Color="Color.Info" Size="Size.Small" T="String">
                                             @statistics?.NewCustomersThisWeek.ToString("N0")
                                         </MudChip>
                                     </td>
@@ -240,7 +240,7 @@
                                 <tr>
                                     <td>Ortalama Yaş</td>
                                     <td style="text-align: right;">
-                                        <MudChip Color="Color.Default" Size="Size.Small">
+                                        <MudChip Color="Color.Default" Size="Size.Small" T="String">
                                             @statistics?.AverageCustomerAge.ToString("F1") yaş
                                         </MudChip>
                                     </td>
@@ -248,7 +248,7 @@
                                 <tr>
                                     <td>Büyüme Oranı</td>
                                     <td style="text-align: right;">
-                                        <MudChip Color="@(statistics?.CustomerGrowthPercentage >= 0 ? Color.Success : Color.Error)" Size="Size.Small">
+                                        <MudChip Color="@(statistics?.CustomerGrowthPercentage >= 0 ? Color.Success : Color.Error)" Size="Size.Small" T="String">
                                             @statistics?.CustomerGrowthPercentage.ToString("F1")%
                                         </MudChip>
                                     </td>
@@ -355,12 +355,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "İstatistikler yüklenirken hata oluştu", Severity.Error);
+                Snackbar.Add(result.Message ?? "İstatistikler yüklenirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -388,16 +388,16 @@
             if (reportData != null && reportData.Length > 0)
             {
                 // In a real implementation, trigger browser download
-                Snackbar.Add($"Rapor {format.ToUpper()} formatında dışa aktarıldı", Severity.Success);
+                Snackbar.Add($"Rapor {format.ToUpper()} formatında dışa aktarıldı", MudBlazor.Severity.Success);
             }
             else
             {
-                Snackbar.Add("Rapor oluşturulurken hata oluştu", Severity.Error);
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

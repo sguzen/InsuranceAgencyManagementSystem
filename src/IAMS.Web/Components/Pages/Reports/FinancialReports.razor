@@ -127,7 +127,7 @@
                                                 <tr>
                                                     <td><strong>Yeni Poliçeler</strong></td>
                                                     <td style="text-align: right;">
-                                                        <MudChip Color="Color.Success" Size="Size.Small">
+                                                        <MudChip Color="Color.Success" Size="Size.Small" T="String">
                                                             @commissionNewPolicies.ToString("N0")
                                                         </MudChip>
                                                     </td>
@@ -135,7 +135,7 @@
                                                 <tr>
                                                     <td><strong>Yenilemeler</strong></td>
                                                     <td style="text-align: right;">
-                                                        <MudChip Color="Color.Info" Size="Size.Small">
+                                                        <MudChip Color="Color.Info" Size="Size.Small" T="String">
                                                             @commissionRenewals.ToString("N0")
                                                         </MudChip>
                                                     </td>
@@ -143,7 +143,7 @@
                                                 <tr>
                                                     <td><strong>Toplam Prim</strong></td>
                                                     <td style="text-align: right;">
-                                                        <MudChip Color="Color.Primary" Size="Size.Small">
+                                                        <MudChip Color="Color.Primary" Size="Size.Small" T="String">
                                                             @commissionTotalPremium.ToString("C2")
                                                         </MudChip>
                                                     </td>
@@ -151,7 +151,7 @@
                                                 <tr>
                                                     <td><strong>Toplam Komisyon</strong></td>
                                                     <td style="text-align: right;">
-                                                        <MudChip Color="Color.Success" Size="Size.Small">
+                                                        <MudChip Color="Color.Success" Size="Size.Small" T="String">
                                                             @commissionTotalCommission.ToString("C2")
                                                         </MudChip>
                                                     </td>
@@ -312,31 +312,31 @@
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td><MudChip Color="Color.Default" Size="Size.Small">Başvuruldu</MudChip></td>
+                                                    <td><MudChip Color="Color.Default" Size="Size.Small" T="String">Başvuruldu</MudChip></td>
                                                     <td style="text-align: right;">@claimsSubmitted.ToString("N0")</td>
                                                     <td style="text-align: right;">@claimsSubmittedAmount.ToString("C2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsSubmitted, claimsSubmittedAmount)</td>
                                                 </tr>
                                                 <tr>
-                                                    <td><MudChip Color="Color.Info" Size="Size.Small">İnceleniyor</MudChip></td>
+                                                    <td><MudChip Color="Color.Info" Size="Size.Small" T="String">İnceleniyor</MudChip></td>
                                                     <td style="text-align: right;">@claimsUnderReview.ToString("N0")</td>
                                                     <td style="text-align: right;">@claimsUnderReviewAmount.ToString("C2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsUnderReview, claimsUnderReviewAmount)</td>
                                                 </tr>
                                                 <tr>
-                                                    <td><MudChip Color="Color.Success" Size="Size.Small">Onaylandı</MudChip></td>
+                                                    <td><MudChip Color="Color.Success" Size="Size.Small" T="String">Onaylandı</MudChip></td>
                                                     <td style="text-align: right;">@claimsApproved.ToString("N0")</td>
                                                     <td style="text-align: right;">@claimsApprovedAmount.ToString("C2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsApproved, claimsApprovedAmount)</td>
                                                 </tr>
                                                 <tr>
-                                                    <td><MudChip Color="Color.Error" Size="Size.Small">Reddedildi</MudChip></td>
+                                                    <td><MudChip Color="Color.Error" Size="Size.Small" T="String">Reddedildi</MudChip></td>
                                                     <td style="text-align: right;">@claimsRejected.ToString("N0")</td>
                                                     <td style="text-align: right;">@claimsRejectedAmount.ToString("C2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsRejected, claimsRejectedAmount)</td>
                                                 </tr>
                                                 <tr>
-                                                    <td><MudChip Color="Color.Success" Size="Size.Small">Ödendi</MudChip></td>
+                                                    <td><MudChip Color="Color.Success" Size="Size.Small" T="String">Ödendi</MudChip></td>
                                                     <td style="text-align: right;">@claimsSettled.ToString("N0")</td>
                                                     <td style="text-align: right;">@claimsSettledAmount.ToString("C2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsSettled, claimsSettledAmount)</td>
@@ -458,12 +458,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Mali özet yüklenirken hata oluştu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Mali özet yüklenirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -496,12 +496,12 @@
                     ? (commissionTotalCommission / commissionTotalPremium * 100)
                     : 0;
 
-                Snackbar.Add("Komisyon raporu oluşturuldu", Severity.Success);
+                Snackbar.Add("Komisyon raporu oluşturuldu", MudBlazor.Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 
@@ -534,12 +534,12 @@
                 claimsRejectedAmount = 8000m;
                 claimsSettledAmount = 5000m;
 
-                Snackbar.Add("Hasar raporu oluşturuldu", Severity.Success);
+                Snackbar.Add("Hasar raporu oluşturuldu", MudBlazor.Severity.Success);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 
@@ -561,16 +561,16 @@
 
             if (reportData != null && reportData.Length > 0)
             {
-                Snackbar.Add($"Komisyon raporu {format.ToUpper()} formatında dışa aktarıldı", Severity.Success);
+                Snackbar.Add($"Komisyon raporu {format.ToUpper()} formatında dışa aktarıldı", MudBlazor.Severity.Success);
             }
             else
             {
-                Snackbar.Add("Rapor oluşturulurken hata oluştu", Severity.Error);
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -598,16 +598,16 @@
 
             if (reportData != null && reportData.Length > 0)
             {
-                Snackbar.Add($"Hasar raporu {format.ToUpper()} formatında dışa aktarıldı", Severity.Success);
+                Snackbar.Add($"Hasar raporu {format.ToUpper()} formatında dışa aktarıldı", MudBlazor.Severity.Success);
             }
             else
             {
-                Snackbar.Add("Rapor oluşturulurken hata oluştu", Severity.Error);
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

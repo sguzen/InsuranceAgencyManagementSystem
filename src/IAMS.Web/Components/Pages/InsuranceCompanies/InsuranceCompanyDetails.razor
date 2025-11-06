@@ -59,7 +59,7 @@
 
             <!-- Status Badge -->
             <MudStack Row Spacing="2">
-                <MudChip Size="Size.Large"
+                <MudChip Size="Size.Large" T="Boolean"
                          Color="@(company.IsActive ? Color.Success : Color.Default)"
                          Variant="Variant.Filled"
                          Icon="@(company.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
@@ -240,7 +240,7 @@
 
                 <!-- Associated Policies Tab -->
                 <MudTabPanel Icon="@Icons.Material.Filled.Description" Text="İlişkili Poliçeler" BadgeData="@company.ActivePoliciesCount" BadgeColor="Color.Info">
-                    <MudAlert Severity="Severity.Info" Variant="Variant.Text">
+                    <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info" Variant="Variant.Text">
                         Bu şirketle ilişkili @company.TotalPolicies poliçe bulunmaktadır. (@company.ActivePoliciesCount aktif)
                     </MudAlert>
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">
@@ -276,7 +276,7 @@
                                                         <strong>
                                                             @if (company.TotalPremiums > 0)
                                                             {
-                                                                @((company.TotalCommissions / company.TotalPremiums * 100).ToString("F2"))%
+                                                                @((company.TotalCommissions / company.TotalPremiums * 100).ToString("F2"))
                                                             }
                                                             else
                                                             {
@@ -325,7 +325,7 @@
         }
         else
         {
-            <MudAlert Severity="Severity.Error">Şirket bulunamadı.</MudAlert>
+            <MudAlert MudBlazor.Severity="MudBlazor.Severity.Error">Şirket bulunamadı.</MudAlert>
         }
     </MudStack>
 </MudContainer>
@@ -353,13 +353,13 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Şirket bulunamadı", Severity.Error);
+                Snackbar.Add(result.Message ?? "Şirket bulunamadı", MudBlazor.Severity.Error);
                 GoBack();
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
             GoBack();
         }
         finally
@@ -392,17 +392,17 @@
                 var deleteResult = await InsuranceCompanyService.DeleteInsuranceCompanyAsync(CompanyId);
                 if (deleteResult.IsSuccess)
                 {
-                    Snackbar.Add("Şirket başarıyla silindi", Severity.Success);
+                    Snackbar.Add("Şirket başarıyla silindi", MudBlazor.Severity.Success);
                     GoBack();
                 }
                 else
                 {
-                    Snackbar.Add(deleteResult.Message ?? "Silme işlemi başarısız", Severity.Error);
+                    Snackbar.Add(deleteResult.Message ?? "Silme işlemi başarısız", MudBlazor.Severity.Error);
                 }
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
             }
         }
     }

@@ -132,8 +132,8 @@ app.UseHttpsRedirection();
 
 app.UseCors("DefaultPolicy");
 
-// Add multi-tenancy middleware
-app.UseMultiTenancy();
+// Multi-tenancy middleware removed - each tenant uses their own database via connection string
+// app.UseMultiTenancy();
 
 app.UseAuthentication();
 app.UseAuthorization();

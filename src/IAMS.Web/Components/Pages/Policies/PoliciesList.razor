@@ -64,11 +64,11 @@
                                    T="PolicyStatus?"
                                    ToStringFunc="@(status => GetStatusText(status))"
                                    Clearable="true">
-                            <MudSelectItem Value="@PolicyStatus.Active">Aktif</MudSelectItem>
-                            <MudSelectItem Value="@PolicyStatus.Draft">Taslak</MudSelectItem>
-                            <MudSelectItem Value="@PolicyStatus.Expired">Süresi Dolmuş</MudSelectItem>
-                            <MudSelectItem Value="@PolicyStatus.Cancelled">İptal</MudSelectItem>
-                            <MudSelectItem Value="@PolicyStatus.Suspended">Askıya Alınmış</MudSelectItem>
+                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Active)">Aktif</MudSelectItem>
+                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Draft)">Taslak</MudSelectItem>
+                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Expired)">Süresi Dolmuş</MudSelectItem>
+                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Cancelled)">İptal</MudSelectItem>
+                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Suspended)">Askıya Alınmış</MudSelectItem>
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
@@ -361,11 +361,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(
-            LoadPolicies(),
-            LoadStatistics(),
-            LoadPolicyTypes()
-        );
+        // Run sequentially to avoid DbContext concurrency issues
+        await LoadPolicies();
+        await LoadStatistics();
+        await LoadPolicyTypes();
     }
 
     private async Task LoadPolicies()

@@ -96,12 +96,18 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<int> GetActivePoliciesCountAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Policies
+                .Where(p => p.InsuranceCompanyId == id &&
+                           p.Status == PolicyStatus.Active && !p.IsDeleted)
+                .CountAsync();
         }
 
         public async Task<decimal> GetTotalCommissionsAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Policies
+                .Where(p => p.InsuranceCompanyId == id &&
+                           p.Status == PolicyStatus.Active && !p.IsDeleted)
+                .SumAsync(p => p.CommissionAmount);
         }
     }
 }

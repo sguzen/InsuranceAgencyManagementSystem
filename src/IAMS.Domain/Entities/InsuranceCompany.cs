@@ -91,10 +91,10 @@ namespace IAMS.Domain.Entities
             var prefix = new string(name.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpper();
             if (string.IsNullOrEmpty(prefix))
             {
-                prefix = "INS";
+                prefix = "INS"; // TODO ensure uniqueness of a total of 10 chars
             }
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-            return $"{prefix}-{timestamp}";
+            //var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            return $"{prefix}";
         }
     }
 }

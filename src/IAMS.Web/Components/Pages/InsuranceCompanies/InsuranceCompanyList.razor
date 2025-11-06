@@ -55,8 +55,8 @@
                                    T="bool?"
                                    Clearable="true"
                                    OnClearButtonClick="@(() => { selectedActiveStatus = null; _ = LoadCompanies(); })">
-                            <MudSelectItem Value="@true">Aktif</MudSelectItem>
-                            <MudSelectItem Value="@false">Pasif</MudSelectItem>
+                            <MudSelectItem T="bool?" Value="@((bool?)true)">Aktif</MudSelectItem>
+                            <MudSelectItem T="bool?" Value="@((bool?)false)">Pasif</MudSelectItem>
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">

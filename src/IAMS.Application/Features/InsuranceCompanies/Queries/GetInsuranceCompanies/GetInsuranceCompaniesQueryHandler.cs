@@ -89,13 +89,11 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
                 foreach (var dto in companyDtos)
                 {
                     var company = companies.First(c => c.Id == dto.Id);
-                    var nonDeletedPolicies = company.Policies?.Where(p => !p.IsDeleted).ToList() ?? new List<Domain.Entities.Policy>();
-
-                    dto.ActivePoliciesCount = nonDeletedPolicies.Count(p => p.Status == Domain.Enums.PolicyStatus.Active);
-                    dto.TotalPolicies = nonDeletedPolicies.Count;
-                    dto.TotalPremiums = nonDeletedPolicies.Sum(p => p.PremiumAmount);
-                    dto.TotalCommissions = nonDeletedPolicies.Sum(p => p.CommissionAmount);
-                    dto.LastPolicyDate = nonDeletedPolicies.Any() ? nonDeletedPolicies.Max(p => p.CreatedOn) : null;
+                    dto.ActivePoliciesCount = company.Policies?.Count(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted) ?? 0;
+                    dto.TotalPolicies = company.Policies?.Count(p => !p.IsDeleted) ?? 0;
+                    dto.TotalPremiums = company.Policies?.Where(p => !p.IsDeleted).Sum(p => p.PremiumAmount) ?? 0;
+                    dto.TotalCommissions = company.Policies?.Where(p => !p.IsDeleted).Sum(p => p.CommissionAmount) ?? 0;
+                    dto.LastPolicyDate = company.Policies?.Where(p => !p.IsDeleted).Max(p => p.CreatedOn);
                 }
 
                 var pagedResult = new PagedResult<InsuranceCompanyDto>(

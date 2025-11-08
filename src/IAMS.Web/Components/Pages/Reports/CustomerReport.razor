@@ -1,0 +1,638 @@
+@page "/reports/customer"
+@layout Layout.MainLayout
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+
+@using IAMS.Application.DTOs.Customer
+@using IAMS.Application.DTOs.Policy
+@using IAMS.Application.DTOs.Currency
+@using IAMS.Application.Services.Customers
+@using IAMS.Application.Services.Currencies
+@using IAMS.Domain.Enums
+@inject ICustomerService CustomerService
+@inject IPolicyService PolicyService
+@inject ICurrencyService CurrencyService
+@inject ISnackbar Snackbar
+
+<PageTitle>Müşteri Raporu</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3" />
+                Müşteri Raporu
+            </MudText>
+            @if (selectedCustomer != null)
+            {
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Print"
+                           OnClick="PrintReport"
+                           Disabled="@loading">
+                    Yazdır
+                </MudButton>
+            }
+        </MudStack>
+
+        <!-- Selection Card -->
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" />
+                        Müşteri Seçimi
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="8">
+                        <MudAutocomplete @bind-Value="selectedCustomer"
+                                       T="CustomerDto"
+                                       SearchFunc="@SearchCustomers"
+                                       ToStringFunc="@(customer => customer != null ? $"{customer.FirstName} {customer.LastName}" : "")"
+                                       Label="Müşteri Seçin *"
+                                       Variant="Variant.Outlined"
+                                       ResetValueOnEmptyText="true"
+                                       CoerceText="true"
+                                       CoerceValue="true"
+                                       MaxItems="50"
+                                       ValueChanged="OnCustomerSelected"
+                                       HelperText="Müşteri adı ile arayın">
+                            <ItemTemplate Context="customerItem">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        @customerItem.FirstName.FirstOrDefault()@customerItem.LastName.FirstOrDefault()
+                                    </MudAvatar>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2">@customerItem.FirstName @customerItem.LastName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @customerItem.Email - @customerItem.CustomerCode
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </ItemTemplate>
+                        </MudAutocomplete>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSelect @bind-Value="selectedCurrencyCode"
+                                 Label="Para Birimi *"
+                                 Variant="Variant.Outlined"
+                                 T="string"
+                                 ValueChanged="OnCurrencyChanged">
+                            @if (currencies != null)
+                            {
+                                @foreach (var currency in currencies)
+                                {
+                                    <MudSelectItem Value="@currency.Code">
+                                        @currency.Code - @currency.Name
+                                    </MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        @if (loading)
+        {
+            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                <MudText Typo="Typo.h6">Müşteri bilgileri yükleniyor...</MudText>
+            </MudStack>
+        }
+        else if (selectedCustomer != null)
+        {
+            <!-- Customer Information -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Class="mr-2" />
+                            Müşteri Bilgileri
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Müşteri Kodu</MudText>
+                                <MudText Typo="Typo.body1"><strong>@selectedCustomer.CustomerCode</strong></MudText>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Ad Soyad</MudText>
+                                <MudText Typo="Typo.body1"><strong>@selectedCustomer.FirstName @selectedCustomer.LastName</strong></MudText>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">E-posta</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.Email</MudText>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Telefon</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.Phone</MudText>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Kimlik No</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.IdentificationNo</MudText>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Durum</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@GetCustomerStatusColor()">
+                                    @GetCustomerStatusText()
+                                </MudChip>
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Kayıt Tarihi</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.CreatedDate.ToString("dd.MM.yyyy")</MudText>
+                            </MudStack>
+                        </MudItem>
+                        @if (!string.IsNullOrEmpty(selectedCustomer.Address))
+                        {
+                            <MudItem xs="12" md="6">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Adres</MudText>
+                                    <MudText Typo="Typo.body1">@selectedCustomer.Address</MudText>
+                                </MudStack>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Financial Summary -->
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent Class="pb-2">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe</MudText>
+                                    <MudText Typo="Typo.h4">@customerPolicies.Count</MudText>
+                                </MudStack>
+                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Primary" />
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent Class="pb-2">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Poliçe</MudText>
+                                    <MudText Typo="Typo.h4" Color="Color.Success">@activePolicyCount</MudText>
+                                </MudStack>
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent Class="pb-2">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Prim (@selectedCurrencyCode)</MudText>
+                                    <MudText Typo="Typo.h5" Color="Color.Info">@totalPremiums.ToString("N2")</MudText>
+                                </MudStack>
+                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard Elevation="2">
+                        <MudCardContent Class="pb-2">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon (@selectedCurrencyCode)</MudText>
+                                    <MudText Typo="Typo.h5" Color="Color.Warning">@totalCommissions.ToString("N2")</MudText>
+                                </MudStack>
+                                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Large" Color="Color.Warning" />
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Policies List -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-2" />
+                            Poliçeler (@selectedCurrencyCode)
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (customerPolicies.Any())
+                    {
+                        <MudTable Items="@customerPolicies" Hover="true" Striped="true" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Poliçe No</MudTh>
+                                <MudTh>Sigorta Şirketi</MudTh>
+                                <MudTh>Poliçe Tipi</MudTh>
+                                <MudTh>Başlangıç</MudTh>
+                                <MudTh>Bitiş</MudTh>
+                                <MudTh Style="text-align: right">Prim</MudTh>
+                                <MudTh Style="text-align: right">Komisyon</MudTh>
+                                <MudTh Style="text-align: center">Durum</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Poliçe No">@context.PolicyNumber</MudTd>
+                                <MudTd DataLabel="Sigorta Şirketi">@context.InsuranceCompany?.Name</MudTd>
+                                <MudTd DataLabel="Poliçe Tipi">@context.PolicyType?.Name</MudTd>
+                                <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
+                                <MudTd DataLabel="Prim" Style="text-align: right">
+                                    @GetConvertedAmount(context.PremiumAmount, context.Currency).ToString("N2")
+                                </MudTd>
+                                <MudTd DataLabel="Komisyon" Style="text-align: right">
+                                    @GetConvertedAmount(context.CommissionAmount, context.Currency).ToString("N2")
+                                </MudTd>
+                                <MudTd DataLabel="Durum" Style="text-align: center">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetPolicyStatusColor(context.Status)">
+                                        @GetPolicyStatusText(context.Status)
+                                    </MudChip>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">Bu müşteriye ait poliçe bulunamadı.</MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Policies by Type Breakdown -->
+            @if (policyBreakdown.Any())
+            {
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="mr-2" />
+                                Poliçe Tipi Dağılımı
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSimpleTable Hover="true" Dense="true">
+                            <thead>
+                                <tr>
+                                    <th>Poliçe Tipi</th>
+                                    <th style="text-align: center">Adet</th>
+                                    <th style="text-align: right">Toplam Prim (@selectedCurrencyCode)</th>
+                                    <th style="text-align: right">Toplam Komisyon (@selectedCurrencyCode)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var breakdown in policyBreakdown)
+                                {
+                                    <tr>
+                                        <td>@breakdown.PolicyType</td>
+                                        <td style="text-align: center">@breakdown.Count</td>
+                                        <td style="text-align: right">@breakdown.TotalPremium.ToString("N2")</td>
+                                        <td style="text-align: right">@breakdown.TotalCommission.ToString("N2")</td>
+                                    </tr>
+                                }
+                                <tr style="font-weight: bold; border-top: 2px solid;">
+                                    <td>TOPLAM</td>
+                                    <td style="text-align: center">@policyBreakdown.Sum(x => x.Count)</td>
+                                    <td style="text-align: right">@policyBreakdown.Sum(x => x.TotalPremium).ToString("N2")</td>
+                                    <td style="text-align: right">@policyBreakdown.Sum(x => x.TotalCommission).ToString("N2")</td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            }
+        }
+        else
+        {
+            <MudPaper Class="pa-8" Elevation="0">
+                <MudStack AlignItems="AlignItems.Center" Spacing="4">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonSearch"
+                             Style="font-size: 6rem;"
+                             Color="Color.Secondary" />
+                    <MudText Typo="Typo.h5" Color="Color.Secondary">
+                        Rapor görmek için bir müşteri seçin
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center">
+                        Yukarıdaki arama kutusundan müşteri adı yazarak müşteri arayabilirsiniz.
+                    </MudText>
+                </MudStack>
+            </MudPaper>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    private CustomerDto? selectedCustomer;
+    private string selectedCurrencyCode = "TRY";
+    private List<CurrencyDto> currencies = new();
+    private List<PolicyDto> customerPolicies = new();
+    private bool loading = false;
+
+    // Statistics
+    private int activePolicyCount = 0;
+    private decimal totalPremiums = 0;
+    private decimal totalCommissions = 0;
+    private List<PolicyTypeBreakdown> policyBreakdown = new();
+
+    // Exchange rates cache
+    private Dictionary<string, decimal> exchangeRates = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrencies();
+    }
+
+    private async Task LoadCurrencies()
+    {
+        try
+        {
+            var result = await CurrencyService.GetActiveCurrenciesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                currencies = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading currencies: {ex.Message}");
+            Snackbar.Add("Para birimleri yüklenirken hata oluştu", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task OnCustomerSelected(CustomerDto customer)
+    {
+        selectedCustomer = customer;
+        if (customer != null)
+        {
+            await LoadCustomerReport();
+        }
+        else
+        {
+            ClearReport();
+        }
+    }
+
+    private async Task OnCurrencyChanged(string currencyCode)
+    {
+        selectedCurrencyCode = currencyCode;
+        if (selectedCustomer != null)
+        {
+            await LoadCustomerReport();
+        }
+    }
+
+    private async Task LoadCustomerReport()
+    {
+        if (selectedCustomer == null) return;
+
+        loading = true;
+        try
+        {
+            // Load customer policies
+            var queryParams = new PolicyQueryParams
+            {
+                CustomerId = selectedCustomer.Id,
+                PageSize = 1000,
+                PageNumber = 1
+            };
+
+            var result = await PolicyService.GetPoliciesAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+            {
+                customerPolicies = result.Data.Items.ToList();
+                await CalculateStatistics();
+            }
+            else
+            {
+                customerPolicies = new List<PolicyDto>();
+                ClearStatistics();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading customer report: {ex.Message}");
+            Snackbar.Add("Müşteri raporu yüklenirken hata oluştu", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task CalculateStatistics()
+    {
+        // Clear exchange rates cache for new calculation
+        exchangeRates.Clear();
+
+        activePolicyCount = customerPolicies.Count(p => p.Status == PolicyStatus.Active);
+
+        totalPremiums = 0;
+        totalCommissions = 0;
+
+        foreach (var policy in customerPolicies)
+        {
+            totalPremiums += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+            totalCommissions += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+        }
+
+        // Calculate breakdown by policy type
+        policyBreakdown.Clear();
+        var grouped = customerPolicies.GroupBy(p => p.PolicyType?.Name ?? "Bilinmeyen");
+        foreach (var group in grouped)
+        {
+            var breakdown = new PolicyTypeBreakdown
+            {
+                PolicyType = group.Key,
+                Count = group.Count()
+            };
+
+            foreach (var policy in group)
+            {
+                breakdown.TotalPremium += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                breakdown.TotalCommission += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+            }
+
+            policyBreakdown.Add(breakdown);
+        }
+
+        policyBreakdown = policyBreakdown.OrderByDescending(x => x.TotalPremium).ToList();
+    }
+
+    private async Task<decimal> ConvertAmount(decimal amount, string fromCurrency)
+    {
+        if (fromCurrency == selectedCurrencyCode)
+            return amount;
+
+        // Check cache
+        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
+        if (exchangeRates.ContainsKey(cacheKey))
+        {
+            return amount * exchangeRates[cacheKey];
+        }
+
+        try
+        {
+            var result = await CurrencyService.ConvertAmountAsync(amount, fromCurrency, selectedCurrencyCode);
+            if (result.IsSuccess)
+            {
+                // Cache the exchange rate
+                if (amount != 0)
+                {
+                    exchangeRates[cacheKey] = result.Data / amount;
+                }
+                return result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error converting amount: {ex.Message}");
+        }
+
+        // Fallback: return original amount
+        return amount;
+    }
+
+    private decimal GetConvertedAmount(decimal amount, string fromCurrency)
+    {
+        if (fromCurrency == selectedCurrencyCode)
+            return amount;
+
+        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
+        if (exchangeRates.ContainsKey(cacheKey))
+        {
+            return amount * exchangeRates[cacheKey];
+        }
+
+        return amount; // Fallback
+    }
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
+            return new List<CustomerDto>();
+
+        try
+        {
+            var queryParams = new CustomerQueryParams
+            {
+                SearchTerm = searchText,
+                PageSize = 50,
+                PageNumber = 1
+            };
+
+            var result = await CustomerService.GetCustomersAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching customers: {ex.Message}");
+        }
+
+        return new List<CustomerDto>();
+    }
+
+    private void ClearReport()
+    {
+        customerPolicies.Clear();
+        ClearStatistics();
+    }
+
+    private void ClearStatistics()
+    {
+        activePolicyCount = 0;
+        totalPremiums = 0;
+        totalCommissions = 0;
+        policyBreakdown.Clear();
+        exchangeRates.Clear();
+    }
+
+    private void PrintReport()
+    {
+        Snackbar.Add("Yazdırma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        // TODO: Implement print functionality
+    }
+
+    private Color GetCustomerStatusColor()
+    {
+        return selectedCustomer?.Status switch
+        {
+            CustomerStatus.Active => Color.Success,
+            CustomerStatus.Inactive => Color.Secondary,
+            CustomerStatus.Suspended => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private string GetCustomerStatusText()
+    {
+        return selectedCustomer?.Status switch
+        {
+            CustomerStatus.Active => "Aktif",
+            CustomerStatus.Inactive => "Pasif",
+            CustomerStatus.Suspended => "Askıya Alınmış",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    private Color GetPolicyStatusColor(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => Color.Success,
+            PolicyStatus.Draft => Color.Info,
+            PolicyStatus.Cancelled => Color.Error,
+            PolicyStatus.Expired => Color.Warning,
+            PolicyStatus.Suspended => Color.Secondary,
+            _ => Color.Default
+        };
+    }
+
+    private string GetPolicyStatusText(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => "Aktif",
+            PolicyStatus.Draft => "Taslak",
+            PolicyStatus.Cancelled => "İptal",
+            PolicyStatus.Expired => "Süresi Dolmuş",
+            PolicyStatus.Suspended => "Askıya Alınmış",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    private class PolicyTypeBreakdown
+    {
+        public string PolicyType { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal TotalPremium { get; set; }
+        public decimal TotalCommission { get; set; }
+    }
+}

@@ -7,7 +7,9 @@
 @using IAMS.Infrastructure.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 
+@using IAMS.Application.Services.Claims
 @inject IPolicyService PolicyService
+@inject IClaimService ClaimService
 @inject IReportingService ReportingService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
@@ -476,27 +478,35 @@
     {
         try
         {
-            var parameters = new ReportParameters
+            // Get policies in date range
+            var queryParams = new PolicyQueryParams
             {
-                StartDate = commissionStartDate,
-                EndDate = commissionEndDate
+                StartDateFrom = commissionStartDate,
+                StartDateTo = commissionEndDate,
+                PageSize = 10000,
+                PageNumber = 1
             };
 
-            var result = await ReportingService.GenerateReportAsync("commission-report", parameters);
+            var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
 
-            if (result != null)
+            if (policiesResult.IsSuccess && policiesResult.Data != null)
             {
-                // In a real implementation, parse the result.Data
-                // For now, using mock data
-                commissionNewPolicies = 45;
-                commissionRenewals = 32;
-                commissionTotalPremium = 125000m;
-                commissionTotalCommission = 18750m;
+                var policies = policiesResult.Data.Items.ToList();
+
+                // Calculate commission metrics from real data
+                commissionNewPolicies = policies.Count(p => !p.ParentPolicyId.HasValue);
+                commissionRenewals = policies.Count(p => p.ParentPolicyId.HasValue);
+                commissionTotalPremium = policies.Sum(p => p.PremiumAmount);
+                commissionTotalCommission = policies.Sum(p => p.CommissionAmount);
                 commissionRate = commissionTotalPremium > 0
                     ? (commissionTotalCommission / commissionTotalPremium * 100)
                     : 0;
 
                 Snackbar.Add("Komisyon raporu oluşturuldu", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Komisyon raporu yüklenirken hata oluştu", MudBlazor.Severity.Warning);
             }
         }
         catch (Exception ex)
@@ -509,32 +519,60 @@
     {
         try
         {
-            var parameters = new ReportParameters
-            {
-                StartDate = claimsStartDate,
-                EndDate = claimsEndDate
-            };
+            // Get all claims with paging
+            var claimsResult = await ClaimService.GetClaimsPagedAsync(1, 10000, null);
 
-            var result = await ReportingService.GenerateReportAsync("claims-summary", parameters);
-
-            if (result != null)
+            if (claimsResult != null && claimsResult.Items != null)
             {
-                // In a real implementation, parse the result.Data
-                // For now, using mock data
-                claimsTotalCount = 28;
-                claimsTotalAmount = 85000m;
-                claimsSubmitted = 5;
-                claimsUnderReview = 8;
-                claimsApproved = 10;
-                claimsRejected = 3;
-                claimsSettled = 2;
-                claimsSubmittedAmount = 12000m;
-                claimsUnderReviewAmount = 25000m;
-                claimsApprovedAmount = 35000m;
-                claimsRejectedAmount = 8000m;
-                claimsSettledAmount = 5000m;
+                var claims = claimsResult.Items.ToList();
+
+                // Filter by date range if specified
+                if (claimsStartDate.HasValue)
+                {
+                    claims = claims.Where(c => c.ClaimDate >= claimsStartDate.Value).ToList();
+                }
+                if (claimsEndDate.HasValue)
+                {
+                    claims = claims.Where(c => c.ClaimDate <= claimsEndDate.Value).ToList();
+                }
+
+                // Calculate claims metrics from real data
+                claimsTotalCount = claims.Count;
+                claimsTotalAmount = claims.Sum(c => c.ClaimAmount);
+
+                // Group by status
+                claimsSubmitted = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Submitted);
+                claimsUnderReview = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.UnderReview);
+                claimsApproved = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Approved);
+                claimsRejected = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected);
+                claimsSettled = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled);
+
+                // Calculate amounts by status
+                claimsSubmittedAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Submitted).Sum(c => c.ClaimAmount);
+                claimsUnderReviewAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.UnderReview).Sum(c => c.ClaimAmount);
+                claimsApprovedAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Approved).Sum(c => c.ClaimAmount);
+                claimsRejectedAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected).Sum(c => c.ClaimAmount);
+                claimsSettledAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled).Sum(c => c.ClaimAmount);
 
                 Snackbar.Add("Hasar raporu oluşturuldu", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                // No claims found
+                claimsTotalCount = 0;
+                claimsTotalAmount = 0;
+                claimsSubmitted = 0;
+                claimsUnderReview = 0;
+                claimsApproved = 0;
+                claimsRejected = 0;
+                claimsSettled = 0;
+                claimsSubmittedAmount = 0;
+                claimsUnderReviewAmount = 0;
+                claimsApprovedAmount = 0;
+                claimsRejectedAmount = 0;
+                claimsSettledAmount = 0;
+
+                Snackbar.Add("Hasar kaydı bulunamadı", MudBlazor.Severity.Info);
             }
         }
         catch (Exception ex)

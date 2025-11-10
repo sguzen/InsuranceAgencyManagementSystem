@@ -494,8 +494,10 @@
                 var policies = policiesResult.Data.Items.ToList();
 
                 // Calculate commission metrics from real data
-                commissionNewPolicies = policies.Count(p => !p.ParentPolicyId.HasValue);
-                commissionRenewals = policies.Count(p => p.ParentPolicyId.HasValue);
+                // Note: Without ParentPolicyId, we treat all policies as new for now
+                // TODO: Add ParentPolicyId to Policy entity to properly track renewals
+                commissionNewPolicies = policies.Count;
+                commissionRenewals = 0; // Will be implemented when ParentPolicyId is added
                 commissionTotalPremium = policies.Sum(p => p.PremiumAmount);
                 commissionTotalCommission = policies.Sum(p => p.CommissionAmount);
                 commissionRate = commissionTotalPremium > 0

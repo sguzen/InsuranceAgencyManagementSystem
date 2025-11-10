@@ -14,6 +14,7 @@
 @inject IPolicyService PolicyService
 @inject ICurrencyService CurrencyService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Müşteri Raporu</PageTitle>
 
@@ -574,10 +575,16 @@
         exchangeRates.Clear();
     }
 
-    private void PrintReport()
+    private async Task PrintReport()
     {
-        Snackbar.Add("Yazdırma özelliği yakında eklenecek", MudBlazor.Severity.Info);
-        // TODO: Implement print functionality
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private Color GetCustomerStatusColor()

@@ -52,6 +52,23 @@ export class BlazorInterop {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     }
+    static async downloadFileFromBase64(filename, base64Content, mimeType = 'text/plain') {
+        // Decode base64 to binary
+        const binaryString = atob(base64Content);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: mimeType });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }
     static setLocalStorage(key, value) {
         try {
             localStorage.setItem(key, value);
@@ -138,4 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
     BlazorInterop.initialize();
 });
 window.BlazorInterop = BlazorInterop;
+
+// Global wrapper functions for easier Blazor interop
+window.downloadFile = (filename, base64Content, mimeType) => {
+    return BlazorInterop.downloadFileFromBase64(filename, base64Content, mimeType);
+};
 //# sourceMappingURL=blazor-interop.js.map

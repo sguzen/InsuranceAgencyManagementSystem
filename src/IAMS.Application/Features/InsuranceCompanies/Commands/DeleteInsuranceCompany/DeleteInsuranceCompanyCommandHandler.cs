@@ -1,3 +1,4 @@
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using MediatR;
@@ -9,15 +10,18 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceC
     {
         private readonly IInsuranceCompanyRepository _insuranceCompanyRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<DeleteInsuranceCompanyCommandHandler> _logger;
 
         public DeleteInsuranceCompanyCommandHandler(
             IInsuranceCompanyRepository insuranceCompanyRepository,
             IUnitOfWork unitOfWork,
+            ICurrentUserService currentUserService,
             ILogger<DeleteInsuranceCompanyCommandHandler> logger)
         {
             _insuranceCompanyRepository = insuranceCompanyRepository;
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -42,7 +46,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceC
                 }
 
                 // Soft delete
-                company.MarkAsDeleted("System"); // TODO: Get from current user context
+                company.MarkAsDeleted(_currentUserService.UserName ?? "System");
 
                 _insuranceCompanyRepository.Update(company);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

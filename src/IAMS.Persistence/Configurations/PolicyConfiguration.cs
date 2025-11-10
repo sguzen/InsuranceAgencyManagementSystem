@@ -59,6 +59,14 @@ namespace IAMS.Persistence.Configurations
                 .HasForeignKey(pc => pc.PolicyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Self-referencing relationship for policy renewals
+            builder.HasOne(p => p.ParentPolicy)
+                .WithMany()
+                .HasForeignKey(p => p.ParentPolicyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(p => p.ParentPolicyId);
+
             // Global query filter for soft delete and tenant isolation
             builder.HasQueryFilter(p => !p.IsDeleted);
         }

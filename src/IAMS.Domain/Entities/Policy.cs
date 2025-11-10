@@ -53,6 +53,10 @@ namespace IAMS.Domain.Entities
         public int? PreviousInsuranceCompanyId { get; set; }
         public DateTime? PreviousPolicyEndDate { get; set; }
 
+        // Renewal Tracking - Reference to the parent policy if this is a renewal
+        public int? ParentPolicyId { get; set; }
+        public virtual Policy? ParentPolicy { get; set; }
+
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;
@@ -169,6 +173,7 @@ namespace IAMS.Domain.Entities
                 CommissionRate = this.CommissionRate,
                 Currency = this.Currency,
                 Status = PolicyStatus.Draft,
+                ParentPolicyId = this.Id, // Link to parent policy for renewal tracking
             };
 
             renewalPolicy.CalculateCommission();

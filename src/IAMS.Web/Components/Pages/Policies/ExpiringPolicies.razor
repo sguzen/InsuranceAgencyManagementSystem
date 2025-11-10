@@ -6,9 +6,11 @@
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @inject IPolicyService PolicyService
+@inject IEmailService EmailService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Süresi Dolacak Poliçeler</PageTitle>
 
@@ -465,8 +467,27 @@
     {
         try
         {
-            // TODO: Implement email sending
-            Snackbar.Add($"{policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+            if (policy.Customer?.Email == null)
+            {
+                Snackbar.Add("Müşteri e-posta adresi bulunamadı", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            var customerName = $"{policy.Customer.FirstName} {policy.Customer.LastName}";
+            var sent = await EmailService.SendPolicyReminderAsync(
+                policy.Customer.Email,
+                customerName,
+                policy.PolicyNumber,
+                policy.EndDate);
+
+            if (sent)
+            {
+                Snackbar.Add($"{policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("E-posta gönderilemedi. Lütfen daha sonra tekrar deneyin.", MudBlazor.Severity.Warning);
+            }
         }
         catch (Exception ex)
         {
@@ -491,8 +512,51 @@
     {
         try
         {
-            // TODO: Implement bulk email sending
-            Snackbar.Add($"{expiringPolicies.Count} müşteriye hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+            var policiesWithEmail = expiringPolicies
+                .Where(p => !string.IsNullOrEmpty(p.Customer?.Email))
+                .ToList();
+
+            if (!policiesWithEmail.Any())
+            {
+                Snackbar.Add("E-posta adresi olan müşteri bulunamadı", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            var successCount = 0;
+            var failureCount = 0;
+
+            foreach (var policy in policiesWithEmail)
+            {
+                try
+                {
+                    var customerName = $"{policy.Customer!.FirstName} {policy.Customer.LastName}";
+                    var sent = await EmailService.SendPolicyReminderAsync(
+                        policy.Customer.Email!,
+                        customerName,
+                        policy.PolicyNumber,
+                        policy.EndDate);
+
+                    if (sent)
+                        successCount++;
+                    else
+                        failureCount++;
+                }
+                catch
+                {
+                    failureCount++;
+                }
+            }
+
+            if (successCount > 0)
+            {
+                Snackbar.Add($"{successCount} müşteriye hatırlatma e-postası gönderildi" +
+                    (failureCount > 0 ? $" ({failureCount} hata)" : ""),
+                    failureCount > 0 ? MudBlazor.Severity.Warning : MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Hiçbir e-posta gönderilemedi", MudBlazor.Severity.Error);
+            }
         }
         catch (Exception ex)
         {
@@ -500,16 +564,56 @@
         }
     }
 
-    private void PrintExpiringList()
+    private async Task PrintExpiringList()
     {
-        // TODO: Implement printing
-        Snackbar.Add("Yazdırma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
-    private void ExportToExcel()
+    private async Task ExportToExcel()
     {
-        // TODO: Implement Excel export
-        Snackbar.Add("Excel dışa aktarma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        try
+        {
+            if (!expiringPolicies.Any())
+            {
+                Snackbar.Add("Dışa aktarılacak veri bulunamadı", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            // Generate CSV content
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Poliçe No,Müşteri,Sigorta Şirketi,Başlangıç Tarihi,Bitiş Tarihi,Prim Tutarı,Durum,Kalan Gün");
+
+            foreach (var policy in expiringPolicies)
+            {
+                var customerName = policy.Customer != null
+                    ? $"{policy.Customer.FirstName} {policy.Customer.LastName}"
+                    : "N/A";
+                var companyName = policy.InsuranceCompany?.Name ?? "N/A";
+
+                csv.AppendLine($"\"{policy.PolicyNumber}\",\"{customerName}\",\"{companyName}\"," +
+                    $"\"{policy.StartDate:dd.MM.yyyy}\",\"{policy.EndDate:dd.MM.yyyy}\"," +
+                    $"\"{policy.PremiumAmount:N2}\",\"{GetExpiryStatusText(policy)}\",\"{policy.DaysUntilExpiry}\"");
+            }
+
+            // Create file and download
+            var fileName = $"SuresiDolacakPoliceler_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64, "text/csv");
+            Snackbar.Add("Rapor başarıyla dışa aktarıldı", MudBlazor.Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Dışa aktarma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private string GetPriorityLevel(PolicyDto policy)

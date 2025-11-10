@@ -26,5 +26,6 @@ namespace IAMS.Application.DTOs.Vehicle
         public string CustomerName { get; set; } = string.Empty;
         public int VehicleAge { get; set; }
         public bool IsInspectionDue { get; set; }
+        public string FullName => $"{BrandName} {ModelName} - {PlateNumber}";
     }
 }

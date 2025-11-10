@@ -46,7 +46,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
                 var now = DateTime.UtcNow;
                 var startOfMonth = new DateTime(now.Year, now.Month, 1);
                 var newPoliciesThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && !p.IsDeleted);
-                var renewalsThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && p.ParentPolicyId.HasValue && !p.IsDeleted);
+                var renewalsThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && p.PreviousPolicyNumber != null && !p.IsDeleted);
                 var cancellationsThisMonth = allPolicies.Count(p => p.Status == IAMS.Domain.Enums.PolicyStatus.Cancelled && p.ModifiedOn >= startOfMonth && !p.IsDeleted);
                 var expirationsThisMonth = allPolicies.Count(p => p.EndDate >= startOfMonth && p.EndDate < startOfMonth.AddMonths(1) && p.EndDate <= now && !p.IsDeleted);
 

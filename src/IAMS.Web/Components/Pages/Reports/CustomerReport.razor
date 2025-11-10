@@ -50,7 +50,7 @@
             <MudCardContent>
                 <MudGrid>
                     <MudItem xs="12" md="8">
-                        <MudAutocomplete @bind-Value="selectedCustomer"
+                        <MudAutocomplete 
                                        T="CustomerDto"
                                        SearchFunc="@SearchCustomers"
                                        ToStringFunc="@(customer => customer != null ? $"{customer.FirstName} {customer.LastName}" : "")"
@@ -78,7 +78,7 @@
                         </MudAutocomplete>
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudSelect @bind-Value="selectedCurrencyCode"
+                        <MudSelect 
                                  Label="Para Birimi *"
                                  Variant="Variant.Outlined"
                                  T="string"
@@ -140,13 +140,13 @@
                         <MudItem xs="12" sm="6" md="3">
                             <MudStack Spacing="1">
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Telefon</MudText>
-                                <MudText Typo="Typo.body1">@selectedCustomer.Phone</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.MobilePhoneNumber</MudText>
                             </MudStack>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="3">
                             <MudStack Spacing="1">
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Kimlik No</MudText>
-                                <MudText Typo="Typo.body1">@selectedCustomer.IdentificationNo</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.IdentificationNumber</MudText>
                             </MudStack>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="3">
@@ -160,15 +160,15 @@
                         <MudItem xs="12" sm="6" md="3">
                             <MudStack Spacing="1">
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Kayıt Tarihi</MudText>
-                                <MudText Typo="Typo.body1">@selectedCustomer.CreatedDate.ToString("dd.MM.yyyy")</MudText>
+                                <MudText Typo="Typo.body1">@selectedCustomer.LastActivityDate.Value.ToString("dd.MM.yyyy")</MudText>
                             </MudStack>
                         </MudItem>
-                        @if (!string.IsNullOrEmpty(selectedCustomer.Address))
+                        @if (!string.IsNullOrEmpty(selectedCustomer.Address1))
                         {
                             <MudItem xs="12" md="6">
                                 <MudStack Spacing="1">
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Adres</MudText>
-                                    <MudText Typo="Typo.body1">@selectedCustomer.Address</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Adres 1</MudText>
+                                    <MudText Typo="Typo.body1">@selectedCustomer.Address1</MudText>
                                 </MudStack>
                             </MudItem>
                         }
@@ -278,7 +278,7 @@
                     }
                     else
                     {
-                        <MudAlert Severity="Severity.Info">Bu müşteriye ait poliçe bulunamadı.</MudAlert>
+                        <MudAlert Severity="MudBlazor.Severity.Info">Bu müşteriye ait poliçe bulunamadı.</MudAlert>
                     }
                 </MudCardContent>
             </MudCard>

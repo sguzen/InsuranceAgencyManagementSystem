@@ -346,13 +346,15 @@ else
         loadingPolicies = true;
         try
         {
-            // TODO: Implement GetPoliciesByCustomerIdAsync in PolicyService
-            // var result = await PolicyService.GetPoliciesByCustomerIdAsync(CustomerId);
-            // if (result.IsSuccess && result.Data != null)
-            // {
-            //     policies = result.Data;
-            // }
-            policies = new List<PolicyDto>(); // Temporary
+            var result = await PolicyService.GetPoliciesByCustomerAsync(CustomerId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                policies = result.Data;
+            }
+            else
+            {
+                policies = new List<PolicyDto>();
+            }
         }
         catch (Exception ex)
         {

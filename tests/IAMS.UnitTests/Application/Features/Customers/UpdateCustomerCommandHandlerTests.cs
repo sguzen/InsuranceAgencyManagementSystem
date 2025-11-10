@@ -1,10 +1,13 @@
+using AutoMapper;
 using FluentAssertions;
+using FluentValidation;
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
+using IAMS.MultiTenancy.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -14,6 +17,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
     {
         private readonly Mock<ICustomerRepository> _customerRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<IMapper> _mapperMock;
+        private readonly Mock<IValidator<CreateOrUpdateCustomerDto>> _validatorMock;
+        private readonly Mock<ICurrentTenantService> _currentTenantServiceMock;
         private readonly Mock<ICurrentUserService> _currentUserServiceMock;
         private readonly Mock<ILogger<UpdateCustomerCommandHandler>> _loggerMock;
         private readonly UpdateCustomerCommandHandler _handler;
@@ -22,6 +28,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
         {
             _customerRepositoryMock = new Mock<ICustomerRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _mapperMock = new Mock<IMapper>();
+            _validatorMock = new Mock<IValidator<CreateOrUpdateCustomerDto>>();
+            _currentTenantServiceMock = new Mock<ICurrentTenantService>();
             _currentUserServiceMock = new Mock<ICurrentUserService>();
             _loggerMock = new Mock<ILogger<UpdateCustomerCommandHandler>>();
 
@@ -29,6 +38,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
 
             _handler = new UpdateCustomerCommandHandler(
                 _unitOfWorkMock.Object,
+                _mapperMock.Object,
+                _validatorMock.Object,
+                _currentTenantServiceMock.Object,
                 _currentUserServiceMock.Object,
                 _loggerMock.Object);
         }
@@ -54,8 +66,19 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 CreatedOn = DateTime.UtcNow.AddDays(-30)
             };
 
+            var customerDto = new CustomerDto
+            {
+                Id = customerId,
+                FirstName = "John",
+                LastName = "Smith",
+                Email = "john.smith@example.com",
+                Status = CustomerStatus.Active
+            };
+
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync(existingCustomer);
+            _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
+                .Returns(customerDto);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
@@ -104,8 +127,19 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 CreatedOn = DateTime.UtcNow.AddDays(-10)
             };
 
+            var customerDto = new CustomerDto
+            {
+                Id = customerId,
+                FirstName = "Jane",
+                LastName = "Smith",
+                Email = "jane.smith@example.com",
+                Status = CustomerStatus.Active
+            };
+
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync(existingCustomer);
+            _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
+                .Returns(customerDto);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 

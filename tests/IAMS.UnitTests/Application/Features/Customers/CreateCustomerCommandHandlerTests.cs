@@ -1,10 +1,13 @@
+using AutoMapper;
 using FluentAssertions;
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Services;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
+using IAMS.MultiTenancy.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -14,7 +17,10 @@ namespace IAMS.UnitTests.Application.Features.Customers
     {
         private readonly Mock<ICustomerRepository> _customerRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<IMapper> _mapperMock;
+        private readonly Mock<ICurrentTenantService> _currentTenantServiceMock;
         private readonly Mock<ICurrentUserService> _currentUserServiceMock;
+        private readonly Mock<ICustomerCodeGenerator> _customerCodeGeneratorMock;
         private readonly Mock<ILogger<CreateCustomerCommandHandler>> _loggerMock;
         private readonly CreateCustomerCommandHandler _handler;
 
@@ -22,14 +28,21 @@ namespace IAMS.UnitTests.Application.Features.Customers
         {
             _customerRepositoryMock = new Mock<ICustomerRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _mapperMock = new Mock<IMapper>();
+            _currentTenantServiceMock = new Mock<ICurrentTenantService>();
             _currentUserServiceMock = new Mock<ICurrentUserService>();
+            _customerCodeGeneratorMock = new Mock<ICustomerCodeGenerator>();
             _loggerMock = new Mock<ILogger<CreateCustomerCommandHandler>>();
 
             _unitOfWorkMock.Setup(x => x.Customers).Returns(_customerRepositoryMock.Object);
+            _customerCodeGeneratorMock.Setup(x => x.GenerateAsync()).ReturnsAsync("CUST-001");
 
             _handler = new CreateCustomerCommandHandler(
                 _unitOfWorkMock.Object,
+                _mapperMock.Object,
+                _currentTenantServiceMock.Object,
                 _currentUserServiceMock.Object,
+                _customerCodeGeneratorMock.Object,
                 _loggerMock.Object);
         }
 
@@ -41,6 +54,18 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _currentUserServiceMock.Setup(x => x.UserName).Returns(currentUserName);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
+
+            var customerDto = new CustomerDto
+            {
+                Id = 1,
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "john.doe@example.com",
+                Status = CustomerStatus.Active
+            };
+
+            _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
+                .Returns(customerDto);
 
             var command = new CreateCustomerCommand(new CreateCustomerDto
             {
@@ -81,6 +106,18 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _currentUserServiceMock.Setup(x => x.UserName).Returns((string?)null);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
+
+            var customerDto = new CustomerDto
+            {
+                Id = 1,
+                FirstName = "Jane",
+                LastName = "Smith",
+                Email = "jane.smith@example.com",
+                Status = CustomerStatus.Active
+            };
+
+            _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
+                .Returns(customerDto);
 
             var command = new CreateCustomerCommand(new CreateCustomerDto
             {

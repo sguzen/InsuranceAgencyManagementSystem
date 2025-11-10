@@ -9,6 +9,7 @@
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Süresi Dolacak Poliçeler</PageTitle>
 
@@ -500,10 +501,16 @@
         }
     }
 
-    private void PrintExpiringList()
+    private async Task PrintExpiringList()
     {
-        // TODO: Implement printing
-        Snackbar.Add("Yazdırma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private void ExportToExcel()

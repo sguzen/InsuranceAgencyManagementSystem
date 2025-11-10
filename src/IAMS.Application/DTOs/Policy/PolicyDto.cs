@@ -14,6 +14,9 @@ namespace IAMS.Application.DTOs.Policy
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }
         public int? VehicleId { get; set; }
+
+        // Renewal tracking - ID of the parent policy if this is a renewal
+        public int? ParentPolicyId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal PremiumAmount { get; set; }

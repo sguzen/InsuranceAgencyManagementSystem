@@ -45,9 +45,8 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
                 // Calculate period statistics
                 var now = DateTime.UtcNow;
                 var startOfMonth = new DateTime(now.Year, now.Month, 1);
-                var newPoliciesThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && !p.IsDeleted);
-                // TODO: Add ParentPolicyId to Policy entity to properly track renewals
-                var renewalsThisMonth = 0; // Will be: allPolicies.Count(p => p.CreatedOn >= startOfMonth && p.ParentPolicyId.HasValue && !p.IsDeleted);
+                var newPoliciesThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && !p.ParentPolicyId.HasValue && !p.IsDeleted);
+                var renewalsThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && p.ParentPolicyId.HasValue && !p.IsDeleted);
                 var cancellationsThisMonth = allPolicies.Count(p => p.Status == IAMS.Domain.Enums.PolicyStatus.Cancelled && p.ModifiedOn >= startOfMonth && !p.IsDeleted);
                 var expirationsThisMonth = allPolicies.Count(p => p.EndDate >= startOfMonth && p.EndDate < startOfMonth.AddMonths(1) && p.EndDate <= now && !p.IsDeleted);
 

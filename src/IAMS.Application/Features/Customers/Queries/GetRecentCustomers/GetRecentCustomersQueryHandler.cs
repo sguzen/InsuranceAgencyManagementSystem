@@ -31,16 +31,11 @@ namespace IAMS.Application.Features.Customers.Queries.GetRecentCustomers
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<List<CustomerDto>>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-                var tenantId = _currentTenantService.TenantId.Value;
                 var customers = await _unitOfWork.Customers.GetRecentCustomersAsync(request.Count);
                 var customerDtos = _mapper.Map<List<CustomerDto>>(customers);
 
-                _logger.LogDebug("Retrieved {Count} recent customers for tenant {TenantId}", customerDtos.Count, tenantId);
+                _logger.LogDebug("Retrieved {Count} recent customers", customerDtos.Count);
 
                 return Result<List<CustomerDto>>.Success(customerDtos, $"Son {customerDtos.Count} müşteri getirildi");
             }

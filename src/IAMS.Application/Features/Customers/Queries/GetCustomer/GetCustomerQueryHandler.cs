@@ -33,19 +33,11 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomer
         {
             try
             {
-                // Check if tenant context is available
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    _logger.LogError("No tenant context available for customer retrieval");
-                    return Result<CustomerDto>.Unauthorized("Kiracı bağlamı bulunamadı. Lütfen tekrar giriş yapın.");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
 
                 // Validate request
                 if (request.Id <= 0)
                 {
-                    _logger.LogWarning("Invalid customer ID {CustomerId} provided for tenant {TenantId}", request.Id);
+                    _logger.LogWarning("Invalid customer ID {CustomerId} provided", request.Id);
                     return Result<CustomerDto>.ValidationFailure("Geçersiz müşteri ID", new List<string> { "Müşteri ID pozitif bir sayı olmalıdır" });
                 }
 

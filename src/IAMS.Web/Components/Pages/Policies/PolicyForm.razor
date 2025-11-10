@@ -112,7 +112,7 @@
                             <MudCardContent>
                                 <MudGrid>
                                     <MudItem xs="12" md="4">
-                                        <MudAutocomplete @bind-Value="selectedCustomer"
+                                        <MudAutocomplete 
                                                        T="CustomerDto"
                                                        SearchFunc="@SearchCustomers"
                                                        ToStringFunc="@(customer => customer?.FirstName + " " + customer?.LastName)"
@@ -189,7 +189,7 @@
                             <MudCardContent>
                                 <MudGrid>
                                     <MudItem xs="12" md="10">
-                                        <MudSelect @bind-Value="model.VehicleId"
+                                        <MudSelect 
                                                  Label="Araç"
                                                  Variant="Variant.Outlined"
                                                  T="int?"
@@ -233,7 +233,7 @@
                                     @if (selectedVehicle != null)
                                     {
                                         <MudItem xs="12">
-                                            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                                            <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="4">
                                                     <div>
                                                         <strong>Plaka:</strong> @selectedVehicle.PlateNumber

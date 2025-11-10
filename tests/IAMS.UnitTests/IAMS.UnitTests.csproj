@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
@@ -22,6 +23,7 @@
     <ProjectReference Include="..\..\src\IAMS.Application\IAMS.Application.csproj" />
     <ProjectReference Include="..\..\src\IAMS.Domain\IAMS.Domain.csproj" />
     <ProjectReference Include="..\..\src\IAMS.Persistence\IAMS.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+using AutoMapper;
 using FluentAssertions;
 using IAMS.Application.DTOs.InsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany;
@@ -22,6 +23,7 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             var currentUserName = "admin@example.com";
             var repositoryMock = new Mock<IInsuranceCompanyRepository>();
             var unitOfWorkMock = new Mock<IUnitOfWork>();
+            var mapperMock = new Mock<IMapper>();
             var currentUserServiceMock = new Mock<ICurrentUserService>();
             var loggerMock = new Mock<ILogger<CreateInsuranceCompanyCommandHandler>>();
 
@@ -29,9 +31,26 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
+            var companyDto = new InsuranceCompanyDto
+            {
+                Id = 1,
+                Name = "AXA Sigorta",
+                Code = "AXA1234567",
+                Description = "Leading insurance company",
+                ContactEmail = "info@axa.com",
+                ContactPhone = "555-1234",
+                Address = "123 Main St",
+                Website = "www.axa.com",
+                IsActive = true
+            };
+
+            mapperMock.Setup(x => x.Map<InsuranceCompanyDto>(It.IsAny<InsuranceCompany>()))
+                .Returns(companyDto);
+
             var handler = new CreateInsuranceCompanyCommandHandler(
                 repositoryMock.Object,
                 unitOfWorkMock.Object,
+                mapperMock.Object,
                 currentUserServiceMock.Object,
                 loggerMock.Object);
 
@@ -69,6 +88,7 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             // Arrange
             var repositoryMock = new Mock<IInsuranceCompanyRepository>();
             var unitOfWorkMock = new Mock<IUnitOfWork>();
+            var mapperMock = new Mock<IMapper>();
             var currentUserServiceMock = new Mock<ICurrentUserService>();
             var loggerMock = new Mock<ILogger<CreateInsuranceCompanyCommandHandler>>();
 
@@ -76,9 +96,21 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
+            var companyDto = new InsuranceCompanyDto
+            {
+                Id = 1,
+                Name = "Test Insurance",
+                Code = "TES1234567",
+                IsActive = true
+            };
+
+            mapperMock.Setup(x => x.Map<InsuranceCompanyDto>(It.IsAny<InsuranceCompany>()))
+                .Returns(companyDto);
+
             var handler = new CreateInsuranceCompanyCommandHandler(
                 repositoryMock.Object,
                 unitOfWorkMock.Object,
+                mapperMock.Object,
                 currentUserServiceMock.Object,
                 loggerMock.Object);
 
@@ -109,6 +141,7 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             var currentUserName = "admin@example.com";
             var repositoryMock = new Mock<IInsuranceCompanyRepository>();
             var unitOfWorkMock = new Mock<IUnitOfWork>();
+            var mapperMock = new Mock<IMapper>();
             var currentUserServiceMock = new Mock<ICurrentUserService>();
             var loggerMock = new Mock<ILogger<UpdateInsuranceCompanyCommandHandler>>();
 
@@ -122,8 +155,23 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
                 "System");
             existingCompany.Id = companyId;
 
+            var companyDto = new InsuranceCompanyDto
+            {
+                Id = companyId,
+                Name = "AXA Sigorta Updated",
+                Code = existingCompany.Code,
+                Description = "New description",
+                ContactEmail = "new@axa.com",
+                ContactPhone = "555-9999",
+                Address = "New Address",
+                Website = "www.new-axa.com",
+                IsActive = true
+            };
+
             repositoryMock.Setup(x => x.GetByIdAsync(companyId))
                 .ReturnsAsync(existingCompany);
+            mapperMock.Setup(x => x.Map<InsuranceCompanyDto>(It.IsAny<InsuranceCompany>()))
+                .Returns(companyDto);
             currentUserServiceMock.Setup(x => x.UserName).Returns(currentUserName);
             unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
@@ -131,6 +179,7 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             var handler = new UpdateInsuranceCompanyCommandHandler(
                 repositoryMock.Object,
                 unitOfWorkMock.Object,
+                mapperMock.Object,
                 currentUserServiceMock.Object,
                 loggerMock.Object);
 
@@ -164,6 +213,7 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             var companyId = 999;
             var repositoryMock = new Mock<IInsuranceCompanyRepository>();
             var unitOfWorkMock = new Mock<IUnitOfWork>();
+            var mapperMock = new Mock<IMapper>();
             var currentUserServiceMock = new Mock<ICurrentUserService>();
             var loggerMock = new Mock<ILogger<UpdateInsuranceCompanyCommandHandler>>();
 
@@ -173,6 +223,7 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             var handler = new UpdateInsuranceCompanyCommandHandler(
                 repositoryMock.Object,
                 unitOfWorkMock.Object,
+                mapperMock.Object,
                 currentUserServiceMock.Object,
                 loggerMock.Object);
 

@@ -576,10 +576,44 @@
         }
     }
 
-    private void ExportToExcel()
+    private async Task ExportToExcel()
     {
-        // TODO: Implement Excel export
-        Snackbar.Add("Excel dışa aktarma özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        try
+        {
+            if (!expiringPolicies.Any())
+            {
+                Snackbar.Add("Dışa aktarılacak veri bulunamadı", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            // Generate CSV content
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Poliçe No,Müşteri,Sigorta Şirketi,Başlangıç Tarihi,Bitiş Tarihi,Prim Tutarı,Durum,Kalan Gün");
+
+            foreach (var policy in expiringPolicies)
+            {
+                var customerName = policy.Customer != null
+                    ? $"{policy.Customer.FirstName} {policy.Customer.LastName}"
+                    : "N/A";
+                var companyName = policy.InsuranceCompany?.Name ?? "N/A";
+
+                csv.AppendLine($"\"{policy.PolicyNumber}\",\"{customerName}\",\"{companyName}\"," +
+                    $"\"{policy.StartDate:dd.MM.yyyy}\",\"{policy.EndDate:dd.MM.yyyy}\"," +
+                    $"\"{policy.PremiumAmount:N2}\",\"{GetExpiryStatusText(policy)}\",\"{policy.DaysUntilExpiry}\"");
+            }
+
+            // Create file and download
+            var fileName = $"SuresiDolacakPoliceler_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64, "text/csv");
+            Snackbar.Add("Rapor başarıyla dışa aktarıldı", MudBlazor.Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Dışa aktarma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private string GetPriorityLevel(PolicyDto policy)

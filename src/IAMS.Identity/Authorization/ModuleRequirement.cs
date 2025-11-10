@@ -28,12 +28,12 @@ namespace IAMS.Identity.Authorization
             _moduleService = moduleService;
         }
 
-        protected override Task HandleRequirementAsync(
+        protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             ModuleRequirement requirement)
         {
             // Check if the required module is enabled for the tenant
-            if (_moduleService.IsModuleEnabledAsync(requirement.ModuleName).Result) // TODO
+            if (await _moduleService.IsModuleEnabledAsync(requirement.ModuleName))
             {
                 context.Succeed(requirement);
             }
@@ -41,8 +41,6 @@ namespace IAMS.Identity.Authorization
             {
                 context.Fail(new AuthorizationFailureReason(this, "Module not enabled"));
             }
-
-            return Task.CompletedTask;
         }
     }
 

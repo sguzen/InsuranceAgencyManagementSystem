@@ -1,5 +1,6 @@
 using AutoMapper;
 using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using MediatR;
@@ -12,17 +13,20 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceC
         private readonly IInsuranceCompanyRepository _insuranceCompanyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UpdateInsuranceCompanyCommandHandler> _logger;
 
         public UpdateInsuranceCompanyCommandHandler(
             IInsuranceCompanyRepository insuranceCompanyRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
+            ICurrentUserService currentUserService,
             ILogger<UpdateInsuranceCompanyCommandHandler> logger)
         {
             _insuranceCompanyRepository = insuranceCompanyRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -57,7 +61,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceC
                 company.Address = request.CompanyDto.Address ?? string.Empty;
                 company.Website = request.CompanyDto.Website;
                 company.IsActive = request.CompanyDto.IsActive;
-                company.UpdateAuditInfo("System"); // TODO: Get from current user context
+                company.UpdateAuditInfo(_currentUserService.UserName ?? "System");
 
                 // Save changes
                 _insuranceCompanyRepository.Update(company);

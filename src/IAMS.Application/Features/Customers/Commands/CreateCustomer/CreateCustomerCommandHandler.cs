@@ -15,6 +15,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICurrentTenantService _currentTenantService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
         private readonly ILogger<CreateCustomerCommandHandler> _logger;
 
@@ -22,12 +23,14 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ICurrentTenantService currentTenantService,
+            ICurrentUserService currentUserService,
             ICustomerCodeGenerator customerCodeGenerator,
             ILogger<CreateCustomerCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentTenantService = currentTenantService;
+            _currentUserService = currentUserService;
             _customerCodeGenerator = customerCodeGenerator;
             _logger = logger;
         }
@@ -81,7 +84,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
 
                 // Map and create customer
                 var customer = _mapper.Map<Customer>(request.CustomerDto);
-                customer.CreatedBy = "System"; // TODO: Get from current user context
+                customer.CreatedBy = _currentUserService.UserName ?? "System";
                 customer.CreatedOn = DateTime.UtcNow;
 
                 // Generate customer code using the enhanced generator

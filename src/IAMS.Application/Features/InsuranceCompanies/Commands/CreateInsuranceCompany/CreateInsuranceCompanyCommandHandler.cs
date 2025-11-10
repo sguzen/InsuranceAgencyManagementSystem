@@ -14,17 +14,20 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceC
         private readonly IInsuranceCompanyRepository _insuranceCompanyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<CreateInsuranceCompanyCommandHandler> _logger;
 
         public CreateInsuranceCompanyCommandHandler(
             IInsuranceCompanyRepository insuranceCompanyRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
+            ICurrentUserService currentUserService,
             ILogger<CreateInsuranceCompanyCommandHandler> logger)
         {
             _insuranceCompanyRepository = insuranceCompanyRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -49,7 +52,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceC
                     request.CompanyDto.ContactPhone,
                     request.CompanyDto.Address,
                     request.CompanyDto.Website,
-                    "System"); // TODO: Get from ICurrentUserService
+                    _currentUserService.UserName ?? "System");
 
                 // Save to database
                 await _insuranceCompanyRepository.AddAsync(company);

@@ -16,6 +16,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
         private readonly IMapper _mapper;
         private readonly IValidator<CreateOrUpdateCustomerDto> _validator;
         private readonly ICurrentTenantService _currentTenantService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UpdateCustomerCommandHandler> _logger;
 
         public UpdateCustomerCommandHandler(
@@ -23,12 +24,14 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
             IMapper mapper,
             IValidator<CreateOrUpdateCustomerDto> validator,
             ICurrentTenantService currentTenantService,
+            ICurrentUserService currentUserService,
             ILogger<UpdateCustomerCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validator = validator;
             _currentTenantService = currentTenantService;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -84,7 +87,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
 
                 // Preserve system fields
                 existingCustomer.ModifiedOn = DateTime.UtcNow;
-                existingCustomer.ModifiedBy = "System"; // TODO: Get from current user context
+                existingCustomer.ModifiedBy = _currentUserService.UserName ?? "System";
 
                 _unitOfWork.Customers.Update(existingCustomer);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

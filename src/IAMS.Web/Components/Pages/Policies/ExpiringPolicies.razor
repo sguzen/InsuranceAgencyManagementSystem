@@ -6,6 +6,7 @@
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @inject IPolicyService PolicyService
+@inject IEmailService EmailService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -466,8 +467,27 @@
     {
         try
         {
-            // TODO: Implement email sending
-            Snackbar.Add($"{policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+            if (policy.Customer?.Email == null)
+            {
+                Snackbar.Add("Müşteri e-posta adresi bulunamadı", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            var customerName = $"{policy.Customer.FirstName} {policy.Customer.LastName}";
+            var sent = await EmailService.SendPolicyReminderAsync(
+                policy.Customer.Email,
+                customerName,
+                policy.PolicyNumber,
+                policy.EndDate);
+
+            if (sent)
+            {
+                Snackbar.Add($"{policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("E-posta gönderilemedi. Lütfen daha sonra tekrar deneyin.", MudBlazor.Severity.Warning);
+            }
         }
         catch (Exception ex)
         {
@@ -492,8 +512,51 @@
     {
         try
         {
-            // TODO: Implement bulk email sending
-            Snackbar.Add($"{expiringPolicies.Count} müşteriye hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+            var policiesWithEmail = expiringPolicies
+                .Where(p => !string.IsNullOrEmpty(p.Customer?.Email))
+                .ToList();
+
+            if (!policiesWithEmail.Any())
+            {
+                Snackbar.Add("E-posta adresi olan müşteri bulunamadı", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            var successCount = 0;
+            var failureCount = 0;
+
+            foreach (var policy in policiesWithEmail)
+            {
+                try
+                {
+                    var customerName = $"{policy.Customer!.FirstName} {policy.Customer.LastName}";
+                    var sent = await EmailService.SendPolicyReminderAsync(
+                        policy.Customer.Email!,
+                        customerName,
+                        policy.PolicyNumber,
+                        policy.EndDate);
+
+                    if (sent)
+                        successCount++;
+                    else
+                        failureCount++;
+                }
+                catch
+                {
+                    failureCount++;
+                }
+            }
+
+            if (successCount > 0)
+            {
+                Snackbar.Add($"{successCount} müşteriye hatırlatma e-postası gönderildi" +
+                    (failureCount > 0 ? $" ({failureCount} hata)" : ""),
+                    failureCount > 0 ? MudBlazor.Severity.Warning : MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Hiçbir e-posta gönderilemedi", MudBlazor.Severity.Error);
+            }
         }
         catch (Exception ex)
         {

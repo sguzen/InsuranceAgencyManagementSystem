@@ -87,14 +87,25 @@ namespace IAMS.Domain.Entities
 
         private static string GenerateCompanyCode(string name)
         {
-            // Generate a code from the company name (first 3 chars + timestamp)
+            // Generate a 10-character unique code: 3-char prefix + 7-char timestamp
             var prefix = new string(name.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpper();
             if (string.IsNullOrEmpty(prefix))
             {
-                prefix = "INS"; // TODO ensure uniqueness of a total of 10 chars
+                prefix = "INS";
             }
-            //var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-            return $"{prefix}";
+
+            // Pad prefix to 3 chars if needed
+            prefix = prefix.PadRight(3, 'X');
+
+            // Add 7-digit timestamp suffix for uniqueness (yyyyMMddHHmmss -> last 7 digits: MMddHHmmss % 10000000)
+            var timestamp = DateTime.UtcNow;
+            var uniqueSuffix = ((timestamp.Month * 100000000L) +
+                               (timestamp.Day * 1000000L) +
+                               (timestamp.Hour * 10000L) +
+                               (timestamp.Minute * 100L) +
+                               timestamp.Second) % 10000000;
+
+            return $"{prefix}{uniqueSuffix:D7}";
         }
     }
 }

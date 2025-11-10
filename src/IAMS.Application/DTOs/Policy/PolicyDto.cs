@@ -25,10 +25,10 @@ namespace IAMS.Application.DTOs.Policy
         public PolicyStatus Status { get; set; }
         public string? Notes { get; set; }
         public string Currency { get; set; } = "TRY";
-        public DateTime CreatedDate { get; set; }
-        public DateTime? UpdatedDate { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public string? CreatedBy { get; set; }
-        public string? UpdatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         // Navigation properties
         public CustomerDto? Customer { get; set; }

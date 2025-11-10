@@ -39,9 +39,9 @@ namespace IAMS.Application.DTOs.Customer
         public CustomerStatus Status { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedOn { get; set; }
-        public DateTime? UpdatedOn { get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public string? CreatedBy { get; set; }
-        public string? UpdatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         // Aggregated data
         public int ActivePoliciesCount { get; set; }

@@ -320,7 +320,7 @@ else
                                 <MudStack Spacing="1">
                                     <MudText><strong>Poliçe Oluşturuldu</strong></MudText>
                                     <MudText Color="Color.Secondary">
-                                        @policy.CreatedDate.ToString("dd MMMM yyyy HH:mm")
+                                        @policy.CreatedOn.ToString("dd MMMM yyyy HH:mm")
                                     </MudText>
                                     @if (!string.IsNullOrEmpty(policy.CreatedBy))
                                     {
@@ -331,20 +331,20 @@ else
                                 </MudStack>
                             </ItemContent>
                         </MudTimelineItem>
-                        
-                        @if (policy.UpdatedDate.HasValue)
+
+                        @if (policy.ModifiedOn.HasValue)
                         {
                             <MudTimelineItem Color="Color.Info" Icon="@Icons.Material.Filled.Edit">
                                 <ItemContent>
                                     <MudStack Spacing="1">
                                         <MudText><strong>Son Güncelleme</strong></MudText>
                                         <MudText Color="Color.Secondary">
-                                            @policy.UpdatedDate.Value.ToString("dd MMMM yyyy HH:mm")
+                                            @policy.ModifiedOn.Value.ToString("dd MMMM yyyy HH:mm")
                                         </MudText>
-                                        @if (!string.IsNullOrEmpty(policy.UpdatedBy))
+                                        @if (!string.IsNullOrEmpty(policy.ModifiedBy))
                                         {
                                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                @policy.UpdatedBy tarafından
+                                                @policy.ModifiedBy tarafından
                                             </MudText>
                                         }
                                     </MudStack>

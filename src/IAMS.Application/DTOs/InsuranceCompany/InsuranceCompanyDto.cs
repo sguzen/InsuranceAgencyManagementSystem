@@ -3,7 +3,7 @@
     public class InsuranceCompanyDto
     {
         public int Id { get; set; }
-        
+
         public string Name { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string? Description { get; set; }
@@ -12,10 +12,10 @@
         public string? Address { get; set; }
         public string? Website { get; set; }
         public bool IsActive { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime? UpdatedDate { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public string? CreatedBy { get; set; }
-        public string? UpdatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
 
         // Aggregated data
         public int ActivePoliciesCount { get; set; }

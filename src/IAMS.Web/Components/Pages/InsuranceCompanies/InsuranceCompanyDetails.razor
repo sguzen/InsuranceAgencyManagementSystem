@@ -204,18 +204,18 @@
                                             <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" />
                                             <MudStack Spacing="0">
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Oluşturulma Tarihi</MudText>
-                                                <MudText Typo="Typo.body1">@company.CreatedDate.ToString("dd MMMM yyyy HH:mm")</MudText>
+                                                <MudText Typo="Typo.body1">@company.CreatedOn.ToString("dd MMMM yyyy HH:mm")</MudText>
                                             </MudStack>
                                         </MudStack>
 
-                                        @if (company.UpdatedDate.HasValue)
+                                        @if (company.ModifiedOn.HasValue)
                                         {
                                             <MudDivider />
                                             <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
                                                 <MudIcon Icon="@Icons.Material.Filled.Update" Color="Color.Primary" />
                                                 <MudStack Spacing="0">
                                                     <MudText Typo="Typo.caption" Color="Color.Secondary">Son Güncelleme</MudText>
-                                                    <MudText Typo="Typo.body1">@company.UpdatedDate.Value.ToString("dd MMMM yyyy HH:mm")</MudText>
+                                                    <MudText Typo="Typo.body1">@company.ModifiedOn.Value.ToString("dd MMMM yyyy HH:mm")</MudText>
                                                 </MudStack>
                                             </MudStack>
                                         }

@@ -67,16 +67,16 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
                 .Returns(customerDto);
 
-            var command = new CreateCustomerCommand(new CreateCustomerDto
+            var command = new CreateCustomerCommand(new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
-                PhoneNumber = "555-1234",
+                HomePhone = "555-1234",
                 MobilePhoneNumber = "555-5678",
                 DateOfBirth = new DateTime(1990, 1, 1),
-                Address = "123 Main St",
+                Address1 = "123 Main St",
                 Status = CustomerStatus.Active
             });
 
@@ -119,9 +119,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
                 .Returns(customerDto);
 
-            var command = new CreateCustomerCommand(new CreateCustomerDto
+            var command = new CreateCustomerCommand(new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "Jane",
                 LastName = "Smith",
                 Email = "jane.smith@example.com",
@@ -146,12 +146,12 @@ namespace IAMS.UnitTests.Application.Features.Customers
         {
             // Arrange
             var nationalId = "12345678901";
-            _customerRepositoryMock.Setup(x => x.GetByNationalIdAsync(nationalId))
-                .ReturnsAsync(new Customer { NationalIdNumber = nationalId });
+            _customerRepositoryMock.Setup(x => x.GetByIdentificationNoAsync(nationalId))
+                .ReturnsAsync(new Customer { IdentificationNumber = nationalId });
 
-            var command = new CreateCustomerCommand(new CreateCustomerDto
+            var command = new CreateCustomerCommand(new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = nationalId,
+                IdentificationNumber = nationalId,
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -176,14 +176,14 @@ namespace IAMS.UnitTests.Application.Features.Customers
         {
             // Arrange
             var email = "test@example.com";
-            _customerRepositoryMock.Setup(x => x.GetByNationalIdAsync(It.IsAny<string>()))
+            _customerRepositoryMock.Setup(x => x.GetByIdentificationNoAsync(It.IsAny<string>()))
                 .ReturnsAsync((Customer?)null);
             _customerRepositoryMock.Setup(x => x.GetByEmailAsync(email))
                 .ReturnsAsync(new Customer { Email = email });
 
-            var command = new CreateCustomerCommand(new CreateCustomerDto
+            var command = new CreateCustomerCommand(new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = email,
@@ -210,9 +210,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var command = new CreateCustomerCommand(new CreateCustomerDto
+            var command = new CreateCustomerCommand(new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",

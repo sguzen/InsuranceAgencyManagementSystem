@@ -172,10 +172,12 @@ namespace IAMS.Domain.Entities
         {
             var errors = new List<string>();
 
+            // FirstName is always required (for individuals it's first name, for corporate it's company name)
             if (string.IsNullOrWhiteSpace(FirstName))
                 errors.Add("First name is required");
 
-            if (string.IsNullOrWhiteSpace(LastName))
+            // LastName is only required for individual customers
+            if (Type == CustomerType.Individual && string.IsNullOrWhiteSpace(LastName))
                 errors.Add("Last name is required");
 
             if (!IsValidEmail(Email))
@@ -187,11 +189,15 @@ namespace IAMS.Domain.Entities
             if (string.IsNullOrWhiteSpace(IdentificationNumber))
                 errors.Add("Identification number is required");
 
-            if (DateOfBirth >= DateTime.Today)
-                errors.Add("Date of birth must be in the past");
+            // DateOfBirth validation only for individual customers
+            if (Type == CustomerType.Individual)
+            {
+                if (DateOfBirth.HasValue && DateOfBirth >= DateTime.Today)
+                    errors.Add("Date of birth must be in the past");
 
-            if (Age < 0 || Age > 150)
-                errors.Add("Invalid age");
+                if (Age.HasValue && (Age < 0 || Age > 150))
+                    errors.Add("Invalid age");
+            }
 
             if (errors.Any())
                 throw new CustomerValidationException(this, errors);

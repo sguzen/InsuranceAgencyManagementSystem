@@ -46,7 +46,8 @@
                         <MudCardContent>
                             <MudGrid>
                                 <MudItem xs="12" md="4">
-                                    <MudSelect @bind-Value="model.Type"
+                                    <MudSelect Value="@model.Type"
+                                             ValueChanged="@((CustomerType value) => OnCustomerTypeChanged(value))"
                                              Label="Kişi Türü *"
                                              Variant="Variant.Outlined"
                                              Required="true"
@@ -55,16 +56,19 @@
                                         <MudSelectItem T="CustomerType" Value="@CustomerType.Corporate">Kurumsal</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
-                                <MudItem xs="12" md="4">
-                                    <MudSelect @bind-Value="model.Gender"
-                                             Label="Cinsiyet *"
-                                             Variant="Variant.Outlined"
-                                             Required="true"
-                                             T="Gender">
-                                        <MudSelectItem T="Gender" Value="@Gender.Male">Erkek (E)</MudSelectItem>
-                                        <MudSelectItem T="Gender" Value="@Gender.Female">Kadın (K)</MudSelectItem>
-                                    </MudSelect>
-                                </MudItem>
+                                @if (model.Type == CustomerType.Individual)
+                                {
+                                    <MudItem xs="12" md="4">
+                                        <MudSelect @bind-Value="model.Gender"
+                                                 Label="Cinsiyet *"
+                                                 Variant="Variant.Outlined"
+                                                 Required="true"
+                                                 T="Gender">
+                                            <MudSelectItem T="Gender" Value="@Gender.Male">Erkek (E)</MudSelectItem>
+                                            <MudSelectItem T="Gender" Value="@Gender.Female">Kadın (K)</MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                }
                                 <MudItem xs="12" md="4">
                                     <MudSelect @bind-Value="model.Status"
                                              Label="Durum *"
@@ -87,33 +91,46 @@
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Kişisel Bilgiler</MudText>
+                                <MudText Typo="Typo.h6">@(model.Type == CustomerType.Corporate ? "Şirket Bilgileri" : "Kişisel Bilgiler")</MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
                             <MudGrid>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.FirstName"
-                                                Label="Ad *"
-                                                Variant="Variant.Outlined"
-                                                Required="true"
-                                                For="@(() => model.FirstName)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.LastName"
-                                                Label="Soyad *"
-                                                Variant="Variant.Outlined"
-                                                Required="true"
-                                                For="@(() => model.LastName)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudDatePicker @bind-Date="model.DateOfBirth"
-                                                 Label="Doğum Tarihi"
-                                                 Variant="Variant.Outlined"
-                                                 Editable="true"
-                                                 DateFormat="dd/MM/yyyy"
-                                                 For="@(() => model.DateOfBirth)" />
-                                </MudItem>
+                                @if (model.Type == CustomerType.Corporate)
+                                {
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="model.FirstName"
+                                                    Label="Şirket Adı *"
+                                                    Variant="Variant.Outlined"
+                                                    Required="true"
+                                                    For="@(() => model.FirstName)" />
+                                    </MudItem>
+                                }
+                                else
+                                {
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="model.FirstName"
+                                                    Label="Ad *"
+                                                    Variant="Variant.Outlined"
+                                                    Required="true"
+                                                    For="@(() => model.FirstName)" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="model.LastName"
+                                                    Label="Soyad *"
+                                                    Variant="Variant.Outlined"
+                                                    Required="true"
+                                                    For="@(() => model.LastName)" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudDatePicker @bind-Date="model.DateOfBirth"
+                                                     Label="Doğum Tarihi"
+                                                     Variant="Variant.Outlined"
+                                                     Editable="true"
+                                                     DateFormat="dd/MM/yyyy"
+                                                     For="@(() => model.DateOfBirth)" />
+                                    </MudItem>
+                                }
                                 <MudItem xs="12" md="6">
                                     <MudSelect @bind-Value="model.NationalityCountryId"
                                              Label="Uyruk"
@@ -147,14 +164,21 @@
                                              Variant="Variant.Outlined"
                                              Required="true"
                                              T="IdentificationType">
-                                        <MudSelectItem T="IdentificationType" Value="@IdentificationType.IdCard">Kimlik No (KN)</MudSelectItem>
-                                        <MudSelectItem T="IdentificationType" Value="@IdentificationType.Passport">Pasaport No (PN)</MudSelectItem>
-                                        <MudSelectItem T="IdentificationType" Value="@IdentificationType.TradeLicense">Mali Şirket (MŞ)</MudSelectItem>
+                                        @if (model.Type == CustomerType.Corporate)
+                                        {
+                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.TaxNumber">Vergi Numarası (VN)</MudSelectItem>
+                                        }
+                                        else
+                                        {
+                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.IdCard">Kimlik No (KN)</MudSelectItem>
+                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.Passport">Pasaport No (PN)</MudSelectItem>
+                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.TradeLicense">Mali Şirket (MŞ)</MudSelectItem>
+                                        }
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.IdentificationNumber"
-                                                Label="Kimlik Numarası *"
+                                                Label="@(model.Type == CustomerType.Corporate ? "Vergi Numarası *" : "Kimlik Numarası *")"
                                                 Variant="Variant.Outlined"
                                                 Required="true"
                                                 For="@(() => model.IdentificationNumber)" />
@@ -296,31 +320,34 @@
                 </MudItem>
 
                 <!-- Professional Information -->
-                <MudItem xs="12">
-                    <MudCard>
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Mesleki Bilgiler</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudGrid>
-                                <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.OccupationId"
-                                             Label="Meslek"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true">
-                                        @foreach (var occupation in occupations)
-                                        {
-                                            <MudSelectItem T="int?" Value="@occupation.Id">@occupation.NameTr</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-                            </MudGrid>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
+                @if (model.Type == CustomerType.Individual)
+                {
+                    <MudItem xs="12">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Mesleki Bilgiler</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="12" md="6">
+                                        <MudSelect @bind-Value="model.OccupationId"
+                                                 Label="Meslek"
+                                                 Variant="Variant.Outlined"
+                                                 T="int?"
+                                                 Clearable="true">
+                                            @foreach (var occupation in occupations)
+                                            {
+                                                <MudSelectItem T="int?" Value="@occupation.Id">@occupation.NameTr</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
 
                 <!-- Notes -->
                 <MudItem xs="12">
@@ -416,6 +443,27 @@
             model.Type = CustomerType.Individual;
             model.Gender = Gender.Male;
             model.Status = CustomerStatus.Active;
+            model.IdentificationType = IdentificationType.IdCard;
+        }
+    }
+
+    private void OnCustomerTypeChanged(CustomerType newType)
+    {
+        model.Type = newType;
+
+        // Clear fields that are not relevant for the new type
+        if (newType == CustomerType.Corporate)
+        {
+            // Clear individual-specific fields
+            model.LastName = string.Empty;
+            model.Gender = Gender.Male; // Set default but won't be shown
+            model.DateOfBirth = null;
+            model.OccupationId = null;
+            model.IdentificationType = IdentificationType.TaxNumber;
+        }
+        else if (newType == CustomerType.Individual)
+        {
+            // Set individual defaults
             model.IdentificationType = IdentificationType.IdCard;
         }
     }

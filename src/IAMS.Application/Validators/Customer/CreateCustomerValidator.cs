@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using IAMS.Application.DTOs.Customer;
+using IAMS.Domain.Enums;
 
 namespace IAMS.Application.Validators.Customer
 {
@@ -7,13 +8,16 @@ namespace IAMS.Application.Validators.Customer
     {
         public CreateCustomerValidator()
         {
+            // FirstName is always required (for individuals it's first name, for corporate it's company name)
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First name is required")
                 .MaximumLength(100).WithMessage("First name must not exceed 100 characters");
 
+            // LastName is only required for individual customers
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Last name is required")
-                .MaximumLength(100).WithMessage("Last name must not exceed 100 characters");
+                .MaximumLength(100).WithMessage("Last name must not exceed 100 characters")
+                .When(x => x.Type == CustomerType.Individual);
 
             RuleFor(x => x.IdentificationNumber)
                 .Length(11).WithMessage("TC number must be 10 digits")
@@ -24,10 +28,11 @@ namespace IAMS.Application.Validators.Customer
                 .EmailAddress().WithMessage("Invalid email format")
                 .When(x => !string.IsNullOrEmpty(x.Email));
 
+            // DateOfBirth is only validated for individual customers
             RuleFor(x => x.DateOfBirth)
                 .LessThan(DateTime.Today).WithMessage("Date of birth must be in the past")
                 .GreaterThan(DateTime.Today.AddYears(-120)).WithMessage("Date of birth cannot be more than 120 years ago")
-                .When(x => x.DateOfBirth.HasValue);
+                .When(x => x.DateOfBirth.HasValue && x.Type == CustomerType.Individual);
         }
     }
 }

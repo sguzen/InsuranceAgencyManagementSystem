@@ -30,9 +30,9 @@ namespace IAMS.Application.Mappings
 
             CreateMap<Policy, CommissionSummaryDto>()
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
-                    src.Customer.CustomerType == Domain.Enums.CustomerType.Individual
+                    src.Customer.Type == Domain.Enums.CustomerType.Individual
                         ? $"{src.Customer.FirstName} {src.Customer.LastName}"
-                        : src.Customer.CompanyName))
+                        : src.Customer.FirstName))
                 .ForMember(dest => dest.InsuranceCompanyName, opt => opt.MapFrom(src => src.InsuranceCompany.Name))
                 .ForMember(dest => dest.PolicyTypeName, opt => opt.MapFrom(src => src.PolicyType.Name))
                 .ForMember(dest => dest.CurrencyCode, opt => opt.MapFrom(src => src.Currency.Code))

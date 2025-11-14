@@ -11,9 +11,9 @@ namespace IAMS.Application.Mappings
             CreateMap<Invoice, InvoiceDto>()
                 .ForMember(dest => dest.PolicyNumber, opt => opt.MapFrom(src => src.Policy.PolicyNumber))
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
-                    src.Customer.CustomerType == Domain.Enums.CustomerType.Individual
+                    src.Customer.Type == Domain.Enums.CustomerType.Individual
                         ? $"{src.Customer.FirstName} {src.Customer.LastName}"
-                        : src.Customer.CompanyName))
+                        : src.Customer.FirstName))
                 .ForMember(dest => dest.CurrencyCode, opt => opt.MapFrom(src => src.Currency.Code))
                 .ForMember(dest => dest.IsOverdue, opt => opt.MapFrom(src => src.IsOverdue))
                 .ForMember(dest => dest.IsPaid, opt => opt.MapFrom(src => src.IsPaid))

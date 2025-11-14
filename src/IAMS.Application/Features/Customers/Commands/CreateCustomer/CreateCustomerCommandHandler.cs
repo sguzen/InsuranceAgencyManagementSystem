@@ -39,14 +39,6 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
         {
             try
             {
-                // Check if tenant context is available
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    _logger.LogError("No tenant context available for customer creation");
-                    return Result<CustomerDto>.Unauthorized("Kiracı bağlamı bulunamadı. Lütfen tekrar giriş yapın.");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
                 var validationErrors = new List<string>();
 
                 // Check if customer with email already exists for this tenant
@@ -77,8 +69,8 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 // If there are validation errors, return them
                 if (validationErrors.Any())
                 {
-                    _logger.LogWarning("Customer creation failed for tenant {TenantId} due to validation errors: {Errors}",
-                        tenantId, string.Join(", ", validationErrors));
+                    _logger.LogWarning("Customer creation failed due to validation errors: {Errors}",
+                    string.Join(", ", validationErrors));
                     return Result<CustomerDto>.ValidationFailure("Müşteri oluşturulamadı: Girilen bilgiler zaten kullanılmaktadır", validationErrors);
                 }
 
@@ -93,8 +85,8 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 // Verify the generated code is unique (extra safety check)
                 if (!await _customerCodeGenerator.IsCodeUniqueAsync(customer.CustomerCode))
                 {
-                    _logger.LogError("Generated customer code {Code} is not unique for tenant {TenantId}",
-                        customer.CustomerCode, tenantId);
+                    _logger.LogError("Generated customer code {Code} is not unique",
+                        customer.CustomerCode);
                     customer.CustomerCode = _customerCodeGenerator.GenerateFallbackCode();
                 }
 
@@ -102,8 +94,8 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 var customerDto = _mapper.Map<CustomerDto>(customer);
-                _logger.LogInformation("Customer created successfully for tenant {TenantId} with ID: {CustomerId} and Code: {CustomerCode}",
-                    tenantId, customer.Id, customer.CustomerCode);
+                _logger.LogInformation("Customer created successfully with ID: {CustomerId} and Code: {CustomerCode}",
+                    customer.Id, customer.CustomerCode);
 
                 return Result<CustomerDto>.Success(customerDto, "Müşteri başarıyla oluşturuldu");
             }

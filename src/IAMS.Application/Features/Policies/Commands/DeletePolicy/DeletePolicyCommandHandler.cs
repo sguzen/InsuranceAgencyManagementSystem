@@ -26,11 +26,7 @@ namespace IAMS.Application.Features.Policies.Commands.DeletePolicy
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
-
+               
                 var policy = await _unitOfWork.Policies.GetByIdAsync(request.Id);
                 if (policy == null)
                 {

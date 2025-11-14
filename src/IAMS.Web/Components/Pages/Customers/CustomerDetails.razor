@@ -266,13 +266,33 @@ else
 
                 <!-- Policies Tab -->
                 <MudTabPanel Text="Poliçeler" Icon="@Icons.Material.Filled.Description" BadgeData="@customer.PolicyCount">
+                    <!-- Header with Create Policy Button -->
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                        <MudText Typo="Typo.h6">Müşteri Poliçeleri</MudText>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="CreatePolicyForCustomer">
+                            Yeni Poliçe Oluştur
+                        </MudButton>
+                    </MudStack>
+
                     @if (loadingPolicies)
                     {
                         <MudProgressLinear Indeterminate="true" />
                     }
                     else if (policies.Count == 0)
                     {
-                        <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info">Bu müşteriye ait poliçe bulunmamaktadır.</MudAlert>
+                        <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info">
+                            Bu müşteriye ait poliçe bulunmamaktadır.
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Text"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="CreatePolicyForCustomer"
+                                       Class="mt-2">
+                                İlk Poliçeyi Oluştur
+                            </MudButton>
+                        </MudAlert>
                     }
                     else
                     {
@@ -379,6 +399,11 @@ else
     private void ViewPolicy(int policyId)
     {
         Navigation.NavigateTo($"/policies/{policyId}");
+    }
+
+    private void CreatePolicyForCustomer()
+    {
+        Navigation.NavigateTo($"/policies/create?customerId={CustomerId}");
     }
 
     // Helper methods for display text

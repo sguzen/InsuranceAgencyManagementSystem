@@ -112,10 +112,11 @@
                             <MudCardContent>
                                 <MudGrid>
                                     <MudItem xs="12" md="4">
-                                        <MudAutocomplete 
+                                        <MudAutocomplete
                                                        T="CustomerDto"
+                                                       @bind-Value="selectedCustomer"
                                                        SearchFunc="@SearchCustomers"
-                                                       ToStringFunc="@(customer => customer?.FirstName + " " + customer?.LastName)"
+                                                       ToStringFunc="@(customer => customer != null ? $"{customer.FirstName} {customer.LastName}" : string.Empty)"
                                                        Label="Müşteri *"
                                                        Variant="Variant.Outlined"
                                                        Required="true"
@@ -189,7 +190,8 @@
                             <MudCardContent>
                                 <MudGrid>
                                     <MudItem xs="12" md="10">
-                                        <MudSelect 
+                                        <MudSelect
+                                                 @bind-Value="model.VehicleId"
                                                  Label="Araç"
                                                  Variant="Variant.Outlined"
                                                  T="int?"

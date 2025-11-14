@@ -7,9 +7,10 @@ namespace IAMS.Application.Validators.Policy
     {
         public CreatePolicyValidator()
         {
+            // Policy number is optional - will be auto-generated if not provided
             RuleFor(x => x.PolicyNumber)
-                .NotEmpty().WithMessage("Policy number is required")
-                .MaximumLength(50).WithMessage("Policy number must not exceed 50 characters");
+                .MaximumLength(50).WithMessage("Policy number must not exceed 50 characters")
+                .When(x => !string.IsNullOrEmpty(x.PolicyNumber));
 
             RuleFor(x => x.CustomerId)
                 .GreaterThan(0).WithMessage("Customer ID is required");

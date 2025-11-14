@@ -67,17 +67,29 @@
                             </MudCardHeader>
                             <MudCardContent>
                                 <MudGrid>
-                                    <MudItem xs="12" md="6">
-                                        <MudTextField @bind-Value="model.PolicyNumber"
-                                                    Label="Poliçe Numarası *"
-                                                    Variant="Variant.Outlined"
-                                                    Required="true"
-                                                    For="@(() => model.PolicyNumber)"
-                                                    Counter="50"
-                                                    MaxLength="50"
-                                                    HelperText="Benzersiz poliçe numarası" />
-                                    </MudItem>
-                                    <MudItem xs="12" md="6">
+                                    @if (!IsEdit)
+                                    {
+                                        <MudItem xs="12">
+                                            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
+                                                    <MudText Typo="Typo.body2">Poliçe numarası otomatik olarak oluşturulacaktır</MudText>
+                                                </MudStack>
+                                            </MudAlert>
+                                        </MudItem>
+                                    }
+                                    else
+                                    {
+                                        <MudItem xs="12" md="6">
+                                            <MudTextField @bind-Value="model.PolicyNumber"
+                                                        Label="Poliçe Numarası"
+                                                        Variant="Variant.Outlined"
+                                                        Disabled="true"
+                                                        For="@(() => model.PolicyNumber)"
+                                                        HelperText="Poliçe numarası değiştirilemez" />
+                                        </MudItem>
+                                    }
+                                    <MudItem xs="12" md="@(IsEdit ? 6 : 12)">
                                         <MudSelect @bind-Value="model.Status"
                                                  Label="Durum *"
                                                  Variant="Variant.Outlined"

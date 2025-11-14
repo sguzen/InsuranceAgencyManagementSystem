@@ -45,8 +45,8 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 if (!validationResult.IsValid)
                 {
                     var validationErrors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                    _logger.LogWarning("Customer update validation failed for ID {CustomerId}, tenant {TenantId}: {Errors}",
-                        request.Id, tenantId, string.Join(", ", validationErrors));
+                    _logger.LogWarning("Customer update validation failed for ID {CustomerId}: {Errors}",
+                        request.Id, string.Join(", ", validationErrors));
                     return Result<CustomerDto>.ValidationFailure("Müşteri güncelleme verilerinde hatalar bulundu", validationErrors);
                 }
 
@@ -86,8 +86,8 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
 
                 var customerDto = _mapper.Map<CustomerDto>(existingCustomer);
 
-                _logger.LogInformation("Customer {CustomerId} updated successfully for tenant {TenantId}. Changes: Email({OriginalEmail}→{NewEmail}), KKTC({OriginalKktc}→{NewKktc}), Phone({OriginalPhone}→{NewPhone})",
-                    existingCustomer.Id, tenantId, originalEmail, existingCustomer.Email, originalIdentificationNo, existingCustomer.IdentificationNumber, originalPhone, existingCustomer.Phone);
+                _logger.LogInformation("Customer {CustomerId} updated successfully. Changes: Email({OriginalEmail}→{NewEmail}), KKTC({OriginalKktc}→{NewKktc}), Phone({OriginalPhone}→{NewPhone})",
+                    existingCustomer.Id, originalEmail, existingCustomer.Email, originalIdentificationNo, existingCustomer.IdentificationNumber, originalPhone, existingCustomer.Phone);
 
                 return Result<CustomerDto>.Success(customerDto, "Müşteri başarıyla güncellendi");
             }

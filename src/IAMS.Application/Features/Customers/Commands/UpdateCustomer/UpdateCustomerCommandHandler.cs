@@ -39,15 +39,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
         {
             try
             {
-                // Check if tenant context is available
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    _logger.LogError("No tenant context available for customer update");
-                    return Result<CustomerDto>.Unauthorized("Kiracı bağlamı bulunamadı. Lütfen tekrar giriş yapın.");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
-
+                
                 // Validate the request DTO
                 var validationResult = await _validator.ValidateAsync(request.CustomerDto, cancellationToken);
                 if (!validationResult.IsValid)

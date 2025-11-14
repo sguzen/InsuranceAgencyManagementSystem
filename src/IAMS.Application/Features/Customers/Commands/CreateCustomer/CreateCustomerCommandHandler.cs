@@ -39,14 +39,6 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
         {
             try
             {
-                // Check if tenant context is available
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    _logger.LogError("No tenant context available for customer creation");
-                    return Result<CustomerDto>.Unauthorized("Kiracı bağlamı bulunamadı. Lütfen tekrar giriş yapın.");
-                }
-
-                var tenantId = _currentTenantService.TenantId.Value;
                 var validationErrors = new List<string>();
 
                 // Check if customer with email already exists for this tenant

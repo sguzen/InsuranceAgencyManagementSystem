@@ -36,12 +36,8 @@ namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<List<PolicyDto>>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-                var tenantId = _currentTenantService.TenantId.Value;
+
                 var topPolicies = await _unitOfWork.Policies.GetTopPoliciesByPremiumAsync(request.Count);
                 var policyDtos = _mapper.Map<List<PolicyDto>>(topPolicies);
 

@@ -373,8 +373,8 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
 
             repositoryMock.Setup(x => x.GetByIdAsync(companyId))
                 .ReturnsAsync(existingCompany);
-            repositoryMock.Setup(x => x.HasActivePoliciesAsync(companyId))
-                .ReturnsAsync(true);
+            //repositoryMock.Setup(x => x.HasActivePoliciesAsync(companyId))
+           //     .ReturnsAsync(true);
 
             var handler = new DeleteInsuranceCompanyCommandHandler(
                 repositoryMock.Object,

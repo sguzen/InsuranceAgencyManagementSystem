@@ -1,0 +1,108 @@
+@page "/accounting/commissions"
+@layout Layout.MainLayout
+
+<PageTitle>Komisyonlar</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">
+                <MudIcon Icon="@Icons.Material.Filled.Payments" Class="mr-3" />
+                Komisyonlar
+            </MudText>
+        </MudStack>
+
+        <!-- Info Card -->
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    Komisyon Raporları
+                </MudText>
+                <MudText>
+                    Bu sayfa komisyon raporlarını ve komisyon oranlarını yönetmek için kullanılır.
+                </MudText>
+                <MudText Class="mt-4" Color="Color.Secondary">
+                    Komisyon özeti, poliçe bazında komisyon bilgileri ve komisyon oranları bu bölümde görüntülenebilir.
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Commission Summary Stats -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon</MudText>
+                                <MudText Typo="Typo.h5">₺0.00</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Large" Color="Color.Success" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bu Ay</MudText>
+                                <MudText Typo="Typo.h5">₺0.00</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Info" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Oranlar</MudText>
+                                <MudText Typo="Typo.h5">0</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Percent" Size="Size.Large" Color="Color.Warning" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Commission Table Placeholder -->
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Komisyon Raporu</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable Items="@(new List<object>())" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Poliçe No</MudTh>
+                        <MudTh>Müşteri</MudTh>
+                        <MudTh>Sigorta Şirketi</MudTh>
+                        <MudTh>Prim Tutarı</MudTh>
+                        <MudTh>Komisyon Oranı</MudTh>
+                        <MudTh>Komisyon Tutarı</MudTh>
+                        <MudTh>Tarih</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <!-- Rows will appear when data is loaded -->
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Align="Align.Center" Class="pa-4">
+                            Henüz komisyon kaydı bulunmamaktadır.
+                        </MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudContainer>
+
+@code {
+    // Commission data will be loaded here in future implementation
+}

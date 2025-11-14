@@ -37,11 +37,6 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<PolicyDto>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
-
                 // Validate the request
                 var validationResult = await _validator.ValidateAsync(request.PolicyDto, cancellationToken);
                 if (!validationResult.IsValid)

@@ -56,11 +56,11 @@ namespace IAMS.UnitTests.Application.Features.Customers
             var existingCustomer = new Customer
             {
                 Id = customerId,
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
-                PhoneNumber = "555-1234",
+                MobilePhoneNumber = "555-1234",
                 Status = CustomerStatus.Active,
                 CreatedBy = "System",
                 CreatedOn = DateTime.UtcNow.AddDays(-30)
@@ -82,13 +82,13 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
-            var command = new UpdateCustomerCommand(customerId, new UpdateCustomerDto
+            var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Smith", // Changed last name
                 Email = "john.smith@example.com", // Changed email
-                PhoneNumber = "555-9999", // Changed phone
+                MobilePhoneNumber = "555-9999", // Changed phone
                 Status = CustomerStatus.Active
             });
 
@@ -118,7 +118,7 @@ namespace IAMS.UnitTests.Application.Features.Customers
             var existingCustomer = new Customer
             {
                 Id = customerId,
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "Jane",
                 LastName = "Doe",
                 Email = "jane.doe@example.com",
@@ -143,9 +143,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
-            var command = new UpdateCustomerCommand(customerId, new UpdateCustomerDto
+            var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "Jane",
                 LastName = "Smith",
                 Email = "jane.smith@example.com",
@@ -169,9 +169,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync((Customer?)null);
 
-            var command = new UpdateCustomerCommand(customerId, new UpdateCustomerDto
+            var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -197,7 +197,7 @@ namespace IAMS.UnitTests.Application.Features.Customers
             var deletedCustomer = new Customer
             {
                 Id = customerId,
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -208,9 +208,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync(deletedCustomer);
 
-            var command = new UpdateCustomerCommand(customerId, new UpdateCustomerDto
+            var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -236,7 +236,7 @@ namespace IAMS.UnitTests.Application.Features.Customers
             var existingCustomer = new Customer
             {
                 Id = customerId,
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -254,9 +254,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _customerRepositoryMock.Setup(x => x.GetByEmailAsync(newEmail))
                 .ReturnsAsync(customerWithSameEmail);
 
-            var command = new UpdateCustomerCommand(customerId, new UpdateCustomerDto
+            var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = newEmail,
@@ -284,7 +284,7 @@ namespace IAMS.UnitTests.Application.Features.Customers
             var existingCustomer = new Customer
             {
                 Id = customerId,
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -296,9 +296,9 @@ namespace IAMS.UnitTests.Application.Features.Customers
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Database error"));
 
-            var command = new UpdateCustomerCommand(customerId, new UpdateCustomerDto
+            var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
-                NationalIdNumber = "12345678901",
+                IdentificationNumber = "12345678901",
                 FirstName = "John",
                 LastName = "Smith",
                 Email = "john.doe@example.com",

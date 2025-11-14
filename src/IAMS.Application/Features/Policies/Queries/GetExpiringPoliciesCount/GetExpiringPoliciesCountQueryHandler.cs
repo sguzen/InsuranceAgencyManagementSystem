@@ -26,12 +26,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount
         {
             try
             {
-                if (!_currentTenantService.HasTenant || _currentTenantService.TenantId == null)
-                {
-                    return Result<int>.Unauthorized("Kiracı bağlamı bulunamadı");
-                }
 
-               // var tenantId = _currentTenantService.TenantId.Value;
                 var count = await _unitOfWork.Policies.GetExpiringPoliciesCountAsync(request.DaysAhead);
 
                 _logger.LogDebug("Retrieved expiring policies count {Count} for tenant", count);

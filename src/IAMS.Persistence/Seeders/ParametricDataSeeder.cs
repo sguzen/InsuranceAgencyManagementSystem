@@ -24,6 +24,9 @@ namespace IAMS.Persistence.Data
             // Seed Districts (Mahalleler)
             SeedDistricts(modelBuilder, seedDate);
 
+            // Seed Policy Types
+            SeedPolicyTypes(modelBuilder, seedDate);
+
             // Additional subdistricts and villages can be added as needed
         }
 
@@ -306,6 +309,235 @@ namespace IAMS.Persistence.Data
 
             // Note: Subdistricts and Villages can be added in separate migrations or as needed
             // by the tenant, as the complete hierarchical data can be quite extensive
+        }
+
+        private static void SeedPolicyTypes(ModelBuilder modelBuilder, DateTime seedDate)
+        {
+            modelBuilder.Entity<PolicyType>().HasData(
+                // Vehicle Insurance
+                new PolicyType
+                {
+                    Id = 1,
+                    Code = "TRF",
+                    Name = "Trafik Sigortası",
+                    Description = "Zorunlu Trafik Sigortası",
+                    Category = "Araç Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 500,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 2,
+                    Code = "KAS",
+                    Name = "Kasko Sigortası",
+                    Description = "Kapsamlı Araç Sigortası (Kasko)",
+                    Category = "Araç Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 1000,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 3,
+                    Code = "MINKAS",
+                    Name = "Mini Kasko",
+                    Description = "Mini Kasko Sigortası",
+                    Category = "Araç Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 800,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+
+                // Property Insurance
+                new PolicyType
+                {
+                    Id = 4,
+                    Code = "KNT",
+                    Name = "Konut Sigortası",
+                    Description = "Ev ve Konut Sigortası",
+                    Category = "Mal Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 300,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 5,
+                    Code = "DASK",
+                    Name = "DASK (Deprem Sigortası)",
+                    Description = "Doğal Afet Sigortası - Zorunlu Deprem Sigortası",
+                    Category = "Mal Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 200,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 6,
+                    Code = "ISY",
+                    Name = "İşyeri Sigortası",
+                    Description = "İşyeri ve Ofis Sigortası",
+                    Category = "Mal Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 500,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+
+                // Health Insurance
+                new PolicyType
+                {
+                    Id = 7,
+                    Code = "TSS",
+                    Name = "Tamamlayıcı Sağlık Sigortası",
+                    Description = "Tamamlayıcı Sağlık Sigortası",
+                    Category = "Sağlık Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 1000,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 8,
+                    Code = "OSS",
+                    Name = "Özel Sağlık Sigortası",
+                    Description = "Özel Sağlık Sigortası",
+                    Category = "Sağlık Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 2000,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+
+                // Life Insurance
+                new PolicyType
+                {
+                    Id = 9,
+                    Code = "HAY",
+                    Name = "Hayat Sigortası",
+                    Description = "Hayat Sigortası",
+                    Category = "Hayat Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 240,
+                    MinimumPremium = 500,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 10,
+                    Code = "FK",
+                    Name = "Ferdi Kaza Sigortası",
+                    Description = "Ferdi Kaza Sigortası",
+                    Category = "Hayat Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 300,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+
+                // Travel Insurance
+                new PolicyType
+                {
+                    Id = 11,
+                    Code = "SEY",
+                    Name = "Seyahat Sağlık Sigortası",
+                    Description = "Yurt Dışı Seyahat Sağlık Sigortası",
+                    Category = "Seyahat Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 1,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 50,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+
+                // Liability Insurance
+                new PolicyType
+                {
+                    Id = 12,
+                    Code = "MMS",
+                    Name = "Mesleki Mali Sorumluluk Sigortası",
+                    Description = "Mesleki Mali Sorumluluk Sigortası",
+                    Category = "Sorumluluk Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 800,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 13,
+                    Code = "USS",
+                    Name = "Üçüncü Şahıs Mali Sorumluluk",
+                    Description = "Üçüncü Şahıs Mali Sorumluluk Sigortası",
+                    Category = "Sorumluluk Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 500,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+
+                // Other Insurance
+                new PolicyType
+                {
+                    Id = 14,
+                    Code = "YAN",
+                    Name = "Yangın Sigortası",
+                    Description = "Yangın Sigortası",
+                    Category = "Mal Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 300,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new PolicyType
+                {
+                    Id = 15,
+                    Code = "HIR",
+                    Name = "Hırsızlık Sigortası",
+                    Description = "Hırsızlık Sigortası",
+                    Category = "Mal Sigortaları",
+                    IsActive = true,
+                    MinimumTermMonths = 12,
+                    MaximumTermMonths = 12,
+                    MinimumPremium = 200,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                }
+            );
         }
     }
 }

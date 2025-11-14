@@ -16,7 +16,7 @@ namespace IAMS.Persistence.Configurations
 
             builder.Property(ic => ic.Code)
                 .IsRequired()
-                .HasMaxLength(10);
+                .HasMaxLength(50);
 
             builder.Property(ic => ic.Description)
                 .HasMaxLength(1000);

@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20251114194401_IncreaseInsuranceCompanyCodeLength.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\IAMS.Persistence\\Migrations\\20251114194401_IncreaseInsuranceCompanyCodeLength.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20251114200205_IncreaseInsuranceCompanyCodeLength.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\IAMS.Persistence\\Migrations\\20251114200205_IncreaseInsuranceCompanyCodeLength.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\policies\\policyform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -43,14 +43,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "20251114194401_IncreaseInsuranceCompanyCodeLength.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20251114194401_IncreaseInsuranceCompanyCodeLength.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Migrations\\20251114194401_IncreaseInsuranceCompanyCodeLength.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20251114194401_IncreaseInsuranceCompanyCodeLength.cs",
-              "RelativeToolTip": "src\\IAMS.Persistence\\Migrations\\20251114194401_IncreaseInsuranceCompanyCodeLength.cs",
+              "Title": "20251114200205_IncreaseInsuranceCompanyCodeLength.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20251114200205_IncreaseInsuranceCompanyCodeLength.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Migrations\\20251114200205_IncreaseInsuranceCompanyCodeLength.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20251114200205_IncreaseInsuranceCompanyCodeLength.cs",
+              "RelativeToolTip": "src\\IAMS.Persistence\\Migrations\\20251114200205_IncreaseInsuranceCompanyCodeLength.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-14T19:44:02.475Z",
+              "WhenOpened": "2025-11-14T20:02:05.976Z",
               "EditorCaption": ""
             },
             {
@@ -61,7 +61,7 @@
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
               "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
               "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
-              "ViewState": "AgIAAGgAAAAAAAAAAAAAAHMAAABGAAAAAAAAAA==",
+              "ViewState": "AgIAACUAAAAAAAAAAIAwwDQAAABLAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-11-14T19:36:16.31Z",
               "EditorCaption": ""

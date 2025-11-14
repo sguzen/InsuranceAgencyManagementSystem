@@ -27,6 +27,8 @@ namespace IAMS.Persistence.Contexts
         public DbSet<CommissionRate> CommissionRates { get; set; }
         public DbSet<PolicyPayment> PolicyPayments { get; set; }
         public DbSet<PolicyClaim> PolicyClaims { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceItem> InvoiceItems { get; set; }
 
         public DbSet<Country> Countries { get; set; }
         public DbSet<Occupation> Occupations { get; set; }

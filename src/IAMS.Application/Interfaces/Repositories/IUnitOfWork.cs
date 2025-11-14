@@ -12,6 +12,7 @@ namespace IAMS.Application.Interfaces.Repositories
         IPolicyPaymentRepository PolicyPayments { get; }
         IPolicyClaimRepository PolicyClaims { get; }
         ICommissionRateRepository CommissionRates { get; }
+        IInvoiceRepository Invoices { get; }
 
         ICountryRepository Countries { get; }
         IOccupationRepository Occupations { get; }

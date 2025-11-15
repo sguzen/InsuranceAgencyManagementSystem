@@ -1,8 +1,8 @@
 using IAMS.Application.DTOs.Vehicle;
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
-using IAMS.Infrastructure.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

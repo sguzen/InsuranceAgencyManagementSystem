@@ -1,7 +1,7 @@
 using IAMS.Application.DTOs.Vehicle;
 using IAMS.Application.Features.Vehicles.Commands.SyncVehicleData;
+using IAMS.Application.Interfaces;
 using IAMS.Application.Models;
-using IAMS.Infrastructure.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

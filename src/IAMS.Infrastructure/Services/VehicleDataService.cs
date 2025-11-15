@@ -1,5 +1,5 @@
 using IAMS.Application.DTOs.Vehicle;
-using IAMS.Infrastructure.Interfaces;
+using IAMS.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;

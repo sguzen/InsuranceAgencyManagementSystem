@@ -1,6 +1,6 @@
 using IAMS.Application.DTOs.Vehicle;
 
-namespace IAMS.Infrastructure.Interfaces
+namespace IAMS.Application.Interfaces
 {
     /// <summary>
     /// Service for fetching vehicle brand and model data from external API

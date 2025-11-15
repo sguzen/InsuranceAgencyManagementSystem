@@ -126,7 +126,7 @@
                                     <MudItem xs="12" md="4">
                                         <MudAutocomplete
                                                        T="CustomerDto"
-                                                       Value="selectedCustomer"
+                                                       @bind-Value="selectedCustomer"
                                                        SearchFuncWithCancel="@SearchCustomers"
                                                        ToStringFunc="@(customer => customer != null ? $"{customer.FirstName} {customer.LastName}" : string.Empty)"
                                                        Label="Müşteri *"
@@ -136,7 +136,7 @@
                                                        CoerceText="true"
                                                        CoerceValue="true"
                                                        MaxItems="50"
-                                                       ValueChanged="OnCustomerSelected"
+                                                       DebounceInterval="300"
                                                        HelperText="Müşteri adı ile arayın (en az 2 karakter)">
                                             <ItemTemplate Context="customerItem">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
@@ -466,7 +466,21 @@
     private List<InsuranceCompanyDto>? insuranceCompanies;
     private List<Application.DTOs.PolicyType.PolicyTypeDto>? policyTypes;
     private List<VehicleDto>? customerVehicles;
-    private CustomerDto? selectedCustomer;
+
+    private CustomerDto? _selectedCustomer;
+    private CustomerDto? selectedCustomer
+    {
+        get => _selectedCustomer;
+        set
+        {
+            if (_selectedCustomer != value)
+            {
+                _selectedCustomer = value;
+                _ = OnCustomerChangedAsync(value);
+            }
+        }
+    }
+
     private VehicleDto? selectedVehicle;
     private Application.DTOs.PolicyType.PolicyTypeDto? selectedPolicyType;
 
@@ -557,9 +571,9 @@
             var result = await CustomerService.GetCustomerByIdAsync(customerId);
             if (result.IsSuccess && result.Data != null)
             {
+                // Setting selectedCustomer will automatically trigger OnCustomerChangedAsync
+                // which loads vehicles and sets model.CustomerId
                 selectedCustomer = result.Data;
-                model.CustomerId = customerId;
-                await LoadCustomerVehicles(customerId);
             }
         }
         catch (Exception ex)
@@ -585,6 +599,7 @@
                     CustomerId = policy.CustomerId,
                     InsuranceCompanyId = policy.InsuranceCompanyId,
                     PolicyTypeId = policy.PolicyTypeId,
+                    VehicleId = policy.VehicleId,
                     StartDate = policy.StartDate,
                     EndDate = policy.EndDate,
                     PremiumAmount = policy.PremiumAmount,
@@ -595,14 +610,22 @@
                     Currency = policy.Currency
                 };
 
-                // Load the selected customer
-                if (policy.Customer != null)
-                {
-                    selectedCustomer = policy.Customer;
-                }
-
                 // Load the selected policy type
                 selectedPolicyType = policyTypes?.FirstOrDefault(pt => pt.Id == policy.PolicyTypeId);
+
+                // Load customer and vehicles
+                if (policy.Customer != null)
+                {
+                    // Load vehicles first if policy has a vehicle
+                    if (policy.VehicleId.HasValue)
+                    {
+                        await LoadCustomerVehicles(policy.CustomerId);
+                        selectedVehicle = customerVehicles?.FirstOrDefault(v => v.Id == policy.VehicleId.Value);
+                    }
+
+                    // Set selected customer (bypassing property setter to avoid duplicate vehicle load)
+                    _selectedCustomer = policy.Customer;
+                }
             }
             else
             {
@@ -783,9 +806,8 @@
     }
 
     // Vehicle Management
-    private async Task OnCustomerSelected(CustomerDto customer)
+    private async Task OnCustomerChangedAsync(CustomerDto? customer)
     {
-        selectedCustomer = customer;
         if (customer != null)
         {
             model.CustomerId = customer.Id;

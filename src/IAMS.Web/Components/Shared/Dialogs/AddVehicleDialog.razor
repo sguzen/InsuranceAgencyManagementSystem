@@ -1,0 +1,329 @@
+@using IAMS.Application.DTOs.Vehicle
+@using IAMS.Application.Services.Vehicles
+@using IAMS.Domain.Enums
+@inject IVehicleService VehicleService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+                <MudGrid>
+                    <!-- Basic Vehicle Info -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Class="mr-2" />
+                            Temel Bilgiler
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="model.PlateNumber"
+                                    Label="Plaka *"
+                                    Variant="Variant.Outlined"
+                                    Required="true"
+                                    HelperText="Örn: 34ABC123" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="model.ChassisNumber"
+                                    Label="Şasi Numarası *"
+                                    Variant="Variant.Outlined"
+                                    Required="true"
+                                    HelperText="17 haneli şasi numarası" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect @bind-Value="model.BrandId"
+                                 Label="Marka *"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 ValueChanged="@OnBrandChanged"
+                                 T="int">
+                            @if (brands != null)
+                            {
+                                @foreach (var brand in brands)
+                                {
+                                    <MudSelectItem Value="@brand.Id">@brand.Name</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect @bind-Value="model.ModelId"
+                                 Label="Model *"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 Disabled="@(model.BrandId == 0)"
+                                 T="int">
+                            @if (models != null)
+                            {
+                                @foreach (var vehicleModel in models)
+                                {
+                                    <MudSelectItem Value="@vehicleModel.Id">@vehicleModel.Name</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="model.ModelYear"
+                                       Label="Model Yılı"
+                                       Variant="Variant.Outlined"
+                                       Min="1900"
+                                       Max="@(DateTime.Now.Year + 1)" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect @bind-Value="model.VehicleType"
+                                 Label="Araç Tipi *"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 T="VehicleType">
+                            <MudSelectItem Value="@VehicleType.Car">Otomobil</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Minibus">Minibüs</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Bus">Otobüs</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Truck">Kamyon</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Pickup">Kamyonet</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Motorcycle">Motosiklet</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Tractor">Traktör</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Commercial">Ticari Araç</MudSelectItem>
+                            <MudSelectItem Value="@VehicleType.Special">Özel Amaçlı Araç</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect @bind-Value="model.FuelType"
+                                 Label="Yakıt Tipi *"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 T="VehicleFuelType">
+                            <MudSelectItem Value="@VehicleFuelType.Gasoline">Benzin</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.Diesel">Dizel</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.LPG">LPG</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.Electric">Elektrik</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.Hybrid">Hibrit</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.GasolineLPG">Benzin+LPG</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.HybridGasoline">Hibrit Benzin</MudSelectItem>
+                            <MudSelectItem Value="@VehicleFuelType.HybridDiesel">Hibrit Dizel</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect @bind-Value="model.UsageType"
+                                 Label="Kullanım Şekli *"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 T="VehicleUsageType">
+                            <MudSelectItem Value="@VehicleUsageType.Private">Hususi (Özel)</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.Commercial">Ticari</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.Taxi">Taksi</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.RentalCar">Kiralık Araç</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.PublicTransport">Toplu Taşıma</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.Ambulance">Ambulans</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.Agriculture">Tarım</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.Construction">İnşaat</MudSelectItem>
+                            <MudSelectItem Value="@VehicleUsageType.Courier">Kurye</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <!-- Additional Info -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mt-4 mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                            Ek Bilgiler (Opsiyonel)
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="model.EngineNumber"
+                                    Label="Motor Numarası"
+                                    Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="model.Color"
+                                    Label="Renk"
+                                    Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="model.EngineVolume"
+                                       Label="Motor Hacmi (cc)"
+                                       Variant="Variant.Outlined"
+                                       Min="0" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="model.SeatCount"
+                                       Label="Koltuk Sayısı"
+                                       Variant="Variant.Outlined"
+                                       Min="1" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudCheckBox @bind-Value="model.IsNewVehicle"
+                                   Label="Sıfır Araç"
+                                   Color="Color.Primary" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudCheckBox @bind-Value="model.HasAlarm"
+                                   Label="Alarm Var"
+                                   Color="Color.Primary" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="model.Notes"
+                                    Label="Notlar"
+                                    Variant="Variant.Outlined"
+                                    Lines="3"
+                                    MaxLength="500" />
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="HandleSubmit"
+                   Disabled="@saving">
+            @if (saving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                <MudText Class="ms-2">Kaydediliyor...</MudText>
+            }
+            else
+            {
+                <MudText>Kaydet</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int CustomerId { get; set; }
+
+    private CreateVehicleDto model = new();
+    private List<VehicleBrandDto>? brands;
+    private List<VehicleModelDto>? models;
+    private bool saving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize model with customer ID and defaults
+        model.CustomerId = CustomerId;
+        model.VehicleType = VehicleType.Car;
+        model.FuelType = VehicleFuelType.Gasoline;
+        model.UsageType = VehicleUsageType.Private;
+        model.Currency = "TRY";
+
+        // Load brands
+        await LoadBrands();
+    }
+
+    private async Task LoadBrands()
+    {
+        try
+        {
+            var result = await VehicleService.GetActiveBrandsAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                brands = result.Data;
+            }
+            else
+            {
+                brands = new List<VehicleBrandDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Markalar yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            brands = new List<VehicleBrandDto>();
+        }
+    }
+
+    private async Task OnBrandChanged(int brandId)
+    {
+        model.BrandId = brandId;
+        model.ModelId = 0;
+        models = null;
+
+        if (brandId > 0)
+        {
+            await LoadModels(brandId);
+        }
+    }
+
+    private async Task LoadModels(int brandId)
+    {
+        try
+        {
+            var result = await VehicleService.GetActiveModelsByBrandIdAsync(brandId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                models = result.Data;
+            }
+            else
+            {
+                models = new List<VehicleModelDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Modeller yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            models = new List<VehicleModelDto>();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(model.PlateNumber) ||
+            string.IsNullOrWhiteSpace(model.ChassisNumber) ||
+            model.BrandId == 0 ||
+            model.ModelId == 0)
+        {
+            Snackbar.Add("Lütfen zorunlu alanları doldurun", MudBlazor.Severity.Warning);
+            return;
+        }
+
+        saving = true;
+        try
+        {
+            var result = await VehicleService.CreateAsync(model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Araç başarıyla eklendi", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result.Data));
+            }
+            else
+            {
+                if (result.Errors?.Any() == true)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        Snackbar.Add(error, MudBlazor.Severity.Warning);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Araç eklenirken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

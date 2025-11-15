@@ -808,19 +808,32 @@
             return;
         }
 
-        Snackbar.Add("Araç ekleme özelliği yakında eklenecek. Şimdilik Araçlar menüsünden araç ekleyebilirsiniz.", MudBlazor.Severity.Info);
+        var parameters = new DialogParameters<Components.Shared.Dialogs.AddVehicleDialog>
+        {
+            { x => x.CustomerId, selectedCustomer.Id }
+        };
 
-        // TODO: Implement quick add vehicle dialog
-        // var parameters = new DialogParameters<AddVehicleDialog>
-        // {
-        //     { x => x.CustomerId, selectedCustomer.Id }
-        // };
-        // var dialog = await DialogService.ShowAsync<AddVehicleDialog>("Yeni Araç Ekle", parameters);
-        // var result = await dialog.Result;
-        // if (result != null && !result.Canceled)
-        // {
-        //     await LoadCustomerVehicles(selectedCustomer.Id);
-        // }
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await DialogService.ShowAsync<Components.Shared.Dialogs.AddVehicleDialog>("Yeni Araç Ekle", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await LoadCustomerVehicles(selectedCustomer.Id);
+
+            // Auto-select the newly added vehicle
+            if (result.Data is VehicleDto newVehicle)
+            {
+                selectedVehicle = newVehicle;
+                model.VehicleId = newVehicle.Id;
+            }
+        }
     }
 
     private void GoBack()

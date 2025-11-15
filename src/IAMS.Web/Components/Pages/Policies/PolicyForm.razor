@@ -126,6 +126,7 @@
                                     <MudItem xs="12" md="4">
                                         <MudAutocomplete
                                                        T="CustomerDto"
+                                                       Value="selectedCustomer"
                                                        SearchFuncWithCancel="@SearchCustomers"
                                                        ToStringFunc="@(customer => customer != null ? $"{customer.FirstName} {customer.LastName}" : string.Empty)"
                                                        Label="Müşteri *"

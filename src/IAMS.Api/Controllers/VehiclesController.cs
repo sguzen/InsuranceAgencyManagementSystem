@@ -63,7 +63,8 @@ namespace IAMS.Api.Controllers
                 return Ok(Result.Success("Connection to vehicle data API successful"));
             }
 
-            return BadRequest(Result.Failure("Failed to connect to vehicle data API"));
+            // Explicitly specify null for the second parameter to resolve ambiguity
+            return BadRequest(Result.Failure("Failed to connect to vehicle data API", (List<string>?)null));
         }
 
         /// <summary>
@@ -82,8 +83,9 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
+                // Specify null for errors and omit statusCode to resolve ambiguity
                 return BadRequest(Result<List<ExternalVehicleDataDto>>.Failure(
-                    $"Failed to fetch vehicle data: {ex.Message}"));
+                    $"Failed to fetch vehicle data: {ex.Message}", (List<string>?)null));
             }
         }
     }

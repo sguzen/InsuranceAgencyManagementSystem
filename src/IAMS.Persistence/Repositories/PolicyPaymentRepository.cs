@@ -59,9 +59,15 @@ namespace IAMS.Persistence.Repositories
                 .SumAsync(pp => pp.Amount);
         }
 
-        public Task<DateTime?> GetLastPaymentDateAsync(int customerId)
+        public async Task<DateTime?> GetLastPaymentDateAsync(int customerId)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(pp => pp.Policy)
+                .Where(pp => !pp.IsDeleted &&
+                            pp.Policy.CustomerId == customerId)
+                .OrderByDescending(pp => pp.PaymentDate)
+                .Select(pp => (DateTime?)pp.PaymentDate)
+                .FirstOrDefaultAsync();
         }
     }
 }

@@ -29,6 +29,7 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<IIntegrationService, IntegrationService>();
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IVehicleDataService, VehicleDataService>();
 
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));

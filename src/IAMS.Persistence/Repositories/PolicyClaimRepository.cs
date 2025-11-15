@@ -60,9 +60,15 @@ namespace IAMS.Persistence.Repositories
                 .SumAsync(pc => pc.ClaimAmount);
         }
 
-        public Task<DateTime?> GetLastClaimDateAsync(int customerId)
+        public async Task<DateTime?> GetLastClaimDateAsync(int customerId)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(pc => pc.Policy)
+                .Where(pc => !pc.IsDeleted &&
+                            pc.Policy.CustomerId == customerId)
+                .OrderByDescending(pc => pc.ClaimDate)
+                .Select(pc => (DateTime?)pc.ClaimDate)
+                .FirstOrDefaultAsync();
         }
 
         public Task<bool> ExistsByPolicyIdAsync(int policyId)

@@ -126,6 +126,7 @@
                                     <MudItem xs="12" md="4">
                                         <MudAutocomplete
                                                        T="CustomerDto"
+                                                       SearchFuncWithCancel="@SearchCustomers"
                                                        ToStringFunc="@(customer => customer != null ? $"{customer.FirstName} {customer.LastName}" : string.Empty)"
                                                        Label="Müşteri *"
                                                        Variant="Variant.Outlined"
@@ -135,7 +136,7 @@
                                                        CoerceValue="true"
                                                        MaxItems="50"
                                                        ValueChanged="OnCustomerSelected"
-                                                       HelperText="Müşteri adı ile arayın">
+                                                       HelperText="Müşteri adı ile arayın (en az 2 karakter)">
                                             <ItemTemplate Context="customerItem">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
                                                     <MudAvatar Color="Color.Primary" Size="Size.Small">

@@ -167,11 +167,12 @@
                                         </MudSelect>
                                     </MudItem>
                                     <MudItem xs="12" md="4">
-                                        <MudSelect @bind-Value="model.PolicyTypeId"
+                                        <MudSelect Value="model.PolicyTypeId"
                                                  Label="Poliçe Tipi *"
                                                  Variant="Variant.Outlined"
                                                  Required="true"
-                                                 For="@(() => model.PolicyTypeId)">
+                                                 ValueChanged="@OnPolicyTypeChanged"
+                                                 T="int">
                                             @if (policyTypes != null)
                                             {
                                                 @foreach (var policyType in policyTypes)
@@ -181,23 +182,38 @@
                                             }
                                         </MudSelect>
                                     </MudItem>
+                                    @if (selectedPolicyType != null && !string.IsNullOrEmpty(selectedPolicyType.Category))
+                                    {
+                                        <MudItem xs="12">
+                                            <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
+                                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" />
+                                                    <MudText Typo="Typo.body2">
+                                                        <strong>Kategori:</strong> @selectedPolicyType.Category
+                                                    </MudText>
+                                                </MudStack>
+                                            </MudAlert>
+                                        </MudItem>
+                                    }
                                 </MudGrid>
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
 
-                    <!-- Vehicle Information (Car Insurance) -->
-                    <MudItem xs="12">
-                        <MudCard>
-                            <MudCardHeader>
-                                <CardHeaderContent>
-                                    <MudText Typo="Typo.h6">
-                                        <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Class="mr-2" />
-                                        Araç Bilgileri (Kasko/Trafik Sigortası için)
-                                    </MudText>
-                                </CardHeaderContent>
-                            </MudCardHeader>
-                            <MudCardContent>
+                    <!-- Vehicle Information (Car Insurance Only) -->
+                    @if (IsVehicleInsurance())
+                    {
+                        <MudItem xs="12">
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">
+                                            <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Class="mr-2" />
+                                            Araç Bilgileri
+                                        </MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
                                 <MudGrid>
                                     <MudItem xs="12" md="10">
                                         <MudSelect
@@ -266,6 +282,7 @@
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
+                    }
 
                     <!-- Policy Period -->
                     <MudItem xs="12">
@@ -451,8 +468,14 @@
     private List<VehicleDto>? customerVehicles;
     private CustomerDto? selectedCustomer;
     private VehicleDto? selectedVehicle;
+    private Application.DTOs.PolicyType.PolicyTypeDto? selectedPolicyType;
 
     private bool IsEdit => PolicyId.HasValue && PolicyId.Value > 0;
+
+    private bool IsVehicleInsurance()
+    {
+        return selectedPolicyType?.Category == "Araç Sigortaları";
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -577,6 +600,9 @@
                 {
                     selectedCustomer = policy.Customer;
                 }
+
+                // Load the selected policy type
+                selectedPolicyType = policyTypes?.FirstOrDefault(pt => pt.Id == policy.PolicyTypeId);
             }
             else
             {
@@ -739,6 +765,20 @@
         finally
         {
             saving = false;
+        }
+    }
+
+    // Policy Type Management
+    private void OnPolicyTypeChanged(int policyTypeId)
+    {
+        model.PolicyTypeId = policyTypeId;
+        selectedPolicyType = policyTypes?.FirstOrDefault(pt => pt.Id == policyTypeId);
+
+        // Clear vehicle selection if switching away from vehicle insurance
+        if (!IsVehicleInsurance())
+        {
+            selectedVehicle = null;
+            model.VehicleId = null;
         }
     }
 

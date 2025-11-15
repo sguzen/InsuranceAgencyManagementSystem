@@ -444,8 +444,14 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<int> GetExpiringPoliciesCountAsync(int daysAhead)
         {
+            var today = DateTime.Today;
+            var futureDate = today.AddDays(daysAhead);
+
             return await _dbSet
-                .CountAsync(p => p.IsExpiring(daysAhead) && !p.IsDeleted);
+                .Where(p => !p.IsDeleted)
+                .CountAsync(p => p.Status == PolicyStatus.Active &&
+                                p.EndDate.Date <= futureDate &&
+                                p.EndDate.Date >= today);
         }
 
         public async Task<List<Policy>> GetByVehicleIdAsync(int id)

@@ -113,7 +113,7 @@ namespace IAMS.Application.Features.Vehicles.Commands.SyncVehicleData
 
                             if (brandUpdated)
                             {
-                                await _unitOfWork.VehicleBrands.UpdateAsync(existingBrand);
+                                _unitOfWork.VehicleBrands.Update(existingBrand);
                                 result.BrandsUpdated++;
                                 _logger.LogDebug("Updated brand: {BrandName} (Code: {BrandCode})", brandName, brandCode);
                             }
@@ -170,7 +170,7 @@ namespace IAMS.Application.Features.Vehicles.Commands.SyncVehicleData
 
                                     if (modelUpdated)
                                     {
-                                        await _unitOfWork.VehicleModels.UpdateAsync(existingModel);
+                                        _unitOfWork.VehicleModels.Update(existingModel);
                                         result.ModelsUpdated++;
                                         _logger.LogDebug(
                                             "Updated model: {ModelName} for brand {BrandName}",
@@ -215,7 +215,7 @@ namespace IAMS.Application.Features.Vehicles.Commands.SyncVehicleData
                     foreach (var brand in existingBrands.Where(b => b.IsActive && !externalBrandCodes.Contains(b.Code)))
                     {
                         brand.IsActive = false;
-                        await _unitOfWork.VehicleBrands.UpdateAsync(brand);
+                        _unitOfWork.VehicleBrands.Update(brand);
                         result.Warnings.Add($"Deactivated brand not found in external data: {brand.Name}");
                     }
 

@@ -481,13 +481,9 @@
         loading = true;
         try
         {
-            var tasks = new List<Task>
-            {
-                LoadInsuranceCompanies(),
-                LoadPolicyTypes()
-            };
-
-            await Task.WhenAll(tasks);
+            // Run sequentially to avoid DbContext concurrency issues
+            await LoadInsuranceCompanies();
+            await LoadPolicyTypes();
         }
         finally
         {

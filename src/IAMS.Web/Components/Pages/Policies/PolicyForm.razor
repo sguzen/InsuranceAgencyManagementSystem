@@ -154,8 +154,7 @@
                                                  Label="Sigorta Şirketi *"
                                                  Variant="Variant.Outlined"
                                                  Required="true"
-                                                 For="@(() => model.InsuranceCompanyId)"
-                                                 T="int">
+                                                 For="@(() => model.InsuranceCompanyId)">
                                             @if (insuranceCompanies != null)
                                             {
                                                 @foreach (var company in insuranceCompanies)
@@ -170,8 +169,7 @@
                                                  Label="Poliçe Tipi *"
                                                  Variant="Variant.Outlined"
                                                  Required="true"
-                                                 For="@(() => model.PolicyTypeId)"
-                                                 T="int">
+                                                 For="@(() => model.PolicyTypeId)">
                                             @if (policyTypes != null)
                                             {
                                                 @foreach (var policyType in policyTypes)

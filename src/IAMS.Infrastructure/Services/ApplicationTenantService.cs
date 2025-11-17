@@ -31,7 +31,7 @@ namespace IAMS.Infrastructure.Services
 
         public int? GetCurrentTenantId()
         {
-            return _tenantContextAccessor.Current?.Id;
+            return _tenantContextAccessor.CurrentTenantId;
         }
 
         public async Task<bool> TenantExistsAsync()
@@ -53,7 +53,7 @@ namespace IAMS.Infrastructure.Services
 
         public async Task<bool> IsModuleEnabledAsync(string moduleName)
         {
-            var tenant = _tenantContextAccessor.Current;
+            var tenant = _tenantContextAccessor.CurrentTenant;
             if (tenant == null)
                 return false;
 

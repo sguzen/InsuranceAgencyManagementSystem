@@ -84,11 +84,15 @@ namespace IAMS.UnitTests.Application.Features.Vehicles
                 .Setup(x => x.GetAllAsync())
                 .ReturnsAsync(new List<VehicleModel>());
 
-            VehicleBrand? capturedBrand = null;
+            var brandIdCounter = 0;
             _vehicleBrandRepositoryMock
                 .Setup(x => x.AddAsync(It.IsAny<VehicleBrand>()))
-                .Callback<VehicleBrand>(b => capturedBrand = b)
-                .ReturnsAsync((VehicleBrand b) => { b.Id = 1; return b; });
+                .ReturnsAsync((VehicleBrand b) => { b.Id = ++brandIdCounter; return b; });
+
+            var modelIdCounter = 0;
+            _vehicleModelRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<VehicleModel>()))
+                .ReturnsAsync((VehicleModel m) => { m.Id = ++modelIdCounter; return m; });
 
             _unitOfWorkMock
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -145,6 +149,11 @@ namespace IAMS.UnitTests.Application.Features.Vehicles
                 .Setup(x => x.GetAllAsync())
                 .ReturnsAsync(new List<VehicleModel>());
 
+            var modelIdCounter = 0;
+            _vehicleModelRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<VehicleModel>()))
+                .ReturnsAsync((VehicleModel m) => { m.Id = ++modelIdCounter; return m; });
+
             _unitOfWorkMock
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
@@ -197,6 +206,11 @@ namespace IAMS.UnitTests.Application.Features.Vehicles
                 .Setup(x => x.GetAllAsync())
                 .ReturnsAsync(new List<VehicleModel>());
 
+            var modelIdCounter = 0;
+            _vehicleModelRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<VehicleModel>()))
+                .ReturnsAsync((VehicleModel m) => { m.Id = ++modelIdCounter; return m; });
+
             _unitOfWorkMock
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
@@ -246,6 +260,16 @@ namespace IAMS.UnitTests.Application.Features.Vehicles
             _vehicleModelRepositoryMock
                 .Setup(x => x.GetAllAsync())
                 .ReturnsAsync(new List<VehicleModel>());
+
+            var brandIdCounter = 0;
+            _vehicleBrandRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<VehicleBrand>()))
+                .ReturnsAsync((VehicleBrand b) => { b.Id = ++brandIdCounter; return b; });
+
+            var modelIdCounter = 0;
+            _vehicleModelRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<VehicleModel>()))
+                .ReturnsAsync((VehicleModel m) => { m.Id = ++modelIdCounter; return m; });
 
             _unitOfWorkMock
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -336,6 +360,11 @@ namespace IAMS.UnitTests.Application.Features.Vehicles
             _vehicleBrandRepositoryMock
                 .Setup(x => x.AddAsync(It.IsAny<VehicleBrand>()))
                 .ReturnsAsync((VehicleBrand b) => { b.Id = ++brandIdCounter; return b; });
+
+            var modelIdCounter = 0;
+            _vehicleModelRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<VehicleModel>()))
+                .ReturnsAsync((VehicleModel m) => { m.Id = ++modelIdCounter; return m; });
 
             _unitOfWorkMock
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))

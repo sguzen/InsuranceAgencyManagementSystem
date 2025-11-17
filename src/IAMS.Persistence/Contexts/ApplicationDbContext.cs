@@ -30,6 +30,9 @@ namespace IAMS.Persistence.Contexts
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
 
+        // Tenant-specific configuration settings
+        public DbSet<TenantSettings> TenantSettings { get; set; }
+
         public DbSet<Country> Countries { get; set; }
         public DbSet<Occupation> Occupations { get; set; }
         public DbSet<City> Cities { get; set; }
@@ -109,6 +112,18 @@ namespace IAMS.Persistence.Contexts
             {
                 entity.Property(r => r.Description).HasMaxLength(500);
                 entity.HasIndex(r => r.Name).IsUnique();
+            });
+
+            // Configure TenantSettings entity
+            modelBuilder.Entity<TenantSettings>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.SettingKey).IsRequired().HasMaxLength(100);
+                entity.Property(s => s.SettingValue).IsRequired();
+                entity.Property(s => s.Category).HasMaxLength(50);
+                entity.Property(s => s.Description).HasMaxLength(500);
+                entity.HasIndex(s => s.SettingKey).IsUnique();
+                entity.HasIndex(s => s.Category);
             });
 
             modelBuilder.Entity<Vehicle>()

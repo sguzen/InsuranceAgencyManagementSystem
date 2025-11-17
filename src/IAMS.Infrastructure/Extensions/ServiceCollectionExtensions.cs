@@ -31,6 +31,9 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IVehicleDataService, VehicleDataService>();
 
+            // Register tenant settings service (stores settings in each tenant's own database)
+            services.AddScoped<ITenantService, ApplicationTenantService>();
+
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 

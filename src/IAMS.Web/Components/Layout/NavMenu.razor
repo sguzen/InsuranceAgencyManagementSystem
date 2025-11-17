@@ -1,6 +1,9 @@
 ﻿@* IAMS.Web/Components/Layout/NavMenu.razor *@
 @using IAMS.MultiTenancy.Interfaces
+@using IAMS.Application.Constants
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ITenantContextAccessor TenantContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudNavMenu>
     <!-- Dashboard -->
@@ -91,7 +94,7 @@
         <MudNavLink Href="/settings/modules" Icon="@Icons.Material.Filled.Extension">
             Modül Yönetimi
         </MudNavLink>
-        @if (IsIntegrationModuleEnabled)
+        @if (IsIntegrationModuleEnabled && IsSuperAdmin)
         {
             <MudNavLink Href="/settings/integrations" Icon="@Icons.Material.Filled.IntegrationInstructions">
                 Entegrasyonlar
@@ -113,6 +116,16 @@
     private bool IsReportingModuleEnabled => CheckModuleEnabled("Reporting");
     private bool IsAccountingModuleEnabled => CheckModuleEnabled("Accounting");
     private bool IsIntegrationModuleEnabled => CheckModuleEnabled("Integration");
+    private bool IsSuperAdmin { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Check if user has SuperAdmin role
+        IsSuperAdmin = user.IsInRole(RoleNames.SuperAdmin);
+    }
 
     private bool CheckModuleEnabled(string moduleName)
     {

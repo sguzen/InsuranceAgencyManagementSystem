@@ -3,9 +3,12 @@
 @attribute [Authorize]
 
 @using IAMS.Application.Interfaces
+@using IAMS.Application.Constants
 @using IAMS.MultiTenancy.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
 @inject ITenantContextAccessor TenantContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Ayarlar</PageTitle>
 
@@ -74,11 +77,45 @@
                 </MudCard>
             </MudItem>
 
+            <!-- Integration Settings (SuperAdmin Only) -->
+            @if (IsSuperAdmin)
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/integrations"))">
+                        <MudCardContent>
+                            <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.IntegrationInstructions" Size="Size.Large" Color="Color.Primary" />
+                                <MudStack Spacing="1">
+                                    <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.h6">Entegrasyon Ayarları</MudText>
+                                        <MudChip T="String" Size="Size.Small" Color="Color.Error" Variant="Variant.Text">Yalnızca SuperAdmin</MudChip>
+                                    </MudStack>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Üçüncü parti servisler ile entegrasyonları yönet
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
         </MudGrid>
     </MudStack>
 </MudContainer>
 
 @code {
+    private bool IsSuperAdmin { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Check if user has SuperAdmin role
+        IsSuperAdmin = user.IsInRole(RoleNames.SuperAdmin);
+    }
+
     private void NavigateTo(string url)
     {
         Navigation.NavigateTo(url);

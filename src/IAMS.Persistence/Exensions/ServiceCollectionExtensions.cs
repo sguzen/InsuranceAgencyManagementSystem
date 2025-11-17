@@ -19,6 +19,7 @@ namespace IAMS.Persistence.Extensions
             IConfiguration configuration)
         {
             // Register ApplicationDbContext with TENANT-SPECIFIC connection string
+            // Use transient lifetime for Blazor Server to avoid threading issues
             services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
                 var tenantContextAccessor = serviceProvider.GetService<ITenantContextAccessor>();
@@ -57,16 +58,17 @@ namespace IAMS.Persistence.Extensions
                     options.EnableSensitiveDataLogging();
                     options.EnableDetailedErrors();
                 }
-            });
+            }, ServiceLifetime.Transient, ServiceLifetime.Transient);
 
             // Register generic repository and unit of work
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            // Use transient for UnitOfWork to match DbContext lifetime and avoid threading issues
+            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
             services.AddScoped<ITenantDatabaseService, TenantDatabaseService>();
-            // Register specialized repositories
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
-            services.AddScoped<IPolicyRepository, PolicyRepository>();
-            services.AddScoped<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
+            // Register specialized repositories as transient
+            services.AddTransient<ICustomerRepository, CustomerRepository>();
+            services.AddTransient<IPolicyRepository, PolicyRepository>();
+            services.AddTransient<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
 
             return services;
         }

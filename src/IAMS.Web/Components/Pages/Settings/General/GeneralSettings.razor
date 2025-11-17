@@ -5,7 +5,7 @@
 @using IAMS.Application.DTOs.Settings
 @using IAMS.Application.Interfaces
 @using IAMS.MultiTenancy.Interfaces
-@inject ITenantService TenantService
+@inject IAMS.Application.Interfaces.ITenantService TenantService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
 
@@ -189,7 +189,7 @@
                 </MudCard>
 
                 <!-- Actions -->
-                <MudStack Row Justify="Justify.End" Spacing="2">
+                <MudStack Row Justify="Justify.FlexEnd" Spacing="2">
                     <MudButton Variant="Variant.Outlined"
                                Color="Color.Secondary"
                                OnClick="LoadSettings">
@@ -234,14 +234,7 @@
     {
         isLoading = true;
         try
-        {
-            var tenantId = TenantContext.Current?.Id;
-            if (tenantId == null)
-            {
-                Snackbar.Add("Tenant bilgisi bulunamadı", Severity.Error);
-                return;
-            }
-
+        {   
             var settings = await TenantService.GetTenantSettingAsync<GeneralSettingsDto>("general");
             if (settings != null)
             {
@@ -250,7 +243,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Ayarlar yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Ayarlar yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -264,11 +257,11 @@
         try
         {
             await TenantService.SetTenantSettingAsync("general", settingsModel);
-            Snackbar.Add("Ayarlar başarıyla kaydedildi", Severity.Success);
+            Snackbar.Add("Ayarlar başarıyla kaydedildi", MudBlazor.Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Ayarlar kaydedilirken hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Ayarlar kaydedilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

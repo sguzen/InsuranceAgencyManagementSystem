@@ -46,15 +46,15 @@
                         <CardHeaderActions>
                             @if (vehicleConnectionStatus == ConnectionStatus.Connected)
                             {
-                                <MudChip Color="Color.Success" Size="Size.Small">Bağlı</MudChip>
+                                <MudChip T="String" Color="Color.Success" Size="Size.Small">Bağlı</MudChip>
                             }
                             else if (vehicleConnectionStatus == ConnectionStatus.Disconnected)
                             {
-                                <MudChip Color="Color.Error" Size="Size.Small">Bağlantı Yok</MudChip>
+                                <MudChip T="String" Color="Color.Error" Size="Size.Small">Bağlantı Yok</MudChip>
                             }
                             else
                             {
-                                <MudChip Color="Color.Default" Size="Size.Small">Bilinmiyor</MudChip>
+                                <MudChip T="String" Color="Color.Default" Size="Size.Small">Bilinmiyor</MudChip>
                             }
                         </CardHeaderActions>
                     </MudCardHeader>
@@ -168,17 +168,17 @@
 
             if (isConnected)
             {
-                Snackbar.Add("Araç veri API'sine bağlantı başarılı", Severity.Success);
+                Snackbar.Add("Araç veri API'sine bağlantı başarılı", MudBlazor.Severity.Success);
             }
             else
             {
-                Snackbar.Add("Araç veri API'sine bağlanılamadı", Severity.Error);
+                Snackbar.Add("Araç veri API'sine bağlanılamadı", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
             vehicleConnectionStatus = ConnectionStatus.Disconnected;
-            Snackbar.Add($"Bağlantı testi başarısız: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Bağlantı testi başarısız: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -191,13 +191,13 @@
         try
         {
             var data = await VehicleDataService.FetchVehicleDataAsync();
-            Snackbar.Add($"{data.Count} araç kaydı alındı", Severity.Info);
+            Snackbar.Add($"{data.Count} araç kaydı alındı", MudBlazor.Severity.Info);
 
             // TODO: Show data in a dialog
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Veri alınamadı: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Veri alınamadı: {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 
@@ -211,11 +211,11 @@
             await Task.Delay(2000); // Simulate API call
 
             lastSyncTime = DateTime.Now;
-            Snackbar.Add("Araç verileri başarıyla senkronize edildi", Severity.Success);
+            Snackbar.Add("Araç verileri başarıyla senkronize edildi", MudBlazor.Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Senkronizasyon başarısız: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Senkronizasyon başarısız: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

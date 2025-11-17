@@ -237,7 +237,11 @@ namespace IAMS.Application.Features.Vehicles.Commands.SyncVehicleData
                 _logger.LogError(ex, "Error during vehicle data synchronization");
                 result.Success = false;
                 result.ErrorMessage = $"Synchronization failed: {ex.Message}";
-                return Result<VehicleDataSyncResult>.Failure(result.ErrorMessage);
+                // Replace this line:
+                // return Result<VehicleDataSyncResult>.Failure(result.ErrorMessage);
+
+                // With this line to resolve ambiguity by explicitly passing null for the errors parameter:
+                return Result<VehicleDataSyncResult>.Failure(result.ErrorMessage, errors: null);
             }
         }
     }

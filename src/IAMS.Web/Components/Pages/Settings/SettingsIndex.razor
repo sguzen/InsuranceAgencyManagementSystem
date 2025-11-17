@@ -74,25 +74,6 @@
                 </MudCard>
             </MudItem>
 
-            <!-- Integration Settings -->
-            @if (TenantContext.Current?.SubscriptionType == "Enterprise")
-            {
-                <MudItem xs="12" md="6">
-                    <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/integrations"))">
-                        <MudCardContent>
-                            <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
-                                <MudIcon Icon="@Icons.Material.Filled.CloudSync" Size="Size.Large" Color="Color.Primary" />
-                                <MudStack Spacing="1">
-                                    <MudText Typo="Typo.h6">Entegrasyonlar</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                        Üçüncü parti servisler ve API entegrasyonları
-                                    </MudText>
-                                </MudStack>
-                            </MudStack>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-            }
         </MudGrid>
     </MudStack>
 </MudContainer>

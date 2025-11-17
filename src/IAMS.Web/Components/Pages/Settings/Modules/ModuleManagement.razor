@@ -4,7 +4,7 @@
 
 @using IAMS.Application.Interfaces
 @using IAMS.MultiTenancy.Interfaces
-@inject IModuleService ModuleService
+@inject IAMS.Application.Interfaces.IModuleService ModuleService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
 
@@ -50,7 +50,7 @@
                                             @GetModuleDescription(module.Key)
                                         </MudText>
                                     </MudStack>
-                                    <MudSwitch @bind-Value="@module.Value"
+                                    <MudSwitch Value="@module.Value"
                                                Color="Color.Success"
                                                ValueChanged="@((bool value) => OnModuleToggled(module.Key, value))" />
                                 </MudStack>
@@ -62,7 +62,7 @@
 
             @if (!modules.Any())
             {
-                <MudAlert Severity="Severity.Info">
+                <MudAlert Severity="MudBlazor.Severity.Info">
                     Modül bulunamadı
                 </MudAlert>
             }
@@ -95,7 +95,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Modüller yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Modüller yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -110,12 +110,12 @@
             if (enabled)
             {
                 await ModuleService.EnableModuleAsync(moduleName);
-                Snackbar.Add($"{GetModuleName(moduleName)} modülü etkinleştirildi", Severity.Success);
+                Snackbar.Add($"{GetModuleName(moduleName)} modülü etkinleştirildi", MudBlazor.Severity.Success);
             }
             else
             {
                 await ModuleService.DisableModuleAsync(moduleName);
-                Snackbar.Add($"{GetModuleName(moduleName)} modülü devre dışı bırakıldı", Severity.Warning);
+                Snackbar.Add($"{GetModuleName(moduleName)} modülü devre dışı bırakıldı", MudBlazor.Severity.Warning);
             }
 
             // Update local state
@@ -123,7 +123,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Modül durumu değiştirilirken hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Modül durumu değiştirilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
             // Revert the change
             modules[moduleName] = !enabled;
             StateHasChanged();

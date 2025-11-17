@@ -161,6 +161,20 @@ namespace IAMS.Persistence.Contexts
                 .WithMany(c => c.PolicyPayments)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure CurrencyExchangeRate to prevent multiple cascade paths
+            // SQL Server doesn't allow cascade delete on both FK relationships to the same table
+            modelBuilder.Entity<CurrencyExchangeRate>()
+                .HasOne(e => e.FromCurrency)
+                .WithMany()
+                .HasForeignKey(e => e.FromCurrencyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CurrencyExchangeRate>()
+                .HasOne(e => e.ToCurrency)
+                .WithMany()
+                .HasForeignKey(e => e.ToCurrencyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             ParametricDataSeeder.SeedParametricData(modelBuilder);
 
         }

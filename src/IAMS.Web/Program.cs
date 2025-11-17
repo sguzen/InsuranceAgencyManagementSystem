@@ -43,6 +43,14 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 // Add HTTP Client for API calls
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 
+// Add HttpClient with API base URL for Blazor components
+builder.Services.AddScoped(sp =>
+{
+    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7192";
+    var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
+    return httpClient;
+});
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 

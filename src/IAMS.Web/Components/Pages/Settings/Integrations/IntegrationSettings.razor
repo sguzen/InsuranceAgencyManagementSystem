@@ -4,6 +4,7 @@
 
 @using IAMS.Application.Interfaces
 @using IAMS.Application.DTOs.Vehicle
+@using IAMS.Application.Models
 @using IAMS.MultiTenancy.Interfaces
 @using Microsoft.Extensions.Configuration
 @inject IVehicleDataService VehicleDataService
@@ -11,6 +12,7 @@
 @inject IConfiguration Configuration
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject HttpClient HttpClient
 
 <PageTitle>Entegrasyon Ayarları</PageTitle>
 
@@ -206,12 +208,43 @@
         isSyncing = true;
         try
         {
-            // This would call the API endpoint to trigger sync
-            // For now, just show a success message
-            await Task.Delay(2000); // Simulate API call
+            // Call the API endpoint to trigger sync
+            var response = await HttpClient.PostAsync("api/vehicles/sync?updateExisting=true&deactivateMissing=false", null);
 
-            lastSyncTime = DateTime.Now;
-            Snackbar.Add("Araç verileri başarıyla senkronize edildi", MudBlazor.Severity.Success);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<VehicleDataSyncResult>>();
+
+                if (result?.IsSuccess == true && result.Data != null)
+                {
+                    lastSyncTime = DateTime.Now;
+                    var syncResult = result.Data;
+
+                    var message = $"Senkronizasyon başarılı: {syncResult.BrandsCreated} marka oluşturuldu, " +
+                                  $"{syncResult.BrandsUpdated} marka güncellendi, " +
+                                  $"{syncResult.ModelsCreated} model oluşturuldu, " +
+                                  $"{syncResult.ModelsUpdated} model güncellendi";
+
+                    Snackbar.Add(message, MudBlazor.Severity.Success);
+
+                    if (syncResult.Warnings.Any())
+                    {
+                        foreach (var warning in syncResult.Warnings)
+                        {
+                            Snackbar.Add(warning, MudBlazor.Severity.Warning);
+                        }
+                    }
+                }
+                else
+                {
+                    Snackbar.Add(result?.Message ?? "Senkronizasyon başarısız oldu", MudBlazor.Severity.Error);
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Senkronizasyon başarısız: {response.StatusCode} - {errorContent}", MudBlazor.Severity.Error);
+            }
         }
         catch (Exception ex)
         {

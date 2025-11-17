@@ -33,6 +33,9 @@ namespace IAMS.MultiTenancy.Extensions
 
             services.AddScoped<Application.Interfaces.ICurrentTenantService, CurrentTenantService>();
 
+            // Register Application ITenantService implementation
+            services.AddScoped<Application.Interfaces.ITenantService, ApplicationTenantService>();
+
 
             // Configure multi-tenancy options
             services.Configure<MultiTenancyOptions>(configuration.GetSection("MultiTenancy"));

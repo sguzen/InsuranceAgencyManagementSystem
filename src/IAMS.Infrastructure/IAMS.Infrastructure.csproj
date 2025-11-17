@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\IAMS.Domain\IAMS.Domain.csproj" />
+    <ProjectReference Include="..\IAMS.Application\IAMS.Application.csproj" />
+    <ProjectReference Include="..\IAMS.Persistence\IAMS.Persistence.csproj" />
     <ProjectReference Include="..\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
   </ItemGroup>
 

@@ -209,7 +209,7 @@
         try
         {
             // Call the API endpoint to trigger sync
-            var response = await HttpClient.PostAsync("api/vehicles/sync?updateExisting=true&deactivateMissing=false", null);
+            var response = await HttpClient.PostAsync("/api/vehicles/sync?updateExisting=true&deactivateMissing=false", null);
 
             if (response.IsSuccessStatusCode)
             {

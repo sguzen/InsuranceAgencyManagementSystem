@@ -317,11 +317,15 @@ namespace IAMS.Infrastructure.Services
 
         private void ConfigureHttpClient(HttpClient httpClient, IntegrationProvider provider)
         {
-            // Set base URL
-            if (provider.Settings.TryGetValue("BaseUrl", out var baseUrl))
+            // Set base URL - required for integration providers
+            if (!provider.Settings.TryGetValue("BaseUrl", out var baseUrl) || string.IsNullOrWhiteSpace(baseUrl))
             {
-                httpClient.BaseAddress = new Uri(baseUrl);
+                throw new InvalidOperationException(
+                    $"Integration provider '{provider.Name}' is missing required 'BaseUrl' configuration. " +
+                    "Please configure the BaseUrl in the integration settings.");
             }
+
+            httpClient.BaseAddress = new Uri(baseUrl);
 
             // Set authentication
             if (provider.Settings.TryGetValue("AuthType", out var authType))

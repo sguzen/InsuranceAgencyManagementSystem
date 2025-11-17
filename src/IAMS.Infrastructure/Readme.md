@@ -124,6 +124,15 @@ IAMS.Infrastructure/
 }
 ```
 
+### API Settings
+```json
+{
+  "ApiSettings": {
+    "BaseUrl": "https://localhost:7192"
+  }
+}
+```
+
 ### Integration Providers
 ```json
 {
@@ -133,14 +142,18 @@ IAMS.Infrastructure/
       "DisplayName": "AXA Türkiye",
       "IsEnabled": false,
       "Settings": {
-        "BaseUrl": "https://api.axa.com.tr",
         "AuthType": "bearer",
-        "Token": "your-api-token"
+        "Token": "your-api-token",
+        "TestEndpoint": "/api/integration/axa/health",
+        "CustomerSyncEndpoint": "/api/integration/axa/customers/sync",
+        "PolicySyncEndpoint": "/api/integration/axa/policies/sync"
       }
     }
   ]
 }
 ```
+
+**Note:** Integration providers use the IAMS API (configured in `ApiSettings:BaseUrl`) as their base URL. Provider-specific settings only contain authentication and endpoint paths.
 
 ## Multi-Tenancy Support
 

@@ -15,6 +15,7 @@ namespace IAMS.Infrastructure.Services
         private readonly ILogger<IntegrationService> _logger;
         private readonly IntegrationDbContext _dbContext;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiBaseUrl;
 
         public IntegrationService(
             IConfiguration configuration,
@@ -26,6 +27,10 @@ namespace IAMS.Infrastructure.Services
             _logger = logger;
             _dbContext = dbContext;
             _httpClientFactory = httpClientFactory;
+
+            // Get API base URL from configuration
+            _apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7192";
+            _logger.LogInformation("IntegrationService configured with API BaseUrl: {ApiBaseUrl}", _apiBaseUrl);
         }
 
         public async Task<IntegrationResult> SyncCustomerDataAsync(int customerId)
@@ -317,15 +322,8 @@ namespace IAMS.Infrastructure.Services
 
         private void ConfigureHttpClient(HttpClient httpClient, IntegrationProvider provider)
         {
-            // Set base URL - required for integration providers
-            if (!provider.Settings.TryGetValue("BaseUrl", out var baseUrl) || string.IsNullOrWhiteSpace(baseUrl))
-            {
-                throw new InvalidOperationException(
-                    $"Integration provider '{provider.Name}' is missing required 'BaseUrl' configuration. " +
-                    "Please configure the BaseUrl in the integration settings.");
-            }
-
-            httpClient.BaseAddress = new Uri(baseUrl);
+            // Set base URL to IAMS API
+            httpClient.BaseAddress = new Uri(_apiBaseUrl);
 
             // Set authentication
             if (provider.Settings.TryGetValue("AuthType", out var authType))

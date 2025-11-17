@@ -1,6 +1,7 @@
 @page "/settings/integrations"
 @layout Layout.MainLayout
-@attribute [Authorize]
+@using IAMS.Application.Constants
+@attribute [Authorize(Roles = RoleNames.SuperAdmin)]
 
 @using IAMS.Application.Interfaces
 @using IAMS.Application.DTOs.Vehicle

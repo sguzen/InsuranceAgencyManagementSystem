@@ -40,6 +40,14 @@ namespace IAMS.Persistence.Contexts
         public DbSet<Subdistrict> Subdistricts { get; set; }
         public DbSet<Village> Villages { get; set; }
 
+        // Vehicle Management
+        public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<VehicleBrand> VehicleBrands { get; set; }
+        public DbSet<VehicleModel> VehicleModels { get; set; }
+
+        // Currency Management
+        public DbSet<Currency> Currencies { get; set; }
+        public DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
 
         // Identity entities (inherited from IdentityDbContext)
         // Users, Roles, UserRoles, etc. are already included

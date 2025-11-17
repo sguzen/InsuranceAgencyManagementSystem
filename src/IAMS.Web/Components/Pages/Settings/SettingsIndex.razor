@@ -1,0 +1,105 @@
+@page "/settings"
+@layout Layout.MainLayout
+@attribute [Authorize]
+
+@using IAMS.Application.Interfaces
+@using IAMS.MultiTenancy.Interfaces
+@inject NavigationManager Navigation
+@inject ITenantContextAccessor TenantContext
+
+<PageTitle>Ayarlar</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudText Typo="Typo.h4" GutterBottom="false">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3" />
+            Ayarlar
+        </MudText>
+
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Sistem ayarlarınızı buradan yönetebilirsiniz
+        </MudText>
+
+        <!-- Settings Cards -->
+        <MudGrid>
+            <!-- General Settings -->
+            <MudItem xs="12" md="6">
+                <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/general"))">
+                    <MudCardContent>
+                        <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Large" Color="Color.Primary" />
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.h6">Genel Ayarlar</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Şirket bilgileri, e-posta ve bölgesel ayarlar
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- User Management -->
+            <MudItem xs="12" md="6">
+                <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/users"))">
+                    <MudCardContent>
+                        <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.h6">Kullanıcı Yönetimi</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Kullanıcıları yönet, rol ve yetkiler ata
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Module Management -->
+            <MudItem xs="12" md="6">
+                <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/modules"))">
+                    <MudCardContent>
+                        <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Extension" Size="Size.Large" Color="Color.Primary" />
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.h6">Modül Yönetimi</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Uygulama modüllerini etkinleştir veya devre dışı bırak
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Integration Settings -->
+            @if (TenantContext.Current?.SubscriptionType == "Enterprise")
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/integrations"))">
+                        <MudCardContent>
+                            <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.CloudSync" Size="Size.Large" Color="Color.Primary" />
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.h6">Entegrasyonlar</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Üçüncü parti servisler ve API entegrasyonları
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private void NavigateTo(string url)
+    {
+        Navigation.NavigateTo(url);
+    }
+}

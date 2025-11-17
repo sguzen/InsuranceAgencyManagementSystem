@@ -1,0 +1,180 @@
+@page "/settings/modules"
+@layout Layout.MainLayout
+@attribute [Authorize]
+
+@using IAMS.Application.Interfaces
+@using IAMS.MultiTenancy.Interfaces
+@inject IModuleService ModuleService
+@inject ITenantContextAccessor TenantContext
+@inject ISnackbar Snackbar
+
+<PageTitle>Modül Yönetimi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_items" Separator=">" />
+
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.Extension" Class="mr-3" />
+                Modül Yönetimi
+            </MudText>
+        </MudStack>
+
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Uygulama modüllerini etkinleştirin veya devre dışı bırakın
+        </MudText>
+
+        @if (isLoading)
+        {
+            <MudProgressLinear Indeterminate Color="Color.Primary" />
+        }
+        else
+        {
+            <!-- Modules List -->
+            <MudGrid>
+                @foreach (var module in modules)
+                {
+                    <MudItem xs="12" md="6">
+                        <MudCard>
+                            <MudCardContent>
+                                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudStack Spacing="1">
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@GetModuleIcon(module.Key)" Color="Color.Primary" />
+                                            <MudText Typo="Typo.h6">@GetModuleName(module.Key)</MudText>
+                                        </MudStack>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            @GetModuleDescription(module.Key)
+                                        </MudText>
+                                    </MudStack>
+                                    <MudSwitch @bind-Value="@module.Value"
+                                               Color="Color.Success"
+                                               ValueChanged="@((bool value) => OnModuleToggled(module.Key, value))" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+
+            @if (!modules.Any())
+            {
+                <MudAlert Severity="Severity.Info">
+                    Modül bulunamadı
+                </MudAlert>
+            }
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    private Dictionary<string, bool> modules = new();
+    private bool isLoading = true;
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Ana Sayfa", href: "/"),
+        new BreadcrumbItem("Ayarlar", href: "/settings"),
+        new BreadcrumbItem("Modül Yönetimi", href: null, disabled: true)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModules();
+    }
+
+    private async Task LoadModules()
+    {
+        isLoading = true;
+        try
+        {
+            modules = await ModuleService.GetAllModuleStatusesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Modüller yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnModuleToggled(string moduleName, bool enabled)
+    {
+        try
+        {
+            if (enabled)
+            {
+                await ModuleService.EnableModuleAsync(moduleName);
+                Snackbar.Add($"{GetModuleName(moduleName)} modülü etkinleştirildi", Severity.Success);
+            }
+            else
+            {
+                await ModuleService.DisableModuleAsync(moduleName);
+                Snackbar.Add($"{GetModuleName(moduleName)} modülü devre dışı bırakıldı", Severity.Warning);
+            }
+
+            // Update local state
+            modules[moduleName] = enabled;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Modül durumu değiştirilirken hata oluştu: {ex.Message}", Severity.Error);
+            // Revert the change
+            modules[moduleName] = !enabled;
+            StateHasChanged();
+        }
+    }
+
+    private string GetModuleName(string moduleKey)
+    {
+        return moduleKey switch
+        {
+            "Reporting" => "Raporlama",
+            "Accounting" => "Muhasebe",
+            "Claims" => "Hasar Yönetimi",
+            "Integration" => "Entegrasyonlar",
+            "Analytics" => "Analitik",
+            "Documents" => "Doküman Yönetimi",
+            "Notifications" => "Bildirimler",
+            "Audit" => "Denetim Kaydı",
+            _ => moduleKey
+        };
+    }
+
+    private string GetModuleDescription(string moduleKey)
+    {
+        return moduleKey switch
+        {
+            "Reporting" => "Detaylı raporlar ve analizler oluşturun",
+            "Accounting" => "Mali işlemler, komisyonlar ve ödemeler",
+            "Claims" => "Hasar kayıtları ve takibi",
+            "Integration" => "Üçüncü parti servisler ile entegrasyon",
+            "Analytics" => "İleri düzey veri analizi ve görseller",
+            "Documents" => "Doküman saklama ve yönetimi",
+            "Notifications" => "E-posta ve SMS bildirimleri",
+            "Audit" => "Sistem aktivite logları",
+            _ => "Bu modül için açıklama mevcut değil"
+        };
+    }
+
+    private string GetModuleIcon(string moduleKey)
+    {
+        return moduleKey switch
+        {
+            "Reporting" => Icons.Material.Filled.Assessment,
+            "Accounting" => Icons.Material.Filled.AccountBalance,
+            "Claims" => Icons.Material.Filled.ReportProblem,
+            "Integration" => Icons.Material.Filled.CloudSync,
+            "Analytics" => Icons.Material.Filled.TrendingUp,
+            "Documents" => Icons.Material.Filled.Description,
+            "Notifications" => Icons.Material.Filled.Notifications,
+            "Audit" => Icons.Material.Filled.History,
+            _ => Icons.Material.Filled.Extension
+        };
+    }
+}

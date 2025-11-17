@@ -11,7 +11,6 @@ namespace IAMS.MultiTenancy.Data
 
         public DbSet<TenantEntity> Tenants { get; set; }
         public DbSet<TenantModule> TenantModules { get; set; }
-        public DbSet<TenantSetting> TenantSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,21 +32,6 @@ namespace IAMS.MultiTenancy.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.TenantId, e.ModuleName }).IsUnique();
                 entity.Property(e => e.ModuleName).IsRequired().HasMaxLength(100);
-
-                entity.HasOne(e => e.Tenant)
-                    .WithMany()
-                    .HasForeignKey(e => e.TenantId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // Configure TenantSetting
-            modelBuilder.Entity<TenantSetting>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.TenantId, e.SettingKey }).IsUnique();
-                entity.Property(e => e.SettingKey).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.SettingValue).IsRequired().HasMaxLength(1000);
-                entity.Property(e => e.SettingType).HasMaxLength(50);
 
                 entity.HasOne(e => e.Tenant)
                     .WithMany()

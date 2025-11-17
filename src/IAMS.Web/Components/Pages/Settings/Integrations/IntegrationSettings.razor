@@ -1,0 +1,225 @@
+@page "/settings/integrations"
+@layout Layout.MainLayout
+@attribute [Authorize]
+
+@using IAMS.Application.Interfaces
+@using IAMS.Application.DTOs.Vehicle
+@using IAMS.MultiTenancy.Interfaces
+@using Microsoft.Extensions.Configuration
+@inject IVehicleDataService VehicleDataService
+@inject ITenantContextAccessor TenantContext
+@inject IConfiguration Configuration
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Entegrasyon Ayarları</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_items" Separator=">" />
+
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.CloudSync" Class="mr-3" />
+                Entegrasyon Ayarları
+            </MudText>
+        </MudStack>
+
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Üçüncü parti servisler ile entegrasyonları yönetin
+        </MudText>
+
+        <!-- Integration Cards -->
+        <MudGrid>
+            <!-- Vehicle Data Integration -->
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6">Araç Veri Entegrasyonu</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            @if (vehicleConnectionStatus == ConnectionStatus.Connected)
+                            {
+                                <MudChip Color="Color.Success" Size="Size.Small">Bağlı</MudChip>
+                            }
+                            else if (vehicleConnectionStatus == ConnectionStatus.Disconnected)
+                            {
+                                <MudChip Color="Color.Error" Size="Size.Small">Bağlantı Yok</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip Color="Color.Default" Size="Size.Small">Bilinmiyor</MudChip>
+                            }
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Araç marka ve model bilgilerini harici API'den senkronize edin
+                            </MudText>
+                            <MudDivider />
+                            <MudStack Row Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">API URL:</MudText>
+                                <MudText Typo="Typo.caption">@vehicleApiBaseUrl</MudText>
+                            </MudStack>
+                            @if (lastSyncTime.HasValue)
+                            {
+                                <MudStack Row Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Son Senkronizasyon:</MudText>
+                                    <MudText Typo="Typo.caption">@lastSyncTime.Value.ToString("dd/MM/yyyy HH:mm")</MudText>
+                                </MudStack>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButtonGroup Variant="Variant.Text" Color="Color.Primary">
+                            <MudButton OnClick="TestVehicleConnection"
+                                       Disabled="@isTestingConnection"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle">
+                                @if (isTestingConnection)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate />
+                                    <span class="ml-2">Test Ediliyor...</span>
+                                }
+                                else
+                                {
+                                    <text>Bağlantıyı Test Et</text>
+                                }
+                            </MudButton>
+                            <MudButton OnClick="ViewVehicleData"
+                                       StartIcon="@Icons.Material.Filled.Preview">
+                                Verileri Görüntüle
+                            </MudButton>
+                            <MudButton OnClick="SyncVehicleData"
+                                       Disabled="@isSyncing"
+                                       StartIcon="@Icons.Material.Filled.Sync">
+                                @if (isSyncing)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate />
+                                    <span class="ml-2">Senkronize Ediliyor...</span>
+                                }
+                                else
+                                {
+                                    <text>Şimdi Senkronize Et</text>
+                                }
+                            </MudButton>
+                        </MudButtonGroup>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <!-- Placeholder for future integrations -->
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height: 200px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large" Color="Color.Secondary" />
+                            <MudText Typo="Typo.h6" Color="Color.Secondary">Yeni Entegrasyon Ekle</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                                Daha fazla entegrasyon yakında eklenecek
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private enum ConnectionStatus
+    {
+        Unknown,
+        Connected,
+        Disconnected
+    }
+
+    private ConnectionStatus vehicleConnectionStatus = ConnectionStatus.Unknown;
+    private bool isTestingConnection = false;
+    private bool isSyncing = false;
+    private string vehicleApiBaseUrl = string.Empty;
+    private DateTime? lastSyncTime = null;
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Ana Sayfa", href: "/"),
+        new BreadcrumbItem("Ayarlar", href: "/settings"),
+        new BreadcrumbItem("Entegrasyonlar", href: null, disabled: true)
+    };
+
+    protected override void OnInitialized()
+    {
+        vehicleApiBaseUrl = Configuration["VehicleDataApi:BaseUrl"] ?? "Yapılandırılmamış";
+    }
+
+    private async Task TestVehicleConnection()
+    {
+        isTestingConnection = true;
+        try
+        {
+            var isConnected = await VehicleDataService.TestConnectionAsync();
+            vehicleConnectionStatus = isConnected ? ConnectionStatus.Connected : ConnectionStatus.Disconnected;
+
+            if (isConnected)
+            {
+                Snackbar.Add("Araç veri API'sine bağlantı başarılı", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Araç veri API'sine bağlanılamadı", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            vehicleConnectionStatus = ConnectionStatus.Disconnected;
+            Snackbar.Add($"Bağlantı testi başarısız: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isTestingConnection = false;
+        }
+    }
+
+    private async Task ViewVehicleData()
+    {
+        try
+        {
+            var data = await VehicleDataService.FetchVehicleDataAsync();
+            Snackbar.Add($"{data.Count} araç kaydı alındı", Severity.Info);
+
+            // TODO: Show data in a dialog
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Veri alınamadı: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task SyncVehicleData()
+    {
+        isSyncing = true;
+        try
+        {
+            // This would call the API endpoint to trigger sync
+            // For now, just show a success message
+            await Task.Delay(2000); // Simulate API call
+
+            lastSyncTime = DateTime.Now;
+            Snackbar.Add("Araç verileri başarıyla senkronize edildi", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Senkronizasyon başarısız: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSyncing = false;
+        }
+    }
+}

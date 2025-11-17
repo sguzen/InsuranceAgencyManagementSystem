@@ -1,0 +1,278 @@
+@page "/settings/general"
+@layout Layout.MainLayout
+@attribute [Authorize]
+
+@using IAMS.Application.DTOs.Settings
+@using IAMS.Application.Interfaces
+@using IAMS.MultiTenancy.Interfaces
+@inject ITenantService TenantService
+@inject ITenantContextAccessor TenantContext
+@inject ISnackbar Snackbar
+
+<PageTitle>Genel Ayarlar</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_items" Separator=">" />
+
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.Tune" Class="mr-3" />
+                Genel Ayarlar
+            </MudText>
+        </MudStack>
+
+        @if (isLoading)
+        {
+            <MudProgressLinear Indeterminate Color="Color.Primary" />
+        }
+        else
+        {
+            <EditForm Model="@settingsModel" OnValidSubmit="SaveSettings">
+                <!-- Company Information -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Şirket Bilgileri</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.CompanyName"
+                                              Label="Şirket Adı"
+                                              Variant="Variant.Outlined"
+                                              Required />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.TaxNumber"
+                                              Label="Vergi Numarası"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="settingsModel.CompanyAddress"
+                                              Label="Adres"
+                                              Variant="Variant.Outlined"
+                                              Lines="3" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.CompanyPhone"
+                                              Label="Telefon"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.CompanyEmail"
+                                              Label="E-posta"
+                                              Variant="Variant.Outlined"
+                                              InputType="InputType.Email" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.Website"
+                                              Label="Web Sitesi"
+                                              Variant="Variant.Outlined"
+                                              Placeholder="https://example.com" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <!-- Email Settings -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">E-posta Ayarları (SMTP)</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="8">
+                                <MudTextField @bind-Value="settingsModel.SmtpHost"
+                                              Label="SMTP Sunucusu"
+                                              Variant="Variant.Outlined"
+                                              Placeholder="smtp.gmail.com" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudNumericField @bind-Value="settingsModel.SmtpPort"
+                                                 Label="Port"
+                                                 Variant="Variant.Outlined"
+                                                 Min="1"
+                                                 Max="65535" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.SmtpUsername"
+                                              Label="Kullanıcı Adı"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.SmtpPassword"
+                                              Label="Şifre"
+                                              Variant="Variant.Outlined"
+                                              InputType="InputType.Password" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.EmailFromAddress"
+                                              Label="Gönderen E-posta"
+                                              Variant="Variant.Outlined"
+                                              InputType="InputType.Email" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="settingsModel.EmailFromName"
+                                              Label="Gönderen Adı"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudSwitch @bind-Value="settingsModel.SmtpEnableSsl"
+                                           Label="SSL/TLS Kullan"
+                                           Color="Color.Primary" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <!-- Regional Settings -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Bölgesel Ayarlar</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="settingsModel.DefaultCurrency"
+                                           Label="Varsayılan Para Birimi"
+                                           Variant="Variant.Outlined">
+                                    <MudSelectItem Value="@("TRY")">TRY - Türk Lirası</MudSelectItem>
+                                    <MudSelectItem Value="@("USD")">USD - Amerikan Doları</MudSelectItem>
+                                    <MudSelectItem Value="@("EUR")">EUR - Euro</MudSelectItem>
+                                    <MudSelectItem Value="@("GBP")">GBP - İngiliz Sterlini</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="settingsModel.Language"
+                                           Label="Dil"
+                                           Variant="Variant.Outlined">
+                                    <MudSelectItem Value="@("tr-TR")">Türkçe</MudSelectItem>
+                                    <MudSelectItem Value="@("en-US")">English</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="settingsModel.DateFormat"
+                                           Label="Tarih Formatı"
+                                           Variant="Variant.Outlined">
+                                    <MudSelectItem Value="@("dd/MM/yyyy")">31/12/2024</MudSelectItem>
+                                    <MudSelectItem Value="@("MM/dd/yyyy")">12/31/2024</MudSelectItem>
+                                    <MudSelectItem Value="@("yyyy-MM-dd")">2024-12-31</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="settingsModel.TimeFormat"
+                                           Label="Saat Formatı"
+                                           Variant="Variant.Outlined">
+                                    <MudSelectItem Value="@("HH:mm")">24 Saat (18:30)</MudSelectItem>
+                                    <MudSelectItem Value="@("hh:mm tt")">12 Saat (06:30 PM)</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect @bind-Value="settingsModel.TimeZone"
+                                           Label="Saat Dilimi"
+                                           Variant="Variant.Outlined">
+                                    <MudSelectItem Value="@("Europe/Istanbul")">İstanbul (UTC+3)</MudSelectItem>
+                                    <MudSelectItem Value="@("Europe/London")">Londra (UTC+0)</MudSelectItem>
+                                    <MudSelectItem Value="@("America/New_York")">New York (UTC-5)</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                <!-- Actions -->
+                <MudStack Row Justify="Justify.End" Spacing="2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Secondary"
+                               OnClick="LoadSettings">
+                        İptal
+                    </MudButton>
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate />
+                        }
+                        else
+                        {
+                            <text>Kaydet</text>
+                        }
+                    </MudButton>
+                </MudStack>
+            </EditForm>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    private GeneralSettingsDto settingsModel = new();
+    private bool isLoading = true;
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Ana Sayfa", href: "/"),
+        new BreadcrumbItem("Ayarlar", href: "/settings"),
+        new BreadcrumbItem("Genel Ayarlar", href: null, disabled: true)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+    }
+
+    private async Task LoadSettings()
+    {
+        isLoading = true;
+        try
+        {
+            var tenantId = TenantContext.Current?.Id;
+            if (tenantId == null)
+            {
+                Snackbar.Add("Tenant bilgisi bulunamadı", Severity.Error);
+                return;
+            }
+
+            var settings = await TenantService.GetTenantSettingAsync<GeneralSettingsDto>("general");
+            if (settings != null)
+            {
+                settingsModel = settings;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ayarlar yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        isLoading = true;
+        try
+        {
+            await TenantService.SetTenantSettingAsync("general", settingsModel);
+            Snackbar.Add("Ayarlar başarıyla kaydedildi", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ayarlar kaydedilirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

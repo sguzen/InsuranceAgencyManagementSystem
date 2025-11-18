@@ -1,5 +1,6 @@
 @using IAMS.Application.Interfaces
 @using IAMS.Application.DTOs.Identity
+@using IAMS.Application.Helpers
 @inject IUserManagementService UserService
 @inject ISnackbar Snackbar
 
@@ -77,7 +78,7 @@
                             {
                                 var isSelected = model.Roles.Contains(role);
                                 <MudCheckBox @bind-Value="@isSelected"
-                                             Label="@role"
+                                             Label="@RoleTranslations.ToTurkish(role)"
                                              Color="Color.Primary"
                                              ValueChanged="@((bool val) => OnRoleChanged(role, val))" />
                             }

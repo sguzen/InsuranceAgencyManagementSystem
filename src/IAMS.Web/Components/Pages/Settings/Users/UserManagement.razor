@@ -6,6 +6,7 @@
 @using IAMS.Application.Interfaces
 @using IAMS.Application.DTOs.Identity
 @using IAMS.Application.Constants
+@using IAMS.Application.Helpers
 @inject IUserManagementService UserService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -68,7 +69,7 @@
                                 {
                                     @foreach (var role in context.Roles)
                                     {
-                                        <MudChip T="string" Size="Size.Small" Color="GetRoleColor(role)">@role</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Color="GetRoleColor(role)">@RoleTranslations.ToTurkish(role)</MudChip>
                                     }
                                 }
                                 else

@@ -128,7 +128,7 @@ IAMS.Infrastructure/
 ```json
 {
   "ApiSettings": {
-    "BaseUrl": "https://localhost:7192"
+    "BaseUrl": "https://localhost:44390"
   }
 }
 ```

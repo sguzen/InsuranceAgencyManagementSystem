@@ -29,7 +29,7 @@ namespace IAMS.Infrastructure.Services
             _httpClientFactory = httpClientFactory;
 
             // Get API base URL from configuration
-            _apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7192";
+            _apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:44390";
             _logger.LogInformation("IntegrationService configured with API BaseUrl: {ApiBaseUrl}", _apiBaseUrl);
         }
 

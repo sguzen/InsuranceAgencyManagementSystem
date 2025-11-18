@@ -266,13 +266,22 @@ namespace IAMS.Application.Services
                     return Result.NotFound("User not found");
                 }
 
-                // Remove existing password and add new one
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-
-                if (!result.Succeeded)
+                // For admin password changes, remove old password and add new one
+                // This works better than password reset tokens for admin-initiated changes
+                var removeResult = await _userManager.RemovePasswordAsync(user);
+                if (!removeResult.Succeeded)
                 {
-                    return Result.Failure("Failed to change password", result.Errors.Select(e => e.Description).ToList());
+                    _logger.LogWarning("Failed to remove old password for user {UserId}: {Errors}",
+                        userId, string.Join(", ", removeResult.Errors.Select(e => e.Description)));
+                    return Result.Failure("Failed to remove old password", removeResult.Errors.Select(e => e.Description).ToList());
+                }
+
+                var addResult = await _userManager.AddPasswordAsync(user, newPassword);
+                if (!addResult.Succeeded)
+                {
+                    _logger.LogWarning("Failed to add new password for user {UserId}: {Errors}",
+                        userId, string.Join(", ", addResult.Errors.Select(e => e.Description)));
+                    return Result.Failure("Failed to set new password", addResult.Errors.Select(e => e.Description).ToList());
                 }
 
                 _logger.LogInformation("Password changed successfully for user: {UserId}", userId);

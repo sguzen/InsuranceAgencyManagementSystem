@@ -55,7 +55,8 @@ namespace IAMS.Identity.Extensions
 
             // Add Identity Services
             services.AddScoped<IIdentityService, IdentityService>();
-            services.AddScoped<IPermissionService, PermissionService>();
+            // Use Transient lifetime to avoid DbContext concurrency issues in Blazor Server
+            services.AddTransient<IPermissionService, PermissionService>();
             services.AddScoped<ITokenService, TokenService>();
 
             // Add data seeder

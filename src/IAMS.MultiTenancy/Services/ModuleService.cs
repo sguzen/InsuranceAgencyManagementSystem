@@ -6,7 +6,7 @@ using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Services
 {
-    public class ModuleService : IModuleService
+    public class ModuleService : IModuleService, Application.Interfaces.IModuleService
     {
         private readonly ITenantContextAccessor _tenantContextAccessor;
         private readonly TenantDbContext _tenantdbContext;
@@ -122,6 +122,13 @@ namespace IAMS.MultiTenancy.Services
                 _logger.LogError(ex, "Error getting all module statuses");
                 return new Dictionary<string, bool>();
             }
+        }
+
+        // Implement Application.Interfaces.IModuleService.GetAllModuleStatusesAsync
+        // This is an alias for GetAllModulesStatusAsync to satisfy the Application interface
+        public Task<Dictionary<string, bool>> GetAllModuleStatusesAsync()
+        {
+            return GetAllModulesStatusAsync();
         }
 
         private async Task SetModuleStatusAsync(string moduleName, bool isEnabled)

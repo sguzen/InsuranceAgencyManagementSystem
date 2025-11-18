@@ -34,37 +34,54 @@
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <MudSelect Value="model.BrandId"
-                                 Label="Marka *"
-                                 Variant="Variant.Outlined"
-                                 Required="true"
-                                 ValueChanged="@OnBrandChanged"
-                                 T="int">
-                            @if (brands != null)
-                            {
-                                @foreach (var brand in brands)
-                                {
-                                    <MudSelectItem Value="@brand.Id">@brand.Name</MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
+                        <MudAutocomplete T="VehicleBrandDto"
+                                         Label="Marka *"
+                                         @bind-Value="selectedBrand"
+                                         SearchFunc="@SearchBrands"
+                                         ToStringFunc="@(b => b?.Name ?? string.Empty)"
+                                         Variant="Variant.Outlined"
+                                         Required="true"
+                                         Clearable="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceText="true"
+                                         CoerceValue="false"
+                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                         AdornmentColor="Color.Primary"
+                                         ValueChanged="@OnBrandSelected"
+                                         Dense="false">
+                            <ItemTemplate Context="brand">
+                                <MudText>@brand.Name</MudText>
+                            </ItemTemplate>
+                            <NoItemsTemplate>
+                                <MudText>Marka bulunamadı</MudText>
+                            </NoItemsTemplate>
+                        </MudAutocomplete>
                     </MudItem>
 
                     <MudItem xs="12" md="6">
-                        <MudSelect @bind-Value="model.ModelId"
-                                 Label="Model *"
-                                 Variant="Variant.Outlined"
-                                 Required="true"
-                                 Disabled="@(model.BrandId == 0)"
-                                 T="int">
-                            @if (models != null)
-                            {
-                                @foreach (var vehicleModel in models)
-                                {
-                                    <MudSelectItem Value="@vehicleModel.Id">@vehicleModel.Name</MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
+                        <MudAutocomplete T="VehicleModelDto"
+                                         Label="Model *"
+                                         @bind-Value="selectedModel"
+                                         SearchFunc="@SearchModels"
+                                         ToStringFunc="@(m => m?.Name ?? string.Empty)"
+                                         Variant="Variant.Outlined"
+                                         Required="true"
+                                         Clearable="true"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceText="true"
+                                         CoerceValue="false"
+                                         Disabled="@(selectedBrand == null)"
+                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                         AdornmentColor="Color.Primary"
+                                         ValueChanged="@OnModelSelected"
+                                         Dense="false">
+                            <ItemTemplate Context="vehicleModel">
+                                <MudText>@vehicleModel.Name</MudText>
+                            </ItemTemplate>
+                            <NoItemsTemplate>
+                                <MudText>@(selectedBrand == null ? "Önce marka seçin" : "Model bulunamadı")</MudText>
+                            </NoItemsTemplate>
+                        </MudAutocomplete>
                     </MudItem>
 
                     <MudItem xs="12" md="6">
@@ -213,6 +230,10 @@
     private List<VehicleModelDto>? models;
     private bool saving = false;
 
+    // Autocomplete selected values
+    private VehicleBrandDto? selectedBrand;
+    private VehicleModelDto? selectedModel;
+
     protected override async Task OnInitializedAsync()
     {
         // Initialize model with customer ID and defaults
@@ -247,15 +268,31 @@
         }
     }
 
-    private async Task OnBrandChanged(int brandId)
+    private async Task<IEnumerable<VehicleBrandDto>> SearchBrands(string value)
     {
-        model.BrandId = brandId;
+        // If no search term, return all brands
+        if (string.IsNullOrEmpty(value) || brands == null)
+            return brands ?? Enumerable.Empty<VehicleBrandDto>();
+
+        // Filter brands by search term
+        return brands.Where(b => b.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task OnBrandSelected(VehicleBrandDto? brand)
+    {
+        selectedBrand = brand;
+        selectedModel = null;
         model.ModelId = 0;
         models = null;
 
-        if (brandId > 0)
+        if (brand != null)
         {
-            await LoadModels(brandId);
+            model.BrandId = brand.Id;
+            await LoadModels(brand.Id);
+        }
+        else
+        {
+            model.BrandId = 0;
         }
     }
 
@@ -280,8 +317,42 @@
         }
     }
 
+    private async Task<IEnumerable<VehicleModelDto>> SearchModels(string value)
+    {
+        // If brand not selected or no models loaded
+        if (selectedBrand == null || models == null)
+            return Enumerable.Empty<VehicleModelDto>();
+
+        // If no search term, return all models
+        if (string.IsNullOrEmpty(value))
+            return models;
+
+        // Filter models by search term
+        return models.Where(m => m.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void OnModelSelected(VehicleModelDto? vehicleModel)
+    {
+        selectedModel = vehicleModel;
+        if (vehicleModel != null)
+        {
+            model.ModelId = vehicleModel.Id;
+        }
+        else
+        {
+            model.ModelId = 0;
+        }
+    }
+
     private async Task HandleSubmit()
     {
+        // Update model IDs from selected objects
+        if (selectedBrand != null)
+            model.BrandId = selectedBrand.Id;
+
+        if (selectedModel != null)
+            model.ModelId = selectedModel.Id;
+
         if (string.IsNullOrWhiteSpace(model.PlateNumber) ||
             string.IsNullOrWhiteSpace(model.ChassisNumber) ||
             model.BrandId == 0 ||

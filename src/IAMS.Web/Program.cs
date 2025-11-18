@@ -2,6 +2,7 @@ using IAMS.Application.Extensions;
 using IAMS.Infrastructure.Extensions;
 using IAMS.MultiTenancy.Extensions;
 using IAMS.Persistence.Extensions;
+using IAMS.Identity.Extensions;
 using IAMS.Web.Components;
 using IAMS.Web.Services;
 using MudBlazor.Services;
@@ -37,6 +38,7 @@ builder.Services.AddHttpContextAccessor();
 // Add your existing services
 builder.Services.AddMultiTenancyServices(builder.Configuration);
 builder.Services.AddPersistenceServices(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration); // Register ASP.NET Identity services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 

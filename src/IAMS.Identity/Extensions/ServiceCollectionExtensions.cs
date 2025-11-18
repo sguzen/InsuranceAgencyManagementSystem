@@ -39,6 +39,19 @@ namespace IAMS.Identity.Extensions
             .AddEntityFrameworkStores<ApplicationDbContext>() // Changed from IdentityDbContext
             .AddDefaultTokenProviders();
 
+            // Configure Identity to use the same cookie authentication scheme as the rest of the app
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.Name = "IAMS.Auth";
+                options.LoginPath = "/login";
+                options.LogoutPath = "/account/logout";
+                options.ExpireTimeSpan = TimeSpan.FromHours(8);
+                options.SlidingExpiration = true;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest;
+                options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+            });
+
             // Add custom authorization
             services.AddAuthorization(options =>
             {

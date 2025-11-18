@@ -56,28 +56,8 @@ builder.Services.AddScoped(sp =>
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Configure Cookie Authentication
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-    {
-        options.LoginPath = "/login";
-        options.LogoutPath = "/account/logout";
-       // options.AccessDeniedPath = "/login"; // Redirect to login instead of access denied
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-        options.SlidingExpiration = true;
-        options.Cookie.Name = "IAMS.Auth";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-        options.Cookie.SameSite = SameSiteMode.Lax; // Add this to prevent issues
-    });
-
-// Add simple authorization
-builder.Services.AddAuthorizationCore(options =>
-{
-   // options.AddPolicy("RequireAuth", policy => policy.RequireAuthenticatedUser());
-  //  options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-   // options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole("Manager", "Admin"));
-});
+// Cookie authentication is now configured by AddIdentityServices
+// No need for duplicate configuration here
 
 var app = builder.Build();
 

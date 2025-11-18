@@ -36,7 +36,7 @@
                     <MudItem xs="12" md="6">
                         <MudAutocomplete T="VehicleBrandDto"
                                          Label="Marka *"
-                                         @bind-Value="selectedBrand"
+                                         Value="selectedBrand"
                                          SearchFunc="@SearchBrands"
                                          ToStringFunc="@(b => b?.Name ?? string.Empty)"
                                          Variant="Variant.Outlined"
@@ -61,7 +61,7 @@
                     <MudItem xs="12" md="6">
                         <MudAutocomplete T="VehicleModelDto"
                                          Label="Model *"
-                                         @bind-Value="selectedModel"
+                                         Value="selectedModel"
                                          SearchFunc="@SearchModels"
                                          ToStringFunc="@(m => m?.Name ?? string.Empty)"
                                          Variant="Variant.Outlined"

@@ -268,8 +268,11 @@
         }
     }
 
-    private async Task<IEnumerable<VehicleBrandDto>> SearchBrands(string value)
+    private async Task<IEnumerable<VehicleBrandDto>> SearchBrands(string value, CancellationToken cancellationToken)
     {
+        // Wait a bit to allow the task to be awaited properly
+        await Task.Delay(1, cancellationToken);
+
         // If no search term, return all brands
         if (string.IsNullOrEmpty(value) || brands == null)
             return brands ?? Enumerable.Empty<VehicleBrandDto>();
@@ -317,8 +320,11 @@
         }
     }
 
-    private async Task<IEnumerable<VehicleModelDto>> SearchModels(string value)
+    private async Task<IEnumerable<VehicleModelDto>> SearchModels(string value, CancellationToken cancellationToken)
     {
+        // Wait a bit to allow the task to be awaited properly
+        await Task.Delay(1, cancellationToken);
+
         // If brand not selected or no models loaded
         if (selectedBrand == null || models == null)
             return Enumerable.Empty<VehicleModelDto>();

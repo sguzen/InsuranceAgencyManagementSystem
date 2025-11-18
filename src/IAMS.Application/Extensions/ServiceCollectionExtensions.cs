@@ -51,6 +51,7 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
+            services.AddScoped<IUserManagementService, UserManagementService>();
 
             return services;
         }

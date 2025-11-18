@@ -29,7 +29,7 @@ namespace IAMS.Web.Services
             _logger = logger;
 
             // Configure HttpClient base address
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7192";
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:44390";
             _httpClient.BaseAddress = new Uri(apiBaseUrl);
 
             // Configure JSON options

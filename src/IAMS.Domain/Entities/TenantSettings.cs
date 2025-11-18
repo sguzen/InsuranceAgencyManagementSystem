@@ -1,4 +1,3 @@
-using IAMS.Domain.Common;
 
 namespace IAMS.Domain.Entities
 {

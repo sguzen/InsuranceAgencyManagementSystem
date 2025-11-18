@@ -3,48 +3,48 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\settings\\modules\\modulemanagement.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\settings\\modules\\modulemanagement.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\queries\\getactivebrands\\getactivebrandsqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\queries\\getactivebrands\\getactivebrandsqueryhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\settings\\general\\generalsettings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\settings\\general\\generalsettings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\queries\\getactivebrands\\getactivebrandsquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\queries\\getactivebrands\\getactivebrandsquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\settings\\integrations\\integrationsettings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\settings\\integrations\\integrationsettings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{ABC5075B-6C7A-4B0D-857A-5ADC090470BE}|tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\tests\\iams.unittests\\application\\features\\customers\\createcustomercommandhandlertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ABC5075B-6C7A-4B0D-857A-5ADC090470BE}|tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj|solutionrelative:tests\\iams.unittests\\application\\features\\customers\\createcustomercommandhandlertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\services\\vehicledataservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\services\\vehicledataservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\queries\\getactivemodelsbybrandid\\getactivemodelsbybrandidquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\queries\\getactivemodelsbybrandid\\getactivemodelsbybrandidquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\vehicles\\commands\\syncvehicledata\\syncvehicledatacommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\vehicles\\commands\\syncvehicledata\\syncvehicledatacommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\settings\\integrations\\integrationsettings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\settings\\integrations\\integrationsettings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\controllers\\vehiclescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\controllers\\vehiclescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\policies\\policyform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\policies\\policyform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\controllers\\customerscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\controllers\\customerscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\shared\\dialogs\\addvehicledialog.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\shared\\dialogs\\addvehicledialog.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\services\\integrationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\services\\integrationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\policies\\policynumbergenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\policies\\policynumbergenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{251D6030-C4B5-4D5D-A293-AC22A0131DF2}|src\\IAMS.Domain\\IAMS.Domain.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.domain\\entities\\policytype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{251D6030-C4B5-4D5D-A293-AC22A0131DF2}|src\\IAMS.Domain\\IAMS.Domain.csproj|solutionrelative:src\\iams.domain\\entities\\policytype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -54,7 +54,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -70,141 +70,146 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "GeneralSettings.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\General\\GeneralSettings.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Settings\\General\\GeneralSettings.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\General\\GeneralSettings.razor*",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Settings\\General\\GeneralSettings.razor*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAYAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-17T11:10:57.727Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ModuleManagement.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\Modules\\ModuleManagement.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Settings\\Modules\\ModuleManagement.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\Modules\\ModuleManagement.razor",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Settings\\Modules\\ModuleManagement.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-17T11:09:32.513Z",
+              "Title": "GetActiveBrandsQueryHandler.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQueryHandler.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQueryHandler.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQueryHandler.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQueryHandler.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAQwCIAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T17:01:19.654Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "IntegrationSettings.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
-              "ViewState": "AgIAAMEAAAAAAAAAAAApwNkAAABOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-17T11:09:03.807Z",
+              "Title": "GetActiveModelsByBrandIdQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveModelsByBrandId\\GetActiveModelsByBrandIdQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T17:01:14.976Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "GetActiveBrandsQuery.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQuery.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQuery.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQuery.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Queries\\GetActiveBrands\\GetActiveBrandsQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T17:00:45.722Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "CreateCustomerCommandHandlerTests.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\tests\\IAMS.UnitTests\\Application\\Features\\Customers\\CreateCustomerCommandHandlerTests.cs",
-              "RelativeDocumentMoniker": "tests\\IAMS.UnitTests\\Application\\Features\\Customers\\CreateCustomerCommandHandlerTests.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\tests\\IAMS.UnitTests\\Application\\Features\\Customers\\CreateCustomerCommandHandlerTests.cs",
-              "RelativeToolTip": "tests\\IAMS.UnitTests\\Application\\Features\\Customers\\CreateCustomerCommandHandlerTests.cs",
-              "ViewState": "AgIAACwAAAAAAAAAAAAAAGYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T10:10:46.781Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
               "Title": "SyncVehicleDataCommandHandler.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\SyncVehicleData\\SyncVehicleDataCommandHandler.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\SyncVehicleData\\SyncVehicleDataCommandHandler.cs",
               "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Vehicles\\Commands\\SyncVehicleData\\SyncVehicleDataCommandHandler.cs",
               "RelativeToolTip": "src\\IAMS.Application\\Features\\Vehicles\\Commands\\SyncVehicleData\\SyncVehicleDataCommandHandler.cs",
-              "ViewState": "AgIAAM4AAAAAAAAAAAAQwPQAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACMAAAAAAAAAAAAmwDgAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:51:28.998Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "VehicleDataService.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\Services\\VehicleDataService.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\Services\\VehicleDataService.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\Services\\VehicleDataService.cs",
-              "RelativeToolTip": "src\\IAMS.Infrastructure\\Services\\VehicleDataService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADAAAAA+AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:48:57.982Z",
+              "WhenOpened": "2025-11-17T16:11:44.753Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
+              "Title": "CustomersController.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\CustomersController.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\CustomersController.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\CustomersController.cs",
+              "RelativeToolTip": "src\\IAMS.Api\\Controllers\\CustomersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T16:53:40.908Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "VehiclesController.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\VehiclesController.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\VehiclesController.cs",
               "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\VehiclesController.cs",
               "RelativeToolTip": "src\\IAMS.Api\\Controllers\\VehiclesController.cs",
-              "ViewState": "AgIAADYAAAAAAAAAAAAgwFwAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAQwAwAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T10:48:45.977Z"
+              "WhenOpened": "2025-11-17T16:53:35.999Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 8,
-              "Title": "AddVehicleDialog.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Shared\\Dialogs\\AddVehicleDialog.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Shared\\Dialogs\\AddVehicleDialog.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Shared\\Dialogs\\AddVehicleDialog.razor",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Shared\\Dialogs\\AddVehicleDialog.razor",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAowBgAAAA7AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-15T06:45:16.903Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "PolicyForm.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyForm.razor",
-              "ViewState": "AgIAAKcAAAAAAAAAAAAAAMUAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-14T19:36:16.31Z"
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\IAMS.Api\\appsettings.json",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\appsettings.json",
+              "RelativeToolTip": "src\\IAMS.Api\\appsettings.json",
+              "ViewState": "AgIAABMAAAAAAAAAAAAAABsAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-17T16:49:16.211Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "PolicyNumberGenerator.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Policies\\PolicyNumberGenerator.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\Policies\\PolicyNumberGenerator.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Policies\\PolicyNumberGenerator.cs",
-              "RelativeToolTip": "src\\IAMS.Application\\Services\\Policies\\PolicyNumberGenerator.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAgwCwAAABZAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Program.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Web\\Program.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Program.cs",
+              "RelativeToolTip": "src\\IAMS.Web\\Program.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAE8AAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-14T19:28:17.262Z"
+              "WhenOpened": "2025-11-17T16:46:35.559Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IntegrationSettings.razor",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
+              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
+              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Settings\\Integrations\\IntegrationSettings.razor",
+              "ViewState": "AgIAAJwAAAAAAAAAAAAkwNQAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-17T16:39:36.436Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "IntegrationService.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\Services\\IntegrationService.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\Services\\IntegrationService.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\Services\\IntegrationService.cs",
+              "RelativeToolTip": "src\\IAMS.Infrastructure\\Services\\IntegrationService.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAuwCAAAABpAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T16:12:38.043Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 10,
-              "Title": "PolicyType.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Domain\\Entities\\PolicyType.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Domain\\Entities\\PolicyType.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Domain\\Entities\\PolicyType.cs",
-              "RelativeToolTip": "src\\IAMS.Domain\\Entities\\PolicyType.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-14T19:17:38.105Z"
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\appsettings.json",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\appsettings.json",
+              "RelativeToolTip": "src\\IAMS.Infrastructure\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-17T16:12:11.393Z",
+              "EditorCaption": ""
             }
           ]
         }

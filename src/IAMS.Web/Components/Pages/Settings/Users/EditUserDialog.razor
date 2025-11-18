@@ -192,9 +192,21 @@
             return;
         }
 
-        // Validate password if changing
-        if (!string.IsNullOrEmpty(newPassword))
+        // Only validate password if user is trying to change it
+        if (!string.IsNullOrEmpty(newPassword) || !string.IsNullOrEmpty(confirmPassword))
         {
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                Snackbar.Add("Yeni şifre boş olamaz", Severity.Warning);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(confirmPassword))
+            {
+                Snackbar.Add("Şifre tekrar boş olamaz", Severity.Warning);
+                return;
+            }
+
             if (newPassword != confirmPassword)
             {
                 Snackbar.Add("Şifreler eşleşmiyor", MudBlazor.Severity.Warning);
@@ -224,13 +236,19 @@
                 return;
             }
 
-            // Change password if provided
+            // Change password only if provided
             if (!string.IsNullOrEmpty(newPassword))
             {
                 var passwordResult = await UserService.ChangePasswordAsync(model.Id, newPassword);
                 if (!passwordResult.IsSuccess)
                 {
                     Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", MudBlazor.Severity.Warning);
+                }
+                else
+                {
+                    Snackbar.Add("Kullanıcı ve şifre başarıyla güncellendi", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(result.Data));
+                    return;
                 }
             }
 

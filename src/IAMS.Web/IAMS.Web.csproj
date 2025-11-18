@@ -51,6 +51,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IAMS.Application\IAMS.Application.csproj" />
+    <ProjectReference Include="..\IAMS.Identity\IAMS.Identity.csproj" />
     <ProjectReference Include="..\IAMS.Infrastructure\IAMS.Infrastructure.csproj" />
     <ProjectReference Include="..\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
     <ProjectReference Include="..\IAMS.Persistence\IAMS.Persistence.csproj" />

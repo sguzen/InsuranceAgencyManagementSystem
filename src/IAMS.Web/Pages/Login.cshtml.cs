@@ -1,21 +1,30 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using IAMS.Web.Services;
+using IAMS.Domain.Entities;
 
 namespace IAMS.Web.Pages
 {
     public class LoginModel : PageModel
     {
         private readonly IAuthService _authService;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(IAuthService authService, ILogger<LoginModel> logger)
+        public LoginModel(
+            IAuthService authService,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            ILogger<LoginModel> logger)
         {
             _authService = authService;
+            _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -56,60 +65,52 @@ namespace IAMS.Web.Pages
             {
                 _logger.LogInformation("Login attempt for {Email}", Email);
 
-                // Call AuthService to verify credentials
-                var authResult = await _authService.LoginAsync(Email, Password);
+                // Find user by email
+                var user = await _userManager.FindByEmailAsync(Email);
+                if (user == null || !user.IsActive)
+                {
+                    _logger.LogWarning("Login failed for {Email} - user not found or inactive", Email);
+                    ErrorMessage = "Invalid email or password";
+                    return Page();
+                }
 
-                if (authResult == null)
+                // Sign in using Identity's SignInManager
+                var result = await _signInManager.PasswordSignInAsync(
+                    user.UserName ?? Email,
+                    Password,
+                    RememberMe,
+                    lockoutOnFailure: true);
+
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User {Email} authenticated successfully", Email);
+
+                    // Update last login
+                    user.LastLogin = DateTime.UtcNow;
+                    await _userManager.UpdateAsync(user);
+
+                    _logger.LogInformation("User {Email} logged in successfully", Email);
+
+                    // Redirect to return URL or home
+                    if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+                    {
+                        return Redirect(ReturnUrl);
+                    }
+
+                    return Redirect("/");
+                }
+                else if (result.IsLockedOut)
+                {
+                    _logger.LogWarning("Account locked out for {Email}", Email);
+                    ErrorMessage = "Account is locked out. Please try again later.";
+                    return Page();
+                }
+                else
                 {
                     _logger.LogWarning("Login failed for {Email}", Email);
                     ErrorMessage = "Invalid email or password";
                     return Page();
                 }
-
-                // Create claims from the auth result
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, authResult.UserId),
-                    new(ClaimTypes.Email, authResult.Email),
-                    new(ClaimTypes.GivenName, authResult.FirstName),
-                    new(ClaimTypes.Surname, authResult.LastName),
-                    new(ClaimTypes.Name, $"{authResult.FirstName} {authResult.LastName}".Trim())
-                };
-
-                // Add roles
-                foreach (var role in authResult.Roles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-                }
-
-                // Add permissions
-                foreach (var permission in authResult.Permissions)
-                {
-                    claims.Add(new Claim("permission", permission));
-                }
-
-                // Create identity and sign in
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    principal,
-                    new AuthenticationProperties
-                    {
-                        IsPersistent = RememberMe,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
-                    });
-
-                _logger.LogInformation("User {Email} logged in successfully", Email);
-
-                // Redirect to return URL or home
-                if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
-                {
-                    return Redirect(ReturnUrl);
-                }
-
-                return Redirect("/");
             }
             catch (Exception ex)
             {

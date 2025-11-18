@@ -5,6 +5,7 @@ using IAMS.Persistence.Extensions;
 using IAMS.Identity.Extensions;
 using IAMS.Web.Components;
 using IAMS.Web.Services;
+using IAMS.Web.Extensions;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Serilog;
@@ -55,11 +56,15 @@ builder.Services.AddScoped(sp =>
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();
 
 // Cookie authentication is now configured by AddIdentityServices
 // No need for duplicate configuration here
 
 var app = builder.Build();
+
+// Initialize database (seed roles and permissions)
+await app.InitializeDatabaseAsync();
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())

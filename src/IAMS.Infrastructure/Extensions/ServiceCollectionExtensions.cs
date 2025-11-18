@@ -32,7 +32,8 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<IVehicleDataService, VehicleDataService>();
 
             // Register tenant settings service (stores settings in each tenant's own database)
-            services.AddScoped<ITenantService, ApplicationTenantService>();
+            // Use Transient lifetime to avoid DbContext concurrency issues in Blazor Server
+            services.AddTransient<ITenantService, ApplicationTenantService>();
 
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));

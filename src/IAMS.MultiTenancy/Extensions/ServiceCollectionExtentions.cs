@@ -29,7 +29,10 @@ namespace IAMS.MultiTenancy.Extensions
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
 
             // Register module management service
-            services.AddScoped<IModuleService, ModuleService>();
+            // Register for both interfaces (MultiTenancy and Application) to support different layers
+            services.AddScoped<ModuleService>();
+            services.AddScoped<IModuleService>(sp => sp.GetRequiredService<ModuleService>());
+            services.AddScoped<Application.Interfaces.IModuleService>(sp => sp.GetRequiredService<ModuleService>());
 
             services.AddScoped<Application.Interfaces.ICurrentTenantService, CurrentTenantService>();
 

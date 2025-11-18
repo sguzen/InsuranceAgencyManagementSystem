@@ -43,7 +43,7 @@
                     }
                     else if (!availableRoles.Any())
                     {
-                        <MudAlert Severity="Severity.Warning">Rol bulunamadı</MudAlert>
+                        <MudAlert Severity="MudBlazor.Severity.Warning">Rol bulunamadı</MudAlert>
                     }
                     else
                     {
@@ -51,7 +51,7 @@
                             @foreach (var role in availableRoles)
                             {
                                 var isSelected = model.Roles.Contains(role);
-                                <MudCheckBox @bind-Value="@isSelected"
+                                <MudCheckBox Value="@isSelected"
                                              Label="@role"
                                              Color="Color.Primary"
                                              ValueChanged="@((bool val) => OnRoleChanged(role, val))" />
@@ -69,7 +69,7 @@
                     <MudExpansionPanels>
                         <MudExpansionPanel Text="Şifre Değiştir" IsExpanded="false">
                             <MudStack Spacing="3">
-                                <MudAlert Severity="Severity.Info" Dense="true">
+                                <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
                                     Şifreyi değiştirmek istemiyorsanız bu alanları boş bırakın
                                 </MudAlert>
 
@@ -88,7 +88,7 @@
 
                                 @if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(confirmPassword) && newPassword != confirmPassword)
                                 {
-                                    <MudAlert Severity="Severity.Warning" Dense="true">Şifreler eşleşmiyor</MudAlert>
+                                    <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">Şifreler eşleşmiyor</MudAlert>
                                 }
                             </MudStack>
                         </MudExpansionPanel>
@@ -117,7 +117,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public UserDto User { get; set; } = null!;
 
     private UpdateUserDto model = new();
@@ -157,7 +157,7 @@
         }
         else
         {
-            Snackbar.Add("Roller yüklenirken hata oluştu", Severity.Error);
+            Snackbar.Add("Roller yüklenirken hata oluştu", MudBlazor.Severity.Error);
             availableRoles = new List<string>();
         }
     }
@@ -197,7 +197,7 @@
         {
             if (newPassword != confirmPassword)
             {
-                Snackbar.Add("Şifreler eşleşmiyor", Severity.Warning);
+                Snackbar.Add("Şifreler eşleşmiyor", MudBlazor.Severity.Warning);
                 return;
             }
         }
@@ -213,12 +213,12 @@
                 {
                     foreach (var error in result.Errors)
                     {
-                        Snackbar.Add(error, Severity.Warning);
+                        Snackbar.Add(error, MudBlazor.Severity.Warning);
                     }
                 }
                 else
                 {
-                    Snackbar.Add(result.Message ?? "Kullanıcı güncellenirken hata oluştu", Severity.Error);
+                    Snackbar.Add(result.Message ?? "Kullanıcı güncellenirken hata oluştu", MudBlazor.Severity.Error);
                 }
                 saving = false;
                 return;
@@ -230,16 +230,16 @@
                 var passwordResult = await UserService.ChangePasswordAsync(model.Id, newPassword);
                 if (!passwordResult.IsSuccess)
                 {
-                    Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", Severity.Warning);
+                    Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", MudBlazor.Severity.Warning);
                 }
             }
 
-            Snackbar.Add("Kullanıcı başarıyla güncellendi", Severity.Success);
+            Snackbar.Add("Kullanıcı başarıyla güncellendi", MudBlazor.Severity.Success);
             MudDialog.Close(DialogResult.Ok(result.Data));
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

@@ -40,7 +40,7 @@
                 }
                 else if (users == null || !users.Any())
                 {
-                    <MudAlert Severity="Severity.Info">Henüz kullanıcı bulunmamaktadır.</MudAlert>
+                    <MudAlert Severity="MudBlazor.Severity.Info">Henüz kullanıcı bulunmamaktadır.</MudAlert>
                 }
                 else
                 {
@@ -149,12 +149,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Kullanıcılar yüklenirken hata oluştu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Kullanıcılar yüklenirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -227,12 +227,12 @@
             var result = await UserService.ToggleUserStatusAsync(user.Id, !user.IsActive);
             if (result.IsSuccess)
             {
-                Snackbar.Add($"Kullanıcı durumu güncellendi", Severity.Success);
+                Snackbar.Add($"Kullanıcı durumu güncellendi", MudBlazor.Severity.Success);
                 await LoadUsers();
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Durum güncellenirken hata oluştu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Durum güncellenirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
     }
@@ -249,12 +249,12 @@
             var result = await UserService.DeleteUserAsync(user.Id);
             if (result.IsSuccess)
             {
-                Snackbar.Add("Kullanıcı başarıyla silindi", Severity.Success);
+                Snackbar.Add("Kullanıcı başarıyla silindi", MudBlazor.Severity.Success);
                 await LoadUsers();
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Kullanıcı silinirken hata oluştu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Kullanıcı silinirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
     }

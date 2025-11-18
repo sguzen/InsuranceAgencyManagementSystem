@@ -56,7 +56,7 @@
 
                     @if (!string.IsNullOrEmpty(model.Password) && !string.IsNullOrEmpty(model.ConfirmPassword) && model.Password != model.ConfirmPassword)
                     {
-                        <MudAlert Severity="Severity.Warning" Dense="true">Şifreler eşleşmiyor</MudAlert>
+                        <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">Şifreler eşleşmiyor</MudAlert>
                     }
 
                     <!-- Roles -->
@@ -68,7 +68,7 @@
                     }
                     else if (!availableRoles.Any())
                     {
-                        <MudAlert Severity="Severity.Warning">Rol bulunamadı</MudAlert>
+                        <MudAlert Severity="MudBlazor.Severity.Warning">Rol bulunamadı</MudAlert>
                     }
                     else
                     {
@@ -76,7 +76,7 @@
                             @foreach (var role in availableRoles)
                             {
                                 var isSelected = model.Roles.Contains(role);
-                                <MudCheckBox @bind-Value="@isSelected"
+                                <MudCheckBox Value="@isSelected"
                                              Label="@role"
                                              Color="Color.Primary"
                                              ValueChanged="@((bool val) => OnRoleChanged(role, val))" />
@@ -112,7 +112,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
 
     private CreateUserDto model = new() { IsActive = true };
     private MudForm form = null!;
@@ -138,7 +138,7 @@
         }
         else
         {
-            Snackbar.Add("Roller yüklenirken hata oluştu", Severity.Error);
+            Snackbar.Add("Roller yüklenirken hata oluştu", MudBlazor.Severity.Error);
             availableRoles = new List<string>();
         }
     }
@@ -175,7 +175,7 @@
 
         if (model.Password != model.ConfirmPassword)
         {
-            Snackbar.Add("Şifreler eşleşmiyor", Severity.Warning);
+            Snackbar.Add("Şifreler eşleşmiyor", MudBlazor.Severity.Warning);
             return;
         }
 
@@ -185,7 +185,7 @@
             var result = await UserService.CreateUserAsync(model);
             if (result.IsSuccess)
             {
-                Snackbar.Add("Kullanıcı başarıyla oluşturuldu", Severity.Success);
+                Snackbar.Add("Kullanıcı başarıyla oluşturuldu", MudBlazor.Severity.Success);
                 MudDialog.Close(DialogResult.Ok(result.Data));
             }
             else
@@ -194,18 +194,18 @@
                 {
                     foreach (var error in result.Errors)
                     {
-                        Snackbar.Add(error, Severity.Warning);
+                        Snackbar.Add(error, MudBlazor.Severity.Warning);
                     }
                 }
                 else
                 {
-                    Snackbar.Add(result.Message ?? "Kullanıcı oluşturulurken hata oluştu", Severity.Error);
+                    Snackbar.Add(result.Message ?? "Kullanıcı oluşturulurken hata oluştu", MudBlazor.Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

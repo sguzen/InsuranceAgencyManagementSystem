@@ -3,7 +3,7 @@
     public static class RoleNames
     {
         public const string SuperAdmin = "SuperAdmin";
-        public const string TenantAdmin = "TenantAdmin";
+        public const string Admin = "Admin";
         public const string Manager = "Manager";
         public const string Agent = "Agent";
         public const string Viewer = "Viewer";

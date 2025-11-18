@@ -100,14 +100,14 @@ namespace IAMS.Application.Services
                 // Validate password confirmation
                 if (dto.Password != dto.ConfirmPassword)
                 {
-                    return Result<UserDto>.Failure("Passwords do not match");
+                    return Result<UserDto>.Failure("Passwords do not match", new List<string>());
                 }
 
                 // Check if user already exists
                 var existingUser = await _userManager.FindByEmailAsync(dto.Email);
                 if (existingUser != null)
                 {
-                    return Result<UserDto>.Failure("User with this email already exists");
+                    return Result<UserDto>.Failure("User with this email already exists", new List<string>());
                 }
 
                 var user = new ApplicationUser
@@ -176,7 +176,7 @@ namespace IAMS.Application.Services
                     var existingUser = await _userManager.FindByEmailAsync(dto.Email);
                     if (existingUser != null && existingUser.Id != dto.Id)
                     {
-                        return Result<UserDto>.Failure("Email is already taken by another user");
+                        return Result<UserDto>.Failure("Email is already taken by another user", new List<string>());
                     }
                     user.Email = dto.Email;
                     user.UserName = dto.Email;

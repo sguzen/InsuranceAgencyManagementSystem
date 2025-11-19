@@ -197,12 +197,26 @@ namespace IAMS.Persistence.Contexts
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        entry.Entity.CreatedOn = DateTime.UtcNow;
-                        entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        // For new entities, always set timestamps if not already set
+                        if (entry.Entity.CreatedOn == default || entry.Entity.CreatedOn < DateTime.UtcNow.AddSeconds(-10))
+                        {
+                            entry.Entity.CreatedOn = DateTime.UtcNow;
+                        }
+                        if (entry.Entity.ModifiedOn == null || entry.Entity.ModifiedOn < DateTime.UtcNow.AddSeconds(-10))
+                        {
+                            entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        }
                         break;
 
                     case EntityState.Modified:
-                        entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        // For modified entities, only update ModifiedOn if it hasn't been recently set by the handler
+                        // Check if ModifiedOn was explicitly set by comparing with a recent timeframe
+                        var currentModifiedOn = entry.Entity.ModifiedOn;
+                        if (currentModifiedOn == null || currentModifiedOn < DateTime.UtcNow.AddSeconds(-10))
+                        {
+                            entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        }
+                        // Never modify CreatedOn for existing entities
                         entry.Property(e => e.CreatedOn).IsModified = false;
                         break;
                 }
@@ -219,12 +233,25 @@ namespace IAMS.Persistence.Contexts
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        entry.Entity.CreatedOn = DateTime.UtcNow;
-                        entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        // For new entities, always set timestamps if not already set
+                        if (entry.Entity.CreatedOn == default || entry.Entity.CreatedOn < DateTime.UtcNow.AddSeconds(-10))
+                        {
+                            entry.Entity.CreatedOn = DateTime.UtcNow;
+                        }
+                        if (entry.Entity.ModifiedOn == null || entry.Entity.ModifiedOn < DateTime.UtcNow.AddSeconds(-10))
+                        {
+                            entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        }
                         break;
 
                     case EntityState.Modified:
-                        entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        // For modified entities, only update ModifiedOn if it hasn't been recently set by the handler
+                        var currentModifiedOn = entry.Entity.ModifiedOn;
+                        if (currentModifiedOn == null || currentModifiedOn < DateTime.UtcNow.AddSeconds(-10))
+                        {
+                            entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        }
+                        // Never modify CreatedOn for existing entities
                         entry.Property(e => e.CreatedOn).IsModified = false;
                         break;
                 }

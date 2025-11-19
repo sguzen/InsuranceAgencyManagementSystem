@@ -41,7 +41,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceC
                 var existingCompany = await _insuranceCompanyRepository.GetByNameAsync(request.CompanyDto.Name);
                 if (existingCompany != null)
                 {
-                    return Result<InsuranceCompanyDto>.InternalError("Insurance company with this name already exists");
+                    return Result<InsuranceCompanyDto>.Conflict("Bu isimde bir sigorta şirketi zaten mevcut");
                 }
 
                 // Create insurance company entity
@@ -63,12 +63,12 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceC
 
                 _logger.LogInformation("Insurance company created successfully with ID: {CompanyId}", company.Id);
 
-                return Result<InsuranceCompanyDto>.Success(companyDto, "Insurance company created successfully");
+                return Result<InsuranceCompanyDto>.Success(companyDto, "Sigorta şirketi başarıyla oluşturuldu");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating insurance company: {Name}", request.CompanyDto.Name);
-                return Result<InsuranceCompanyDto>.InternalError("An error occurred while creating the insurance company");
+                return Result<InsuranceCompanyDto>.InternalError("Sigorta şirketi oluşturulurken bir hata oluştu");
             }
         }
     }

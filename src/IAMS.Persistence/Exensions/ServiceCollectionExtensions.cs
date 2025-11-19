@@ -9,6 +9,7 @@ using IAMS.Persistence.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ITenantService = IAMS.Application.Interfaces.ITenantService;
 
 namespace IAMS.Persistence.Extensions
 {

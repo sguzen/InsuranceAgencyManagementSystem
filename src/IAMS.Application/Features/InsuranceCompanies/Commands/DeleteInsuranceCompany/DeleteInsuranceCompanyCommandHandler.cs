@@ -35,14 +35,14 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceC
                 var company = await _insuranceCompanyRepository.GetByIdAsync(request.Id);
                 if (company == null)
                 {
-                    return Result.NotFound($"Insurance company with ID {request.Id} not found");
+                    return Result.NotFound("Sigorta şirketi bulunamadı");
                 }
 
                 // Check if company has active policies
                 var activePolicies = company.Policies?.Any(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted) ?? false;
                 if (activePolicies)
                 {
-                    return Result.Failure("Cannot delete insurance company with active policies", string.Empty);
+                    return Result.Failure("Aktif poliçeleri olan sigorta şirketi silinemez", string.Empty);
                 }
 
                 // Soft delete
@@ -53,12 +53,12 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceC
 
                 _logger.LogInformation("Insurance company deleted successfully: {CompanyId}", company.Id);
 
-                return Result.Success("Insurance company deleted successfully");
+                return Result.Success("Sigorta şirketi başarıyla silindi");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting insurance company with ID: {CompanyId}", request.Id);
-                return Result.InternalError("An error occurred while deleting the insurance company");
+                return Result.InternalError("Sigorta şirketi silinirken bir hata oluştu");
             }
         }
     }

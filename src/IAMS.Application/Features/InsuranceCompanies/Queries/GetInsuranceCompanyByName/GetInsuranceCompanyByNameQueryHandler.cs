@@ -33,7 +33,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
 
                 if (company == null)
                 {
-                    return Result<InsuranceCompanyDto>.NotFound($"Insurance company with name '{request.Name}' not found");
+                    return Result<InsuranceCompanyDto>.NotFound("Sigorta şirketi bulunamadı");
                 }
 
                 var companyDto = _mapper.Map<InsuranceCompanyDto>(company);
@@ -50,7 +50,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving insurance company by name: {Name}", request.Name);
-                return Result<InsuranceCompanyDto>.InternalError("An error occurred while retrieving the insurance company");
+                return Result<InsuranceCompanyDto>.InternalError("Sigorta şirketi getirilirken bir hata oluştu");
             }
         }
     }

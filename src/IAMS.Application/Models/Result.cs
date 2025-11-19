@@ -45,6 +45,11 @@
             return new Result<T>(false, message, default, errors, statusCode);
         }
 
+        public static Result<T> Failure(string message, T data, List<string>? errors = null, int statusCode = 400)
+        {
+            return new Result<T>(false, message, data, errors, statusCode);
+        }
+
         public static Result<T> ValidationFailure(string message, List<string> validationErrors)
         {
             return new Result<T>(false, message, default, validationErrors, 422);

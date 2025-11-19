@@ -7,7 +7,7 @@ namespace IAMS.Application.Helpers
         private static readonly Dictionary<string, string> _translations = new()
         {
             { RoleNames.SuperAdmin, "Süper Yönetici" },
-            { RoleNames.TenantAdmin, "Kiracı Yöneticisi" },
+            { RoleNames.Admin, "Yöneticisi" },
             { RoleNames.Manager, "Yönetici" },
             { RoleNames.Agent, "Acente" },
             { RoleNames.Viewer, "Görüntüleyici" },

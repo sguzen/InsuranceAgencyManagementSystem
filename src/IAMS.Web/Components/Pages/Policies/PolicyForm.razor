@@ -652,8 +652,7 @@
                 SearchTerm = string.IsNullOrWhiteSpace(searchText) ? null : searchText,
                 PageSize = 50,
                 PageNumber = 1,
-                SortBy = "CreatedAt",
-                SortDescending = true
+                SortBy = "CreatedAt"
             };
 
             var result = await CustomerService.GetCustomersAsync(queryParams);

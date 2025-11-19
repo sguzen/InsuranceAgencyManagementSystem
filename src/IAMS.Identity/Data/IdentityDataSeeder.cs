@@ -31,7 +31,7 @@ namespace IAMS.Identity.Data
                     }
                 },
                 {
-                    RoleNames.TenantAdmin,
+                    RoleNames.Admin,
                     new List<string>
                     {
                         // Tenant Admin - All except SuperAdmin functions

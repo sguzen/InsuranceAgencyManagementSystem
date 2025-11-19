@@ -197,13 +197,13 @@
         {
             if (string.IsNullOrEmpty(newPassword))
             {
-                Snackbar.Add("Yeni şifre boş olamaz", Severity.Warning);
+                Snackbar.Add("Yeni şifre boş olamaz", MudBlazor.Severity.Warning);
                 return;
             }
 
             if (string.IsNullOrEmpty(confirmPassword))
             {
-                Snackbar.Add("Şifre tekrar boş olamaz", Severity.Warning);
+                Snackbar.Add("Şifre tekrar boş olamaz", MudBlazor.Severity.Warning);
                 return;
             }
 
@@ -246,7 +246,7 @@
                 }
                 else
                 {
-                    Snackbar.Add("Kullanıcı ve şifre başarıyla güncellendi", Severity.Success);
+                    Snackbar.Add("Kullanıcı ve şifre başarıyla güncellendi", MudBlazor.Severity.Success);
                     MudDialog.Close(DialogResult.Ok(result.Data));
                     return;
                 }

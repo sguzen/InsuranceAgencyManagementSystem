@@ -26,7 +26,7 @@ namespace IAMS.Web.Attributes
 
             public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
             {
-                if (!_moduleService.IsModuleEnabledAsync(_moduleName).Result)
+                if (!await _moduleService.IsModuleEnabledAsync(_moduleName))
                 {
                     context.Result = new ForbidResult("Module not enabled");
                 }

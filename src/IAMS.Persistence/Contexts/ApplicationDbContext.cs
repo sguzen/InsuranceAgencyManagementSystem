@@ -203,7 +203,24 @@ namespace IAMS.Persistence.Contexts
 
         public override int SaveChanges()
         {
-            return SaveChangesAsync().GetAwaiter().GetResult();
+            // Set audit information before saving
+            foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.Entity.CreatedOn = DateTime.UtcNow;
+                        entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        break;
+
+                    case EntityState.Modified:
+                        entry.Entity.ModifiedOn = DateTime.UtcNow;
+                        entry.Property(e => e.CreatedOn).IsModified = false;
+                        break;
+                }
+            }
+
+            return base.SaveChanges();
         }
     }
 }

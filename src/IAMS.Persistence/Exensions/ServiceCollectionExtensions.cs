@@ -19,7 +19,8 @@ namespace IAMS.Persistence.Extensions
             IConfiguration configuration)
         {
             // Register ApplicationDbContext with TENANT-SPECIFIC connection string
-            // Use transient lifetime for Blazor Server to avoid threading issues
+            // Use Scoped lifetime (standard for DbContext)
+            // For Blazor Server threading, use OwningComponentBase<T> in components
             services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
                 var tenantContextAccessor = serviceProvider.GetService<ITenantContextAccessor>();
@@ -58,17 +59,17 @@ namespace IAMS.Persistence.Extensions
                     options.EnableSensitiveDataLogging();
                     options.EnableDetailedErrors();
                 }
-            }, ServiceLifetime.Transient, ServiceLifetime.Transient);
+            }); // Default is Scoped lifetime
 
             // Register generic repository and unit of work
-            // Use transient for UnitOfWork to match DbContext lifetime and avoid threading issues
-            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
-            services.AddTransient<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            // Use scoped to match DbContext lifetime for proper Unit of Work pattern
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
             services.AddScoped<ITenantDatabaseService, TenantDatabaseService>();
-            // Register specialized repositories as transient
-            services.AddTransient<ICustomerRepository, CustomerRepository>();
-            services.AddTransient<IPolicyRepository, PolicyRepository>();
-            services.AddTransient<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
+            // Register specialized repositories as scoped
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IPolicyRepository, PolicyRepository>();
+            services.AddScoped<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
 
             return services;
         }

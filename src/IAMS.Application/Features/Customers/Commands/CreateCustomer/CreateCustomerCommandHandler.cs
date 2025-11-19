@@ -39,39 +39,32 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
         {
             try
             {
-                var validationErrors = new List<string>();
+                // Check if customer with identification number already exists for this tenant (if provided)
+                if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNumber))
+                {
+                    var existingCustomerById = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber);
+
+                    if (existingCustomerById != null)
+                    {
+                        _logger.LogWarning("Customer creation failed: Identification number already exists");
+                        return Result<CustomerDto>.ValidationFailure("Bu T.C. Kimlik Numarası ile kayıtlı bir müşteri zaten mevcut");
+                    }
+                }
 
                 // Check if customer with email already exists for this tenant
                 var existingCustomerByEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email);
                 if (existingCustomerByEmail != null)
                 {
-                    validationErrors.Add($"Bu e-posta adresi ({request.CustomerDto.Email}) zaten kullanılmaktadır");
-                }
-
-                // Check if customer with KKTC number already exists for this tenant (if provided)
-                if (!string.IsNullOrEmpty(request.CustomerDto.IdentificationNumber))
-                {
-                    var existingCustomerByKktc = await _unitOfWork.Customers.GetByIdentificationNoAsync(request.CustomerDto.IdentificationNumber);
-                    
-                    if (existingCustomerByKktc != null)
-                    {
-                        validationErrors.Add($"Bu KKTC kimlik numarası ({request.CustomerDto.IdentificationNumber}) zaten kullanılmaktadır");
-                    }
+                    _logger.LogWarning("Customer creation failed: Email already exists");
+                    return Result<CustomerDto>.ValidationFailure("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut");
                 }
 
                 // Check if customer with phone number already exists for this tenant
                 var existingCustomerByPhone = await _unitOfWork.Customers.GetByPhoneAsync(request.CustomerDto.MobilePhoneNumber);
                 if (existingCustomerByPhone != null)
                 {
-                    validationErrors.Add($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) zaten kullanılmaktadır");
-                }
-
-                // If there are validation errors, return them
-                if (validationErrors.Any())
-                {
-                    _logger.LogWarning("Customer creation failed due to validation errors: {Errors}",
-                    string.Join(", ", validationErrors));
-                    return Result<CustomerDto>.ValidationFailure("Müşteri oluşturulamadı: Girilen bilgiler zaten kullanılmaktadır", validationErrors);
+                    _logger.LogWarning("Customer creation failed: Phone number already exists");
+                    return Result<CustomerDto>.ValidationFailure($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) zaten kullanılmaktadır");
                 }
 
                 // Map and create customer

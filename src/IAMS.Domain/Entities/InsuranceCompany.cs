@@ -97,13 +97,13 @@ namespace IAMS.Domain.Entities
             // Pad prefix to 3 chars if needed
             prefix = prefix.PadRight(3, 'X');
 
-            // Add 7-digit timestamp suffix for uniqueness (yyyyMMddHHmmss -> last 7 digits: MMddHHmmss % 10000000)
+            // Add 7-digit timestamp suffix for uniqueness including milliseconds
             var timestamp = DateTime.UtcNow;
-            var uniqueSuffix = ((timestamp.Month * 100000000L) +
-                               (timestamp.Day * 1000000L) +
-                               (timestamp.Hour * 10000L) +
-                               (timestamp.Minute * 100L) +
-                               timestamp.Second) % 10000000;
+            var uniqueSuffix = ((timestamp.Day * 100000000L) +
+                               (timestamp.Hour * 1000000L) +
+                               (timestamp.Minute * 10000L) +
+                               (timestamp.Second * 1000L) +
+                               timestamp.Millisecond) % 10000000;
 
             return $"{prefix}{uniqueSuffix:D7}";
         }

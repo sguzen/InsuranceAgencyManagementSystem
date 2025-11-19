@@ -40,7 +40,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceC
                 var company = await _insuranceCompanyRepository.GetByIdAsync(request.Id);
                 if (company == null)
                 {
-                    return Result<InsuranceCompanyDto>.NotFound($"Insurance company with ID {request.Id} not found");
+                    return Result<InsuranceCompanyDto>.NotFound("Sigorta şirketi bulunamadı");
                 }
 
                 // Check if name is being changed and if new name already exists
@@ -49,7 +49,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceC
                     var existingCompany = await _insuranceCompanyRepository.GetByNameAsync(request.CompanyDto.Name);
                     if (existingCompany != null && existingCompany.Id != request.Id)
                     {
-                        return Result<InsuranceCompanyDto>.InternalError("Insurance company with this name already exists");
+                        return Result<InsuranceCompanyDto>.Conflict("Bu isimde bir sigorta şirketi zaten mevcut");
                     }
                 }
 
@@ -72,12 +72,12 @@ namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceC
 
                 _logger.LogInformation("Insurance company updated successfully: {CompanyId}", company.Id);
 
-                return Result<InsuranceCompanyDto>.Success(companyDto, "Insurance company updated successfully");
+                return Result<InsuranceCompanyDto>.Success(companyDto, "Sigorta şirketi başarıyla güncellendi");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating insurance company with ID: {CompanyId}", request.Id);
-                return Result<InsuranceCompanyDto>.InternalError("An error occurred while updating the insurance company");
+                return Result<InsuranceCompanyDto>.InternalError("Sigorta şirketi güncellenirken bir hata oluştu");
             }
         }
     }

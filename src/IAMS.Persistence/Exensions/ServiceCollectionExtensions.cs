@@ -6,6 +6,7 @@ using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;
 using IAMS.Persistence.Services;
 using IAMS.Persistence.UnitOfWork;
+using IAMS.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,12 +43,12 @@ namespace IAMS.Persistence.Extensions
                 else
                 {
                     // Fallback to default connection (for migrations, seeding, etc.)
-                    connectionString = configuration.GetConnectionString("DefaultConnection");
+                    connectionString = configuration.GetConnectionString(ApplicationConstants.ConnectionStrings.DefaultConnection);
 
                     if (string.IsNullOrEmpty(connectionString))
                     {
                         throw new InvalidOperationException(
-                            "DefaultConnection string is required when no tenant context is available. " +
+                            $"{ApplicationConstants.ConnectionStrings.DefaultConnection} string is required when no tenant context is available. " +
                             "Please ensure it's configured in appsettings.json");
                     }
                 }

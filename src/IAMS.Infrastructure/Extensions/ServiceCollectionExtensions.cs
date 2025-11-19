@@ -3,6 +3,7 @@ using IAMS.Domain.Services;
 using IAMS.Infrastructure.Data;
 using IAMS.Infrastructure.Interfaces;
 using IAMS.Infrastructure.Services;
+using IAMS.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +18,8 @@ namespace IAMS.Infrastructure.Extensions
         {
             // Add Integration Database for logs, reports, and file metadata
             services.AddDbContext<IntegrationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("IntegrationConnection")
-                    ?? configuration.GetConnectionString("IntegrationConnection")));
+                options.UseSqlServer(configuration.GetConnectionString(ApplicationConstants.ConnectionStrings.IntegrationConnection)
+                    ?? throw new InvalidOperationException($"{ApplicationConstants.ConnectionStrings.IntegrationConnection} is required")));
 
             // Add HTTP Client Factory for integration services
             services.AddHttpClient();
@@ -32,10 +33,10 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<IVehicleDataService, VehicleDataService>();
 
             // Configure email settings
-            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+            services.Configure<EmailSettings>(configuration.GetSection(ApplicationConstants.ConfigurationSections.EmailSettings));
 
             // Configure file storage settings
-            services.Configure<FileStorageSettings>(configuration.GetSection("FileStorageSettings"));
+            services.Configure<FileStorageSettings>(configuration.GetSection(ApplicationConstants.ConfigurationSections.FileStorageSettings));
 
             return services;
         }

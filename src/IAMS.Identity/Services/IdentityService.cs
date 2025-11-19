@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using IAMS.Application.DTOs.Identity;
+using IAMS.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using IAMS.Domain.Entities;
@@ -54,7 +56,7 @@ namespace IAMS.Identity.Services
 
             // Save refresh token
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("JwtSettings:RefreshTokenExpiryDays"));
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(_configuration.GetValue<int>(ApplicationConstants.JwtConfiguration.RefreshTokenExpiryDays));
             await _userManager.UpdateAsync(user);
 
             // Get user roles and permissions
@@ -93,7 +95,7 @@ namespace IAMS.Identity.Services
 
             // Update refresh token
             user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("JwtSettings:RefreshTokenExpiryDays"));
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(_configuration.GetValue<int>(ApplicationConstants.JwtConfiguration.RefreshTokenExpiryDays));
             await _userManager.UpdateAsync(user);
 
             // Get user roles and permissions
@@ -176,23 +178,23 @@ namespace IAMS.Identity.Services
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var jwtSettings = _configuration.GetSection(ApplicationConstants.ConfigurationSections.JwtSettings);
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Email, user.Email!),
-                new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
+                new(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id),
+                new(System.Security.Claims.ClaimTypes.Email, user.Email!),
+                new(System.Security.Claims.ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
             };
 
             // Add role claims
             var roles = await _userManager.GetRolesAsync(user);
-            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            claims.AddRange(roles.Select(role => new Claim(System.Security.Claims.ClaimTypes.Role, role)));
 
-            // Add permission claims (use consistent lowercase)
+            // Add permission claims
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Id);
-            claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
+            claims.AddRange(permissions.Select(permission => new Claim(ApplicationConstants.ClaimTypes.Permission, permission)));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -208,9 +210,15 @@ namespace IAMS.Identity.Services
             return tokenHandler.WriteToken(token);
         }
 
+        /// <summary>
+        /// Generates a cryptographically secure refresh token
+        /// </summary>
         private static string GenerateRefreshToken()
         {
-            return Guid.NewGuid().ToString();
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
         }
     }
 }

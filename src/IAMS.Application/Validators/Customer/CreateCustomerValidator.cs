@@ -20,8 +20,8 @@ namespace IAMS.Application.Validators.Customer
                 .When(x => x.Type == CustomerType.Individual);
 
             RuleFor(x => x.IdentificationNumber)
-                .Length(11).WithMessage("TC number must be 10 digits")
-                .Matches(@"^\d{10}$").WithMessage("KKTC number must contain only digits")
+                .Length(11).WithMessage("Identification number must be exactly 11 digits")
+                .Matches(@"^\d{11}$").WithMessage("Identification number must contain only digits")
                 .When(x => !string.IsNullOrEmpty(x.IdentificationNumber));
 
             RuleFor(x => x.Email)

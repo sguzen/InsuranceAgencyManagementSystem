@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace IAMS.Infrastructure.Services
+namespace IAMS.Persistence.Services
 {
     /// <summary>
     /// Implementation of Application layer's ITenantService interface.

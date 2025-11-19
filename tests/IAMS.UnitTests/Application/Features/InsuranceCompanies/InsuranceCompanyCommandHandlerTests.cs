@@ -371,10 +371,19 @@ namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
             var existingCompany = InsuranceCompany.Create("Test", null, null, null, null, null, "System");
             existingCompany.Id = companyId;
 
+            // Add an active policy to the company
+            existingCompany.Policies = new List<Policy>
+            {
+                new Policy
+                {
+                    Id = 1,
+                    Status = IAMS.Domain.Enums.PolicyStatus.Active,
+                    IsDeleted = false
+                }
+            };
+
             repositoryMock.Setup(x => x.GetByIdAsync(companyId))
                 .ReturnsAsync(existingCompany);
-            //repositoryMock.Setup(x => x.HasActivePoliciesAsync(companyId))
-           //     .ReturnsAsync(true);
 
             var handler = new DeleteInsuranceCompanyCommandHandler(
                 repositoryMock.Object,

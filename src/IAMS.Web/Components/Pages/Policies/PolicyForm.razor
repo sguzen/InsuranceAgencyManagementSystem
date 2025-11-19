@@ -132,12 +132,11 @@
                                                        Label="Müşteri *"
                                                        Variant="Variant.Outlined"
                                                        Required="true"
-                                                       ResetValueOnEmptyText="true"
-                                                       CoerceText="true"
-                                                       CoerceValue="true"
+                                                       Clearable="true"
                                                        MaxItems="50"
-                                                       DebounceInterval="300"
-                                                       HelperText="Müşteri adı ile arayın (en az 2 karakter)">
+                                                       DebounceInterval="150"
+                                                       AdornmentIcon="@Icons.Material.Filled.Search"
+                                                       HelperText="Müşteri adı veya e-posta ile arayın">
                                             <ItemTemplate Context="customerItem">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
                                                     <MudAvatar Color="Color.Primary" Size="Size.Small">
@@ -646,16 +645,15 @@
 
     private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
-            return new List<CustomerDto>();
-
         try
         {
             var queryParams = new CustomerQueryParams
             {
-                SearchTerm = searchText,
+                SearchTerm = string.IsNullOrWhiteSpace(searchText) ? null : searchText,
                 PageSize = 50,
-                PageNumber = 1
+                PageNumber = 1,
+                SortBy = "CreatedAt",
+                SortDescending = true
             };
 
             var result = await CustomerService.GetCustomersAsync(queryParams);

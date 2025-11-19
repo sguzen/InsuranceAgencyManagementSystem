@@ -39,53 +39,47 @@ namespace IAMS.Persistence.Repositories
 
         public virtual async Task<T> AddAsync(T entity)
         {
-            entity.CreatedOn = DateTime.UtcNow;
-            entity.ModifiedOn = DateTime.UtcNow;
+            // Audit timestamps are set by DbContext.SaveChangesAsync
             await _dbSet.AddAsync(entity);
             return entity;
         }
 
         public virtual async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
         {
+            // Audit timestamps are set by DbContext.SaveChangesAsync
             var entityList = entities.ToList();
-            foreach (var entity in entityList)
-            {
-                entity.CreatedOn = DateTime.UtcNow;
-                entity.ModifiedOn = DateTime.UtcNow;
-            }
             await _dbSet.AddRangeAsync(entityList);
             return entityList;
         }
 
         public virtual void Update(T entity)
         {
-            entity.ModifiedOn = DateTime.UtcNow;
+            // ModifiedOn timestamp is set by DbContext.SaveChangesAsync
             _context.Entry(entity).State = EntityState.Modified;
         }
 
         public virtual void UpdateRange(IEnumerable<T> entities)
         {
+            // ModifiedOn timestamp is set by DbContext.SaveChangesAsync
             foreach (var entity in entities)
             {
-                entity.ModifiedOn = DateTime.UtcNow;
                 _context.Entry(entity).State = EntityState.Modified;
             }
         }
 
         public virtual void Remove(T entity)
         {
-            // Soft delete
+            // Soft delete - ModifiedOn timestamp is set by DbContext.SaveChangesAsync
             entity.IsDeleted = true;
-            entity.ModifiedOn = DateTime.UtcNow;
             _context.Entry(entity).State = EntityState.Modified;
         }
 
         public virtual void RemoveRange(IEnumerable<T> entities)
         {
+            // Soft delete - ModifiedOn timestamp is set by DbContext.SaveChangesAsync
             foreach (var entity in entities)
             {
                 entity.IsDeleted = true;
-                entity.ModifiedOn = DateTime.UtcNow;
                 _context.Entry(entity).State = EntityState.Modified;
             }
         }

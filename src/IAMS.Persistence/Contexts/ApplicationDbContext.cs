@@ -71,6 +71,16 @@ namespace IAMS.Persistence.Contexts
                 property.SetColumnType("decimal(18,2)");
             }
 
+            // Configure concurrency control (RowVersion) for all BaseEntity entities
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                .Where(t => typeof(BaseEntity).IsAssignableFrom(t.ClrType)))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property<byte[]>("RowVersion")
+                    .IsRowVersion()
+                    .HasColumnName("RowVersion");
+            }
+
             // Identity table renaming
             modelBuilder.Entity<ApplicationUser>().ToTable("Users");
             modelBuilder.Entity<ApplicationRole>().ToTable("Roles");

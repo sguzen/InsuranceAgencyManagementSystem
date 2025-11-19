@@ -9,6 +9,12 @@ namespace IAMS.Domain.Entities
 
         public int Id { get; set; }
 
+        // Concurrency control
+        /// <summary>
+        /// Row version for optimistic concurrency control
+        /// </summary>
+        public byte[]? RowVersion { get; set; }
+
         // Auditable properties
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
         public DateTime? ModifiedOn { get; set; }

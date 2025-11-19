@@ -66,10 +66,15 @@ namespace IAMS.Persistence.Extensions
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
             services.AddScoped<ITenantDatabaseService, TenantDatabaseService>();
+
             // Register specialized repositories as scoped
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IPolicyRepository, PolicyRepository>();
             services.AddScoped<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
+
+            // Register tenant service (moved from Infrastructure to fix dependency direction)
+            // This service uses ApplicationDbContext directly, so it belongs in Persistence layer
+            services.AddScoped<ITenantService, ApplicationTenantService>();
 
             return services;
         }

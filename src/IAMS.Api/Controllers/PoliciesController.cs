@@ -10,6 +10,7 @@ using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPolicies;
 using IAMS.Application.Features.Policies.Queries.GetPolicies;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
+using IAMS.Application.Features.Policies.Queries.GetPolicy;
 using IAMS.Application.Features.Policies.Queries.GetPolicyByNumber;
 using IAMS.Application.Features.Policies.Queries.GetPolicyStatistics;
 using IAMS.Application.Models;
@@ -66,7 +67,7 @@ namespace IAMS.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Result<PolicyDto>>> GetPolicy(int id)
         {
-            var query = new GetPolicyByNumberQuery(id.ToString()); // huh?
+            var query = new GetPolicyQuery(id);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

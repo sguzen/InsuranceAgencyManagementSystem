@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
+using FluentValidation.Results;
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
 using IAMS.Application.Interfaces;
@@ -79,6 +80,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 .ReturnsAsync(existingCustomer);
             _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
                 .Returns(customerDto);
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<CreateOrUpdateCustomerDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
@@ -140,6 +143,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 .ReturnsAsync(existingCustomer);
             _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
                 .Returns(customerDto);
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<CreateOrUpdateCustomerDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
@@ -168,6 +173,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
             var customerId = 999;
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync((Customer?)null);
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<CreateOrUpdateCustomerDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
@@ -207,6 +214,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
 
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync(deletedCustomer);
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<CreateOrUpdateCustomerDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
@@ -253,6 +262,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 .ReturnsAsync(existingCustomer);
             _customerRepositoryMock.Setup(x => x.GetByEmailAsync(newEmail))
                 .ReturnsAsync(customerWithSameEmail);
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<CreateOrUpdateCustomerDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             var command = new UpdateCustomerCommand(customerId, new CreateOrUpdateCustomerDto
             {
@@ -293,6 +304,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
 
             _customerRepositoryMock.Setup(x => x.GetByIdAsync(customerId))
                 .ReturnsAsync(existingCustomer);
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<CreateOrUpdateCustomerDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Database error"));
 

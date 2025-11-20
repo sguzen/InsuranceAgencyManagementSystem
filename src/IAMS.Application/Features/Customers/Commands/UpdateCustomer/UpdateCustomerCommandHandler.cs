@@ -52,10 +52,10 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
 
                 // Get existing customer and verify tenant ownership
                 var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(request.Id);
-                if (existingCustomer == null)
+                if (existingCustomer == null || existingCustomer.IsDeleted)
                 {
                     _logger.LogWarning("Customer with ID {CustomerId} not found for update", request.Id);
-                    return Result<CustomerDto>.NotFound("Güncellenecek müşteri bulunamadı");
+                    return Result<CustomerDto>.NotFound("Müşteri bulunamadı");
                 }
 
                 // Check for business rule violations
@@ -123,7 +123,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                     var duplicateEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email);
                     if (duplicateEmail != null && duplicateEmail.Id != request.Id)
                     {
-                        errors.Add($"Bu e-posta adresi ({request.CustomerDto.Email}) başka bir müşteri tarafından kullanılmaktadır");
+                        errors.Add("Bu e-posta adresi başka bir müşteri tarafından kullanılıyor");
                     }
                 }
 

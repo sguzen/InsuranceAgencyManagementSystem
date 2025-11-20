@@ -72,6 +72,15 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 Status = CustomerStatus.Active
             };
 
+            _mapperMock.Setup(x => x.Map<Customer>(It.IsAny<CreateOrUpdateCustomerDto>()))
+                .Returns(new Customer
+                {
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Email = "john.doe@example.com",
+                    MobilePhoneNumber = "555-5678",
+                    Status = CustomerStatus.Active
+                });
             _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
                 .Returns(customerDto);
 
@@ -132,6 +141,14 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 Status = CustomerStatus.Active
             };
 
+            _mapperMock.Setup(x => x.Map<Customer>(It.IsAny<CreateOrUpdateCustomerDto>()))
+                .Returns(new Customer
+                {
+                    FirstName = "Jane",
+                    LastName = "Smith",
+                    Email = "jane.smith@example.com",
+                    Status = CustomerStatus.Active
+                });
             _mapperMock.Setup(x => x.Map<CustomerDto>(It.IsAny<Customer>()))
                 .Returns(customerDto);
 

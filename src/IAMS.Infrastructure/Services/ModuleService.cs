@@ -105,16 +105,14 @@ namespace IAMS.Infrastructure.Services
                 _moduleCache[moduleName.ToLower()] = defaultValue;
             }
         }
-        // unimplemented
         public IEnumerable<string> GetEnabledModules()
         {
-            throw new NotImplementedException();
+            return _moduleCache.Where(kvp => kvp.Value).Select(kvp => kvp.Key);
         }
-
 
         public Task<Dictionary<string, bool>> GetAllModulesStatusAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new Dictionary<string, bool>(_moduleCache));
         }
 
         Task IModuleService.EnableModuleAsync(string moduleName)

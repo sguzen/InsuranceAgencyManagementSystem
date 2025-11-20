@@ -13,12 +13,13 @@ namespace IAMS.Domain.Events
         public Customer Customer { get; }
         public string RestoredBy { get; }
 
-        public DateTime OccurredOn => throw new NotImplementedException();
+        public DateTime OccurredOn { get; }
 
         public CustomerRestoredEvent(Customer customer, string restoredBy)
         {
             Customer = customer;
             RestoredBy = restoredBy;
+            OccurredOn = DateTime.UtcNow;
         }
     }
 }

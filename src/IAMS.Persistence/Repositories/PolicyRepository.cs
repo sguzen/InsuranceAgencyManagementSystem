@@ -456,7 +456,14 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<List<Policy>> GetByVehicleIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Include(p => p.Vehicle)
+                .Where(p => p.VehicleId == id && !p.IsDeleted)
+                .OrderByDescending(p => p.CreatedOn)
+                .ToListAsync();
         }
     }
 }

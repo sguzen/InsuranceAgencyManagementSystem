@@ -58,6 +58,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 .ReturnsAsync((Customer?)null);
             _customerRepositoryMock.Setup(x => x.GetByPhoneAsync(It.IsAny<string>()))
                 .ReturnsAsync((Customer?)null);
+            _customerCodeGeneratorMock.Setup(x => x.IsCodeUniqueAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
@@ -116,6 +118,8 @@ namespace IAMS.UnitTests.Application.Features.Customers
                 .ReturnsAsync((Customer?)null);
             _customerRepositoryMock.Setup(x => x.GetByPhoneAsync(It.IsAny<string>()))
                 .ReturnsAsync((Customer?)null);
+            _customerCodeGeneratorMock.Setup(x => x.IsCodeUniqueAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 

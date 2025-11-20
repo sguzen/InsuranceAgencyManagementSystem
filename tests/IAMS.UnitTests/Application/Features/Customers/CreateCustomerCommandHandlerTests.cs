@@ -52,6 +52,12 @@ namespace IAMS.UnitTests.Application.Features.Customers
             // Arrange
             var currentUserName = "test.user@example.com";
             _currentUserServiceMock.Setup(x => x.UserName).Returns(currentUserName);
+            _customerRepositoryMock.Setup(x => x.GetByIdentificationNoAsync(It.IsAny<string>()))
+                .ReturnsAsync((Customer?)null);
+            _customerRepositoryMock.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((Customer?)null);
+            _customerRepositoryMock.Setup(x => x.GetByPhoneAsync(It.IsAny<string>()))
+                .ReturnsAsync((Customer?)null);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
@@ -104,6 +110,12 @@ namespace IAMS.UnitTests.Application.Features.Customers
         {
             // Arrange
             _currentUserServiceMock.Setup(x => x.UserName).Returns((string?)null);
+            _customerRepositoryMock.Setup(x => x.GetByIdentificationNoAsync(It.IsAny<string>()))
+                .ReturnsAsync((Customer?)null);
+            _customerRepositoryMock.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((Customer?)null);
+            _customerRepositoryMock.Setup(x => x.GetByPhoneAsync(It.IsAny<string>()))
+                .ReturnsAsync((Customer?)null);
             _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 

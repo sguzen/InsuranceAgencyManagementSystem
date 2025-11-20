@@ -107,7 +107,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                     errorDetails.Add($"İç hata: {ex.InnerException.Message}");
                 }
 
-                return Result<CustomerDto>.InternalError("Müşteri güncellenirken beklenmeyen bir hata oluştu", errorDetails);
+                return Result<CustomerDto>.InternalError("Müşteri güncellenirken bir hata oluştu", errorDetails);
             }
         }
 

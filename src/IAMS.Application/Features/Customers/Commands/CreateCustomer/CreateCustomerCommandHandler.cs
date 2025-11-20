@@ -108,7 +108,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                     errorDetails.Add($"İç hata: {ex.InnerException.Message}");
                 }
 
-                return Result<CustomerDto>.InternalError("Müşteri oluşturulurken beklenmeyen bir hata oluştu", errorDetails);
+                return Result<CustomerDto>.InternalError("Müşteri oluşturulurken bir hata oluştu", errorDetails);
             }
         }
     }

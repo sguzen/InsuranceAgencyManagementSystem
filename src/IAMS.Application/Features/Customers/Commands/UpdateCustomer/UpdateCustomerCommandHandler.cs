@@ -64,7 +64,7 @@ namespace IAMS.Application.Features.Customers.Commands.UpdateCustomer
                 {
                     _logger.LogWarning("Customer update business rule validation failed for ID {CustomerId}: {Errors}",
                         request.Id, string.Join(", ", businessValidationErrors));
-                    return Result<CustomerDto>.ValidationFailure("İş kuralları ihlali", businessValidationErrors);
+                    return Result<CustomerDto>.ValidationFailure(businessValidationErrors.First(), businessValidationErrors);
                 }
 
                 // Update the customer

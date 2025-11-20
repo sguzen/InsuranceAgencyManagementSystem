@@ -47,7 +47,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                     if (existingCustomerById != null)
                     {
                         _logger.LogWarning("Customer creation failed: Identification number already exists");
-                        return Result<CustomerDto>.ValidationFailure("Bu T.C. Kimlik Numarası ile kayıtlı bir müşteri zaten mevcut");
+                        return Result<CustomerDto>.ValidationFailure("Bu T.C. Kimlik Numarası ile kayıtlı bir müşteri zaten mevcut", new List<string>());
                     }
                 }
 
@@ -56,7 +56,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 if (existingCustomerByEmail != null)
                 {
                     _logger.LogWarning("Customer creation failed: Email already exists");
-                    return Result<CustomerDto>.ValidationFailure("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut");
+                    return Result<CustomerDto>.ValidationFailure("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut", new List<string>());
                 }
 
                 // Check if customer with phone number already exists for this tenant
@@ -64,7 +64,7 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 if (existingCustomerByPhone != null)
                 {
                     _logger.LogWarning("Customer creation failed: Phone number already exists");
-                    return Result<CustomerDto>.ValidationFailure($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) zaten kullanılmaktadır");
+                    return Result<CustomerDto>.ValidationFailure($"Bu telefon numarası ({request.CustomerDto.MobilePhoneNumber}) zaten kullanılmaktadır", new List<string>());
                 }
 
                 // Map and create customer

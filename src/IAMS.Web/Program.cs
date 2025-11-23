@@ -47,10 +47,33 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 
 // Add HttpClient with API base URL for Blazor components
+// Configuration is environment-aware:
+// - Development: Uses appsettings.Development.json (https://localhost:44390)
+// - Production: Uses appsettings.Production.json or environment variable ApiSettings__BaseUrl
 builder.Services.AddScoped(sp =>
 {
-    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:44390";
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var environment = sp.GetRequiredService<IWebHostEnvironment>();
+
+    // Get API base URL from configuration with environment-specific fallback
+    var apiBaseUrl = configuration["ApiSettings:BaseUrl"];
+
+    if (string.IsNullOrEmpty(apiBaseUrl))
+    {
+        // Fallback based on environment
+        apiBaseUrl = environment.IsDevelopment()
+            ? "https://localhost:44390"
+            : throw new InvalidOperationException(
+                "ApiSettings:BaseUrl is not configured. Please set it in appsettings.json or as an environment variable (ApiSettings__BaseUrl)");
+    }
+
     var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
+
+    // Log the configured API base URL for debugging
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("API Base URL configured: {ApiBaseUrl} (Environment: {Environment})",
+        apiBaseUrl, environment.EnvironmentName);
+
     return httpClient;
 });
 

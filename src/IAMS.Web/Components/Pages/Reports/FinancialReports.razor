@@ -3,13 +3,16 @@
 @rendermode InteractiveServer
 
 @attribute [Authorize]
+@using IAMS.Application.DTOs.Currency
 @using IAMS.Application.Services.Policies
+@using IAMS.Application.Services.Currencies
 @using IAMS.Infrastructure.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 
 @using IAMS.Application.Services.Claims
 @inject IPolicyService PolicyService
 @inject IClaimService ClaimService
+@inject ICurrencyService CurrencyService
 @inject IReportingService ReportingService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
@@ -17,10 +20,27 @@
 <PageTitle>Mali Raporlar - IAMS</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudText Typo="Typo.h4" Class="mb-4">
-        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
-        Mali Raporlar
-    </MudText>
+    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
+            Mali Raporlar
+        </MudText>
+        <MudSelect T="string"
+                   Label="Para Birimi"
+                   Variant="Variant.Outlined"
+                   @bind-Value="selectedCurrencyCode"
+                   Style="min-width: 150px;">
+            @if (currencies != null)
+            {
+                @foreach (var currency in currencies)
+                {
+                    <MudSelectItem Value="@currency.Code">
+                        @currency.Code - @currency.Name
+                    </MudSelectItem>
+                }
+            }
+        </MudSelect>
+    </MudStack>
 
     @if (loading)
     {
@@ -35,8 +55,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Gelir</MudText>
-                                <MudText Typo="Typo.h5">@totalRevenue.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Gelir (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@totalRevenue.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Large" />
                         </div>
@@ -49,8 +69,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Komisyon</MudText>
-                                <MudText Typo="Typo.h5">@totalCommission.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Komisyon (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@totalCommission.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Info" Size="Size.Large" />
                         </div>
@@ -63,8 +83,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Aylık Gelir</MudText>
-                                <MudText Typo="Typo.h5">@monthlyRevenue.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Aylık Gelir (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@monthlyRevenue.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" Size="Size.Large" />
                         </div>
@@ -77,8 +97,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Yıllık Gelir</MudText>
-                                <MudText Typo="Typo.h5">@yearlyRevenue.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Yıllık Gelir (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@yearlyRevenue.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Secondary" Size="Size.Large" />
                         </div>
@@ -143,18 +163,18 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td><strong>Toplam Prim</strong></td>
+                                                    <td><strong>Toplam Prim (@selectedCurrencyCode)</strong></td>
                                                     <td style="text-align: right;">
                                                         <MudChip Color="Color.Primary" Size="Size.Small" T="String">
-                                                            @commissionTotalPremium.ToString("C2")
+                                                            @commissionTotalPremium.ToString("N2")
                                                         </MudChip>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td><strong>Toplam Komisyon</strong></td>
+                                                    <td><strong>Toplam Komisyon (@selectedCurrencyCode)</strong></td>
                                                     <td style="text-align: right;">
                                                         <MudChip Color="Color.Success" Size="Size.Small" T="String">
-                                                            @commissionTotalCommission.ToString("C2")
+                                                            @commissionTotalCommission.ToString("N2")
                                                         </MudChip>
                                                     </td>
                                                 </tr>
@@ -272,8 +292,8 @@
                             <MudItem xs="12" sm="6" md="3">
                                 <MudCard Outlined="true">
                                     <MudCardContent>
-                                        <MudText Typo="Typo.body2" Color="Color.Default">Toplam Tutar</MudText>
-                                        <MudText Typo="Typo.h5">@claimsTotalAmount.ToString("C2")</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Toplam Tutar (@selectedCurrencyCode)</MudText>
+                                        <MudText Typo="Typo.h5">@claimsTotalAmount.ToString("N2")</MudText>
                                     </MudCardContent>
                                 </MudCard>
                             </MudItem>
@@ -308,39 +328,39 @@
                                                 <tr>
                                                     <th>Durum</th>
                                                     <th style="text-align: right;">Sayı</th>
-                                                    <th style="text-align: right;">Toplam Tutar</th>
-                                                    <th style="text-align: right;">Ortalama</th>
+                                                    <th style="text-align: right;">Toplam Tutar (@selectedCurrencyCode)</th>
+                                                    <th style="text-align: right;">Ortalama (@selectedCurrencyCode)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td><MudChip Color="Color.Default" Size="Size.Small" T="String">Başvuruldu</MudChip></td>
                                                     <td style="text-align: right;">@claimsSubmitted.ToString("N0")</td>
-                                                    <td style="text-align: right;">@claimsSubmittedAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@claimsSubmittedAmount.ToString("N2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsSubmitted, claimsSubmittedAmount)</td>
                                                 </tr>
                                                 <tr>
                                                     <td><MudChip Color="Color.Info" Size="Size.Small" T="String">İnceleniyor</MudChip></td>
                                                     <td style="text-align: right;">@claimsUnderReview.ToString("N0")</td>
-                                                    <td style="text-align: right;">@claimsUnderReviewAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@claimsUnderReviewAmount.ToString("N2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsUnderReview, claimsUnderReviewAmount)</td>
                                                 </tr>
                                                 <tr>
                                                     <td><MudChip Color="Color.Success" Size="Size.Small" T="String">Onaylandı</MudChip></td>
                                                     <td style="text-align: right;">@claimsApproved.ToString("N0")</td>
-                                                    <td style="text-align: right;">@claimsApprovedAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@claimsApprovedAmount.ToString("N2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsApproved, claimsApprovedAmount)</td>
                                                 </tr>
                                                 <tr>
                                                     <td><MudChip Color="Color.Error" Size="Size.Small" T="String">Reddedildi</MudChip></td>
                                                     <td style="text-align: right;">@claimsRejected.ToString("N0")</td>
-                                                    <td style="text-align: right;">@claimsRejectedAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@claimsRejectedAmount.ToString("N2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsRejected, claimsRejectedAmount)</td>
                                                 </tr>
                                                 <tr>
                                                     <td><MudChip Color="Color.Success" Size="Size.Small" T="String">Ödendi</MudChip></td>
                                                     <td style="text-align: right;">@claimsSettled.ToString("N0")</td>
-                                                    <td style="text-align: right;">@claimsSettledAmount.ToString("C2")</td>
+                                                    <td style="text-align: right;">@claimsSettledAmount.ToString("N2")</td>
                                                     <td style="text-align: right;">@GetAverageClaim(claimsSettled, claimsSettledAmount)</td>
                                                 </tr>
                                             </tbody>
@@ -400,6 +420,27 @@
     private bool loading = true;
     private int activeTab = 0;
 
+    // Currency
+    private string _selectedCurrencyCode = "TRY";
+    private string selectedCurrencyCode
+    {
+        get => _selectedCurrencyCode;
+        set
+        {
+            if (_selectedCurrencyCode != value)
+            {
+                _selectedCurrencyCode = value;
+                InvokeAsync(async () =>
+                {
+                    await RecalculateWithCurrency();
+                    StateHasChanged();
+                });
+            }
+        }
+    }
+    private List<CurrencyDto> currencies = new();
+    private Dictionary<string, decimal> exchangeRates = new();
+
     // Financial Summary
     private decimal totalRevenue = 0;
     private decimal totalCommission = 0;
@@ -437,9 +478,65 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCurrencies();
         await LoadFinancialSummary();
         await LoadCommissionReport();
         await LoadClaimsReport();
+    }
+
+    private async Task LoadCurrencies()
+    {
+        try
+        {
+            var result = await CurrencyService.GetActiveCurrenciesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                currencies = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading currencies: {ex.Message}");
+        }
+    }
+
+    private async Task RecalculateWithCurrency()
+    {
+        exchangeRates.Clear();
+        await LoadFinancialSummary();
+        await LoadCommissionReport();
+        await LoadClaimsReport();
+    }
+
+    private async Task<decimal> ConvertAmount(decimal amount, string fromCurrency)
+    {
+        if (fromCurrency == selectedCurrencyCode)
+            return amount;
+
+        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
+        if (exchangeRates.ContainsKey(cacheKey))
+        {
+            return amount * exchangeRates[cacheKey];
+        }
+
+        try
+        {
+            var result = await CurrencyService.ConvertAmountAsync(amount, fromCurrency, selectedCurrencyCode);
+            if (result.IsSuccess)
+            {
+                if (amount != 0)
+                {
+                    exchangeRates[cacheKey] = result.Data / amount;
+                }
+                return result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error converting amount: {ex.Message}");
+        }
+
+        return amount;
     }
 
     private async Task LoadFinancialSummary()
@@ -453,6 +550,8 @@
 
             if (result.IsSuccess && result.Data != null)
             {
+                // Note: These values come from backend and are summed without currency conversion
+                // For now we display them, but ideally backend should handle currency conversion
                 totalRevenue = result.Data.TotalPremiums;
                 totalCommission = result.Data.TotalCommissions;
                 monthlyRevenue = result.Data.MonthlyRevenue;
@@ -493,11 +592,19 @@
             {
                 var policies = policiesResult.Data.Items.ToList();
 
-                // Calculate commission metrics from real data
+                // Calculate commission metrics from real data with currency conversion
                 commissionNewPolicies = policies.Count(p => !p.ParentPolicyId.HasValue);
                 commissionRenewals = policies.Count(p => p.ParentPolicyId.HasValue);
-                commissionTotalPremium = policies.Sum(p => p.PremiumAmount);
-                commissionTotalCommission = policies.Sum(p => p.CommissionAmount);
+
+                commissionTotalPremium = 0;
+                commissionTotalCommission = 0;
+
+                foreach (var policy in policies)
+                {
+                    commissionTotalPremium += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                    commissionTotalCommission += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+                }
+
                 commissionRate = commissionTotalPremium > 0
                     ? (commissionTotalCommission / commissionTotalPremium * 100)
                     : 0;
@@ -536,9 +643,14 @@
                     claims = claims.Where(c => c.ClaimDate <= claimsEndDate.Value).ToList();
                 }
 
-                // Calculate claims metrics from real data
+                // Calculate claims metrics from real data with currency conversion
                 claimsTotalCount = claims.Count;
-                claimsTotalAmount = claims.Sum(c => c.ClaimAmount);
+                claimsTotalAmount = 0;
+
+                foreach (var claim in claims)
+                {
+                    claimsTotalAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                }
 
                 // Group by status
                 claimsSubmitted = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Submitted);
@@ -547,12 +659,33 @@
                 claimsRejected = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected);
                 claimsSettled = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled);
 
-                // Calculate amounts by status
-                claimsSubmittedAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Submitted).Sum(c => c.ClaimAmount);
-                claimsUnderReviewAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.UnderReview).Sum(c => c.ClaimAmount);
-                claimsApprovedAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Approved).Sum(c => c.ClaimAmount);
-                claimsRejectedAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected).Sum(c => c.ClaimAmount);
-                claimsSettledAmount = claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled).Sum(c => c.ClaimAmount);
+                // Calculate amounts by status with currency conversion
+                claimsSubmittedAmount = 0;
+                claimsUnderReviewAmount = 0;
+                claimsApprovedAmount = 0;
+                claimsRejectedAmount = 0;
+                claimsSettledAmount = 0;
+
+                foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Submitted))
+                {
+                    claimsSubmittedAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                }
+                foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.UnderReview))
+                {
+                    claimsUnderReviewAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                }
+                foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Approved))
+                {
+                    claimsApprovedAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                }
+                foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected))
+                {
+                    claimsRejectedAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                }
+                foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled))
+                {
+                    claimsSettledAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                }
 
                 Snackbar.Add("Hasar raporu oluşturuldu", MudBlazor.Severity.Success);
             }
@@ -657,7 +790,7 @@
 
     private string GetAverageClaim(int count, decimal amount)
     {
-        if (count == 0) return "₺0.00";
-        return (amount / count).ToString("C2");
+        if (count == 0) return "0.00";
+        return (amount / count).ToString("N2");
     }
 }

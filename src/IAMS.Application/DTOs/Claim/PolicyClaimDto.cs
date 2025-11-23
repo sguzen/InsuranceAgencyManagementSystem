@@ -10,6 +10,7 @@ namespace IAMS.Application.DTOs.Claim
         public string PolicyNumber { get; set; } = string.Empty;
         public string ClaimNumber { get; set; } = string.Empty;
         public decimal ClaimAmount { get; set; }
+        public string Currency { get; set; } = "TRY";
         public DateTime ClaimDate { get; set; }
         public DateTime IncidentDate { get; set; }
         public ClaimStatus Status { get; set; }

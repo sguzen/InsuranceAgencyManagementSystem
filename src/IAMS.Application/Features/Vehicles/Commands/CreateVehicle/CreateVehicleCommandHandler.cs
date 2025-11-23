@@ -68,7 +68,20 @@ namespace IAMS.Application.Features.Vehicles.Commands.CreateVehicle
                     return Result<VehicleDto>.Failure($"Vehicle with chassis number {request.VehicleDto.ChassisNumber} already exists", string.Empty);
                 }
 
+                // Look up currency ID from currency code
+                var currency = await _unitOfWork.Currencies.GetByCodeAsync(request.VehicleDto.Currency);
+                if (currency == null)
+                {
+                    // Default to TRY if currency not found
+                    currency = await _unitOfWork.Currencies.GetByCodeAsync("TRY");
+                    if (currency == null)
+                    {
+                        return Result<VehicleDto>.Failure("Default currency (TRY) not found in system", string.Empty);
+                    }
+                }
+
                 var vehicle = _mapper.Map<Vehicle>(request.VehicleDto);
+                vehicle.CurrencyId = currency.Id; // Set the currency ID
                 vehicle.CreatedOn = DateTime.UtcNow;
 
                 await _unitOfWork.Vehicles.AddAsync(vehicle);

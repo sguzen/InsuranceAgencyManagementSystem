@@ -226,8 +226,8 @@ namespace IAMS.UnitTests.Application.Services.Calculations
             var policy = CreateValidPolicy(existingPremium: 10000m);
             policy.NoClaimDiscountRate = 20m;           // -20% = 8000
             policy.FleetDiscountRate = 10m;             // -10% of original = 7000
-            policy.HasGlassCoverage = true;             // +5% of original 10000 = +500
-            policy.HasTheftCoverage = true;             // +8% of original 10000 = +800
+            policy.HasGlassCoverage = true;             // +5% of discounted 7000 = +350
+            policy.HasTheftCoverage = true;             // +8% of discounted 7000 = +560
 
             // Act
             var premium = await _calculator.CalculatePremiumAsync(policy);
@@ -235,8 +235,8 @@ namespace IAMS.UnitTests.Application.Services.Calculations
             // Assert
             // Base: 10000
             // After discounts: 7000
-            // After coverages: 7000 + 500 + 800 = 8300
-            premium.Should().Be(8300m);
+            // After coverages (% of discounted): 7000 + 350 + 560 = 7910
+            premium.Should().Be(7910m);
         }
 
         [Fact]

@@ -4,10 +4,5 @@ using MediatR;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus
 {
-    public record GetPoliciesByStatusQuery() : IRequest<Result<Dictionary<PolicyStatus, int>>>
-    {
-
-        public PolicyStatus PolicyStatus { get; set; }
-        
-    }
+    public record GetPoliciesByStatusQuery() : IRequest<Result<Dictionary<PolicyStatus, int>>>;
 }

@@ -72,6 +72,7 @@ namespace IAMS.Persistence.Extensions
             // Register specialized repositories as scoped
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IPolicyRepository, PolicyRepository>();
+            services.AddScoped<IPolicyTypeRepository, PolicyTypeRepository>();
             services.AddScoped<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<ICommissionRateRepository, CommissionRateRepository>();

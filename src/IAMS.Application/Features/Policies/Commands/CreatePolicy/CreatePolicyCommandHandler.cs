@@ -55,6 +55,16 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
 
                 var policy = _mapper.Map<Domain.Entities.Policy>(request.PolicyDto);
 
+                // Look up currency by code and set CurrencyId
+                var currency = await _unitOfWork.Currencies.GetByCodeAsync(request.PolicyDto.Currency);
+                if (currency == null)
+                {
+                    return Result<PolicyDto>.ValidationFailure(
+                        "Geçersiz para birimi",
+                        new List<string> { $"Para birimi '{request.PolicyDto.Currency}' bulunamadı" });
+                }
+                policy.CurrencyId = currency.Id;
+
                 // Generate policy number if not provided
                 if (string.IsNullOrEmpty(policy.PolicyNumber))
                 {

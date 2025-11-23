@@ -233,6 +233,12 @@ namespace IAMS.Domain.Entities
             AddDomainEvent(new PolicyPremiumUpdatedEvent(this, oldPremium, newPremiumAmount, updatedBy));
         }
 
+        /// <summary>
+        /// Calculates commission based on current premium and rate.
+        /// NOTE: This is a legacy method. For new code, use ICommissionCalculator service
+        /// which looks up rates from the database based on policy type and company.
+        /// </summary>
+        [Obsolete("Use ICommissionCalculator service instead for database-driven commission calculation")]
         public void CalculateCommission()
         {
             CommissionAmount = PremiumAmount * (CommissionRate / 100);

@@ -499,9 +499,8 @@
         }
     }
     private List<CurrencyDto> currencies = new();
-    private Dictionary<string, decimal> exchangeRates = new();
 
-    // Calculated statistics with currency conversion
+    // Calculated statistics for filtered policies
     private decimal totalPremiums = 0;
     private decimal totalCommissions = 0;
     private decimal averagePremium = 0;
@@ -534,7 +533,6 @@
 
     private async Task RecalculateWithCurrency()
     {
-        exchangeRates.Clear();
         await LoadStatistics();
     }
 
@@ -545,15 +543,7 @@
 
         try
         {
-            // Get base statistics for counts
-            var statsResult = await PolicyService.GetPolicyStatisticsAsync();
-
-            if (statsResult.IsSuccess && statsResult.Data != null)
-            {
-                statistics = statsResult.Data;
-            }
-
-            // Get all policies for currency conversion
+            // Get all policies
             var queryParams = new PolicyQueryParams
             {
                 PageSize = 10000,
@@ -564,7 +554,23 @@
 
             if (policiesResult.IsSuccess && policiesResult.Data != null)
             {
-                var policies = policiesResult.Data.Items.ToList();
+                // Filter policies by selected currency
+                var allPolicies = policiesResult.Data.Items.ToList();
+                var policies = allPolicies.Where(p => p.Currency == selectedCurrencyCode).ToList();
+
+                // Calculate statistics from filtered policies
+                statistics = new PolicyStatisticsDto
+                {
+                    TotalPolicies = policies.Count,
+                    ActivePolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Active),
+                    NewPoliciesThisMonth = policies.Count(p => p.StartDate >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)),
+                    RenewalsThisMonth = policies.Count(p => p.IsRenewal && p.StartDate >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)),
+                    ExpiredPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Expired || p.EndDate < DateTime.Now),
+                    DraftPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Draft),
+                    SuspendedPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Suspended),
+                    CancelledPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Cancelled),
+                    CancellationsThisMonth = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Cancelled && p.ModifiedOn >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1))
+                };
 
                 // Reset all calculated values
                 totalPremiums = 0;
@@ -579,26 +585,23 @@
                 var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
                 var firstDayOfYear = new DateTime(now.Year, 1, 1);
 
-                // Single pass through all policies for all calculations
+                // Single pass through filtered policies for all calculations
                 foreach (var policy in policies)
                 {
-                    var convertedPremium = await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                    var convertedCommission = await ConvertAmount(policy.CommissionAmount, policy.Currency);
-
-                    // Accumulate totals
-                    totalPremiums += convertedPremium;
-                    totalCommissions += convertedCommission;
+                    // No conversion needed - all policies are in the selected currency
+                    totalPremiums += policy.PremiumAmount;
+                    totalCommissions += policy.CommissionAmount;
 
                     // Monthly revenue (policies started this month)
                     if (policy.StartDate >= firstDayOfMonth)
                     {
-                        monthlyRevenue += convertedPremium;
+                        monthlyRevenue += policy.PremiumAmount;
                     }
 
                     // Yearly revenue (policies started this year)
                     if (policy.StartDate >= firstDayOfYear)
                     {
-                        yearlyRevenue += convertedPremium;
+                        yearlyRevenue += policy.PremiumAmount;
                     }
 
                     // Revenue by type
@@ -606,11 +609,11 @@
                     if (revenueByType.ContainsKey(typeName))
                     {
                         var (count, revenue) = revenueByType[typeName];
-                        revenueByType[typeName] = (count + 1, revenue + convertedPremium);
+                        revenueByType[typeName] = (count + 1, revenue + policy.PremiumAmount);
                     }
                     else
                     {
-                        revenueByType[typeName] = (1, convertedPremium);
+                        revenueByType[typeName] = (1, policy.PremiumAmount);
                     }
 
                     // Revenue by company
@@ -618,11 +621,11 @@
                     if (revenueByCompany.ContainsKey(companyName))
                     {
                         var (count, revenue) = revenueByCompany[companyName];
-                        revenueByCompany[companyName] = (count + 1, revenue + convertedPremium);
+                        revenueByCompany[companyName] = (count + 1, revenue + policy.PremiumAmount);
                     }
                     else
                     {
-                        revenueByCompany[companyName] = (1, convertedPremium);
+                        revenueByCompany[companyName] = (1, policy.PremiumAmount);
                     }
                 }
 
@@ -642,37 +645,6 @@
             loading = false;
             StateHasChanged();
         }
-    }
-
-    private async Task<decimal> ConvertAmount(decimal amount, string fromCurrency)
-    {
-        if (fromCurrency == selectedCurrencyCode)
-            return amount;
-
-        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
-        if (exchangeRates.ContainsKey(cacheKey))
-        {
-            return amount * exchangeRates[cacheKey];
-        }
-
-        try
-        {
-            var result = await CurrencyService.ConvertAmountAsync(amount, fromCurrency, selectedCurrencyCode);
-            if (result.IsSuccess)
-            {
-                if (amount != 0)
-                {
-                    exchangeRates[cacheKey] = result.Data / amount;
-                }
-                return result.Data;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error converting amount: {ex.Message}");
-        }
-
-        return amount;
     }
 
     private async Task ExportReport(string format)

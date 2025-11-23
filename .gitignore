@@ -149,6 +149,7 @@ appsettings.Development.json
 **/appsettings.*.json
 !**/appsettings.json
 !**/appsettings.Development.example.json
+!**/appsettings.Production.example.json
 
 ## Connection strings and secrets
 connectionstrings.json

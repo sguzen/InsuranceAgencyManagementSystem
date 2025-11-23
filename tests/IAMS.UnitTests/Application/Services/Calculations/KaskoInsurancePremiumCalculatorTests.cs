@@ -81,8 +81,8 @@ namespace IAMS.UnitTests.Application.Services.Calculations
             // Assert
             // Base: 5000
             // After no-claim (10%): 4500
-            // After glass coverage (+5% of 5000): 4750
-            premium.Should().Be(4750m);
+            // After glass coverage (+5% of discounted 4500): 4725
+            premium.Should().Be(4725m);
         }
 
         [Fact]

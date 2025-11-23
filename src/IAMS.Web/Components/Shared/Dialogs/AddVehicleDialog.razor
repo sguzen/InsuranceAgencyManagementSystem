@@ -224,6 +224,7 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public int CustomerId { get; set; }
+    [Parameter] public bool IsTrafficInsurance { get; set; }
 
     private CreateVehicleDto model = new();
     private List<VehicleBrandDto>? brands;
@@ -238,7 +239,9 @@
     {
         // Initialize model with customer ID and defaults
         model.CustomerId = CustomerId;
-        model.VehicleType = VehicleType.Car;
+
+        // Auto-populate Commercial vehicle type for traffic insurance
+        model.VehicleType = IsTrafficInsurance ? VehicleType.Commercial : VehicleType.Car;
         model.FuelType = VehicleFuelType.Gasoline;
         model.UsageType = VehicleUsageType.Private;
         model.Currency = "TRY";

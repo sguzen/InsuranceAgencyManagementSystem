@@ -342,7 +342,7 @@
                                 <MudGrid>
                                     <MudItem xs="12" md="4">
                                         <MudNumericField Value="model.PremiumAmount"
-                                                       ValueChanged="@OnPremiumAmountChanged"
+                                                       ValueChanged="@((decimal value) => OnPremiumAmountChanged(value))"
                                                        Label="Prim Tutarı *"
                                                        Variant="Variant.Outlined"
                                                        Required="true"
@@ -356,7 +356,7 @@
                                     </MudItem>
                                     <MudItem xs="12" md="4">
                                         <MudNumericField Value="model.CommissionRate"
-                                                       ValueChanged="@OnCommissionRateChanged"
+                                                       ValueChanged="@((decimal value) => OnCommissionRateChanged(value))"
                                                        Label="Komisyon Oranı"
                                                        Variant="Variant.Outlined"
                                                        For="@(() => model.CommissionRate)"

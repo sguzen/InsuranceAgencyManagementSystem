@@ -73,6 +73,16 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                 // Map the updated values
                 _mapper.Map(request.PolicyDto, existingPolicy);
 
+                // Look up currency by code and set CurrencyId
+                var currency = await _unitOfWork.Currencies.GetByCodeAsync(request.PolicyDto.Currency);
+                if (currency == null)
+                {
+                    return Result<PolicyDto>.ValidationFailure(
+                        "Geçersiz para birimi",
+                        new List<string> { $"Para birimi '{request.PolicyDto.Currency}' bulunamadı" });
+                }
+                existingPolicy.CurrencyId = currency.Id;
+
                 // Recalculate if policy type or insurance company changed, or if premium changed significantly
                 bool shouldRecalculate =
                     originalPolicyTypeId != existingPolicy.PolicyTypeId ||

@@ -81,7 +81,7 @@
                             {
                                 @foreach (var policyType in policyTypes)
                                 {
-                                    <MudSelectItem Value="@policyType.Id">@policyType.Name</MudSelectItem>
+                                    <MudSelectItem T="int?" Value="@((int?)policyType.Id)">@policyType.Name</MudSelectItem>
                                 }
                             }
                         </MudSelect>

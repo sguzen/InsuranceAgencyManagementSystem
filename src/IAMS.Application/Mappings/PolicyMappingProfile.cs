@@ -8,7 +8,8 @@ namespace IAMS.Application.Mappings
     {
         public PolicyMappingProfile()
         {
-            CreateMap<Policy, PolicyDto>();
+            CreateMap<Policy, PolicyDto>()
+                .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency != null ? src.Currency.Code : "TRY"));
 
             CreateMap<CreatePolicyDto, Policy>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -16,6 +17,8 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Domain.Enums.PolicyStatus.Draft))
                 .ForMember(dest => dest.CommissionAmount, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrencyId, opt => opt.Ignore()) // Will be set in handler after currency lookup
+                .ForMember(dest => dest.Currency, opt => opt.Ignore()) // Navigation property, ignore during mapping
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())
                 .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyType, opt => opt.Ignore())
@@ -31,6 +34,8 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.CommissionAmount, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrencyId, opt => opt.Ignore()) // Will be set in handler after currency lookup
+                .ForMember(dest => dest.Currency, opt => opt.Ignore()) // Navigation property, ignore during mapping
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())
                 .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyType, opt => opt.Ignore())

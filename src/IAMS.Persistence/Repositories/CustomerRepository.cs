@@ -106,6 +106,10 @@ namespace IAMS.Persistence.Repositories
                 query = query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName);
             }
 
+            // Include Policies for calculating aggregated data (ActivePoliciesCount, TotalPremium, etc.)
+            // Filter out deleted policies to avoid loading unnecessary data
+            query = query.Include(c => c.Policies.Where(p => !p.IsDeleted));
+
             // Apply pagination
             var customers = await query
                 .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)

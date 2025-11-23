@@ -442,9 +442,11 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public Task<int> GetNewCustomersCountAsync(DateTime fromDate)
+        public async Task<int> GetNewCustomersCountAsync(DateTime fromDate)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Where(c => !c.IsDeleted && c.CreatedOn >= fromDate)
+                .CountAsync();
         }
 
         #region private methods

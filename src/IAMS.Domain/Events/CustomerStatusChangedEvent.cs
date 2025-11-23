@@ -16,7 +16,7 @@ namespace IAMS.Domain.Events
         public CustomerStatus NewStatus { get; }
         public string ChangedBy { get; }
 
-        public DateTime OccurredOn => throw new NotImplementedException();
+        public DateTime OccurredOn { get; }
 
         public CustomerStatusChangedEvent(Customer customer, CustomerStatus oldStatus, CustomerStatus newStatus, string changedBy)
         {
@@ -24,6 +24,7 @@ namespace IAMS.Domain.Events
             OldStatus = oldStatus;
             NewStatus = newStatus;
             ChangedBy = changedBy;
+            OccurredOn = DateTime.UtcNow;
         }
     }
 }

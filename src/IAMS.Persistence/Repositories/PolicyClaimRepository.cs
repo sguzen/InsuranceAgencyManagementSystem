@@ -71,24 +71,46 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public Task<bool> ExistsByPolicyIdAsync(int policyId)
+        public async Task<bool> ExistsByPolicyIdAsync(int policyId)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .AnyAsync(pc => pc.PolicyId == policyId && !pc.IsDeleted);
         }
 
-        public Task<List<Claim>> GetClaimsByCustomerIdAsync(int customerId)
+        public async Task<List<PolicyClaim>> GetClaimsByCustomerIdAsync(int customerId)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Include(pc => pc.Policy)
+                    .ThenInclude(p => p.Customer)
+                .Include(pc => pc.Policy)
+                    .ThenInclude(p => p.InsuranceCompany)
+                .Where(pc => !pc.IsDeleted && pc.Policy.CustomerId == customerId)
+                .OrderByDescending(pc => pc.ClaimDate)
+                .ToListAsync();
         }
 
-        public Task<int> GetClaimCountByStatusAsync(ClaimStatus status)
+        public async Task<int> GetClaimCountByStatusAsync(ClaimStatus status)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                .Where(pc => pc.Status == status && !pc.IsDeleted)
+                .CountAsync();
         }
 
-        public Task<decimal> GetTotalClaimAmountAsync(DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<decimal> GetTotalClaimAmountAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
-            throw new NotImplementedException();
+            var query = _dbSet.Where(pc => !pc.IsDeleted);
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(pc => pc.ClaimDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(pc => pc.ClaimDate <= endDate.Value);
+            }
+
+            return await query.SumAsync(pc => pc.ClaimAmount);
         }
     }
 }

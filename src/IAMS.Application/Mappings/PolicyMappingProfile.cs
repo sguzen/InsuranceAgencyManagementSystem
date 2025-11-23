@@ -26,6 +26,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())
                 .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyType, opt => opt.Ignore())
+                .ForMember(dest => dest.Vehicle, opt => opt.Ignore()) // Navigation property, ignore during mapping
                 .ForMember(dest => dest.PolicyPayments, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyClaims, opt => opt.Ignore());
 
@@ -43,6 +44,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())
                 .ForMember(dest => dest.InsuranceCompany, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyType, opt => opt.Ignore())
+                .ForMember(dest => dest.Vehicle, opt => opt.Ignore()) // Navigation property, ignore during mapping
                 .ForMember(dest => dest.PolicyPayments, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyClaims, opt => opt.Ignore());
         }

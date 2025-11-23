@@ -39,6 +39,7 @@ namespace IAMS.Application.DTOs.Customer
         public CustomerStatus Status { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedOn { get; set; }
+        public DateOnly CreatedDate => DateOnly.FromDateTime(CreatedOn);
         public DateTime? ModifiedOn { get; set; }
         public string? CreatedBy { get; set; }
         public string? ModifiedBy { get; set; }

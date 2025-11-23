@@ -4,11 +4,14 @@
 
 @attribute [Authorize]
 @using IAMS.Application.DTOs.Policy
+@using IAMS.Application.DTOs.Currency
 @using IAMS.Application.Services.Policies
+@using IAMS.Application.Services.Currencies
 @using IAMS.Infrastructure.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 
 @inject IPolicyService PolicyService
+@inject ICurrencyService CurrencyService
 @inject IReportingService ReportingService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
@@ -17,18 +20,27 @@
 <PageTitle>Poliçe Raporları - IAMS</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <!-- Print Header (only visible when printing) -->
-    <div class="print-header" style="display: none;">
-        <h1>Poliçe Raporları</h1>
-        <div class="print-date">
-            @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
-        </div>
-    </div>
-
-    <MudText Typo="Typo.h4" Class="mb-4 no-print">
-        <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-2" />
-        Poliçe Raporları
-    </MudText>
+    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4">
+            <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-2" />
+            Poliçe Raporları
+        </MudText>
+        <MudSelect T="string"
+                   Label="Para Birimi"
+                   Variant="Variant.Outlined"
+                   @bind-Value="selectedCurrencyCode"
+                   Style="min-width: 150px;">
+            @if (currencies != null)
+            {
+                @foreach (var currency in currencies)
+                {
+                    <MudSelectItem Value="@currency.Code">
+                        @currency.Code - @currency.Name
+                    </MudSelectItem>
+                }
+            }
+        </MudSelect>
+    </MudStack>
 
     @if (loading)
     {
@@ -71,8 +83,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Prim</MudText>
-                                <MudText Typo="Typo.h5">@statistics?.TotalPremiums.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Prim (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@totalPremiums.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" />
                         </div>
@@ -85,8 +97,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Komisyon</MudText>
-                                <MudText Typo="Typo.h5">@statistics?.TotalCommissions.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Komisyon (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@totalCommissions.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Info" Size="Size.Large" />
                         </div>
@@ -144,8 +156,8 @@
                     <MudCardContent>
                         <div class="d-flex justify-space-between">
                             <div>
-                                <MudText Typo="Typo.body2" Color="Color.Default">Ortalama Prim</MudText>
-                                <MudText Typo="Typo.h5">@statistics?.AveragePremium.ToString("C2")</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Default">Ortalama Prim (@selectedCurrencyCode)</MudText>
+                                <MudText Typo="Typo.h5">@averagePremium.ToString("N2")</MudText>
                             </div>
                             <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Secondary" Size="Size.Large" />
                         </div>
@@ -206,24 +218,23 @@
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
-                        @if (statistics?.PoliciesByType != null && statistics.PoliciesByType.Any())
+                        @if (revenueByType != null && revenueByType.Any())
                         {
                             <MudSimpleTable Dense="true" Hover="true">
                                 <thead>
                                     <tr>
                                         <th>Poliçe Tipi</th>
                                         <th style="text-align: right;">Sayı</th>
-                                        <th style="text-align: right;">Gelir</th>
+                                        <th style="text-align: right;">Gelir (@selectedCurrencyCode)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var type in statistics.PoliciesByType)
+                                    @foreach (var type in revenueByType)
                                     {
-                                        var revenue = statistics.RevenueByType?.GetValueOrDefault(type.Key, 0m) ?? 0m;
                                         <tr>
                                             <td>@type.Key</td>
-                                            <td style="text-align: right;">@type.Value.ToString("N0")</td>
-                                            <td style="text-align: right;">@revenue.ToString("C2")</td>
+                                            <td style="text-align: right;">@type.Value.Count.ToString("N0")</td>
+                                            <td style="text-align: right;">@type.Value.Revenue.ToString("N2")</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -248,24 +259,23 @@
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
-                        @if (statistics?.PoliciesByCompany != null && statistics.PoliciesByCompany.Any())
+                        @if (revenueByCompany != null && revenueByCompany.Any())
                         {
                             <MudSimpleTable Dense="true" Hover="true">
                                 <thead>
                                     <tr>
                                         <th>Sigorta Şirketi</th>
                                         <th style="text-align: right;">Sayı</th>
-                                        <th style="text-align: right;">Gelir</th>
+                                        <th style="text-align: right;">Gelir (@selectedCurrencyCode)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var company in statistics.PoliciesByCompany)
+                                    @foreach (var company in revenueByCompany)
                                     {
-                                        var revenue = statistics.RevenueByCompany?.GetValueOrDefault(company.Key, 0m) ?? 0m;
                                         <tr>
                                             <td>@company.Key</td>
-                                            <td style="text-align: right;">@company.Value.ToString("N0")</td>
-                                            <td style="text-align: right;">@revenue.ToString("C2")</td>
+                                            <td style="text-align: right;">@company.Value.Count.ToString("N0")</td>
+                                            <td style="text-align: right;">@company.Value.Revenue.ToString("N2")</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -342,34 +352,34 @@
                         <MudSimpleTable Dense="true">
                             <tbody>
                                 <tr>
-                                    <td>Aylık Gelir</td>
+                                    <td>Aylık Gelir (@selectedCurrencyCode)</td>
                                     <td style="text-align: right;">
                                         <MudChip Color="Color.Success" Size="Size.Small" T="String">
-                                            @statistics?.MonthlyRevenue.ToString("C2")
+                                            @monthlyRevenue.ToString("N2")
                                         </MudChip>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Yıllık Gelir</td>
+                                    <td>Yıllık Gelir (@selectedCurrencyCode)</td>
                                     <td style="text-align: right;">
                                         <MudChip Color="Color.Success" Size="Size.Small" T="String">
-                                            @statistics?.YearlyRevenue.ToString("C2")
+                                            @yearlyRevenue.ToString("N2")
                                         </MudChip>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Toplam Prim</td>
+                                    <td>Toplam Prim (@selectedCurrencyCode)</td>
                                     <td style="text-align: right;">
                                         <MudChip Color="Color.Primary" Size="Size.Small" T="String">
-                                            @statistics?.TotalPremiums.ToString("C2")
+                                            @totalPremiums.ToString("N2")
                                         </MudChip>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Toplam Komisyon</td>
+                                    <td>Toplam Komisyon (@selectedCurrencyCode)</td>
                                     <td style="text-align: right;">
                                         <MudChip Color="Color.Info" Size="Size.Small" T="String">
-                                            @statistics?.TotalCommissions.ToString("C2")
+                                            @totalCommissions.ToString("N2")
                                         </MudChip>
                                     </td>
                                 </tr>
@@ -470,8 +480,61 @@
     private DateTime? endDate = DateTime.Now;
     private int daysAhead = 30;
 
+    // Currency
+    private string _selectedCurrencyCode = "TRY";
+    private string selectedCurrencyCode
+    {
+        get => _selectedCurrencyCode;
+        set
+        {
+            if (_selectedCurrencyCode != value)
+            {
+                _selectedCurrencyCode = value;
+                InvokeAsync(async () =>
+                {
+                    await RecalculateWithCurrency();
+                    StateHasChanged();
+                });
+            }
+        }
+    }
+    private List<CurrencyDto> currencies = new();
+    private Dictionary<string, decimal> exchangeRates = new();
+
+    // Calculated statistics with currency conversion
+    private decimal totalPremiums = 0;
+    private decimal totalCommissions = 0;
+    private decimal averagePremium = 0;
+    private decimal monthlyRevenue = 0;
+    private decimal yearlyRevenue = 0;
+    private Dictionary<string, (int Count, decimal Revenue)> revenueByType = new();
+    private Dictionary<string, (int Count, decimal Revenue)> revenueByCompany = new();
+
     protected override async Task OnInitializedAsync()
     {
+        await LoadCurrencies();
+        await LoadStatistics();
+    }
+
+    private async Task LoadCurrencies()
+    {
+        try
+        {
+            var result = await CurrencyService.GetActiveCurrenciesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                currencies = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading currencies: {ex.Message}");
+        }
+    }
+
+    private async Task RecalculateWithCurrency()
+    {
+        exchangeRates.Clear();
         await LoadStatistics();
     }
 
@@ -482,15 +545,85 @@
 
         try
         {
-            var result = await PolicyService.GetPolicyStatisticsAsync();
+            // Get base statistics for counts
+            var statsResult = await PolicyService.GetPolicyStatisticsAsync();
 
-            if (result.IsSuccess)
+            if (statsResult.IsSuccess && statsResult.Data != null)
             {
-                statistics = result.Data;
+                statistics = statsResult.Data;
+            }
+
+            // Get all policies for currency conversion
+            var queryParams = new PolicyQueryParams
+            {
+                PageSize = 10000,
+                PageNumber = 1
+            };
+
+            var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
+
+            if (policiesResult.IsSuccess && policiesResult.Data != null)
+            {
+                var policies = policiesResult.Data.Items.ToList();
+
+                // Calculate financial metrics with currency conversion
+                totalPremiums = 0;
+                totalCommissions = 0;
+
+                foreach (var policy in policies)
+                {
+                    totalPremiums += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                    totalCommissions += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+                }
+
+                averagePremium = policies.Count > 0 ? totalPremiums / policies.Count : 0;
+
+                // Calculate monthly and yearly revenue
+                var oneMonthAgo = DateTime.Now.AddMonths(-1);
+                var oneYearAgo = DateTime.Now.AddYears(-1);
+
+                monthlyRevenue = 0;
+                yearlyRevenue = 0;
+
+                foreach (var policy in policies.Where(p => p.StartDate >= oneMonthAgo))
+                {
+                    monthlyRevenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                }
+
+                foreach (var policy in policies.Where(p => p.StartDate >= oneYearAgo))
+                {
+                    yearlyRevenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                }
+
+                // Calculate revenue by type
+                revenueByType.Clear();
+                var groupedByType = policies.GroupBy(p => p.PolicyType?.Name ?? "Bilinmeyen");
+                foreach (var group in groupedByType)
+                {
+                    decimal revenue = 0;
+                    foreach (var policy in group)
+                    {
+                        revenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                    }
+                    revenueByType[group.Key] = (group.Count(), revenue);
+                }
+
+                // Calculate revenue by company
+                revenueByCompany.Clear();
+                var groupedByCompany = policies.GroupBy(p => p.InsuranceCompany?.Name ?? "Bilinmeyen");
+                foreach (var group in groupedByCompany)
+                {
+                    decimal revenue = 0;
+                    foreach (var policy in group)
+                    {
+                        revenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                    }
+                    revenueByCompany[group.Key] = (group.Count(), revenue);
+                }
             }
             else
             {
-                Snackbar.Add(result.Message ?? "İstatistikler yüklenirken hata oluştu", MudBlazor.Severity.Error);
+                Snackbar.Add("Poliçe verileri yüklenirken hata oluştu", MudBlazor.Severity.Warning);
             }
         }
         catch (Exception ex)
@@ -502,6 +635,37 @@
             loading = false;
             StateHasChanged();
         }
+    }
+
+    private async Task<decimal> ConvertAmount(decimal amount, string fromCurrency)
+    {
+        if (fromCurrency == selectedCurrencyCode)
+            return amount;
+
+        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
+        if (exchangeRates.ContainsKey(cacheKey))
+        {
+            return amount * exchangeRates[cacheKey];
+        }
+
+        try
+        {
+            var result = await CurrencyService.ConvertAmountAsync(amount, fromCurrency, selectedCurrencyCode);
+            if (result.IsSuccess)
+            {
+                if (amount != 0)
+                {
+                    exchangeRates[cacheKey] = result.Data / amount;
+                }
+                return result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error converting amount: {ex.Message}");
+        }
+
+        return amount;
     }
 
     private async Task ExportReport(string format)

@@ -262,6 +262,7 @@
                                 <MudTh>Poliçe No</MudTh>
                                 <MudTh>Sigorta Şirketi</MudTh>
                                 <MudTh>Poliçe Tipi</MudTh>
+                                <MudTh>Araç</MudTh>
                                 <MudTh>Başlangıç</MudTh>
                                 <MudTh>Bitiş</MudTh>
                                 <MudTh Style="text-align: right">Prim</MudTh>
@@ -272,6 +273,19 @@
                                 <MudTd DataLabel="Poliçe No">@context.PolicyNumber</MudTd>
                                 <MudTd DataLabel="Sigorta Şirketi">@context.InsuranceCompany?.Name</MudTd>
                                 <MudTd DataLabel="Poliçe Tipi">@context.PolicyType?.Name</MudTd>
+                                <MudTd DataLabel="Araç">
+                                    @if (context.Vehicle != null)
+                                    {
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.body2"><strong>@context.Vehicle.PlateNumber</strong></MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Vehicle.FullName</MudText>
+                                        </MudStack>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
+                                    }
+                                </MudTd>
                                 <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Prim" Style="text-align: right">

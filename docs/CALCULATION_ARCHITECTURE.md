@@ -567,12 +567,13 @@ The external service should accept POST requests with this JSON structure:
   "policyTypeCode": "TRF",
   "policyId": 123,
   "policyNumber": "POL-2024-001",
-  "coverageAmount": 50000.00,
+  "premiumAmount": 0.00,
   "deductibleAmount": 500.00,
   "startDate": "2024-01-01T00:00:00",
   "endDate": "2024-12-31T23:59:59",
   "noClaimDiscountRate": 10.0,
   "fleetDiscountRate": 5.0,
+  "driverAccidentCoverageAmount": 10000,
   "vehicleData": {
     "vehicleId": 456,
     "plateNumber": "ABC123",
@@ -581,7 +582,9 @@ The external service should accept POST requests with this JSON structure:
     "enginePower": 150
   },
   "hasGlassCoverage": true,
-  "hasTheftCoverage": false
+  "hasTheftCoverage": false,
+  "hasNaturalDisasterCoverage": false,
+  "hasDriverAccidentCoverage": true
 }
 ```
 

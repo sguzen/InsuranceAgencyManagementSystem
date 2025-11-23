@@ -54,12 +54,13 @@ namespace IAMS.Application.Services.Calculations
                     PolicyTypeCode = policyTypeCode,
                     PolicyId = policy.Id,
                     PolicyNumber = policy.PolicyNumber,
-                    CoverageAmount = policy.CoverageAmount,
+                    PremiumAmount = policy.PremiumAmount,
                     DeductibleAmount = policy.DeductibleAmount,
                     StartDate = policy.StartDate,
                     EndDate = policy.EndDate,
                     NoClaimDiscountRate = policy.NoClaimDiscountRate,
                     FleetDiscountRate = policy.FleetDiscountRate,
+                    DriverAccidentCoverageAmount = policy.DriverAccidentCoverageAmount,
                     // Vehicle-specific data
                     VehicleData = policy.VehicleId.HasValue ? new VehicleCalculationData
                     {
@@ -145,12 +146,13 @@ namespace IAMS.Application.Services.Calculations
         public string PolicyTypeCode { get; set; } = string.Empty;
         public int PolicyId { get; set; }
         public string? PolicyNumber { get; set; }
-        public decimal? CoverageAmount { get; set; }
+        public decimal PremiumAmount { get; set; }
         public decimal? DeductibleAmount { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal? NoClaimDiscountRate { get; set; }
         public decimal? FleetDiscountRate { get; set; }
+        public int? DriverAccidentCoverageAmount { get; set; }
         public VehicleCalculationData? VehicleData { get; set; }
         public bool? HasGlassCoverage { get; set; }
         public bool? HasTheftCoverage { get; set; }

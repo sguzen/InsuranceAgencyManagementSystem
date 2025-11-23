@@ -215,8 +215,8 @@ namespace IAMS.UnitTests.Application.Services.Calculations
 
             // Assert
             premium.Should().BeGreaterThan(0);
-            // Older vehicle (6-10 years) gets medium base bonus
-            premium.Should().BeGreaterThan(600m); // 500 + 100 (age) + 60 (HP)
+            // Older vehicle (>5 years) gets no age bonus, just base + HP
+            premium.Should().Be(560m); // 500 (base) + 0 (no age bonus) + 60 (HP: 120 * 0.5)
         }
 
         [Fact]
@@ -235,8 +235,8 @@ namespace IAMS.UnitTests.Application.Services.Calculations
 
             // Assert
             premium.Should().BeGreaterThan(0);
-            // Very old vehicle doesn't get age bonus
-            premium.Should().BeGreaterThan(500m); // Just base + HP factor
+            // Very old vehicle gets no age bonus
+            premium.Should().Be(540m); // 500 (base) + 0 (no age bonus) + 40 (HP: 80 * 0.5)
         }
     }
 }

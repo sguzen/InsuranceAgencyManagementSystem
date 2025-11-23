@@ -79,10 +79,11 @@
                         </MudAutocomplete>
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudSelect 
+                        <MudSelect
                                  Label="Para Birimi *"
                                  Variant="Variant.Outlined"
                                  T="string"
+                                 Value="@selectedCurrencyCode"
                                  ValueChanged="OnCurrencyChanged">
                             @if (currencies != null)
                             {

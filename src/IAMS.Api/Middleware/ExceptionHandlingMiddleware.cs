@@ -90,10 +90,10 @@ namespace IAMS.Api.Middleware
                 UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Unauthorized access", "UNAUTHORIZED"),
                 TenantException => ((int)HttpStatusCode.BadRequest, exception.Message, "TENANT_ERROR"),
 
-                // Business rule violations
+                // Business rule violations (more specific exceptions must come before their base types)
                 InvalidOperationException => ((int)HttpStatusCode.BadRequest, exception.Message, "INVALID_OPERATION"),
-                ArgumentException => ((int)HttpStatusCode.BadRequest, exception.Message, "INVALID_ARGUMENT"),
                 ArgumentNullException => ((int)HttpStatusCode.BadRequest, "Required parameter is missing", "MISSING_PARAMETER"),
+                ArgumentException => ((int)HttpStatusCode.BadRequest, exception.Message, "INVALID_ARGUMENT"),
 
                 // Default to 500 Internal Server Error
                 _ => ((int)HttpStatusCode.InternalServerError,

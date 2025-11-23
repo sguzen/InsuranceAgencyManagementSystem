@@ -20,8 +20,19 @@
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
     <MudStack Spacing="4">
+        <!-- Print Header (only visible when printing) -->
+        <div class="print-header" style="display: none;">
+            <h1>Müşteri Raporu</h1>
+            @if (selectedCustomer != null)
+            {
+                <div class="print-date">
+                    <strong>@selectedCustomer.FirstName @selectedCustomer.LastName</strong> - @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
+                </div>
+            }
+        </div>
+
         <!-- Header -->
-        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="no-print">
             <MudText Typo="Typo.h4">
                 <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3" />
                 Müşteri Raporu
@@ -39,7 +50,7 @@
         </MudStack>
 
         <!-- Selection Card -->
-        <MudCard>
+        <MudCard Class="no-print">
             <MudCardHeader>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">
@@ -101,7 +112,7 @@
 
         @if (loading)
         {
-            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8 no-print">
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
                 <MudText Typo="Typo.h6">Müşteri bilgileri yükleniyor...</MudText>
             </MudStack>
@@ -330,7 +341,7 @@
         }
         else
         {
-            <MudPaper Class="pa-8" Elevation="0">
+            <MudPaper Class="pa-8 no-print" Elevation="0">
                 <MudStack AlignItems="AlignItems.Center" Spacing="4">
                     <MudIcon Icon="@Icons.Material.Filled.PersonSearch"
                              Style="font-size: 6rem;"

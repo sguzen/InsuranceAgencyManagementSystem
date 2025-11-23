@@ -16,11 +16,20 @@
 @inject IReportingService ReportingService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Mali Raporlar - IAMS</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <!-- Print Header (only visible when printing) -->
+    <div class="print-header" style="display: none;">
+        <h1>Mali Raporlar</h1>
+        <div class="print-date">
+            Para Birimi: @selectedCurrencyCode - @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
+        </div>
+    </div>
+
+    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4 no-print">
         <MudText Typo="Typo.h4">
             <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
             Mali Raporlar
@@ -114,7 +123,7 @@
                 <MudCard Elevation="0">
                     <MudCardContent>
                         <!-- Commission Report Parameters -->
-                        <MudGrid Class="mb-4">
+                        <MudGrid Class="mb-4 no-print">
                             <MudItem xs="12" md="4">
                                 <MudDatePicker Label="Başlangıç Tarihi"
                                               @bind-Date="commissionStartDate"
@@ -137,6 +146,12 @@
                                 </MudButton>
                             </MudItem>
                         </MudGrid>
+
+                        <!-- Print Date Range (only visible when printing) -->
+                        <div class="print-header" style="display: none; text-align: left; border: none; padding: 10px 0;">
+                            <strong>Komisyon Raporu</strong><br />
+                            Tarih Aralığı: @commissionStartDate?.ToString("dd.MM.yyyy") - @commissionEndDate?.ToString("dd.MM.yyyy")
+                        </div>
 
                         <!-- Commission Report Summary -->
                         <MudText Typo="Typo.h6" Class="mb-3">Komisyon Özeti</MudText>
@@ -205,9 +220,9 @@
                             </MudItem>
                         </MudGrid>
 
-                        <!-- Export Buttons -->
-                        <MudGrid>
-                            <MudItem xs="12" md="6">
+                        <!-- Export and Print Buttons -->
+                        <MudGrid Class="no-print">
+                            <MudItem xs="12" md="4">
                                 <MudButton Variant="Variant.Outlined"
                                           Color="Color.Error"
                                           StartIcon="@Icons.Material.Filled.PictureAsPdf"
@@ -225,7 +240,7 @@
                                     }
                                 </MudButton>
                             </MudItem>
-                            <MudItem xs="12" md="6">
+                            <MudItem xs="12" md="4">
                                 <MudButton Variant="Variant.Outlined"
                                           Color="Color.Success"
                                           StartIcon="@Icons.Material.Filled.TableChart"
@@ -243,6 +258,15 @@
                                     }
                                 </MudButton>
                             </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Print"
+                                          OnClick="PrintCommissionReport"
+                                          FullWidth="true">
+                                    Yazdır
+                                </MudButton>
+                            </MudItem>
                         </MudGrid>
                     </MudCardContent>
                 </MudCard>
@@ -253,7 +277,7 @@
                 <MudCard Elevation="0">
                     <MudCardContent>
                         <!-- Claims Report Parameters -->
-                        <MudGrid Class="mb-4">
+                        <MudGrid Class="mb-4 no-print">
                             <MudItem xs="12" md="4">
                                 <MudDatePicker Label="Başlangıç Tarihi"
                                               @bind-Date="claimsStartDate"
@@ -276,6 +300,12 @@
                                 </MudButton>
                             </MudItem>
                         </MudGrid>
+
+                        <!-- Print Date Range (only visible when printing) -->
+                        <div class="print-header" style="display: none; text-align: left; border: none; padding: 10px 0;">
+                            <strong>Hasar Raporu</strong><br />
+                            Tarih Aralığı: @claimsStartDate?.ToString("dd.MM.yyyy") - @claimsEndDate?.ToString("dd.MM.yyyy")
+                        </div>
 
                         <!-- Claims Report Summary -->
                         <MudText Typo="Typo.h6" Class="mb-3">Hasar Özeti</MudText>
@@ -370,9 +400,9 @@
                             </MudItem>
                         </MudGrid>
 
-                        <!-- Export Buttons -->
-                        <MudGrid>
-                            <MudItem xs="12" md="6">
+                        <!-- Export and Print Buttons -->
+                        <MudGrid Class="no-print">
+                            <MudItem xs="12" md="4">
                                 <MudButton Variant="Variant.Outlined"
                                           Color="Color.Error"
                                           StartIcon="@Icons.Material.Filled.PictureAsPdf"
@@ -390,7 +420,7 @@
                                     }
                                 </MudButton>
                             </MudItem>
-                            <MudItem xs="12" md="6">
+                            <MudItem xs="12" md="4">
                                 <MudButton Variant="Variant.Outlined"
                                           Color="Color.Success"
                                           StartIcon="@Icons.Material.Filled.TableChart"
@@ -406,6 +436,15 @@
                                     {
                                         <span>Excel Olarak İndir</span>
                                     }
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Print"
+                                          OnClick="PrintClaimsReport"
+                                          FullWidth="true">
+                                    Yazdır
                                 </MudButton>
                             </MudItem>
                         </MudGrid>
@@ -792,5 +831,29 @@
     {
         if (count == 0) return "0.00";
         return (amount / count).ToString("N2");
+    }
+
+    private async Task PrintCommissionReport()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task PrintClaimsReport()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 }

@@ -169,6 +169,32 @@ JOIN InsuranceCompanies ic ON cr.InsuranceCompanyId = ic.Id
 WHERE cr.IsActive = 1;
 ```
 
+### Enable External Calculation Service
+
+To route specific policy types (e.g., Traffic) to an external calculation service, configure in `appsettings.json`:
+
+```json
+{
+  "PremiumCalculation": {
+    "ExternalCalculationPolicyTypes": [ "TRF" ],
+    "FallbackToInternalOnFailure": true,
+    "ExternalService": {
+      "Enabled": true,
+      "BaseUrl": "https://external-service.example.com",
+      "ApiKey": "your-api-key",
+      "TimeoutSeconds": 30
+    }
+  }
+}
+```
+
+**Note:** Store API keys securely using User Secrets (dev) or Azure Key Vault (production):
+```bash
+dotnet user-secrets set "PremiumCalculation:ExternalService:ApiKey" "your-key"
+```
+
+See [External Premium Calculation Service](./CALCULATION_ARCHITECTURE.md#external-premium-calculation-service) for full details.
+
 ## Validation Helpers
 
 ### Check Calculator Exists for Policy Type

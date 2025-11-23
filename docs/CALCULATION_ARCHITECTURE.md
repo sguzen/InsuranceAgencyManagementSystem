@@ -9,6 +9,8 @@
 - [Usage Examples](#usage-examples)
 - [Adding New Policy Types](#adding-new-policy-types)
 - [Configuration](#configuration)
+  - [Commission Rate Configuration](#commission-rate-configuration)
+  - [External Premium Calculation Service](#external-premium-calculation-service)
 - [API Reference](#api-reference)
 
 ## Overview
@@ -488,6 +490,151 @@ JOIN PolicyTypes pt ON cr.PolicyTypeId = pt.Id
 JOIN InsuranceCompanies ic ON cr.InsuranceCompanyId = ic.Id
 WHERE cr.IsActive = 1
 ORDER BY pt.Code, ic.Code;
+```
+
+### External Premium Calculation Service
+
+The system supports routing premium calculations to an external service for specific policy types. This is useful when certain calculations need to be handled by external systems or third-party services.
+
+#### Configuration
+
+Configure external calculation in `appsettings.json`:
+
+```json
+{
+  "PremiumCalculation": {
+    "ExternalCalculationPolicyTypes": [ "TRF" ],
+    "FallbackToInternalOnFailure": true,
+    "ExternalService": {
+      "Enabled": false,
+      "BaseUrl": "https://external-calculator-service.example.com",
+      "CalculationEndpoint": "/api/premium/calculate",
+      "HealthCheckEndpoint": "/api/health",
+      "TimeoutSeconds": 30,
+      "ApiKey": "",
+      "MaxRetryAttempts": 3
+    }
+  }
+}
+```
+
+#### Configuration Options
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ExternalCalculationPolicyTypes` | Array of policy type codes that should use external calculation (e.g., ["TRF", "KAS"]) | `[]` |
+| `FallbackToInternalOnFailure` | If true, uses internal calculator when external service fails | `true` |
+| `ExternalService.Enabled` | Master switch to enable/disable external service | `false` |
+| `ExternalService.BaseUrl` | Base URL of the external calculation service | - |
+| `ExternalService.CalculationEndpoint` | API endpoint for premium calculation | `/api/premium/calculate` |
+| `ExternalService.HealthCheckEndpoint` | Health check endpoint | `/api/health` |
+| `ExternalService.TimeoutSeconds` | Request timeout in seconds | `30` |
+| `ExternalService.ApiKey` | API key for authentication (if required) | - |
+| `ExternalService.MaxRetryAttempts` | Maximum retry attempts for failed requests | `3` |
+
+#### How It Works
+
+1. **PolicyCalculatorFactory** resolves the appropriate internal calculator based on policy type
+2. If external calculation is configured for that policy type, the calculator is wrapped with **RoutingPremiumCalculator**
+3. **RoutingPremiumCalculator** checks configuration and routes the calculation:
+   - If `ExternalService.Enabled` is `true` AND policy type is in `ExternalCalculationPolicyTypes`, calls external service
+   - If external service fails AND `FallbackToInternalOnFailure` is `true`, uses internal calculator
+   - Otherwise, uses internal calculator directly
+
+#### Example: Enable External Calculation for Traffic Insurance
+
+```json
+{
+  "PremiumCalculation": {
+    "ExternalCalculationPolicyTypes": [ "TRF" ],
+    "FallbackToInternalOnFailure": true,
+    "ExternalService": {
+      "Enabled": true,
+      "BaseUrl": "https://traffic-calculator.example.com",
+      "ApiKey": "your-api-key-here",
+      "TimeoutSeconds": 15
+    }
+  }
+}
+```
+
+#### External Service Request Format
+
+The external service should accept POST requests with this JSON structure:
+
+```json
+{
+  "policyTypeCode": "TRF",
+  "policyId": 123,
+  "policyNumber": "POL-2024-001",
+  "coverageAmount": 50000.00,
+  "deductibleAmount": 500.00,
+  "startDate": "2024-01-01T00:00:00",
+  "endDate": "2024-12-31T23:59:59",
+  "noClaimDiscountRate": 10.0,
+  "fleetDiscountRate": 5.0,
+  "vehicleData": {
+    "vehicleId": 456,
+    "plateNumber": "ABC123",
+    "modelYear": 2020,
+    "currentValue": 25000.00,
+    "enginePower": 150
+  },
+  "hasGlassCoverage": true,
+  "hasTheftCoverage": false
+}
+```
+
+#### External Service Response Format
+
+The external service should return this JSON structure:
+
+```json
+{
+  "success": true,
+  "premiumAmount": 1250.50,
+  "errorMessage": null,
+  "breakDown": {
+    "basePremium": 1000.00,
+    "ageSurcharge": 100.00,
+    "powerSurcharge": 75.00,
+    "discounts": -150.00,
+    "glassCoverage": 225.50
+  }
+}
+```
+
+#### Monitoring and Logging
+
+The routing calculator logs the following events:
+- When external calculation is attempted
+- When external calculation succeeds/fails
+- When fallback to internal calculator occurs
+
+Example log output:
+```
+[INFO] Wrapping calculator TrafficInsurancePremiumCalculator with routing for policy type 'TRF'
+[INFO] Attempting external calculation for policy type 'TRF'
+[INFO] Successfully calculated premium using external service: 1250.50
+```
+
+Or in case of fallback:
+```
+[ERROR] External calculation failed for policy type 'TRF'
+[WARN] Falling back to internal calculator for policy type 'TRF'
+```
+
+#### Security Considerations
+
+- Store API keys in **User Secrets** (development) or **Azure Key Vault** (production), not in appsettings.json
+- Use HTTPS for external service communication
+- Implement request/response validation
+- Set appropriate timeout values to prevent long-running requests
+- Monitor external service availability and fallback usage
+
+Example using User Secrets:
+```bash
+dotnet user-secrets set "PremiumCalculation:ExternalService:ApiKey" "your-secret-api-key"
 ```
 
 ## API Reference

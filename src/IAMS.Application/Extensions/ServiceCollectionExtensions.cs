@@ -68,6 +68,22 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IPolicyPremiumCalculator, LifeInsurancePremiumCalculator>();
             services.AddScoped<IPolicyPremiumCalculator, LiabilityInsurancePremiumCalculator>();
 
+            // Register External Premium Calculation Service with HttpClient
+            services.AddHttpClient<IExternalPremiumCalculationService, ExternalPremiumCalculationService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers premium calculation configuration
+        /// </summary>
+        public static IServiceCollection AddPremiumCalculationConfiguration(
+            this IServiceCollection services,
+            Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            services.Configure<IAMS.Application.Configuration.PremiumCalculationSettings>(
+                configuration.GetSection("PremiumCalculation"));
+
             return services;
         }
     }

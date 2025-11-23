@@ -39,6 +39,9 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 // Add Application Services (business logic, MediatR, validators)
 builder.Services.AddApplicationServices();
 
+// Add Premium Calculation Configuration
+builder.Services.AddPremiumCalculationConfiguration(builder.Configuration);
+
 // Add Infrastructure Services (email, file storage, integrations)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 

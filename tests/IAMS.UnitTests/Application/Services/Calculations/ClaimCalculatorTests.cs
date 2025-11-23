@@ -224,7 +224,7 @@ namespace IAMS.UnitTests.Application.Services.Calculations
         [InlineData(2000, 500, 1500, 1000)]  // Claimed 1500, deductible 500 = 1000 payable
         [InlineData(1000, 200, 800, 600)]    // Claimed 800, deductible 200 = 600 payable
         [InlineData(3000, 0, 2000, 2000)]    // Claimed 2000, no deductible = 2000 payable
-        [InlineData(1000, 1500, 2000, 0)]    // Claimed 2000, deductible 1500 = 500, but capped
+        [InlineData(1000, 1500, 2000, 500)]  // Claimed 2000, deductible 1500 = 500 payable (within max 1500)
         public void CalculatePayableAmount_WithVariousScenarios_ShouldCalculateCorrectly(
             decimal premium, decimal deductible, decimal claimed, decimal expectedPayable)
         {

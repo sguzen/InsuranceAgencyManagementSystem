@@ -203,10 +203,10 @@
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton OnClick="Cancel" Disabled="@saving">İptal</MudButton>
         <MudButton Color="Color.Primary"
                    Variant="Variant.Filled"
-                   OnClick="HandleSubmit"
+                   OnClick="@(async () => await HandleSubmit())"
                    Disabled="@saving">
             @if (saving)
             {
@@ -367,6 +367,8 @@
 
     private async Task HandleSubmit()
     {
+        Console.WriteLine("HandleSubmit called - starting vehicle creation");
+
         // Update model IDs from selected objects
         if (selectedBrand != null)
             model.BrandId = selectedBrand.Id;
@@ -374,19 +376,27 @@
         if (selectedModel != null)
             model.ModelId = selectedModel.Id;
 
+        Console.WriteLine($"Validation - PlateNumber: {model.PlateNumber}, ChassisNumber: {model.ChassisNumber}, BrandId: {model.BrandId}, ModelId: {model.ModelId}");
+
         if (string.IsNullOrWhiteSpace(model.PlateNumber) ||
             string.IsNullOrWhiteSpace(model.ChassisNumber) ||
             model.BrandId == 0 ||
             model.ModelId == 0)
         {
+            Console.WriteLine("Validation failed - showing warning");
             Snackbar.Add("Lütfen zorunlu alanları doldurun", MudBlazor.Severity.Warning);
             return;
         }
 
         saving = true;
+        StateHasChanged(); // Force UI update to show loading state
+
         try
         {
+            Console.WriteLine("Calling VehicleService.CreateAsync");
             var result = await VehicleService.CreateAsync(model);
+            Console.WriteLine($"CreateAsync result - IsSuccess: {result.IsSuccess}, Message: {result.Message}");
+
             if (result.IsSuccess)
             {
                 Snackbar.Add("Araç başarıyla eklendi", MudBlazor.Severity.Success);
@@ -409,11 +419,14 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Exception in HandleSubmit: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
             Snackbar.Add($"Beklenmeyen hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
             saving = false;
+            StateHasChanged(); // Force UI update to hide loading state
         }
     }
 

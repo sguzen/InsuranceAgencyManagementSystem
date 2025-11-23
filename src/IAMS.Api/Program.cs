@@ -1,8 +1,12 @@
 using IAMS.Application.Extensions;
 using IAMS.Infrastructure.Extensions;
+using IAMS.Infrastructure.Interfaces;
+using IAMS.Infrastructure.Logging.Enrichers;
+using IAMS.Infrastructure.Services;
 using IAMS.Persistence.Extensions;
 using IAMS.Identity.Extensions;
 using IAMS.MultiTenancy.Extensions;
+using IAMS.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -11,10 +15,15 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// Configure Serilog with custom enrichers
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithThreadId()
+    .Enrich.WithProperty("Application", "IAMS.Api")
+    .Enrich.WithProperty("Version", typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.0")
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -44,6 +53,9 @@ builder.Services.AddPremiumCalculationConfiguration(builder.Configuration);
 
 // Add Infrastructure Services (email, file storage, integrations)
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Register Audit Logger
+builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -120,9 +132,27 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// IMPORTANT: Middleware order matters!
+
+// 1. Exception handling - must be first to catch all exceptions
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// 2. Correlation ID - establish request tracing early
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+// 3. Performance logging - track full request lifecycle
+app.UseMiddleware<PerformanceLoggingMiddleware>();
+
+// 4. HTTP request/response logging (conditionally based on configuration)
+var enableHttpLogging = builder.Configuration.GetValue<bool>("Logging:EnableHttpLogging", true);
+if (enableHttpLogging)
+{
+    app.UseMiddleware<HttpLoggingMiddleware>();
+}
+
+// 5. Development-specific middleware
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); // Shows detailed error pages
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
@@ -135,12 +165,14 @@ app.UseHttpsRedirection();
 
 app.UseCors("DefaultPolicy");
 
-// Multi-tenancy middleware removed - each tenant uses their own database via connection string
-// app.UseMultiTenancy();
+// 6. Multi-tenancy middleware - establish tenant context before authentication
+app.UseMultiTenancy();
 
+// 7. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
+// 8. Application endpoints
 app.MapControllers();
 
 try

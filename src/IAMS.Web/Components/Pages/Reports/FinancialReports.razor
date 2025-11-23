@@ -585,20 +585,53 @@
 
         try
         {
-            var result = await PolicyService.GetPolicyStatisticsAsync();
-
-            if (result.IsSuccess && result.Data != null)
+            // Fetch all policies to properly convert currencies
+            var queryParams = new PolicyQueryParams
             {
-                // Note: These values come from backend and are summed without currency conversion
-                // For now we display them, but ideally backend should handle currency conversion
-                totalRevenue = result.Data.TotalPremiums;
-                totalCommission = result.Data.TotalCommissions;
-                monthlyRevenue = result.Data.MonthlyRevenue;
-                yearlyRevenue = result.Data.YearlyRevenue;
+                PageSize = 10000,
+                PageNumber = 1
+            };
+
+            var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
+
+            if (policiesResult.IsSuccess && policiesResult.Data != null)
+            {
+                var policies = policiesResult.Data.Items.ToList();
+
+                // Calculate totals with currency conversion
+                totalRevenue = 0;
+                totalCommission = 0;
+                monthlyRevenue = 0;
+                yearlyRevenue = 0;
+
+                var now = DateTime.Now;
+                var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+                var firstDayOfYear = new DateTime(now.Year, 1, 1);
+
+                foreach (var policy in policies)
+                {
+                    var convertedPremium = await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                    var convertedCommission = await ConvertAmount(policy.CommissionAmount, policy.Currency);
+
+                    totalRevenue += convertedPremium;
+                    totalCommission += convertedCommission;
+
+                    // Monthly revenue (policies started this month)
+                    if (policy.StartDate >= firstDayOfMonth)
+                    {
+                        monthlyRevenue += convertedPremium;
+                    }
+
+                    // Yearly revenue (policies started this year)
+                    if (policy.StartDate >= firstDayOfYear)
+                    {
+                        yearlyRevenue += convertedPremium;
+                    }
+                }
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Mali özet yüklenirken hata oluştu", MudBlazor.Severity.Error);
+                Snackbar.Add(policiesResult.Message ?? "Mali özet yüklenirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)

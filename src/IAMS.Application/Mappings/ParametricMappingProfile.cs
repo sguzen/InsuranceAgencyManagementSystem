@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IAMS.Application.DTOs.Currency;
 using IAMS.Application.DTOs.Customer;
 using IAMS.Application.DTOs.Parametric;
 using IAMS.Domain.Entities;
@@ -9,6 +10,10 @@ namespace IAMS.Application.Mappings
     {
         public ParametricMappingProfile()
         {
+            // Currency mappings
+            CreateMap<Currency, CurrencyDto>();
+            CreateMap<CurrencyDto, Currency>();
+
             // Country mappings
             CreateMap<Country, CountryDto>();
             CreateMap<CountryDto, Country>();

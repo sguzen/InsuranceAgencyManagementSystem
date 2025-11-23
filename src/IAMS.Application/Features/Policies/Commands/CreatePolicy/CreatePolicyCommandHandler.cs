@@ -4,6 +4,7 @@ using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
+using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Exceptions;
 using IAMS.Domain.Services;
@@ -18,6 +19,8 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
         private readonly IMapper _mapper;
         private readonly IValidator<CreatePolicyDto> _validator;
         private readonly IPolicyNumberGenerator _policyNumberGenerator;
+        private readonly IPolicyCalculatorFactory _calculatorFactory;
+        private readonly ICommissionCalculator _commissionCalculator;
         private readonly ILogger<CreatePolicyCommandHandler> _logger;
 
         public CreatePolicyCommandHandler(
@@ -25,12 +28,16 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
             IMapper mapper,
             IValidator<CreatePolicyDto> validator,
             IPolicyNumberGenerator policyNumberGenerator,
+            IPolicyCalculatorFactory calculatorFactory,
+            ICommissionCalculator commissionCalculator,
             ILogger<CreatePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validator = validator;
             _policyNumberGenerator = policyNumberGenerator;
+            _calculatorFactory = calculatorFactory;
+            _commissionCalculator = commissionCalculator;
             _logger = logger;
         }
 
@@ -54,8 +61,28 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
                     policy.PolicyNumber = await _policyNumberGenerator.GenerateAsync(policy.InsuranceCompanyId, policy.PolicyTypeId);
                 }
 
-                // Calculate commission
-                policy.CalculateCommission();
+                // Calculate premium using type-specific calculator (if not already set)
+                if (policy.PremiumAmount <= 0)
+                {
+                    var premiumCalculator = await _calculatorFactory.GetCalculatorForPolicyAsync(policy);
+                    policy.PremiumAmount = await premiumCalculator.CalculatePremiumAsync(policy);
+                    _logger.LogInformation(
+                        "Calculated premium for policy {PolicyNumber}: {Premium}",
+                        policy.PolicyNumber, policy.PremiumAmount);
+                }
+
+                // Calculate commission using database lookup
+                var (commissionAmount, commissionRate) = await _commissionCalculator.CalculateCommissionAsync(
+                    policy.PolicyTypeId,
+                    policy.InsuranceCompanyId,
+                    policy.PremiumAmount);
+
+                policy.CommissionAmount = commissionAmount;
+                policy.CommissionRate = commissionRate;
+
+                _logger.LogInformation(
+                    "Calculated commission for policy {PolicyNumber}: Rate={Rate}%, Amount={Amount}",
+                    policy.PolicyNumber, commissionRate, commissionAmount);
 
                 // Validate business rules
                 policy.Validate();

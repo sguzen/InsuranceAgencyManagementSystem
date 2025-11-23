@@ -645,11 +645,17 @@
 
     private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText, CancellationToken token)
     {
+        // Return empty list if search text is too short to avoid unnecessary API calls
+        if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
+        {
+            return new List<CustomerDto>();
+        }
+
         try
         {
             var queryParams = new CustomerQueryParams
             {
-                SearchTerm = string.IsNullOrWhiteSpace(searchText) ? null : searchText,
+                SearchTerm = searchText,
                 PageSize = 50,
                 PageNumber = 1,
                 SortBy = "CreatedAt"

@@ -564,7 +564,7 @@
                     TotalPolicies = policies.Count,
                     ActivePolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Active),
                     NewPoliciesThisMonth = policies.Count(p => p.StartDate >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)),
-                    RenewalsThisMonth = policies.Count(p => p.IsRenewal && p.StartDate >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)),
+                    RenewalsThisMonth = policies.Count(p => p.ParentPolicyId.HasValue && p.StartDate >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1)),
                     ExpiredPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Expired || p.EndDate < DateTime.Now),
                     DraftPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Draft),
                     SuspendedPolicies = policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Suspended),

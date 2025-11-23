@@ -27,6 +27,9 @@ namespace IAMS.Persistence.Data
             // Seed Policy Types
             SeedPolicyTypes(modelBuilder, seedDate);
 
+            // Seed Currencies
+            SeedCurrencies(modelBuilder, seedDate);
+
             // Additional subdistricts and villages can be added as needed
         }
 
@@ -534,6 +537,68 @@ namespace IAMS.Persistence.Data
                     MinimumTermMonths = 12,
                     MaximumTermMonths = 12,
                     MinimumPremium = 200,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                }
+            );
+        }
+
+        private static void SeedCurrencies(ModelBuilder modelBuilder, DateTime seedDate)
+        {
+            modelBuilder.Entity<Currency>().HasData(
+                new Currency
+                {
+                    Id = 1,
+                    Code = "TRY",
+                    Symbol = "₺",
+                    Name = "Turkish Lira",
+                    NameTr = "Türk Lirası",
+                    DecimalPlaces = 2,
+                    IsActive = true,
+                    IsBaseCurrency = true,
+                    DisplayOrder = 1,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new Currency
+                {
+                    Id = 2,
+                    Code = "USD",
+                    Symbol = "$",
+                    Name = "US Dollar",
+                    NameTr = "Amerikan Doları",
+                    DecimalPlaces = 2,
+                    IsActive = true,
+                    IsBaseCurrency = false,
+                    DisplayOrder = 2,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new Currency
+                {
+                    Id = 3,
+                    Code = "EUR",
+                    Symbol = "€",
+                    Name = "Euro",
+                    NameTr = "Euro",
+                    DecimalPlaces = 2,
+                    IsActive = true,
+                    IsBaseCurrency = false,
+                    DisplayOrder = 3,
+                    CreatedOn = seedDate,
+                    CreatedBy = "System"
+                },
+                new Currency
+                {
+                    Id = 4,
+                    Code = "GBP",
+                    Symbol = "£",
+                    Name = "British Pound",
+                    NameTr = "İngiliz Sterlini",
+                    DecimalPlaces = 2,
+                    IsActive = true,
+                    IsBaseCurrency = false,
+                    DisplayOrder = 4,
                     CreatedOn = seedDate,
                     CreatedBy = "System"
                 }

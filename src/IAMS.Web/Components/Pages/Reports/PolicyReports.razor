@@ -556,7 +556,15 @@
             {
                 // Filter policies by selected currency
                 var allPolicies = policiesResult.Data.Items.ToList();
-                var policies = allPolicies.Where(p => p.Currency == selectedCurrencyCode).ToList();
+
+                // Debug: Check currency distribution
+                var currencyGroups = allPolicies.GroupBy(p => p.Currency ?? "NULL").ToDictionary(g => g.Key, g => g.Count());
+                Console.WriteLine($"Currency distribution: {string.Join(", ", currencyGroups.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}");
+                Console.WriteLine($"Selected currency: {selectedCurrencyCode}");
+
+                var policies = allPolicies.Where(p => !string.IsNullOrEmpty(p.Currency) && p.Currency.Trim() == selectedCurrencyCode.Trim()).ToList();
+
+                Console.WriteLine($"Filtered policies count: {policies.Count}");
 
                 // Calculate statistics from filtered policies
                 statistics = new PolicyStatisticsDto

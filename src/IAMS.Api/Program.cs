@@ -16,12 +16,9 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog with custom enrichers
+// Note: Machine name, environment name, and thread ID enrichments are configured in appsettings.json
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .Enrich.WithMachineName()
-    .Enrich.WithEnvironmentName()
-    .Enrich.WithThreadId()
     .Enrich.WithProperty("Application", "IAMS.Api")
     .Enrich.WithProperty("Version", typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.0")
     .CreateLogger();

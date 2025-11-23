@@ -7,6 +7,7 @@ namespace IAMS.Application.Interfaces.Repositories
     public interface IPolicyRepository : IRepository<Policy>
     {
         // Basic CRUD operations
+        Task<Policy?> GetPolicyByIdWithDetailsAsync(int id);
         Task<Policy?> GetByPolicyNumberAsync(string policyNumber);
         Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId);
         Task<bool> PolicyNumberExistsAsync(string policyNumber, int? excludePolicyId = null);

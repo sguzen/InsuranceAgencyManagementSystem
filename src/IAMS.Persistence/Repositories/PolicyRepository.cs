@@ -13,6 +13,16 @@ namespace IAMS.Persistence.Repositories
         {
         }
 
+        public async Task<Policy?> GetPolicyByIdWithDetailsAsync(int id)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Include(p => p.Vehicle)
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+        }
+
         public async Task<Policy?> GetByPolicyNumberAsync(string policyNumber)
         {
             return await _dbSet

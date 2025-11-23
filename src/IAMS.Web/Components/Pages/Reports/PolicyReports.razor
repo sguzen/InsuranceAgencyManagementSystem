@@ -15,6 +15,7 @@
 @inject IReportingService ReportingService
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Poliçe Raporları - IAMS</PageTitle>
 
@@ -389,16 +390,16 @@
             </MudItem>
         </MudGrid>
 
-        <!-- Export Section -->
-        <MudCard Elevation="2" Class="mt-4">
+        <!-- Export and Print Section -->
+        <MudCard Elevation="2" Class="mt-4 no-print">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Raporu Dışa Aktar</MudText>
+                    <MudText Typo="Typo.h6">Raporu Dışa Aktar veya Yazdır</MudText>
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
                 <MudGrid>
-                    <MudItem xs="12" md="4">
+                    <MudItem xs="12" sm="6" md="3">
                         <MudButton Variant="Variant.Outlined"
                                   Color="Color.Error"
                                   StartIcon="@Icons.Material.Filled.PictureAsPdf"
@@ -417,7 +418,7 @@
                         </MudButton>
                     </MudItem>
 
-                    <MudItem xs="12" md="4">
+                    <MudItem xs="12" sm="6" md="3">
                         <MudButton Variant="Variant.Outlined"
                                   Color="Color.Success"
                                   StartIcon="@Icons.Material.Filled.TableChart"
@@ -436,7 +437,7 @@
                         </MudButton>
                     </MudItem>
 
-                    <MudItem xs="12" md="4">
+                    <MudItem xs="12" sm="6" md="3">
                         <MudButton Variant="Variant.Outlined"
                                   Color="Color.Info"
                                   StartIcon="@Icons.Material.Filled.Description"
@@ -452,6 +453,16 @@
                             {
                                 <span>CSV Olarak İndir</span>
                             }
+                        </MudButton>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  StartIcon="@Icons.Material.Filled.Print"
+                                  OnClick="PrintReport"
+                                  FullWidth="true">
+                            Yazdır
                         </MudButton>
                     </MudItem>
                 </MudGrid>
@@ -696,6 +707,18 @@
             exporting = false;
             exportFormat = "";
             StateHasChanged();
+        }
+    }
+
+    private async Task PrintReport()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 }

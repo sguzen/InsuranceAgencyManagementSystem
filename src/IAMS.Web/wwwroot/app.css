@@ -272,12 +272,32 @@ html, body {
 
 /* Print Styles */
 @media print {
+    /* Hide UI elements that shouldn't be printed */
     .mud-appbar,
     .mud-drawer,
     .mud-fab,
     .mud-button,
+    .mud-button-root,
+    .mud-select,
+    .mud-autocomplete,
+    .mud-date-picker,
+    .mud-icon-button,
+    .mud-tabs-toolbar,
     .no-print {
         display: none !important;
+    }
+
+    /* Reset page margins */
+    @page {
+        margin: 1.5cm;
+        size: auto;
+    }
+
+    /* Reset layout margins and padding */
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
     }
 
     .mud-main-content {
@@ -288,17 +308,193 @@ html, body {
     .mud-container {
         max-width: none !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 10px !important;
     }
 
+    /* Card styling for print */
     .mud-card {
         box-shadow: none !important;
-        border: 1px solid #ccc !important;
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 10px !important;
+    }
+
+    .mud-card-header {
+        background-color: #f5f5f5 !important;
+        border-bottom: 1px solid #000 !important;
+        padding: 8px !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .mud-card-content {
+        padding: 10px !important;
+    }
+
+    /* Table styling for print */
+    .mud-table {
+        font-size: 10px !important;
+        border-collapse: collapse !important;
+    }
+
+    .mud-table-root {
+        border: 1px solid #000 !important;
+    }
+
+    .mud-table thead th {
+        background-color: #e0e0e0 !important;
+        border: 1px solid #000 !important;
+        padding: 6px !important;
+        font-weight: bold !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .mud-table tbody td {
+        border: 1px solid #000 !important;
+        padding: 4px !important;
+    }
+
+    .mud-table-row {
+        page-break-inside: avoid;
         break-inside: avoid;
     }
 
-    .mud-table {
-        font-size: 12px !important;
+    .mud-simple-table {
+        font-size: 10px !important;
+        border-collapse: collapse !important;
+    }
+
+    .mud-simple-table th,
+    .mud-simple-table td {
+        border: 1px solid #000 !important;
+        padding: 4px !important;
+    }
+
+    .mud-simple-table thead th {
+        background-color: #e0e0e0 !important;
+        font-weight: bold !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Hide icons in print */
+    .mud-icon:not(.print-icon) {
+        display: none !important;
+    }
+
+    /* Typography adjustments for print */
+    .mud-typography-h4 {
+        font-size: 18pt !important;
+        margin-bottom: 12pt !important;
+        font-weight: bold !important;
+    }
+
+    .mud-typography-h5 {
+        font-size: 14pt !important;
+        font-weight: bold !important;
+    }
+
+    .mud-typography-h6 {
+        font-size: 12pt !important;
+        font-weight: bold !important;
+    }
+
+    .mud-typography-body1,
+    .mud-typography-body2 {
+        font-size: 10pt !important;
+    }
+
+    /* Chip styling for print */
+    .mud-chip {
+        border: 1px solid #000 !important;
+        background-color: white !important;
+        color: black !important;
+        padding: 2px 6px !important;
+        font-size: 9pt !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Grid and layout adjustments */
+    .mud-grid {
+        display: block !important;
+    }
+
+    .mud-grid-item {
+        display: block !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Stack adjustments */
+    .mud-stack {
+        display: block !important;
+    }
+
+    /* Progress indicators */
+    .mud-progress-circular,
+    .mud-progress-linear {
+        display: none !important;
+    }
+
+    /* Alert boxes */
+    .mud-alert {
+        border: 1px solid #000 !important;
+        background-color: white !important;
+        color: black !important;
+        padding: 8px !important;
+    }
+
+    /* Avoid breaking inside important elements */
+    .mud-paper,
+    .mud-card,
+    tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Print header styling */
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #000;
+    }
+
+    .print-header h1 {
+        font-size: 20pt;
+        margin: 0 0 10px 0;
+        font-weight: bold;
+    }
+
+    .print-header .print-date {
+        font-size: 10pt;
+        color: #666;
+    }
+
+    /* Force page breaks */
+    .page-break-before {
+        page-break-before: always;
+        break-before: always;
+    }
+
+    .page-break-after {
+        page-break-after: always;
+        break-after: always;
+    }
+
+    /* Ensure links are visible */
+    a[href]:after {
+        content: none !important;
+    }
+
+    /* Remove any hover effects */
+    *:hover {
+        background-color: transparent !important;
     }
 }
 

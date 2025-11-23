@@ -566,60 +566,67 @@
             {
                 var policies = policiesResult.Data.Items.ToList();
 
-                // Calculate financial metrics with currency conversion
+                // Reset all calculated values
                 totalPremiums = 0;
                 totalCommissions = 0;
+                monthlyRevenue = 0;
+                yearlyRevenue = 0;
+                revenueByType.Clear();
+                revenueByCompany.Clear();
 
+                // Date ranges for monthly and yearly calculations
+                var now = DateTime.Now;
+                var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+                var firstDayOfYear = new DateTime(now.Year, 1, 1);
+
+                // Single pass through all policies for all calculations
                 foreach (var policy in policies)
                 {
-                    totalPremiums += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                    totalCommissions += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+                    var convertedPremium = await ConvertAmount(policy.PremiumAmount, policy.Currency);
+                    var convertedCommission = await ConvertAmount(policy.CommissionAmount, policy.Currency);
+
+                    // Accumulate totals
+                    totalPremiums += convertedPremium;
+                    totalCommissions += convertedCommission;
+
+                    // Monthly revenue (policies started this month)
+                    if (policy.StartDate >= firstDayOfMonth)
+                    {
+                        monthlyRevenue += convertedPremium;
+                    }
+
+                    // Yearly revenue (policies started this year)
+                    if (policy.StartDate >= firstDayOfYear)
+                    {
+                        yearlyRevenue += convertedPremium;
+                    }
+
+                    // Revenue by type
+                    var typeName = policy.PolicyType?.Name ?? "Bilinmeyen";
+                    if (revenueByType.ContainsKey(typeName))
+                    {
+                        var (count, revenue) = revenueByType[typeName];
+                        revenueByType[typeName] = (count + 1, revenue + convertedPremium);
+                    }
+                    else
+                    {
+                        revenueByType[typeName] = (1, convertedPremium);
+                    }
+
+                    // Revenue by company
+                    var companyName = policy.InsuranceCompany?.Name ?? "Bilinmeyen";
+                    if (revenueByCompany.ContainsKey(companyName))
+                    {
+                        var (count, revenue) = revenueByCompany[companyName];
+                        revenueByCompany[companyName] = (count + 1, revenue + convertedPremium);
+                    }
+                    else
+                    {
+                        revenueByCompany[companyName] = (1, convertedPremium);
+                    }
                 }
 
                 averagePremium = policies.Count > 0 ? totalPremiums / policies.Count : 0;
-
-                // Calculate monthly and yearly revenue
-                var oneMonthAgo = DateTime.Now.AddMonths(-1);
-                var oneYearAgo = DateTime.Now.AddYears(-1);
-
-                monthlyRevenue = 0;
-                yearlyRevenue = 0;
-
-                foreach (var policy in policies.Where(p => p.StartDate >= oneMonthAgo))
-                {
-                    monthlyRevenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                }
-
-                foreach (var policy in policies.Where(p => p.StartDate >= oneYearAgo))
-                {
-                    yearlyRevenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                }
-
-                // Calculate revenue by type
-                revenueByType.Clear();
-                var groupedByType = policies.GroupBy(p => p.PolicyType?.Name ?? "Bilinmeyen");
-                foreach (var group in groupedByType)
-                {
-                    decimal revenue = 0;
-                    foreach (var policy in group)
-                    {
-                        revenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                    }
-                    revenueByType[group.Key] = (group.Count(), revenue);
-                }
-
-                // Calculate revenue by company
-                revenueByCompany.Clear();
-                var groupedByCompany = policies.GroupBy(p => p.InsuranceCompany?.Name ?? "Bilinmeyen");
-                foreach (var group in groupedByCompany)
-                {
-                    decimal revenue = 0;
-                    foreach (var policy in group)
-                    {
-                        revenue += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                    }
-                    revenueByCompany[group.Key] = (group.Count(), revenue);
-                }
             }
             else
             {

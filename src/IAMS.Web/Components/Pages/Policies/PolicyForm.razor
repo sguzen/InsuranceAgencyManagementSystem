@@ -867,9 +867,13 @@
             return;
         }
 
+        // Check if this is traffic insurance
+        bool isTrafficInsurance = selectedPolicyType?.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) ?? false;
+
         var parameters = new DialogParameters<Components.Shared.Dialogs.AddVehicleDialog>
         {
-            { x => x.CustomerId, selectedCustomer.Id }
+            { x => x.CustomerId, selectedCustomer.Id },
+            { x => x.IsTrafficInsurance, isTrafficInsurance }
         };
 
         var options = new DialogOptions

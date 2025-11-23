@@ -52,7 +52,7 @@ namespace IAMS.UnitTests.Application.Services.Calculations
                 ModelId = 1,
                 ModelYear = modelYear ?? DateTime.Now.Year - 2,
                 EnginePower = enginePower ?? 100,
-                VehicleType = VehicleType.Passenger,
+                VehicleType = VehicleType.Car,
                 FuelType = VehicleFuelType.Gasoline,
                 UsageType = VehicleUsageType.Private,
                 CustomerId = 1,

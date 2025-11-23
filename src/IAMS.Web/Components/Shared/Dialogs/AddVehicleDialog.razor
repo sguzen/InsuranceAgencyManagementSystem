@@ -241,13 +241,25 @@
         model.CustomerId = CustomerId;
 
         // Auto-populate Commercial vehicle type for traffic insurance
-        model.VehicleType = IsTrafficInsurance ? VehicleType.Commercial : VehicleType.Car;
+        if (IsTrafficInsurance)
+        {
+            model.VehicleType = VehicleType.Commercial;
+            Console.WriteLine("Traffic insurance detected - setting VehicleType to Commercial");
+        }
+        else
+        {
+            model.VehicleType = VehicleType.Car;
+        }
+
         model.FuelType = VehicleFuelType.Gasoline;
         model.UsageType = VehicleUsageType.Private;
         model.Currency = "TRY";
 
         // Load brands
         await LoadBrands();
+
+        // Force UI update
+        StateHasChanged();
     }
 
     private async Task LoadBrands()

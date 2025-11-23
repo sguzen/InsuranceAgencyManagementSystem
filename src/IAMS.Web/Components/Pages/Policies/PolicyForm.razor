@@ -341,7 +341,8 @@
                             <MudCardContent>
                                 <MudGrid>
                                     <MudItem xs="12" md="4">
-                                        <MudNumericField @bind-Value="model.PremiumAmount"
+                                        <MudNumericField Value="model.PremiumAmount"
+                                                       ValueChanged="OnPremiumAmountChanged"
                                                        Label="Prim Tutarı *"
                                                        Variant="Variant.Outlined"
                                                        Required="true"
@@ -354,7 +355,8 @@
                                                        Step="0.01M" />
                                     </MudItem>
                                     <MudItem xs="12" md="4">
-                                        <MudNumericField @bind-Value="model.CommissionRate"
+                                        <MudNumericField Value="model.CommissionRate"
+                                                       ValueChanged="OnCommissionRateChanged"
                                                        Label="Komisyon Oranı"
                                                        Variant="Variant.Outlined"
                                                        For="@(() => model.CommissionRate)"

@@ -139,7 +139,7 @@
                                              Clearable="true">
                                         @foreach (var country in countries)
                                         {
-                                            <MudSelectItem T="int?" Value="@country.Id">@country.NameTr (@country.Code)</MudSelectItem>
+                                            <MudSelectItem T="int?" Value="@((int?)country.Id)">@country.NameTr (@country.Code)</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -269,7 +269,7 @@
                                                ValueChanged="@((int? value) => OnCityChanged(value))">
                                         @foreach (var city in cities)
                                         {
-                                            <MudSelectItem T="int?" Value="@city.Id">@city.NameTr</MudSelectItem>
+                                            <MudSelectItem T="int?" Value="@((int?)city.Id)">@city.NameTr</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -283,7 +283,7 @@
                                                ValueChanged="@((int? value) => OnDistrictChanged(value))">
                                         @foreach (var district in filteredDistricts)
                                         {
-                                            <MudSelectItem T="int?" Value="@district.Id">@district.NameTr</MudSelectItem>
+                                            <MudSelectItem T="int?" Value="@((int?)district.Id)">@district.NameTr</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -297,7 +297,7 @@
                                                ValueChanged="@((int? value) => OnSubdistrictChanged(value))">
                                         @foreach (var subdistrict in filteredSubdistricts)
                                         {
-                                            <MudSelectItem T="int?" Value="@subdistrict.Id">@subdistrict.NameTr</MudSelectItem>
+                                            <MudSelectItem T="int?" Value="@((int?)subdistrict.Id)">@subdistrict.NameTr</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -310,7 +310,7 @@
                                              Disabled="@(!model.SubdistrictId.HasValue)">
                                         @foreach (var village in filteredVillages)
                                         {
-                                            <MudSelectItem T="int?" Value="@village.Id">@village.NameTr</MudSelectItem>
+                                            <MudSelectItem T="int?" Value="@((int?)village.Id)">@village.NameTr</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -339,7 +339,7 @@
                                                  Clearable="true">
                                             @foreach (var occupation in occupations)
                                             {
-                                                <MudSelectItem T="int?" Value="@occupation.Id">@occupation.NameTr</MudSelectItem>
+                                                <MudSelectItem T="int?" Value="@((int?)occupation.Id)">@occupation.NameTr</MudSelectItem>
                                             }
                                         </MudSelect>
                                     </MudItem>

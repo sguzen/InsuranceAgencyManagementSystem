@@ -31,6 +31,32 @@ Welcome to the IAMS documentation. This folder contains comprehensive guides and
 - Migration guide
 - Deployment checklist
 
+#### [Calculation Architecture](CALCULATION_ARCHITECTURE.md)
+**For**: All developers working with policies, commissions, or claims
+**Time**: 40-50 minutes
+**Contains**:
+- Complete calculation system architecture using Strategy Pattern
+- Type-specific premium calculators for all 13 policy types
+- Database-driven commission rate lookups
+- Claim validation with deductibles and coverage limits
+- How to extend with new policy types
+- API reference and troubleshooting
+
+**Status**: 📙 Complete - Implementation ready
+**Priority**: Essential for policy/claim operations
+
+#### [Calculation Quick Reference](CALCULATION_QUICK_REFERENCE.md)
+**For**: Developers needing quick calculation examples
+**Time**: 10-15 minutes
+**Contains**:
+- Common code patterns for calculations
+- Policy type reference table
+- Quick formulas and configuration
+- Common troubleshooting solutions
+
+**Status**: 📘 Quick reference guide
+**Priority**: Keep this bookmarked
+
 ---
 
 ### 🛠️ Best Practices
@@ -95,7 +121,8 @@ Welcome to the IAMS documentation. This folder contains comprehensive guides and
 1. Start with [Quick Reference](QUICK_REFERENCE.md)
 2. Configure secrets (see Quick Reference)
 3. Run tests to verify setup
-4. Refer to [Exception Handling Guide](EXCEPTION_HANDLING_GUIDE.md) when writing error handling
+4. Read [Calculation Quick Reference](CALCULATION_QUICK_REFERENCE.md) for working with policies/claims
+5. Refer to [Exception Handling Guide](EXCEPTION_HANDLING_GUIDE.md) when writing error handling
 
 #### For Code Reviewers
 1. Read [Architectural Review Summary](ARCHITECTURAL_REVIEW_SUMMARY.md)
@@ -135,6 +162,16 @@ Welcome to the IAMS documentation. This folder contains comprehensive guides and
 #### Breaking Down Large Components
 → [Component Refactoring Guide](COMPONENT_REFACTORING_GUIDE.md)
 
+#### Calculating Premiums and Commissions
+→ [Calculation Quick Reference](CALCULATION_QUICK_REFERENCE.md#common-tasks)
+→ [Calculation Architecture](CALCULATION_ARCHITECTURE.md)
+
+#### Processing Claims with Validation
+→ [Calculation Quick Reference - Claim Validation](CALCULATION_QUICK_REFERENCE.md#3-validate-and-calculate-claim)
+
+#### Adding New Policy Types
+→ [Calculation Architecture - Adding New Policy Types](CALCULATION_ARCHITECTURE.md#adding-new-policy-types)
+
 #### Deploying to Production
 → [Architectural Review Summary - Migration Guide](ARCHITECTURAL_REVIEW_SUMMARY.md#migration-guide)
 
@@ -170,6 +207,9 @@ Welcome to the IAMS documentation. This folder contains comprehensive guides and
 
 ### Best Practices
 - [Exception handling patterns](EXCEPTION_HANDLING_GUIDE.md)
+- [Calculation architecture patterns](CALCULATION_ARCHITECTURE.md#best-practices)
+- [Policy premium calculations](CALCULATION_ARCHITECTURE.md#policy-premium-calculations)
+- [Commission and claim processing](CALCULATION_ARCHITECTURE.md#usage-examples)
 - [CQRS with MediatR](SERVICE_LAYER_REFACTORING.md)
 - [Component design](COMPONENT_REFACTORING_GUIDE.md)
 - [Async/await patterns](ARCHITECTURAL_REVIEW_SUMMARY.md#sync-over-async-anti-pattern)
@@ -254,10 +294,12 @@ When adding new documentation:
 |----------|---------|--------------|
 | ARCHITECTURAL_REVIEW_SUMMARY.md | 1.0 | November 2025 |
 | QUICK_REFERENCE.md | 1.0 | November 2025 |
+| CALCULATION_ARCHITECTURE.md | 1.0 | November 2025 |
+| CALCULATION_QUICK_REFERENCE.md | 1.0 | November 2025 |
 | EXCEPTION_HANDLING_GUIDE.md | 1.0 | November 2025 |
 | SERVICE_LAYER_REFACTORING.md | 1.0 | November 2025 |
 | COMPONENT_REFACTORING_GUIDE.md | 1.0 | November 2025 |
-| README.md (this file) | 1.0 | November 2025 |
+| README.md (this file) | 1.1 | November 2025 |
 
 ---
 

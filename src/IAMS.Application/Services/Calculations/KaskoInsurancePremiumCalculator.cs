@@ -71,7 +71,7 @@ namespace IAMS.Application.Services.Calculations
             // Kasko premium is typically a percentage of vehicle market value
             // This is a simplified calculation
 
-            decimal vehicleValue = vehicle.MarketValue ?? 50000m; // Default value if not set
+            decimal vehicleValue = vehicle.CurrentValue ?? 50000m; // Default value if not set
             decimal premiumRate = 0.03m; // 3% of vehicle value (simplified)
 
             // Adjust rate based on vehicle age

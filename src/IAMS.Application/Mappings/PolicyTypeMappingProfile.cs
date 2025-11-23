@@ -9,7 +9,7 @@ namespace IAMS.Application.Mappings
         public PolicyTypeMappingProfile()
         {
             CreateMap<PolicyType, PolicyTypeDto>()
-                .ForMember(dest => dest.TotalPolicies, opt => opt.MapFrom(src => src.Policies.Count));
+                .ForMember(dest => dest.TotalPolicies, opt => opt.MapFrom(src => src.Policies != null ? src.Policies.Count : 0));
 
             CreateMap<CreatePolicyTypeDto, PolicyType>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

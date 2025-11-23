@@ -20,6 +20,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
                 .Include(p => p.Vehicle)
+                .Include(p => p.Currency)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         }
 
@@ -29,6 +30,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber && !p.IsDeleted);
         }
 
@@ -37,6 +39,7 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => p.CustomerId == customerId && !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();
@@ -60,6 +63,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted);
 
             // Apply search filter
@@ -101,6 +105,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted && p.Status == PolicyStatus.Active)
                 .OrderBy(p => p.EndDate)
                 .ToListAsync();
@@ -112,6 +117,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted && p.Status == status)
                 .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();
@@ -124,6 +130,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.EndDate <= cutoffDate &&
@@ -138,6 +145,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted &&
                            (p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now))
                 .OrderByDescending(p => p.EndDate)
@@ -150,6 +158,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedOn)
                 .Take(count)
@@ -162,6 +171,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted && p.Status == PolicyStatus.Active)
                 .OrderByDescending(p => p.PremiumAmount)
                 .Take(count)
@@ -299,7 +309,8 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => 
+                .Include(p => p.Currency)
+                .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
                            p.EndDate >= startDate &&
@@ -315,6 +326,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted &&
                            (p.PolicyNumber.ToLower().Contains(search) ||
                             p.Customer.FirstName.ToLower().Contains(search) ||
@@ -330,6 +342,7 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .Include(p => p.Customer)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p =>
                            !p.IsDeleted &&
                            p.InsuranceCompanyId == insuranceCompanyId)
@@ -342,6 +355,7 @@ namespace IAMS.Persistence.Repositories
             return await _dbSet
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
+                .Include(p => p.Currency)
                 .Where(p =>
                            !p.IsDeleted &&
                            p.PolicyTypeId == policyTypeId)
@@ -356,6 +370,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted);
 
             if (startDate.HasValue)
@@ -396,7 +411,8 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
-                .Where(p => 
+                .Include(p => p.Currency)
+                .Where(p =>
                            !p.IsDeleted &&
                            p.ModifiedOn > modifiedDate)
                 .OrderBy(p => p.ModifiedOn)
@@ -409,6 +425,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .FirstOrDefaultAsync(p =>
                                         !p.IsDeleted &&
                                         //p.ExternalReference == externalId &&
@@ -433,6 +450,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
                 .Where(p => !p.IsDeleted && p.Status == status);
 
             var totalCount = await query.CountAsync();
@@ -471,6 +489,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
                 .Include(p => p.Vehicle)
+                .Include(p => p.Currency)
                 .Where(p => p.VehicleId == id && !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();

@@ -67,7 +67,7 @@ namespace IAMS.Application.Features.Claims.Commands.CreateClaim
 
                 // Calculate actual payable amount (after deductibles)
                 var payableAmount = _claimCalculator.CalculatePayableAmount(policy, claim.ClaimAmount);
-                claim.ApprovedAmount = payableAmount;
+                claim.SettledAmount = payableAmount;
 
                 _logger.LogInformation(
                     "Claim for policy {PolicyNumber}: Claimed={Claimed}, Deductible={Deductible}, Payable={Payable}",

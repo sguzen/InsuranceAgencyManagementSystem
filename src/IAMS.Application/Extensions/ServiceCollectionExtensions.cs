@@ -11,6 +11,8 @@ using IAMS.Application.Services.Payments;
 using IAMS.Application.Services.Policies;
 using IAMS.Application.Services.PolicyTypes;
 using IAMS.Application.Services.Vehicles;
+using IAMS.Application.Services.Calculations;
+using IAMS.Application.Services.CustomerMappings;
 using IAMS.Application.Validators.Customer;
 using IAMS.Application.Validators.Policy;
 using IAMS.Domain.Services;
@@ -52,6 +54,19 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
+
+            // Register Calculation Services
+            services.AddScoped<ICommissionCalculator, CommissionCalculator>();
+            services.AddScoped<IClaimCalculator, ClaimCalculator>();
+            services.AddScoped<IPolicyCalculatorFactory, PolicyCalculatorFactory>();
+
+            // Register Premium Calculators
+            services.AddScoped<IPolicyPremiumCalculator, TrafficInsurancePremiumCalculator>();
+            services.AddScoped<IPolicyPremiumCalculator, KaskoInsurancePremiumCalculator>();
+            services.AddScoped<IPolicyPremiumCalculator, PropertyInsurancePremiumCalculator>();
+            services.AddScoped<IPolicyPremiumCalculator, HealthInsurancePremiumCalculator>();
+            services.AddScoped<IPolicyPremiumCalculator, LifeInsurancePremiumCalculator>();
+            services.AddScoped<IPolicyPremiumCalculator, LiabilityInsurancePremiumCalculator>();
 
             return services;
         }

@@ -2,6 +2,7 @@ using AutoMapper;
 using IAMS.Application.DTOs.Claim;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
+using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -12,15 +13,18 @@ namespace IAMS.Application.Features.Claims.Commands.CreateClaim
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IClaimCalculator _claimCalculator;
         private readonly ILogger<CreateClaimCommandHandler> _logger;
 
         public CreateClaimCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
+            IClaimCalculator claimCalculator,
             ILogger<CreateClaimCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _claimCalculator = claimCalculator;
             _logger = logger;
         }
 
@@ -36,6 +40,39 @@ namespace IAMS.Application.Features.Claims.Commands.CreateClaim
                 }
 
                 var claim = _mapper.Map<PolicyClaim>(request.ClaimDto);
+
+                // Validate policy eligibility for claims
+                if (!_claimCalculator.IsPolicyEligibleForClaim(policy, claim.ClaimDate))
+                {
+                    return Result<PolicyClaimDto>.ValidationFailure(
+                        "Policy is not eligible for claims",
+                        new List<string>
+                        {
+                            "The policy is not active or the claim date is outside the policy coverage period"
+                        });
+                }
+
+                // Validate claim amount against policy coverage
+                if (!_claimCalculator.ValidateClaimAmount(policy, claim.ClaimAmount))
+                {
+                    var maxClaimable = _claimCalculator.GetMaximumClaimableAmount(policy);
+                    return Result<PolicyClaimDto>.ValidationFailure(
+                        "Claim amount exceeds policy coverage",
+                        new List<string>
+                        {
+                            $"The claimed amount exceeds the maximum coverage of {maxClaimable:C}. " +
+                            $"Deductible amount: {policy.DeductibleAmount ?? 0:C}"
+                        });
+                }
+
+                // Calculate actual payable amount (after deductibles)
+                var payableAmount = _claimCalculator.CalculatePayableAmount(policy, claim.ClaimAmount);
+                claim.ApprovedAmount = payableAmount;
+
+                _logger.LogInformation(
+                    "Claim for policy {PolicyNumber}: Claimed={Claimed}, Deductible={Deductible}, Payable={Payable}",
+                    policy.PolicyNumber, claim.ClaimAmount, policy.DeductibleAmount ?? 0, payableAmount);
+
                 claim.CreatedOn = DateTime.UtcNow;
 
                 // Generate claim number if not provided

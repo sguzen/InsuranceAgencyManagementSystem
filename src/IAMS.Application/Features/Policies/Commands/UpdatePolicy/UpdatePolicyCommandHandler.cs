@@ -5,6 +5,7 @@ using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
+using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,8 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         private readonly IMapper _mapper;
         private readonly IValidator<UpdatePolicyDto> _validator;
         private readonly ICurrentTenantService _currentTenantService;
+        private readonly IPolicyCalculatorFactory _calculatorFactory;
+        private readonly ICommissionCalculator _commissionCalculator;
         private readonly ILogger<UpdatePolicyCommandHandler> _logger;
 
         public UpdatePolicyCommandHandler(
@@ -24,12 +27,16 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             IMapper mapper,
             IValidator<UpdatePolicyDto> validator,
             ICurrentTenantService currentTenantService,
+            IPolicyCalculatorFactory calculatorFactory,
+            ICommissionCalculator commissionCalculator,
             ILogger<UpdatePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validator = validator;
             _currentTenantService = currentTenantService;
+            _calculatorFactory = calculatorFactory;
+            _commissionCalculator = commissionCalculator;
             _logger = logger;
         }
 
@@ -58,8 +65,47 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                     return Result<PolicyDto>.ValidationFailure("İş kuralları ihlali", businessRuleErrors);
                 }
 
+                // Store original values to detect changes
+                var originalPolicyTypeId = existingPolicy.PolicyTypeId;
+                var originalInsuranceCompanyId = existingPolicy.InsuranceCompanyId;
+                var originalPremium = existingPolicy.PremiumAmount;
+
                 // Map the updated values
                 _mapper.Map(request.PolicyDto, existingPolicy);
+
+                // Recalculate if policy type or insurance company changed, or if premium changed significantly
+                bool shouldRecalculate =
+                    originalPolicyTypeId != existingPolicy.PolicyTypeId ||
+                    originalInsuranceCompanyId != existingPolicy.InsuranceCompanyId ||
+                    Math.Abs(originalPremium - existingPolicy.PremiumAmount) > 0.01m;
+
+                if (shouldRecalculate)
+                {
+                    _logger.LogInformation(
+                        "Policy {PolicyNumber} requires recalculation due to changes",
+                        existingPolicy.PolicyNumber);
+
+                    // Recalculate premium if needed
+                    if (existingPolicy.PremiumAmount <= 0 || originalPolicyTypeId != existingPolicy.PolicyTypeId)
+                    {
+                        var premiumCalculator = await _calculatorFactory.GetCalculatorForPolicyAsync(existingPolicy);
+                        existingPolicy.PremiumAmount = await premiumCalculator.CalculatePremiumAsync(existingPolicy);
+                    }
+
+                    // Recalculate commission
+                    var (commissionAmount, commissionRate) = await _commissionCalculator.CalculateCommissionAsync(
+                        existingPolicy.PolicyTypeId,
+                        existingPolicy.InsuranceCompanyId,
+                        existingPolicy.PremiumAmount);
+
+                    existingPolicy.CommissionAmount = commissionAmount;
+                    existingPolicy.CommissionRate = commissionRate;
+
+                    _logger.LogInformation(
+                        "Recalculated for policy {PolicyNumber}: Premium={Premium}, Commission={Commission}",
+                        existingPolicy.PolicyNumber, existingPolicy.PremiumAmount, commissionAmount);
+                }
+
                 existingPolicy.ModifiedOn = DateTime.UtcNow;
 
                 _unitOfWork.Policies.Update(existingPolicy);

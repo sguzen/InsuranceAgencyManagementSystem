@@ -83,8 +83,7 @@
                                  Label="Para Birimi *"
                                  Variant="Variant.Outlined"
                                  T="string"
-                                 Value="@selectedCurrencyCode"
-                                 ValueChanged="OnCurrencyChanged">
+                                 @bind-Value="selectedCurrencyCode">
                             @if (currencies != null)
                             {
                                 @foreach (var currency in currencies)
@@ -350,7 +349,22 @@
 
 @code {
     private CustomerDto? selectedCustomer;
-    private string selectedCurrencyCode = "TRY";
+    private string _selectedCurrencyCode = "TRY";
+    private string selectedCurrencyCode
+    {
+        get => _selectedCurrencyCode;
+        set
+        {
+            if (_selectedCurrencyCode != value)
+            {
+                _selectedCurrencyCode = value;
+                if (selectedCustomer != null)
+                {
+                    _ = LoadCustomerReport();
+                }
+            }
+        }
+    }
     private List<CurrencyDto> currencies = new();
     private List<PolicyDto> customerPolicies = new();
     private bool loading = false;
@@ -396,15 +410,6 @@
         else
         {
             ClearReport();
-        }
-    }
-
-    private async Task OnCurrencyChanged(string currencyCode)
-    {
-        selectedCurrencyCode = currencyCode;
-        if (selectedCustomer != null)
-        {
-            await LoadCustomerReport();
         }
     }
 

@@ -1,5 +1,6 @@
 using AutoMapper;
 using IAMS.Application.DTOs.Vehicle;
+using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
@@ -12,15 +13,18 @@ namespace IAMS.Application.Features.Vehicles.Commands.CreateVehicle
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<CreateVehicleCommandHandler> _logger;
 
         public CreateVehicleCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
+            ICurrentUserService currentUserService,
             ILogger<CreateVehicleCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -83,6 +87,7 @@ namespace IAMS.Application.Features.Vehicles.Commands.CreateVehicle
                 var vehicle = _mapper.Map<Vehicle>(request.VehicleDto);
                 vehicle.CurrencyId = currency.Id; // Set the currency ID
                 vehicle.CreatedOn = DateTime.UtcNow;
+                vehicle.CreatedBy = _currentUserService.UserName ?? "System"; // Set the user who created the vehicle
 
                 await _unitOfWork.Vehicles.AddAsync(vehicle);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

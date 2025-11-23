@@ -1,8 +1,10 @@
 using FluentAssertions;
+using IAMS.Application.Configuration;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace IAMS.UnitTests.Application.Services.Calculations
@@ -10,14 +12,30 @@ namespace IAMS.UnitTests.Application.Services.Calculations
     public class PolicyCalculatorFactoryTests
     {
         private readonly Mock<IPolicyTypeRepository> _mockPolicyTypeRepository;
+        private readonly Mock<IExternalPremiumCalculationService> _mockExternalService;
         private readonly Mock<ILogger<PolicyCalculatorFactory>> _mockLogger;
+        private readonly Mock<ILogger<RoutingPremiumCalculator>> _mockRoutingLogger;
+        private readonly PremiumCalculationSettings _settings;
         private readonly List<IPolicyPremiumCalculator> _calculators;
         private readonly PolicyCalculatorFactory _factory;
 
         public PolicyCalculatorFactoryTests()
         {
             _mockPolicyTypeRepository = new Mock<IPolicyTypeRepository>();
+            _mockExternalService = new Mock<IExternalPremiumCalculationService>();
             _mockLogger = new Mock<ILogger<PolicyCalculatorFactory>>();
+            _mockRoutingLogger = new Mock<ILogger<RoutingPremiumCalculator>>();
+
+            // Configure settings with external service disabled by default
+            _settings = new PremiumCalculationSettings
+            {
+                ExternalCalculationPolicyTypes = new List<string>(),
+                FallbackToInternalOnFailure = true,
+                ExternalService = new ExternalServiceSettings
+                {
+                    Enabled = false
+                }
+            };
 
             // Create mock calculators
             _calculators = new List<IPolicyPremiumCalculator>
@@ -33,7 +51,10 @@ namespace IAMS.UnitTests.Application.Services.Calculations
             _factory = new PolicyCalculatorFactory(
                 _calculators,
                 _mockPolicyTypeRepository.Object,
-                _mockLogger.Object);
+                _mockExternalService.Object,
+                Options.Create(_settings),
+                _mockLogger.Object,
+                _mockRoutingLogger.Object);
         }
 
         private IPolicyPremiumCalculator CreateMockCalculator<T>(string code) where T : class, IPolicyPremiumCalculator

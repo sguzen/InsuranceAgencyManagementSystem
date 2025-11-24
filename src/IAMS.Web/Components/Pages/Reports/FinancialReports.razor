@@ -478,7 +478,6 @@
         }
     }
     private List<CurrencyDto> currencies = new();
-    private Dictionary<string, decimal> exchangeRates = new();
 
     // Financial Summary
     private decimal totalRevenue = 0;
@@ -541,41 +540,9 @@
 
     private async Task RecalculateWithCurrency()
     {
-        exchangeRates.Clear();
         await LoadFinancialSummary();
         await LoadCommissionReport();
         await LoadClaimsReport();
-    }
-
-    private async Task<decimal> ConvertAmount(decimal amount, string fromCurrency)
-    {
-        if (fromCurrency == selectedCurrencyCode)
-            return amount;
-
-        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
-        if (exchangeRates.ContainsKey(cacheKey))
-        {
-            return amount * exchangeRates[cacheKey];
-        }
-
-        try
-        {
-            var result = await CurrencyService.ConvertAmountAsync(amount, fromCurrency, selectedCurrencyCode);
-            if (result.IsSuccess)
-            {
-                if (amount != 0)
-                {
-                    exchangeRates[cacheKey] = result.Data / amount;
-                }
-                return result.Data;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error converting amount: {ex.Message}");
-        }
-
-        return amount;
     }
 
     private async Task LoadFinancialSummary()
@@ -596,9 +563,11 @@
 
             if (policiesResult.IsSuccess && policiesResult.Data != null)
             {
-                var policies = policiesResult.Data.Items.ToList();
+                // Filter policies by selected currency
+                var allPolicies = policiesResult.Data.Items.ToList();
+                var policies = allPolicies.Where(p => !string.IsNullOrEmpty(p.Currency) && p.Currency.Trim() == selectedCurrencyCode.Trim()).ToList();
 
-                // Calculate totals with currency conversion
+                // Calculate totals from filtered policies (no conversion needed)
                 totalRevenue = 0;
                 totalCommission = 0;
                 monthlyRevenue = 0;
@@ -610,22 +579,19 @@
 
                 foreach (var policy in policies)
                 {
-                    var convertedPremium = await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                    var convertedCommission = await ConvertAmount(policy.CommissionAmount, policy.Currency);
-
-                    totalRevenue += convertedPremium;
-                    totalCommission += convertedCommission;
+                    totalRevenue += policy.PremiumAmount;
+                    totalCommission += policy.CommissionAmount;
 
                     // Monthly revenue (policies started this month)
                     if (policy.StartDate >= firstDayOfMonth)
                     {
-                        monthlyRevenue += convertedPremium;
+                        monthlyRevenue += policy.PremiumAmount;
                     }
 
                     // Yearly revenue (policies started this year)
                     if (policy.StartDate >= firstDayOfYear)
                     {
-                        yearlyRevenue += convertedPremium;
+                        yearlyRevenue += policy.PremiumAmount;
                     }
                 }
             }
@@ -662,9 +628,11 @@
 
             if (policiesResult.IsSuccess && policiesResult.Data != null)
             {
-                var policies = policiesResult.Data.Items.ToList();
+                // Filter policies by selected currency
+                var allPolicies = policiesResult.Data.Items.ToList();
+                var policies = allPolicies.Where(p => !string.IsNullOrEmpty(p.Currency) && p.Currency.Trim() == selectedCurrencyCode.Trim()).ToList();
 
-                // Calculate commission metrics from real data with currency conversion
+                // Calculate commission metrics from filtered policies (no conversion needed)
                 commissionNewPolicies = policies.Count(p => !p.ParentPolicyId.HasValue);
                 commissionRenewals = policies.Count(p => p.ParentPolicyId.HasValue);
 
@@ -673,8 +641,8 @@
 
                 foreach (var policy in policies)
                 {
-                    commissionTotalPremium += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                    commissionTotalCommission += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+                    commissionTotalPremium += policy.PremiumAmount;
+                    commissionTotalCommission += policy.CommissionAmount;
                 }
 
                 commissionRate = commissionTotalPremium > 0
@@ -715,13 +683,16 @@
                     claims = claims.Where(c => c.ClaimDate <= claimsEndDate.Value).ToList();
                 }
 
-                // Calculate claims metrics from real data with currency conversion
+                // Filter by selected currency
+                claims = claims.Where(c => !string.IsNullOrEmpty(c.Currency) && c.Currency.Trim() == selectedCurrencyCode.Trim()).ToList();
+
+                // Calculate claims metrics from filtered claims (no conversion needed)
                 claimsTotalCount = claims.Count;
                 claimsTotalAmount = 0;
 
                 foreach (var claim in claims)
                 {
-                    claimsTotalAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                    claimsTotalAmount += claim.ClaimAmount;
                 }
 
                 // Group by status
@@ -731,7 +702,7 @@
                 claimsRejected = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected);
                 claimsSettled = claims.Count(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled);
 
-                // Calculate amounts by status with currency conversion
+                // Calculate amounts by status (no conversion needed)
                 claimsSubmittedAmount = 0;
                 claimsUnderReviewAmount = 0;
                 claimsApprovedAmount = 0;
@@ -740,23 +711,23 @@
 
                 foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Submitted))
                 {
-                    claimsSubmittedAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                    claimsSubmittedAmount += claim.ClaimAmount;
                 }
                 foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.UnderReview))
                 {
-                    claimsUnderReviewAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                    claimsUnderReviewAmount += claim.ClaimAmount;
                 }
                 foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Approved))
                 {
-                    claimsApprovedAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                    claimsApprovedAmount += claim.ClaimAmount;
                 }
                 foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Rejected))
                 {
-                    claimsRejectedAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                    claimsRejectedAmount += claim.ClaimAmount;
                 }
                 foreach (var claim in claims.Where(c => c.Status == IAMS.Domain.Enums.ClaimStatus.Settled))
                 {
-                    claimsSettledAmount += await ConvertAmount(claim.ClaimAmount, claim.Currency ?? "TRY");
+                    claimsSettledAmount += claim.ClaimAmount;
                 }
 
                 Snackbar.Add("Hasar raporu oluşturuldu", MudBlazor.Severity.Success);

@@ -195,8 +195,8 @@
                         <MudCardContent Class="pb-2">
                             <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                 <MudStack Spacing="1">
-                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe</MudText>
-                                    <MudText Typo="Typo.h4">@customerPolicies.Count</MudText>
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe (@selectedCurrencyCode)</MudText>
+                                    <MudText Typo="Typo.h4">@filteredPolicies.Count</MudText>
                                 </MudStack>
                                 <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Primary" />
                             </MudStack>
@@ -255,9 +255,9 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    @if (customerPolicies.Any())
+                    @if (filteredPolicies.Any())
                     {
-                        <MudTable Items="@customerPolicies" Hover="true" Striped="true" Dense="true">
+                        <MudTable Items="@filteredPolicies" Hover="true" Striped="true" Dense="true">
                             <HeaderContent>
                                 <MudTh>Poliçe No</MudTh>
                                 <MudTh>Sigorta Şirketi</MudTh>
@@ -397,6 +397,7 @@
     }
     private List<CurrencyDto> currencies = new();
     private List<PolicyDto> customerPolicies = new();
+    private List<PolicyDto> filteredPolicies = new();
     private bool loading = false;
 
     // Statistics
@@ -484,7 +485,7 @@
     private async Task CalculateStatistics()
     {
         // Filter policies by selected currency
-        var filteredPolicies = customerPolicies
+        filteredPolicies = customerPolicies
             .Where(p => !string.IsNullOrEmpty(p.Currency) && p.Currency.Trim() == selectedCurrencyCode.Trim())
             .ToList();
 
@@ -553,6 +554,7 @@
     private void ClearReport()
     {
         customerPolicies.Clear();
+        filteredPolicies.Clear();
         ClearStatistics();
     }
 
@@ -562,7 +564,7 @@
         totalPremiums = 0;
         totalCommissions = 0;
         policyBreakdown.Clear();
-       // exchangeRates.Clear();
+        filteredPolicies.Clear();
     }
 
     private async Task PrintReport()

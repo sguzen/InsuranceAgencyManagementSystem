@@ -289,10 +289,10 @@
                                 <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Prim" Style="text-align: right">
-                                    @GetConvertedAmount(context.PremiumAmount, context.Currency).ToString("N2")
+                                    @context.PremiumAmount.ToString("N2")
                                 </MudTd>
                                 <MudTd DataLabel="Komisyon" Style="text-align: right">
-                                    @GetConvertedAmount(context.CommissionAmount, context.Currency).ToString("N2")
+                                    @context.CommissionAmount.ToString("N2")
                                 </MudTd>
                                 <MudTd DataLabel="Durum" Style="text-align: center">
                                     <MudChip T="string" Size="Size.Small" Color="@GetPolicyStatusColor(context.Status)">

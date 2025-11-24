@@ -223,43 +223,49 @@
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />
                     <PropertyColumn Property="x => x.PolicyType!.Name" Title="Poliçe Tipi" />
-                    <TemplateColumn Title="Prim Tutarı" CellClass="d-flex justify-end">
+                    <TemplateColumn Title="Prim Tutarı">
                         <CellTemplate>
-                            <MudText>@context.Item.PremiumAmount.ToString("C")</MudText>
+                            <div style="text-align: right;">
+                                @context.Item.PremiumAmount.ToString("C")
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Başlangıç" CellClass="d-flex justify-center">
+                    <TemplateColumn Title="Başlangıç">
                         <CellTemplate>
-                            <MudText>@context.Item.StartDate.ToString("dd.MM.yyyy")</MudText>
+                            <div style="text-align: center;">
+                                @context.Item.StartDate.ToString("dd.MM.yyyy")
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Bitiş" CellClass="d-flex justify-center">
+                    <TemplateColumn Title="Bitiş">
                         <CellTemplate>
-                            <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                                <MudText>@context.Item.EndDate.ToString("dd.MM.yyyy")</MudText>
+                            <div style="text-align: center;">
+                                <div>@context.Item.EndDate.ToString("dd.MM.yyyy")</div>
                                 @if (context.Item.DaysUntilExpiry <= 30 && context.Item.DaysUntilExpiry >= 0)
                                 {
-                                    <MudText Typo="Typo.caption" Color="Color.Warning">
+                                    <div style="font-size: 0.75rem; color: var(--mud-palette-warning);">
                                         @context.Item.DaysUntilExpiry gün kaldı
-                                    </MudText>
+                                    </div>
                                 }
                                 else if (context.Item.IsExpired)
                                 {
-                                    <MudText Typo="Typo.caption" Color="Color.Error">
+                                    <div style="font-size: 0.75rem; color: var(--mud-palette-error);">
                                         @Math.Abs(context.Item.DaysUntilExpiry) gün geçti
-                                    </MudText>
+                                    </div>
                                 }
-                            </MudStack>
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Durum" CellClass="d-flex justify-center">
+                    <TemplateColumn Title="Durum">
                         <CellTemplate>
-                            <MudChip T="string" Color="@GetStatusColor(context.Item.Status)" Size="Size.Small">
-                                @GetStatusText(context.Item.Status)
-                            </MudChip>
+                            <div style="text-align: center;">
+                                <MudChip T="string" Color="@GetStatusColor(context.Item.Status)" Size="Size.Small">
+                                    @GetStatusText(context.Item.Status)
+                                </MudChip>
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
+                    <TemplateColumn Title="İşlemler" Sortable="false">
                         <CellTemplate>
                             <MudStack Row Spacing="1">
                                 <MudIconButton Icon="@Icons.Material.Filled.Visibility"

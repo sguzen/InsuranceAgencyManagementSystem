@@ -405,9 +405,6 @@
     private decimal totalCommissions = 0;
     private List<PolicyTypeBreakdown> policyBreakdown = new();
 
-    // Exchange rates cache
-    private Dictionary<string, decimal> exchangeRates = new();
-
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrencies();
@@ -486,23 +483,25 @@
 
     private async Task CalculateStatistics()
     {
-        // Clear exchange rates cache for new calculation
-        exchangeRates.Clear();
+        // Filter policies by selected currency
+        var filteredPolicies = customerPolicies
+            .Where(p => !string.IsNullOrEmpty(p.Currency) && p.Currency.Trim() == selectedCurrencyCode.Trim())
+            .ToList();
 
-        activePolicyCount = customerPolicies.Count(p => p.Status == PolicyStatus.Active);
+        activePolicyCount = filteredPolicies.Count(p => p.Status == PolicyStatus.Active);
 
         totalPremiums = 0;
         totalCommissions = 0;
 
-        foreach (var policy in customerPolicies)
+        foreach (var policy in filteredPolicies)
         {
-            totalPremiums += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-            totalCommissions += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+            totalPremiums += policy.PremiumAmount;
+            totalCommissions += policy.CommissionAmount;
         }
 
         // Calculate breakdown by policy type
         policyBreakdown.Clear();
-        var grouped = customerPolicies.GroupBy(p => p.PolicyType?.Name ?? "Bilinmeyen");
+        var grouped = filteredPolicies.GroupBy(p => p.PolicyType?.Name ?? "Bilinmeyen");
         foreach (var group in grouped)
         {
             var breakdown = new PolicyTypeBreakdown
@@ -513,62 +512,14 @@
 
             foreach (var policy in group)
             {
-                breakdown.TotalPremium += await ConvertAmount(policy.PremiumAmount, policy.Currency);
-                breakdown.TotalCommission += await ConvertAmount(policy.CommissionAmount, policy.Currency);
+                breakdown.TotalPremium += policy.PremiumAmount;
+                breakdown.TotalCommission += policy.CommissionAmount;
             }
 
             policyBreakdown.Add(breakdown);
         }
 
         policyBreakdown = policyBreakdown.OrderByDescending(x => x.TotalPremium).ToList();
-    }
-
-    private async Task<decimal> ConvertAmount(decimal amount, string fromCurrency)
-    {
-        if (fromCurrency == selectedCurrencyCode)
-            return amount;
-
-        // Check cache
-        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
-        if (exchangeRates.ContainsKey(cacheKey))
-        {
-            return amount * exchangeRates[cacheKey];
-        }
-
-        try
-        {
-            var result = await CurrencyService.ConvertAmountAsync(amount, fromCurrency, selectedCurrencyCode);
-            if (result.IsSuccess)
-            {
-                // Cache the exchange rate
-                if (amount != 0)
-                {
-                    exchangeRates[cacheKey] = result.Data / amount;
-                }
-                return result.Data;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error converting amount: {ex.Message}");
-        }
-
-        // Fallback: return original amount
-        return amount;
-    }
-
-    private decimal GetConvertedAmount(decimal amount, string fromCurrency)
-    {
-        if (fromCurrency == selectedCurrencyCode)
-            return amount;
-
-        var cacheKey = $"{fromCurrency}_{selectedCurrencyCode}";
-        if (exchangeRates.ContainsKey(cacheKey))
-        {
-            return amount * exchangeRates[cacheKey];
-        }
-
-        return amount; // Fallback
     }
 
     private async Task<IEnumerable<CustomerDto>> SearchCustomers(string searchText, CancellationToken token)

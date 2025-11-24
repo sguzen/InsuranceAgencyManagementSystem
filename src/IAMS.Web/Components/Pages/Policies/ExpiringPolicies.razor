@@ -206,20 +206,22 @@
                                   DebounceInterval="300" />
                 </ToolBarContent>
                 <Columns>
-                    <TemplateColumn Title="Öncelik" CellClass="d-flex justify-center" Sortable="false">
+                    <TemplateColumn Title="Öncelik" Sortable="false">
                         <CellTemplate>
-                            @if (GetPriorityLevel(context.Item) == "critical")
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" Color="Color.Error" Title="Kritik" />
-                            }
-                            else if (GetPriorityLevel(context.Item) == "high")
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Title="Yüksek" />
-                            }
-                            else
-                            {
-                                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" Title="Normal" />
-                            }
+                            <div style="text-align: center;">
+                                @if (GetPriorityLevel(context.Item) == "critical")
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" Color="Color.Error" Title="Kritik" />
+                                }
+                                else if (GetPriorityLevel(context.Item) == "high")
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Title="Yüksek" />
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" Title="Normal" />
+                                }
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.PolicyNumber" Title="Poliçe No" />
@@ -247,33 +249,35 @@
                         </CellTemplate>
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />
-                    <TemplateColumn Title="Bitiş Tarihi" CellClass="d-flex justify-center">
+                    <TemplateColumn Title="Bitiş Tarihi">
                         <CellTemplate>
-                            <MudStack Spacing="0" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.body2" 
-                                         Color="@(context.Item.IsExpired ? Color.Error : (context.Item.DaysUntilExpiry <= 7 ? Color.Error : Color.Warning))">
+                            <div style="text-align: center;">
+                                <div style="color: @(context.Item.IsExpired ? "var(--mud-palette-error)" : (context.Item.DaysUntilExpiry <= 7 ? "var(--mud-palette-error)" : "var(--mud-palette-warning)"));">
                                     @context.Item.EndDate.ToString("dd.MM.yyyy")
-                                </MudText>
-                                <MudText Typo="Typo.caption" 
-                                         Color="@(context.Item.IsExpired ? Color.Error : (context.Item.DaysUntilExpiry <= 7 ? Color.Error : Color.Warning))">
+                                </div>
+                                <div style="font-size: 0.75rem; color: @(context.Item.IsExpired ? "var(--mud-palette-error)" : (context.Item.DaysUntilExpiry <= 7 ? "var(--mud-palette-error)" : "var(--mud-palette-warning)"));">
                                     @GetExpiryStatusText(context.Item)
-                                </MudText>
-                            </MudStack>
+                                </div>
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Prim Tutarı" CellClass="d-flex justify-end">
+                    <TemplateColumn Title="Prim Tutarı">
                         <CellTemplate>
-                            <MudText>@context.Item.PremiumAmount.ToString("C")</MudText>
+                            <div style="text-align: right;">
+                                @context.Item.PremiumAmount.ToString("C")
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Durum" CellClass="d-flex justify-center">
+                    <TemplateColumn Title="Durum">
                         <CellTemplate>
-                            <MudChip T="string" Color="@GetStatusColor(context.Item)" Size="Size.Small">
-                                @GetStatusText(context.Item)
-                            </MudChip>
+                            <div style="text-align: center;">
+                                <MudChip T="string" Color="@GetStatusColor(context.Item)" Size="Size.Small">
+                                    @GetStatusText(context.Item)
+                                </MudChip>
+                            </div>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
+                    <TemplateColumn Title="İşlemler" Sortable="false">
                         <CellTemplate>
                             <MudStack Row Spacing="1">
                                 <MudIconButton Icon="@Icons.Material.Filled.Visibility"

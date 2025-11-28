@@ -105,7 +105,7 @@
                     <MudCardContent>
                         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                             <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Prim</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Prim (TRY)</MudText>
                                 <MudText Typo="Typo.h4" Color="Color.Info">@totalPremiums.ToString("C")</MudText>
                             </MudStack>
                             <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
@@ -118,7 +118,7 @@
                     <MudCardContent>
                         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                             <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon (TRY)</MudText>
                                 <MudText Typo="Typo.h4" Color="Color.Warning">@totalCommissions.ToString("C")</MudText>
                             </MudStack>
                             <MudIcon Icon="@Icons.Material.Filled.Percent" Size="Size.Large" Color="Color.Warning" />
@@ -182,7 +182,7 @@
                             </MudChip>
                         </CellTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.TotalPremiums" Title="Toplam Prim">
+                    <PropertyColumn Property="x => x.TotalPremiums" Title="Toplam Prim (TRY)">
                         <CellTemplate>
                             <MudText Typo="Typo.body2">@context.Item.TotalPremiums.ToString("C")</MudText>
                         </CellTemplate>

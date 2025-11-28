@@ -3,12 +3,16 @@
 @rendermode InteractiveServer
 
 @using IAMS.Application.DTOs.InsuranceCompany
+@using IAMS.Application.DTOs.Policy
 @using IAMS.Application.Services.InsuranceCompanies
+@using IAMS.Application.Interfaces
+@using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @using MudBlazor
 
 @attribute [Authorize]
 @inject IInsuranceCompanyService InsuranceCompanyService
+@inject IPolicyService PolicyService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -266,12 +270,90 @@
 
                 <!-- Associated Policies Tab -->
                 <MudTabPanel Icon="@Icons.Material.Filled.Description" Text="İlişkili Poliçeler" BadgeData="@company.ActivePoliciesCount" BadgeColor="Color.Info">
-                    <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info" Variant="Variant.Text">
-                        Bu şirketle ilişkili @company.TotalPolicies poliçe bulunmaktadır. (@company.ActivePoliciesCount aktif)
-                    </MudAlert>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">
-                        Poliçe listesi entegrasyonu yakında eklenecek...
-                    </MudText>
+                    <MudStack Spacing="3">
+                        <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info" Variant="Variant.Text">
+                            Bu şirketle ilişkili @company.TotalPolicies poliçe bulunmaktadır. (@company.ActivePoliciesCount aktif)
+                        </MudAlert>
+
+                        @if (loadingPolicies)
+                        {
+                            <MudProgressLinear Indeterminate="true" />
+                        }
+                        else if (policies.Count == 0)
+                        {
+                            <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info">
+                                Bu şirkete ait poliçe bulunmamaktadır.
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <MudTable Items="@policies" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true" Striped="true">
+                                <HeaderContent>
+                                    <MudTh>Poliçe No</MudTh>
+                                    <MudTh>Müşteri</MudTh>
+                                    <MudTh>Poliçe Türü</MudTh>
+                                    <MudTh>Başlangıç</MudTh>
+                                    <MudTh>Bitiş</MudTh>
+                                    <MudTh Style="text-align: right;">Prim</MudTh>
+                                    <MudTh Style="text-align: right;">Komisyon</MudTh>
+                                    <MudTh Style="text-align: center;">Durum</MudTh>
+                                    <MudTh Style="text-align: center;">İşlemler</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Poliçe No">
+                                        <MudText Typo="Typo.body2"><strong>@context.PolicyNumber</strong></MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Müşteri">
+                                        @if (context.Customer != null)
+                                        {
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2">@($"{context.Customer.FirstName} {context.Customer.LastName}")</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Customer.Email</MudText>
+                                            </MudStack>
+                                        }
+                                    </MudTd>
+                                    <MudTd DataLabel="Poliçe Türü">@context.PolicyType?.Name</MudTd>
+                                    <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                    <MudTd DataLabel="Bitiş">
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.body2">@context.EndDate.ToString("dd.MM.yyyy")</MudText>
+                                            @if (context.DaysUntilExpiry <= 30 && context.DaysUntilExpiry >= 0)
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Warning">
+                                                    @context.DaysUntilExpiry gün kaldı
+                                                </MudText>
+                                            }
+                                            else if (context.IsExpired)
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Error">
+                                                    @Math.Abs(context.DaysUntilExpiry) gün geçti
+                                                </MudText>
+                                            }
+                                        </MudStack>
+                                    </MudTd>
+                                    <MudTd DataLabel="Prim" Style="text-align: right;">
+                                        <MudText Typo="Typo.body2">@context.PremiumAmount.ToString("C2")</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Komisyon" Style="text-align: right;">
+                                        <MudText Typo="Typo.body2">@context.CommissionAmount.ToString("C2")</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CommissionRate.ToString("F2")%</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Durum" Style="text-align: center;">
+                                        <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(@context.Status)" T="PolicyStatus">
+                                            @GetPolicyStatusText(context.Status)
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd DataLabel="İşlemler" Style="text-align: center;">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(() => ViewPolicy(context.Id))"
+                                                       Title="Detayları Görüntüle" />
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </MudStack>
                 </MudTabPanel>
 
                 <!-- Statistics Tab -->
@@ -416,10 +498,13 @@
 
     private InsuranceCompanyDto? company;
     private bool loading = true;
+    private List<PolicyDto> policies = new();
+    private bool loadingPolicies = false;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCompany();
+        await LoadPolicies();
     }
 
     private async Task LoadCompany()
@@ -486,5 +571,68 @@
                 Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
             }
         }
+    }
+
+    private async Task LoadPolicies()
+    {
+        loadingPolicies = true;
+        try
+        {
+            var queryParams = new PolicyQueryParams
+            {
+                InsuranceCompanyId = CompanyId,
+                PageSize = 1000,
+                PageNumber = 1
+            };
+
+            var result = await PolicyService.GetPoliciesAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+            {
+                policies = result.Data.Items.ToList();
+            }
+            else
+            {
+                policies = new List<PolicyDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
+        }
+        finally
+        {
+            loadingPolicies = false;
+        }
+    }
+
+    private void ViewPolicy(int policyId)
+    {
+        Navigation.NavigateTo($"/policies/{policyId}");
+    }
+
+    private Color GetPolicyStatusColor(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => Color.Success,
+            PolicyStatus.Draft => Color.Info,
+            PolicyStatus.Cancelled => Color.Error,
+            PolicyStatus.Expired => Color.Warning,
+            PolicyStatus.Suspended => Color.Secondary,
+            _ => Color.Default
+        };
+    }
+
+    private string GetPolicyStatusText(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => "Aktif",
+            PolicyStatus.Draft => "Taslak",
+            PolicyStatus.Cancelled => "İptal",
+            PolicyStatus.Expired => "Süresi Dolmuş",
+            PolicyStatus.Suspended => "Askıya Alınmış",
+            _ => "Bilinmiyor"
+        };
     }
 }

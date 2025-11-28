@@ -96,7 +96,7 @@
                         <MudCardContent>
                             <MudStack Spacing="2" AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Success" />
-                                <MudText Typo="Typo.h4">@company.TotalPremiums.ToString("C")</MudText>
+                                <MudText Typo="Typo.h4">₺@company.TotalPremiums.ToString("N2")</MudText>
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Prim (TRY)</MudText>
                                 @if (company.CurrencyBreakdowns != null && company.CurrencyBreakdowns.Any())
                                 {
@@ -120,7 +120,7 @@
                         <MudCardContent>
                             <MudStack Spacing="2" AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.Percent" Size="Size.Large" Color="Color.Warning" />
-                                <MudText Typo="Typo.h4">@company.TotalCommissions.ToString("C")</MudText>
+                                <MudText Typo="Typo.h4">₺@company.TotalCommissions.ToString("N2")</MudText>
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon (TRY)</MudText>
                                 @if (company.CurrencyBreakdowns != null && company.CurrencyBreakdowns.Any())
                                 {
@@ -289,11 +289,11 @@
                                         <tbody>
                                             <tr>
                                                 <td><MudText Typo="Typo.body1">Toplam Prim Tutarı (TRY)</MudText></td>
-                                                <td><MudText Typo="Typo.body1" Align="Align.Right">@company.TotalPremiums.ToString("C")</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right">₺@company.TotalPremiums.ToString("N2")</MudText></td>
                                             </tr>
                                             <tr>
                                                 <td><MudText Typo="Typo.body1">Toplam Komisyon (TRY)</MudText></td>
-                                                <td><MudText Typo="Typo.body1" Align="Align.Right">@company.TotalCommissions.ToString("C")</MudText></td>
+                                                <td><MudText Typo="Typo.body1" Align="Align.Right">₺@company.TotalCommissions.ToString("N2")</MudText></td>
                                             </tr>
                                             <tr>
                                                 <td><MudText Typo="Typo.body1" Color="Color.Primary"><strong>Ortalama Komisyon Oranı</strong></MudText></td>

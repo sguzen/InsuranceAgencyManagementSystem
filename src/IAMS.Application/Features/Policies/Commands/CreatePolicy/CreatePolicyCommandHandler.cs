@@ -81,18 +81,31 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
                         policy.PolicyNumber, policy.PremiumAmount);
                 }
 
-                // Calculate commission using database lookup
-                var (commissionAmount, commissionRate) = await _commissionCalculator.CalculateCommissionAsync(
-                    policy.PolicyTypeId,
-                    policy.InsuranceCompanyId,
-                    policy.PremiumAmount);
+                // Use user-provided commission rate if specified, otherwise lookup from database
+                if (policy.CommissionRate > 0)
+                {
+                    // User provided a commission rate - calculate amount based on it
+                    policy.CommissionAmount = policy.PremiumAmount * (policy.CommissionRate / 100);
 
-                policy.CommissionAmount = commissionAmount;
-                policy.CommissionRate = commissionRate;
+                    _logger.LogInformation(
+                        "Using user-provided commission rate for policy {PolicyNumber}: Rate={Rate}%, Amount={Amount}",
+                        policy.PolicyNumber, policy.CommissionRate, policy.CommissionAmount);
+                }
+                else
+                {
+                    // No rate provided - fall back to database lookup
+                    var (commissionAmount, commissionRate) = await _commissionCalculator.CalculateCommissionAsync(
+                        policy.PolicyTypeId,
+                        policy.InsuranceCompanyId,
+                        policy.PremiumAmount);
 
-                _logger.LogInformation(
-                    "Calculated commission for policy {PolicyNumber}: Rate={Rate}%, Amount={Amount}",
-                    policy.PolicyNumber, commissionRate, commissionAmount);
+                    policy.CommissionAmount = commissionAmount;
+                    policy.CommissionRate = commissionRate;
+
+                    _logger.LogInformation(
+                        "Calculated commission from database for policy {PolicyNumber}: Rate={Rate}%, Amount={Amount}",
+                        policy.PolicyNumber, commissionRate, commissionAmount);
+                }
 
                 // Validate business rules
                 policy.Validate();

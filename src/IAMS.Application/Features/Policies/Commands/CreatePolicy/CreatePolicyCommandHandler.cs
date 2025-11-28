@@ -5,6 +5,7 @@ using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Application.Services.Calculations;
+using IAMS.Application.Services.Currencies;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Exceptions;
 using IAMS.Domain.Services;
@@ -21,6 +22,7 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
         private readonly IPolicyNumberGenerator _policyNumberGenerator;
         private readonly IPolicyCalculatorFactory _calculatorFactory;
         private readonly ICommissionCalculator _commissionCalculator;
+        private readonly ICurrencyService _currencyService;
         private readonly ILogger<CreatePolicyCommandHandler> _logger;
 
         public CreatePolicyCommandHandler(
@@ -30,6 +32,7 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
             IPolicyNumberGenerator policyNumberGenerator,
             IPolicyCalculatorFactory calculatorFactory,
             ICommissionCalculator commissionCalculator,
+            ICurrencyService currencyService,
             ILogger<CreatePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -38,6 +41,7 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
             _policyNumberGenerator = policyNumberGenerator;
             _calculatorFactory = calculatorFactory;
             _commissionCalculator = commissionCalculator;
+            _currencyService = currencyService;
             _logger = logger;
         }
 
@@ -105,6 +109,51 @@ namespace IAMS.Application.Features.Policies.Commands.CreatePolicy
                     _logger.LogInformation(
                         "Calculated commission from database for policy {PolicyNumber}: Rate={Rate}%, Amount={Amount}",
                         policy.PolicyNumber, commissionRate, commissionAmount);
+                }
+
+                // Set exchange rate to base currency (TRY) and calculate premium in base currency
+                var baseCurrencyResult = await _currencyService.GetBaseCurrencyAsync();
+                if (baseCurrencyResult.IsSuccess && baseCurrencyResult.Data != null)
+                {
+                    var baseCurrencyId = baseCurrencyResult.Data.Id;
+
+                    if (currency.Id == baseCurrencyId)
+                    {
+                        // Policy currency is already the base currency
+                        policy.ExchangeRateToBase = 1;
+                        policy.PremiumAmountInBaseCurrency = policy.PremiumAmount;
+                    }
+                    else
+                    {
+                        // Get exchange rate to base currency
+                        var exchangeRateResult = await _currencyService.GetExchangeRateAsync(currency.Id, baseCurrencyId);
+                        if (exchangeRateResult.IsSuccess)
+                        {
+                            policy.ExchangeRateToBase = exchangeRateResult.Data;
+                            policy.PremiumAmountInBaseCurrency = policy.PremiumAmount * exchangeRateResult.Data;
+
+                            _logger.LogInformation(
+                                "Set exchange rate for policy {PolicyNumber}: {FromCurrency} to {ToCurrency} = {Rate}, Premium in base currency: {PremiumInBase}",
+                                policy.PolicyNumber, currency.Code, baseCurrencyResult.Data.Code,
+                                exchangeRateResult.Data, policy.PremiumAmountInBaseCurrency);
+                        }
+                        else
+                        {
+                            // Fallback to 1:1 if exchange rate not found
+                            policy.ExchangeRateToBase = 1;
+                            policy.PremiumAmountInBaseCurrency = policy.PremiumAmount;
+                            _logger.LogWarning(
+                                "Could not get exchange rate for currency {CurrencyCode} to base currency, defaulting to 1:1. Message: {Message}",
+                                currency.Code, exchangeRateResult.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    // Could not get base currency, default to 1:1
+                    policy.ExchangeRateToBase = 1;
+                    policy.PremiumAmountInBaseCurrency = policy.PremiumAmount;
+                    _logger.LogWarning("Could not get base currency, defaulting to 1:1 exchange rate");
                 }
 
                 // Validate business rules

@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.DTOs.InsuranceCompany;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;
@@ -108,6 +109,25 @@ namespace IAMS.Persistence.Repositories
                 .Where(p => p.InsuranceCompanyId == id &&
                            p.Status == PolicyStatus.Active && !p.IsDeleted)
                 .SumAsync(p => p.CommissionAmount);
+        }
+
+        public async Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId)
+        {
+            return await _context.Policies
+                .Where(p => p.InsuranceCompanyId == companyId &&
+                           p.Status == PolicyStatus.Active && !p.IsDeleted)
+                .GroupBy(p => new { p.CurrencyId, p.Currency.Code, p.Currency.Symbol })
+                .Select(g => new CurrencyBreakdownDto
+                {
+                    CurrencyId = g.Key.CurrencyId,
+                    CurrencyCode = g.Key.Code,
+                    CurrencySymbol = g.Key.Symbol,
+                    TotalPremiums = g.Sum(p => p.PremiumAmount),
+                    TotalCommissions = g.Sum(p => p.CommissionAmount),
+                    PolicyCount = g.Count()
+                })
+                .OrderByDescending(c => c.TotalPremiums)
+                .ToListAsync();
         }
     }
 }

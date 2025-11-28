@@ -41,6 +41,7 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
                 companyDto.ActivePoliciesCount = await _insuranceCompanyRepository.GetActivePoliciesCountAsync(company.Id);
                 companyDto.TotalPremiums = await _insuranceCompanyRepository.GetTotalPremiumAmountAsync(company.Id);
                 companyDto.TotalCommissions = await _insuranceCompanyRepository.GetTotalCommissionsAsync(company.Id);
+                companyDto.CurrencyBreakdowns = await _insuranceCompanyRepository.GetCurrencyBreakdownAsync(company.Id);
 
                 return Result<InsuranceCompanyDto>.Success(companyDto);
             }

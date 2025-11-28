@@ -98,6 +98,17 @@
                                 <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Success" />
                                 <MudText Typo="Typo.h4">@company.TotalPremiums.ToString("C")</MudText>
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Prim</MudText>
+                                @if (company.CurrencyBreakdowns != null && company.CurrencyBreakdowns.Any())
+                                {
+                                    <MudStack Spacing="0" AlignItems="AlignItems.Center" Style="margin-top: 8px;">
+                                        @foreach (var breakdown in company.CurrencyBreakdowns)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @breakdown.CurrencySymbol@breakdown.TotalPremiums.ToString("N0") @breakdown.CurrencyCode
+                                            </MudText>
+                                        }
+                                    </MudStack>
+                                }
                             </MudStack>
                         </MudCardContent>
                     </MudCard>
@@ -109,6 +120,17 @@
                                 <MudIcon Icon="@Icons.Material.Filled.Percent" Size="Size.Large" Color="Color.Warning" />
                                 <MudText Typo="Typo.h4">@company.TotalCommissions.ToString("C")</MudText>
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Komisyon</MudText>
+                                @if (company.CurrencyBreakdowns != null && company.CurrencyBreakdowns.Any())
+                                {
+                                    <MudStack Spacing="0" AlignItems="AlignItems.Center" Style="margin-top: 8px;">
+                                        @foreach (var breakdown in company.CurrencyBreakdowns)
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @breakdown.CurrencySymbol@breakdown.TotalCommissions.ToString("N0") @breakdown.CurrencyCode
+                                            </MudText>
+                                        }
+                                    </MudStack>
+                                }
                             </MudStack>
                         </MudCardContent>
                     </MudCard>
@@ -319,6 +341,61 @@
                                 </MudCardContent>
                             </MudCard>
                         </MudItem>
+
+                        @if (company.CurrencyBreakdowns != null && company.CurrencyBreakdowns.Any())
+                        {
+                            <MudItem xs="12">
+                                <MudCard Elevation="1">
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">Para Birimi Bazında Dağılım</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudSimpleTable Hover="true">
+                                            <thead>
+                                                <tr>
+                                                    <th><MudText Typo="Typo.body2"><strong>Para Birimi</strong></MudText></th>
+                                                    <th><MudText Typo="Typo.body2" Align="Align.Right"><strong>Poliçe Sayısı</strong></MudText></th>
+                                                    <th><MudText Typo="Typo.body2" Align="Align.Right"><strong>Toplam Prim</strong></MudText></th>
+                                                    <th><MudText Typo="Typo.body2" Align="Align.Right"><strong>Toplam Komisyon</strong></MudText></th>
+                                                    <th><MudText Typo="Typo.body2" Align="Align.Right"><strong>Komisyon Oranı</strong></MudText></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var breakdown in company.CurrencyBreakdowns)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                                                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Primary" />
+                                                                <MudText Typo="Typo.body1">@breakdown.CurrencyCode (@breakdown.CurrencySymbol)</MudText>
+                                                            </MudStack>
+                                                        </td>
+                                                        <td><MudText Typo="Typo.body1" Align="Align.Right">@breakdown.PolicyCount</MudText></td>
+                                                        <td><MudText Typo="Typo.body1" Align="Align.Right">@breakdown.CurrencySymbol@breakdown.TotalPremiums.ToString("N2")</MudText></td>
+                                                        <td><MudText Typo="Typo.body1" Align="Align.Right">@breakdown.CurrencySymbol@breakdown.TotalCommissions.ToString("N2")</MudText></td>
+                                                        <td>
+                                                            <MudText Typo="Typo.body1" Align="Align.Right" Color="Color.Primary">
+                                                                @if (breakdown.TotalPremiums > 0)
+                                                                {
+                                                                    @((breakdown.TotalCommissions / breakdown.TotalPremiums * 100).ToString("F2"))
+                                                                    <text>%</text>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <text>0.00%</text>
+                                                                }
+                                                            </MudText>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </MudSimpleTable>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        }
                     </MudGrid>
                 </MudTabPanel>
             </MudTabs>

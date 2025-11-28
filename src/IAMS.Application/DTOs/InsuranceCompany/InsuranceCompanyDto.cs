@@ -23,5 +23,8 @@
         public decimal TotalPremiums { get; set; }
         public decimal TotalCommissions { get; set; }
         public DateTime? LastPolicyDate { get; set; }
+
+        // Currency breakdown
+        public List<CurrencyBreakdownDto> CurrencyBreakdowns { get; set; } = new List<CurrencyBreakdownDto>();
     }
 }

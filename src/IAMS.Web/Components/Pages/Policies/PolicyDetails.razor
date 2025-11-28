@@ -742,14 +742,15 @@ else
     {
         return vehicleType switch
         {
-            VehicleType.Car => "Binek Otomobil",
-            VehicleType.SUV => "SUV/Arazi",
-            VehicleType.Truck => "Kamyon",
-            VehicleType.Van => "Minibüs/Van",
-            VehicleType.Motorcycle => "Motosiklet",
+            VehicleType.Car => "Otomobil",
+            VehicleType.Minibus => "Minibüs",
             VehicleType.Bus => "Otobüs",
-            VehicleType.Pickup => "Kamyonet/Pickup",
+            VehicleType.Truck => "Kamyon",
+            VehicleType.Pickup => "Kamyonet",
+            VehicleType.Motorcycle => "Motosiklet",
             VehicleType.Tractor => "Traktör",
+            VehicleType.Commercial => "Ticari Araç",
+            VehicleType.Special => "Özel Amaçlı Araç",
             _ => vehicleType.ToString()
         };
     }
@@ -763,8 +764,9 @@ else
             VehicleFuelType.LPG => "LPG",
             VehicleFuelType.Electric => "Elektrik",
             VehicleFuelType.Hybrid => "Hibrit",
-            VehicleFuelType.PluginHybrid => "Şarj Edilebilir Hibrit",
-            VehicleFuelType.CNG => "CNG (Doğalgaz)",
+            VehicleFuelType.GasolineLPG => "Benzin+LPG",
+            VehicleFuelType.HybridGasoline => "Hibrit Benzin",
+            VehicleFuelType.HybridDiesel => "Hibrit Dizel",
             _ => fuelType.ToString()
         };
     }
@@ -776,10 +778,13 @@ else
             VehicleUsageType.Private => "Hususi",
             VehicleUsageType.Commercial => "Ticari",
             VehicleUsageType.Taxi => "Taksi",
-            VehicleUsageType.Rental => "Kiralık",
+            VehicleUsageType.RentalCar => "Kiralık Araç",
             VehicleUsageType.PublicTransport => "Toplu Taşıma",
-            VehicleUsageType.Delivery => "Kurye/Teslimat",
-            VehicleUsageType.Agricultural => "Tarımsal",
+            VehicleUsageType.Ambulance => "Ambulans",
+            VehicleUsageType.Agriculture => "Tarım",
+            VehicleUsageType.Construction => "İnşaat",
+            VehicleUsageType.Courier => "Kurye",
+            VehicleUsageType.SchoolBus => "Okul Servisi",
             _ => usageType.ToString()
         };
     }

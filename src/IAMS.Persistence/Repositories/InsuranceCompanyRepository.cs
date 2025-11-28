@@ -89,10 +89,11 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<decimal> GetTotalPremiumAmountAsync(int companyId)
         {
+            // Sum in base currency (TRY) - use PremiumAmountInBaseCurrency if available, otherwise PremiumAmount * ExchangeRateToBase
             return await _context.Policies
                 .Where(p => p.InsuranceCompanyId == companyId &&
                            p.Status == PolicyStatus.Active && !p.IsDeleted)
-                .SumAsync(p => p.PremiumAmount);
+                .SumAsync(p => p.PremiumAmountInBaseCurrency ?? (p.PremiumAmount * (p.ExchangeRateToBase ?? 1)));
         }
 
         public async Task<int> GetActivePoliciesCountAsync(int id)
@@ -105,10 +106,11 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<decimal> GetTotalCommissionsAsync(int id)
         {
+            // Sum commissions in base currency (TRY) - use CommissionAmount * ExchangeRateToBase
             return await _context.Policies
                 .Where(p => p.InsuranceCompanyId == id &&
                            p.Status == PolicyStatus.Active && !p.IsDeleted)
-                .SumAsync(p => p.CommissionAmount);
+                .SumAsync(p => p.CommissionAmount * (p.ExchangeRateToBase ?? 1));
         }
 
         public async Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId)

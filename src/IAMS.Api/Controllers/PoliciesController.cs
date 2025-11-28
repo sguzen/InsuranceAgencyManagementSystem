@@ -3,6 +3,7 @@ using IAMS.Application.Features.Policies.Commands.ActivatePolicy;
 using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
+using IAMS.Application.Features.Policies.Commands.PopulatePolicyExchangeRates;
 using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
@@ -241,6 +242,37 @@ namespace IAMS.Api.Controllers
         {
             var query = new GetPolicyStatisticsQuery();
             var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Populate exchange rates for existing policies
+        /// </summary>
+        /// <remarks>
+        /// This endpoint populates ExchangeRateToBase and PremiumAmountInBaseCurrency fields
+        /// for policies that don't have them set. This is useful for migrating existing data
+        /// after adding exchange rate functionality.
+        ///
+        /// Parameters:
+        /// - onlyMissing: If true, only processes policies without exchange rates (default: true)
+        /// - useHistoricalRates: If true, uses policy creation date for historical rates (default: true)
+        /// </remarks>
+        [HttpPost("populate-exchange-rates")]
+        public async Task<ActionResult<Result<PopulatePolicyExchangeRatesResult>>> PopulateExchangeRates(
+            [FromQuery] bool onlyMissing = true,
+            [FromQuery] bool useHistoricalRates = true)
+        {
+            var command = new PopulatePolicyExchangeRatesCommand
+            {
+                OnlyMissing = onlyMissing,
+                UseHistoricalRates = useHistoricalRates
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
     }

@@ -69,6 +69,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                 var originalPolicyTypeId = existingPolicy.PolicyTypeId;
                 var originalInsuranceCompanyId = existingPolicy.InsuranceCompanyId;
                 var originalPremium = existingPolicy.PremiumAmount;
+                var originalCommissionRate = existingPolicy.CommissionRate;
 
                 // Map the updated values
                 _mapper.Map(request.PolicyDto, existingPolicy);
@@ -83,13 +84,25 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                 }
                 existingPolicy.CurrencyId = currency.Id;
 
-                // Recalculate if policy type or insurance company changed, or if premium changed significantly
+                // Check if user explicitly changed the commission rate
+                bool commissionRateChanged = Math.Abs(originalCommissionRate - existingPolicy.CommissionRate) > 0.01m;
+
+                // Check if factors affecting commission calculation changed
                 bool shouldRecalculate =
                     originalPolicyTypeId != existingPolicy.PolicyTypeId ||
                     originalInsuranceCompanyId != existingPolicy.InsuranceCompanyId ||
                     Math.Abs(originalPremium - existingPolicy.PremiumAmount) > 0.01m;
 
-                if (shouldRecalculate)
+                if (commissionRateChanged)
+                {
+                    // User explicitly changed the commission rate - use it and recalculate amount only
+                    existingPolicy.CommissionAmount = existingPolicy.PremiumAmount * (existingPolicy.CommissionRate / 100);
+
+                    _logger.LogInformation(
+                        "Using user-provided commission rate for policy {PolicyNumber}: Rate={Rate}%, Amount={Amount}",
+                        existingPolicy.PolicyNumber, existingPolicy.CommissionRate, existingPolicy.CommissionAmount);
+                }
+                else if (shouldRecalculate)
                 {
                     _logger.LogInformation(
                         "Policy {PolicyNumber} requires recalculation due to changes",
@@ -102,7 +115,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                         existingPolicy.PremiumAmount = await premiumCalculator.CalculatePremiumAsync(existingPolicy);
                     }
 
-                    // Recalculate commission
+                    // Recalculate commission from database since user didn't change the rate
                     var (commissionAmount, commissionRate) = await _commissionCalculator.CalculateCommissionAsync(
                         existingPolicy.PolicyTypeId,
                         existingPolicy.InsuranceCompanyId,
@@ -112,8 +125,8 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                     existingPolicy.CommissionRate = commissionRate;
 
                     _logger.LogInformation(
-                        "Recalculated for policy {PolicyNumber}: Premium={Premium}, Commission={Commission}",
-                        existingPolicy.PolicyNumber, existingPolicy.PremiumAmount, commissionAmount);
+                        "Recalculated commission from database for policy {PolicyNumber}: Premium={Premium}, Rate={Rate}%, Amount={Amount}",
+                        existingPolicy.PolicyNumber, existingPolicy.PremiumAmount, commissionRate, commissionAmount);
                 }
 
                 existingPolicy.ModifiedOn = DateTime.UtcNow;

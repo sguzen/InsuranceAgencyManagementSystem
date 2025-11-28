@@ -194,6 +194,82 @@ else
                 </MudItem>
             </MudGrid>
 
+            <!-- Vehicle Information (if applicable) -->
+            @if (policy.Vehicle != null)
+            {
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Class="mr-2" />
+                                Araç Bilgileri
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudStack Spacing="3">
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Plaka:</MudText>
+                                        <MudText><strong>@policy.Vehicle.PlateNumber</strong></MudText>
+                                    </MudStack>
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Marka/Model:</MudText>
+                                        <MudText><strong>@policy.Vehicle.BrandName @policy.Vehicle.ModelName</strong></MudText>
+                                    </MudStack>
+                                    @if (policy.Vehicle.ModelYear.HasValue)
+                                    {
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText>Model Yılı:</MudText>
+                                            <MudText><strong>@policy.Vehicle.ModelYear</strong></MudText>
+                                        </MudStack>
+                                    }
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Araç Yaşı:</MudText>
+                                        <MudText><strong>@policy.Vehicle.VehicleAge yıl</strong></MudText>
+                                    </MudStack>
+                                    @if (!string.IsNullOrEmpty(policy.Vehicle.Color))
+                                    {
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText>Renk:</MudText>
+                                            <MudText><strong>@policy.Vehicle.Color</strong></MudText>
+                                        </MudStack>
+                                    }
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudStack Spacing="3">
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Şasi Numarası:</MudText>
+                                        <MudText><strong>@policy.Vehicle.ChassisNumber</strong></MudText>
+                                    </MudStack>
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Araç Tipi:</MudText>
+                                        <MudText><strong>@GetVehicleTypeText(policy.Vehicle.VehicleType)</strong></MudText>
+                                    </MudStack>
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Yakıt Tipi:</MudText>
+                                        <MudText><strong>@GetFuelTypeText(policy.Vehicle.FuelType)</strong></MudText>
+                                    </MudStack>
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Kullanım Tarzı:</MudText>
+                                        <MudText><strong>@GetUsageTypeText(policy.Vehicle.UsageType)</strong></MudText>
+                                    </MudStack>
+                                    @if (policy.Vehicle.CurrentValue.HasValue)
+                                    {
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText>Güncel Değer:</MudText>
+                                            <MudText><strong>@policy.Vehicle.CurrentValue.Value.ToString("N2") @policy.Vehicle.Currency</strong></MudText>
+                                        </MudStack>
+                                    }
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            }
+
             <!-- Notes Section -->
             @if (!string.IsNullOrEmpty(policy.Notes))
             {
@@ -647,10 +723,10 @@ else
     private string GetPolicyDuration()
     {
         if (policy == null) return "0 gün";
-        
+
         var duration = policy.EndDate - policy.StartDate;
         var totalDays = duration.TotalDays;
-        
+
         if (totalDays < 365)
         {
             return $"{Math.Round(totalDays / 30, 1)} ay";
@@ -660,5 +736,51 @@ else
             var years = Math.Round(totalDays / 365.25, 1);
             return $"{years} yıl";
         }
+    }
+
+    private string GetVehicleTypeText(VehicleType vehicleType)
+    {
+        return vehicleType switch
+        {
+            VehicleType.Car => "Binek Otomobil",
+            VehicleType.SUV => "SUV/Arazi",
+            VehicleType.Truck => "Kamyon",
+            VehicleType.Van => "Minibüs/Van",
+            VehicleType.Motorcycle => "Motosiklet",
+            VehicleType.Bus => "Otobüs",
+            VehicleType.Pickup => "Kamyonet/Pickup",
+            VehicleType.Tractor => "Traktör",
+            _ => vehicleType.ToString()
+        };
+    }
+
+    private string GetFuelTypeText(VehicleFuelType fuelType)
+    {
+        return fuelType switch
+        {
+            VehicleFuelType.Gasoline => "Benzin",
+            VehicleFuelType.Diesel => "Dizel",
+            VehicleFuelType.LPG => "LPG",
+            VehicleFuelType.Electric => "Elektrik",
+            VehicleFuelType.Hybrid => "Hibrit",
+            VehicleFuelType.PluginHybrid => "Şarj Edilebilir Hibrit",
+            VehicleFuelType.CNG => "CNG (Doğalgaz)",
+            _ => fuelType.ToString()
+        };
+    }
+
+    private string GetUsageTypeText(VehicleUsageType usageType)
+    {
+        return usageType switch
+        {
+            VehicleUsageType.Private => "Hususi",
+            VehicleUsageType.Commercial => "Ticari",
+            VehicleUsageType.Taxi => "Taksi",
+            VehicleUsageType.Rental => "Kiralık",
+            VehicleUsageType.PublicTransport => "Toplu Taşıma",
+            VehicleUsageType.Delivery => "Kurye/Teslimat",
+            VehicleUsageType.Agricultural => "Tarımsal",
+            _ => usageType.ToString()
+        };
     }
 }

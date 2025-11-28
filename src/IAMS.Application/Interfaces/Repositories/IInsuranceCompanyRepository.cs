@@ -1,4 +1,5 @@
 ﻿using IAMS.Domain.Entities;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.Interfaces.Repositories
 {
@@ -15,5 +16,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<decimal> GetTotalPremiumAmountAsync(int companyId);
         Task<int> GetActivePoliciesCountAsync(int id);
         Task<decimal> GetTotalCommissionsAsync(int id);
+        Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId);
     }
 }

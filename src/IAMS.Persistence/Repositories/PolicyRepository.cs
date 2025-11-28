@@ -234,6 +234,24 @@ namespace IAMS.Persistence.Repositories
                 .SumAsync(p => p.PremiumAmount);
         }
 
+        public async Task<Dictionary<string, decimal>> GetMonthlyRevenueByCurrencyAsync(DateTime? month = null)
+        {
+            var targetMonth = month ?? DateTime.Now;
+            var startOfMonth = new DateTime(targetMonth.Year, targetMonth.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+            return await _dbSet
+                .Include(p => p.Currency)
+                .Where(p =>
+                           !p.IsDeleted &&
+                           p.Status == PolicyStatus.Active &&
+                           p.StartDate >= startOfMonth &&
+                           p.StartDate <= endOfMonth)
+                .GroupBy(p => p.Currency.Code)
+                .Select(g => new { Currency = g.Key, Total = g.Sum(p => p.PremiumAmount) })
+                .ToDictionaryAsync(x => x.Currency, x => x.Total);
+        }
+
         public async Task<decimal> GetYearlyRevenueAsync(int? year = null)
         {
             var targetYear = year ?? DateTime.Now.Year;

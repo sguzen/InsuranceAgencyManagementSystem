@@ -24,6 +24,7 @@ public interface IPolicyService
     Task<Result<int>> GetTotalPoliciesCountAsync();
     Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30);
     Task<Result<decimal>> GetMonthlyRevenueAsync();
+    Task<Result<Dictionary<string, decimal>>> GetMonthlyRevenueByCurrencyAsync();
     Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync();
     Task<Result<List<PolicyDto>>> GetRecentPoliciesAsync(int count = 5);
     Task<Result<Dictionary<PolicyStatus, int>>> GetPoliciesByStatusAsync();

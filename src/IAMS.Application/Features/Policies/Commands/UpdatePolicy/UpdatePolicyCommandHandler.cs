@@ -6,6 +6,7 @@ using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Application.Services.Calculations;
+using IAMS.Application.Services.Currencies;
 using IAMS.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         private readonly ICurrentTenantService _currentTenantService;
         private readonly IPolicyCalculatorFactory _calculatorFactory;
         private readonly ICommissionCalculator _commissionCalculator;
+        private readonly ICurrencyService _currencyService;
         private readonly ILogger<UpdatePolicyCommandHandler> _logger;
 
         public UpdatePolicyCommandHandler(
@@ -29,6 +31,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             ICurrentTenantService currentTenantService,
             IPolicyCalculatorFactory calculatorFactory,
             ICommissionCalculator commissionCalculator,
+            ICurrencyService currencyService,
             ILogger<UpdatePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -37,6 +40,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             _currentTenantService = currentTenantService;
             _calculatorFactory = calculatorFactory;
             _commissionCalculator = commissionCalculator;
+            _currencyService = currencyService;
             _logger = logger;
         }
 
@@ -127,6 +131,51 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                     _logger.LogInformation(
                         "Recalculated commission from database for policy {PolicyNumber}: Premium={Premium}, Rate={Rate}%, Amount={Amount}",
                         existingPolicy.PolicyNumber, existingPolicy.PremiumAmount, commissionRate, commissionAmount);
+                }
+
+                // Recalculate exchange rate to base currency (TRY) and premium in base currency
+                var baseCurrencyResult = await _currencyService.GetBaseCurrencyAsync();
+                if (baseCurrencyResult.IsSuccess && baseCurrencyResult.Data != null)
+                {
+                    var baseCurrencyId = baseCurrencyResult.Data.Id;
+
+                    if (currency.Id == baseCurrencyId)
+                    {
+                        // Policy currency is already the base currency
+                        existingPolicy.ExchangeRateToBase = 1;
+                        existingPolicy.PremiumAmountInBaseCurrency = existingPolicy.PremiumAmount;
+                    }
+                    else
+                    {
+                        // Get exchange rate to base currency
+                        var exchangeRateResult = await _currencyService.GetExchangeRateAsync(currency.Id, baseCurrencyId);
+                        if (exchangeRateResult.IsSuccess)
+                        {
+                            existingPolicy.ExchangeRateToBase = exchangeRateResult.Data;
+                            existingPolicy.PremiumAmountInBaseCurrency = existingPolicy.PremiumAmount * exchangeRateResult.Data;
+
+                            _logger.LogInformation(
+                                "Updated exchange rate for policy {PolicyNumber}: {FromCurrency} to {ToCurrency} = {Rate}, Premium in base currency: {PremiumInBase}",
+                                existingPolicy.PolicyNumber, currency.Code, baseCurrencyResult.Data.Code,
+                                exchangeRateResult.Data, existingPolicy.PremiumAmountInBaseCurrency);
+                        }
+                        else
+                        {
+                            // Fallback to 1:1 if exchange rate not found
+                            existingPolicy.ExchangeRateToBase = 1;
+                            existingPolicy.PremiumAmountInBaseCurrency = existingPolicy.PremiumAmount;
+                            _logger.LogWarning(
+                                "Could not get exchange rate for currency {CurrencyCode} to base currency, defaulting to 1:1. Message: {Message}",
+                                currency.Code, exchangeRateResult.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    // Could not get base currency, default to 1:1
+                    existingPolicy.ExchangeRateToBase = 1;
+                    existingPolicy.PremiumAmountInBaseCurrency = existingPolicy.PremiumAmount;
+                    _logger.LogWarning("Could not get base currency, defaulting to 1:1 exchange rate");
                 }
 
                 existingPolicy.ModifiedOn = DateTime.UtcNow;

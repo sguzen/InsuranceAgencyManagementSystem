@@ -33,6 +33,7 @@ namespace IAMS.Application.Interfaces.Repositories
 
         // Revenue queries
         Task<decimal> GetMonthlyRevenueAsync(DateTime? month = null);
+        Task<Dictionary<string, decimal>> GetMonthlyRevenueByCurrencyAsync(DateTime? month = null);
         Task<decimal> GetYearlyRevenueAsync(int? year = null);
         Task<Dictionary<string, decimal>> GetRevenueByMonthAsync(int months = 12);
         Task<decimal> GetTotalPremiumByCustomerAsync(int customerId);

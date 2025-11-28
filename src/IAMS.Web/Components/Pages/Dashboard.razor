@@ -73,10 +73,22 @@
         <MudItem xs="12" md="6" lg="3">
             <MudCard Elevation="4">
                 <MudCardContent>
-                    <div class="d-flex justify-space-between">
-                        <div>
+                    <div class="d-flex justify-space-between align-start">
+                        <div style="flex: 1;">
                             <MudText Typo="Typo.h6">Aylık Gelir</MudText>
-                            <MudText Typo="Typo.h4">@_monthlyRevenue.ToString("C")</MudText>
+                            @if (_monthlyRevenueByCurrency?.Any() == true)
+                            {
+                                @foreach (var currency in _monthlyRevenueByCurrency.OrderByDescending(x => x.Value))
+                                {
+                                    <MudText Typo="Typo.body1" Class="mt-1">
+                                        <strong>@currency.Key:</strong> @currency.Value.ToString("N2")
+                                    </MudText>
+                                }
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.h4">0</MudText>
+                            }
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
                     </div>
@@ -172,7 +184,7 @@
     private int _totalCustomers = 0;
     private int _totalPolicies = 0;
     private int _expiringPolicies = 0;
-    private decimal _monthlyRevenue = 0;
+    private Dictionary<string, decimal>? _monthlyRevenueByCurrency = null;
     private List<IAMS.Application.DTOs.Customer.CustomerDto>? _recentCustomers;
 
     protected override async Task OnInitializedAsync()
@@ -196,8 +208,8 @@
             var expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
             _expiringPolicies = expiringPolicies.Data;
 
-            var monthlyRevenue = await PolicyService.GetMonthlyRevenueAsync();
-            _monthlyRevenue = monthlyRevenue.Data;
+            var monthlyRevenueByCurrency = await PolicyService.GetMonthlyRevenueByCurrencyAsync();
+            _monthlyRevenueByCurrency = monthlyRevenueByCurrency.Data;
 
             // Load recent customers
             _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;

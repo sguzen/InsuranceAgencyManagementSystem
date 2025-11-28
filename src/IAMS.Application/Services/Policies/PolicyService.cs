@@ -9,6 +9,7 @@ using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPolicies;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount;
 using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue;
+using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenueByCurrency;
 using IAMS.Application.Features.Policies.Queries.GetPolicies;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus;
@@ -83,6 +84,11 @@ namespace IAMS.Application.Services.Policies
         public async Task<Result<decimal>> GetMonthlyRevenueAsync()
         {
             return await _mediator.Send(new GetMonthlyRevenueQuery());
+        }
+
+        public async Task<Result<Dictionary<string, decimal>>> GetMonthlyRevenueByCurrencyAsync()
+        {
+            return await _mediator.Send(new GetMonthlyRevenueByCurrencyQuery());
         }
 
         public async Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync()

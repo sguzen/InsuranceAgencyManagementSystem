@@ -223,6 +223,26 @@
                     </TemplateColumn>
                     <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />
                     <PropertyColumn Property="x => x.PolicyType!.Name" Title="Poliçe Tipi" />
+                    <TemplateColumn Title="Araç">
+                        <CellTemplate>
+                            @if (context.Item.Vehicle != null)
+                            {
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body2">
+                                        <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Small" Class="mr-1" />
+                                        @context.Item.Vehicle.PlateNumber
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @context.Item.Vehicle.BrandName @context.Item.Vehicle.ModelName
+                                    </MudText>
+                                </MudStack>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
                     <TemplateColumn Title="Prim Tutarı">
                         <CellTemplate>
                             <div style="text-align: right;">

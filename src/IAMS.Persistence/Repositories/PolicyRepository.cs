@@ -20,6 +20,13 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
                 .Include(p => p.Vehicle)
+                    .ThenInclude(v => v.Brand)
+                .Include(p => p.Vehicle)
+                    .ThenInclude(v => v.Model)
+                .Include(p => p.Vehicle)
+                    .ThenInclude(v => v.Customer)
+                .Include(p => p.Vehicle)
+                    .ThenInclude(v => v.Currency)
                 .Include(p => p.Currency)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         }

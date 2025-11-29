@@ -9,7 +9,6 @@ namespace IAMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class CurrenciesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -35,8 +34,11 @@ namespace IAMS.Api.Controllers
         ///
         /// Note: This should be called regularly (e.g., daily) to keep exchange rates up to date.
         /// You can also set up a background job to automate this process.
+        ///
+        /// This endpoint does not require authentication.
         /// </remarks>
         [HttpPost("update-from-tcmb")]
+        [AllowAnonymous]
         public async Task<ActionResult<Result>> UpdateExchangeRatesFromTCMB()
         {
             var command = new UpdateExchangeRatesFromTCMBCommand();

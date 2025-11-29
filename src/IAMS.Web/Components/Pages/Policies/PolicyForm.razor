@@ -731,6 +731,7 @@
                     CustomerId = model.CustomerId,
                     InsuranceCompanyId = model.InsuranceCompanyId,
                     PolicyTypeId = model.PolicyTypeId,
+                    VehicleId = model.VehicleId,
                     StartDate = model.StartDate!.Value,
                     EndDate = model.EndDate!.Value,
                     PremiumAmount = model.PremiumAmount,
@@ -738,7 +739,14 @@
                     CommissionRate = model.CommissionRate,
                     Status = model.Status,
                     Notes = model.Notes,
-                    Currency = model.Currency
+                    Currency = model.Currency,
+                    ExternalReference = model.ExternalReference,
+                    IsAutoRenewal = model.IsAutoRenewal,
+                    ReminderDays = model.ReminderDays,
+                    InsuredAmount = model.InsuredAmount,
+                    DeductibleAmount = model.DeductibleAmount,
+                    PaymentFrequency = model.PaymentFrequency,
+                    NumberOfPayments = model.NumberOfPayments
                 };
 
                 var updateResult = await PolicyService.UpdatePolicyAsync(PolicyId!.Value, updateDto);

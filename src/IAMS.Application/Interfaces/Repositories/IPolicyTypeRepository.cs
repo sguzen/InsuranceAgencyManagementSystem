@@ -6,6 +6,7 @@ namespace IAMS.Application.Interfaces.Repositories
     {
         Task<IEnumerable<PolicyType>> GetActiveTypesAsync();
         Task<PolicyType?> GetByNameAsync(string name);
+        Task<PolicyType?> GetByCodeAsync(string code);
         Task<IEnumerable<PolicyType>> GetTypesByInsuranceCompanyAsync(int companyId);
     }
 }

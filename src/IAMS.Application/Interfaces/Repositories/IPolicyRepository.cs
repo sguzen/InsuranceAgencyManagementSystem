@@ -59,5 +59,9 @@ namespace IAMS.Application.Interfaces.Repositories
         Task UpdateExternalSyncStatusAsync(int policyId, bool synced, DateTime? lastSyncDate = null);
         Task<int> GetExpiringPoliciesCountAsync(int daysAhead);
         Task<List<Policy>> GetByVehicleIdAsync(int id);
+
+        // Endorsement queries
+        Task<List<Policy>> GetEndorsementsByOriginalPolicyIdAsync(int originalPolicyId);
+        Task<int> GetEndorsementCountAsync(int originalPolicyId);
     }
 }

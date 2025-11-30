@@ -69,5 +69,25 @@ namespace IAMS.Application.DTOs.Policy
 
         [Range(1, 12, ErrorMessage = "Ödeme sayısı 1-12 arasında olmalıdır")]
         public int NumberOfPayments { get; set; } = 1;
+
+        // Endorsement Information
+        public bool IsEndorsement { get; set; } = false;
+
+        [StringLength(10, ErrorMessage = "Zeyilname numarası en fazla 10 karakter olabilir")]
+        public string? EndorsementNumber { get; set; }
+
+        public int? OriginalPolicyId { get; set; }
+
+        [StringLength(50, ErrorMessage = "Branş kodu en fazla 50 karakter olabilir")]
+        public string? BranchCode { get; set; }
+
+        // Driver Information
+        [Range(18, 100, ErrorMessage = "Sürücü yaşı 18-100 arasında olmalıdır")]
+        public int? DriverAge { get; set; }
+
+        public DriverType? DriverType { get; set; }
+
+        // Marketer Information
+        public int? MarketerId { get; set; }
     }
 }

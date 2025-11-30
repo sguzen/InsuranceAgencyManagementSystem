@@ -57,6 +57,21 @@ namespace IAMS.Domain.Entities
         public int? ParentPolicyId { get; set; }
         public virtual Policy? ParentPolicy { get; set; }
 
+        // Endorsement Information (Zeyilname)
+        public bool IsEndorsement { get; set; } = false;
+        public string? EndorsementNumber { get; set; } // 000 for first endorsement, 001, 002, etc.
+        public int? OriginalPolicyId { get; set; } // Reference to original policy if this is an endorsement
+        public virtual Policy? OriginalPolicy { get; set; }
+        public string? BranchCode { get; set; } // External code for insurance type (Kod column)
+
+        // Driver Information
+        public int? DriverAge { get; set; } // YAS column
+        public DriverType? DriverType { get; set; } // Sürücü - Single or Any
+
+        // Marketer Information (Pazarlamacı)
+        public int? MarketerId { get; set; }
+        public virtual Marketer? Marketer { get; set; }
+
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;

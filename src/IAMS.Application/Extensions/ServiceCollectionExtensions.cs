@@ -45,6 +45,7 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IPolicyService, PolicyService>();
             services.AddScoped<IPolicyTypeService, PolicyTypeService>();
             services.AddScoped<IPolicyNumberGenerator, PolicyNumberGenerator>();
+            services.AddScoped<IPolicyImportService, PolicyImportService>();
             services.AddScoped<IInsuranceCompanyService, InsuranceCompanyService>();
             services.AddScoped<ICustomerCodeGenerator, CustomerCodeGenerator>();
 

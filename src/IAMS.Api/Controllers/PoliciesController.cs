@@ -3,6 +3,7 @@ using IAMS.Application.Features.Policies.Commands.ActivatePolicy;
 using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
+using IAMS.Application.Features.Policies.Commands.ImportPolicies;
 using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
@@ -18,6 +19,7 @@ using IAMS.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IAMS.Api.Controllers
 {
@@ -241,6 +243,22 @@ namespace IAMS.Api.Controllers
         {
             var query = new GetPolicyStatisticsQuery();
             var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Import policies from Excel file
+        /// </summary>
+        [HttpPost("import")]
+        public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var command = new ImportPoliciesCommand(file, userId);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
     }

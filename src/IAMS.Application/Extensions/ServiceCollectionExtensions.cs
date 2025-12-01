@@ -8,7 +8,6 @@ using IAMS.Application.Services.Customers;
 using IAMS.Application.Services.InsuranceCompanies;
 using IAMS.Application.Services.Parametric;
 using IAMS.Application.Services.Payments;
-using IAMS.Application.Services.Policies;
 using IAMS.Application.Services.PolicyTypes;
 using IAMS.Application.Services.Vehicles;
 using IAMS.Application.Services.Calculations;
@@ -45,7 +44,6 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IPolicyService, PolicyService>();
             services.AddScoped<IPolicyTypeService, PolicyTypeService>();
             services.AddScoped<IPolicyNumberGenerator, PolicyNumberGenerator>();
-            services.AddScoped<IPolicyImportService, PolicyImportService>();
             services.AddScoped<IInsuranceCompanyService, InsuranceCompanyService>();
             services.AddScoped<ICustomerCodeGenerator, CustomerCodeGenerator>();
 

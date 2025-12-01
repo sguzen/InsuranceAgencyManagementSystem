@@ -22,6 +22,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
+builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -106,7 +107,8 @@ app.UseAuthorization();
 
 
 
-app.MapRazorPages(); 
+app.MapControllers();
+app.MapRazorPages();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.UseAntiforgery();

@@ -24,6 +24,13 @@ namespace IAMS.MultiTenancy.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Skip tenant middleware for policy import endpoint
+            if (context.Request.Path.StartsWithSegments("/api/policies/import"))
+            {
+                await _next(context);
+                return;
+            }
+
             try
             {
                 var tenantService = context.RequestServices.GetRequiredService<Interfaces.ITenantService>();

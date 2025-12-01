@@ -235,6 +235,12 @@
     </MudStack>
 </MudContainer>
 
+<script>
+    window.triggerFileInput = (element) => {
+        element.click();
+    }
+</script>
+
 @code {
     private InputFile? fileInputRef;
     private IBrowserFile? selectedFile;
@@ -247,7 +253,7 @@
         {
             if (fileInputRef?.Element != null)
             {
-                await JSRuntime.InvokeVoidAsync("eval", "arguments[0].click()", fileInputRef.Element);
+                await JSRuntime.InvokeVoidAsync("triggerFileInput", fileInputRef.Element);
             }
         }
         catch (Exception ex)

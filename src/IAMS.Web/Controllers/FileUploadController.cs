@@ -32,12 +32,16 @@ public class FileUploadController : ControllerBase
 
             _logger.LogInformation("Received file: {FileName}, Size: {Size} bytes", file.FileName, file.Length);
 
-            // Create multipart form content
+            // Create multipart form content with proper filename
             using var content = new MultipartFormDataContent();
-            using var fileStream = file.OpenReadStream();
-            using var streamContent = new StreamContent(fileStream);
-            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
-            content.Add(streamContent, "file", file.FileName);
+            var fileContent = new StreamContent(file.OpenReadStream());
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+            fileContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+            {
+                Name = "file",
+                FileName = file.FileName
+            };
+            content.Add(fileContent, "file", file.FileName);
 
             _logger.LogInformation("Forwarding to API: {Url}", $"{_httpClient.BaseAddress}api/policies/import");
 

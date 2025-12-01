@@ -9,6 +9,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
@@ -70,14 +71,13 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <InputFile id="fileInput"
+                <InputFile @ref="fileInputRef"
                           OnChange="OnFileSelected"
                           accept=".xlsx,.xls"
-                          hidden />
+                          style="display: none;" />
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
-                           HtmlTag="label"
-                           for="fileInput"
+                           OnClick="TriggerFileInput"
                            StartIcon="@Icons.Material.Filled.CloudUpload">
                     Dosya Seç
                 </MudButton>
@@ -236,9 +236,25 @@
 </MudContainer>
 
 @code {
+    private InputFile? fileInputRef;
     private IBrowserFile? selectedFile;
     private bool isUploading = false;
     private PolicyImportResultDto? importResult;
+
+    private async Task TriggerFileInput()
+    {
+        try
+        {
+            if (fileInputRef?.Element != null)
+            {
+                await JSRuntime.InvokeVoidAsync("eval", "$0.click()", fileInputRef.Element);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Dosya seçimi tetiklenemedi: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {

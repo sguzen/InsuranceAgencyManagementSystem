@@ -166,9 +166,6 @@ namespace IAMS.Application.Services.PolicyImport
                 }
             }
 
-            // Insurance company (Acente)
-            policy.InsuranceCompanyCode = GetCellValue(row, columnMap, "Acente", "acente");
-
             // Policy number
             policy.PolicyNumber = GetCellValue(row, columnMap, "Pol.No", "PolNo", "polno", "policeno");
 
@@ -204,7 +201,7 @@ namespace IAMS.Application.Services.PolicyImport
             }
 
             // Customer name
-            policy.CustomerName = GetCellValue(row, columnMap, "Sigortalının Adı/Unvan", "sigortalininadiUnvan",
+            policy.CustomerName = GetCellValue(row, columnMap, "Sigortalının Adı/Ünvanı", "Sigortalının Adı/Unvan", "sigortalininadiUnvan",
                 "sigortaliadi", "musteriad", "musteri");
 
             // Driver age (Yas)

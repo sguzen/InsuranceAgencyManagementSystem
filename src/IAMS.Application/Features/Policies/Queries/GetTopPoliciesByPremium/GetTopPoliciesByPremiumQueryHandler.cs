@@ -2,6 +2,7 @@
 using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,18 +16,18 @@ namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
 {
     public class GetTopPoliciesByPremiumQueryHandler : IRequestHandler<GetTopPoliciesByPremiumQuery, Result<List<PolicyDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyQueryService _policyQueryService;
         private readonly IMapper _mapper;
         private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetTopPoliciesByPremiumQueryHandler> _logger;
 
         public GetTopPoliciesByPremiumQueryHandler(
-            IUnitOfWork unitOfWork,
+            IPolicyQueryService policyQueryService,
             IMapper mapper,
             ICurrentTenantService currentTenantService,
             ILogger<GetTopPoliciesByPremiumQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _policyQueryService = policyQueryService;
             _mapper = mapper;
             _currentTenantService = currentTenantService;
             _logger = logger;
@@ -38,7 +39,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
             {
 
 
-                var topPolicies = await _unitOfWork.Policies.GetTopPoliciesByPremiumAsync(request.Count);
+                var topPolicies = await _policyQueryService.GetTopPoliciesByPremiumAsync(request.Count);
                 var policyDtos = _mapper.Map<List<PolicyDto>>(topPolicies);
 
                 return Result<List<PolicyDto>>.Success(policyDtos, $"En yüksek primli {request.Count} poliçe");

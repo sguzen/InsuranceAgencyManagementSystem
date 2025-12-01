@@ -1,4 +1,5 @@
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
 using MediatR;
@@ -9,13 +10,16 @@ namespace IAMS.Application.Features.Vehicles.Commands.DeleteVehicle
     public class DeleteVehicleCommandHandler : IRequestHandler<DeleteVehicleCommand, Result>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyQueryService _policyQueryService;
         private readonly ILogger<DeleteVehicleCommandHandler> _logger;
 
         public DeleteVehicleCommandHandler(
             IUnitOfWork unitOfWork,
+            IPolicyQueryService policyQueryService,
             ILogger<DeleteVehicleCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
+            _policyQueryService = policyQueryService;
             _logger = logger;
         }
 
@@ -30,7 +34,7 @@ namespace IAMS.Application.Features.Vehicles.Commands.DeleteVehicle
                 }
 
                 // Check if vehicle has any active policies
-                var policies = await _unitOfWork.Policies.GetByVehicleIdAsync(request.Id);
+                var policies = await _policyQueryService.GetByVehicleIdAsync(request.Id);
                 if (policies != null && policies.Any())
                 {
                     return Result.Failure("Cannot delete vehicle with existing policies", string.Empty);

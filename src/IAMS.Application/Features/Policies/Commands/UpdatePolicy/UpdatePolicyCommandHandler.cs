@@ -4,6 +4,7 @@ using IAMS.Application.DTOs.Customer;
 using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using IAMS.Application.Services.Calculations;
 using IAMS.Application.Services.Currencies;
@@ -22,6 +23,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         private readonly IPolicyCalculatorFactory _calculatorFactory;
         private readonly ICommissionCalculator _commissionCalculator;
         private readonly ICurrencyService _currencyService;
+        private readonly IPolicyQueryService _policyQueryService;
         private readonly ILogger<UpdatePolicyCommandHandler> _logger;
 
         public UpdatePolicyCommandHandler(
@@ -32,6 +34,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             IPolicyCalculatorFactory calculatorFactory,
             ICommissionCalculator commissionCalculator,
             ICurrencyService currencyService,
+            IPolicyQueryService policyQueryService,
             ILogger<UpdatePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -41,6 +44,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             _calculatorFactory = calculatorFactory;
             _commissionCalculator = commissionCalculator;
             _currencyService = currencyService;
+            _policyQueryService = policyQueryService;
             _logger = logger;
         }
 
@@ -220,7 +224,7 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
                     existingPolicy.Status != Domain.Enums.PolicyStatus.Active)
                 {
                     // Check if there are overdue payments
-                    var hasOverduePayments = await _unitOfWork.Policies.HasOverduePaymentsAsync(existingPolicy.Id);
+                    var hasOverduePayments = await _policyQueryService.HasOverduePaymentsAsync(existingPolicy.Id);
                     if (hasOverduePayments)
                     {
                         errors.Add("Gecikmiş ödeme bulunan poliçe aktif duruma getirilemez");

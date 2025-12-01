@@ -1,5 +1,6 @@
 ﻿using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,16 +9,16 @@ namespace IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount
 {
     public class GetExpiringPoliciesCountQueryHandler : IRequestHandler<GetExpiringPoliciesCountQuery, Result<int>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyAnalyticsService _policyAnalyticsService;
         private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetExpiringPoliciesCountQueryHandler> _logger;
 
         public GetExpiringPoliciesCountQueryHandler(
-            IUnitOfWork unitOfWork,
+            IPolicyAnalyticsService policyAnalyticsService,
             ICurrentTenantService currentTenantService,
             ILogger<GetExpiringPoliciesCountQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _policyAnalyticsService = policyAnalyticsService;
             _currentTenantService = currentTenantService;
             _logger = logger;
         }
@@ -27,7 +28,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount
             try
             {
 
-                var count = await _unitOfWork.Policies.GetExpiringPoliciesCountAsync(request.DaysAhead);
+                var count = await _policyAnalyticsService.GetExpiringPolicyCountAsync(request.DaysAhead);
 
                 _logger.LogDebug("Retrieved expiring policies count {Count} for tenant", count);
 

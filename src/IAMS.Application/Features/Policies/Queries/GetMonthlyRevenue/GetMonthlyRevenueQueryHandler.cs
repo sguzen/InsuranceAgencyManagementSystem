@@ -1,5 +1,6 @@
 ﻿using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,14 +9,14 @@ namespace IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue
 {
     public class GetMonthlyRevenueQueryHandler : IRequestHandler<GetMonthlyRevenueQuery, Result<decimal>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyAnalyticsService _policyAnalyticsService;
         private readonly ILogger<GetMonthlyRevenueQueryHandler> _logger;
 
         public GetMonthlyRevenueQueryHandler(
-            IUnitOfWork unitOfWork,
+            IPolicyAnalyticsService policyAnalyticsService,
             ILogger<GetMonthlyRevenueQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _policyAnalyticsService = policyAnalyticsService;
             _logger = logger;
         }
 
@@ -24,7 +25,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue
             try
             {
 
-                var revenue = await _unitOfWork.Policies.GetMonthlyRevenueAsync();
+                var revenue = await _policyAnalyticsService.GetMonthlyRevenueAsync();
 
                 _logger.LogDebug("Retrieved monthly revenue {Revenue} for tenant {TenantId}", revenue);
 

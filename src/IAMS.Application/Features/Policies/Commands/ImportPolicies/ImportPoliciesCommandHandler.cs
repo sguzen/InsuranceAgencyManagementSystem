@@ -249,11 +249,18 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             _logger.LogInformation("Creating new customer: {Identifier} - {Name}",
                 dto.CustomerIdentifier, dto.CustomerName);
 
+            // Determine customer type based on ID type
+            // KN = Kimlik Numara (Individual)
+            // MŞ = Corporate
+            var customerType = dto.CustomerIdType?.ToUpperInvariant() == "MŞ" || dto.CustomerIdType?.ToUpperInvariant() == "MS"
+                ? CustomerType.Corporate
+                : CustomerType.Individual;
+
             var newCustomer = new Customer
             {
                 Name = dto.CustomerName,
                 IdentificationNo = dto.CustomerIdentifier,
-                CustomerType = CustomerType.Individual, // Default to individual
+                CustomerType = customerType,
                 Email = null, // Will be updated later if needed
                 Phone = null,
                 Address = null,

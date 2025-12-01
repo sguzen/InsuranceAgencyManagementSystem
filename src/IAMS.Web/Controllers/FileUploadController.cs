@@ -4,6 +4,7 @@ namespace IAMS.Web.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[IgnoreAntiforgeryToken]
 public class FileUploadController : ControllerBase
 {
     private readonly HttpClient _httpClient;

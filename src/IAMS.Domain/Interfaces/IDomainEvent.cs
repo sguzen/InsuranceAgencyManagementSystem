@@ -1,6 +1,11 @@
-﻿namespace IAMS.Domain.Interfaces
+﻿using MediatR;
+
+namespace IAMS.Domain.Interfaces
 {
-    public interface IDomainEvent
+    /// <summary>
+    /// Represents a domain event that can be published and handled by MediatR
+    /// </summary>
+    public interface IDomainEvent : INotification
     {
         DateTime OccurredOn { get; }
     }

@@ -33,6 +33,9 @@ namespace IAMS.Application.Interfaces.Repositories
         // Marketer Management
         IMarketerRepository Marketers { get; }
 
+        // Permission Management
+        IPermissionRepository Permissions { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

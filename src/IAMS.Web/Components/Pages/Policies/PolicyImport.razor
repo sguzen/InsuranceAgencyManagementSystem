@@ -3,6 +3,7 @@
 
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.Models
+@using Microsoft.AspNetCore.Components.Forms
 @using System.Net.Http.Headers
 @using System.Text.Json
 @inject HttpClient Http
@@ -69,7 +70,11 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudFileUpload T="IBrowserFile" Accept=".xlsx,.xls" FilesChanged="HandleFileSelected" MaximumFileCount="1">
+                <MudFileUpload T="IBrowserFile"
+                               Accept=".xlsx,.xls"
+                               @bind-Files="selectedFile"
+                               OnFilesChanged="OnFileSelected"
+                               MaximumFileCount="1">
                     <ActivatorContent>
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
@@ -237,10 +242,11 @@
     private bool isUploading = false;
     private PolicyImportResultDto? importResult;
 
-    private void HandleFileSelected(IBrowserFile file)
+    private void OnFileSelected(InputFileChangeEventArgs e)
     {
-        selectedFile = file;
+        selectedFile = e.File;
         importResult = null;
+        StateHasChanged();
     }
 
     private void ClearFile()

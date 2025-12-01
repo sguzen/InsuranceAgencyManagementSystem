@@ -26,6 +26,13 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync(pt => pt.Name == name);
         }
 
+        public async Task<PolicyType?> GetByCodeAsync(string code)
+        {
+            return await _dbSet
+                .Where(pt => !pt.IsDeleted)
+                .FirstOrDefaultAsync(pt => pt.Code == code);
+        }
+
         public async Task<IEnumerable<PolicyType>> GetTypesByInsuranceCompanyAsync(int companyId)
         {
             return await _dbSet

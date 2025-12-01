@@ -519,5 +519,24 @@ namespace IAMS.Persistence.Repositories
                 .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();
         }
+
+        public async Task<List<Policy>> GetEndorsementsByOriginalPolicyIdAsync(int originalPolicyId)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
+                .Where(p => p.OriginalPolicyId == originalPolicyId && p.IsEndorsement && !p.IsDeleted)
+                .OrderBy(p => p.EndorsementNumber)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetEndorsementCountAsync(int originalPolicyId)
+        {
+            return await _dbSet
+                .Where(p => p.OriginalPolicyId == originalPolicyId && p.IsEndorsement && !p.IsDeleted)
+                .CountAsync();
+        }
     }
 }

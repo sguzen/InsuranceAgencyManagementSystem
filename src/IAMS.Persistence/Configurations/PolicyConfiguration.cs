@@ -67,6 +67,36 @@ namespace IAMS.Persistence.Configurations
 
             builder.HasIndex(p => p.ParentPolicyId);
 
+            // Self-referencing relationship for endorsements
+            builder.HasOne(p => p.OriginalPolicy)
+                .WithMany()
+                .HasForeignKey(p => p.OriginalPolicyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(p => p.OriginalPolicyId);
+
+            // Endorsement fields
+            builder.Property(p => p.EndorsementNumber)
+                .HasMaxLength(10);
+
+            builder.Property(p => p.BranchCode)
+                .HasMaxLength(50);
+
+            builder.Property(p => p.DriverType)
+                .HasConversion<int?>();
+
+            // Marketer relationship
+            builder.HasOne(p => p.Marketer)
+                .WithMany(m => m.Policies)
+                .HasForeignKey(p => p.MarketerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(p => p.MarketerId);
+
+            // Additional indexes for new fields
+            builder.HasIndex(p => p.IsEndorsement);
+            builder.HasIndex(p => p.BranchCode);
+
             // Global query filter for soft delete and tenant isolation
             builder.HasQueryFilter(p => !p.IsDeleted);
         }

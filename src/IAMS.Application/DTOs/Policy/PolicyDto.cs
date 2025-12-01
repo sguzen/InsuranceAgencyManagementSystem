@@ -17,6 +17,22 @@ namespace IAMS.Application.DTOs.Policy
 
         // Renewal tracking - ID of the parent policy if this is a renewal
         public int? ParentPolicyId { get; set; }
+
+        // Endorsement Information (Zeyilname)
+        public bool IsEndorsement { get; set; }
+        public string? EndorsementNumber { get; set; }
+        public int? OriginalPolicyId { get; set; }
+        public string? BranchCode { get; set; }
+
+        // Driver Information
+        public int? DriverAge { get; set; }
+        public DriverType? DriverType { get; set; }
+
+        // Marketer Information
+        public int? MarketerId { get; set; }
+        public string? MarketerCode { get; set; }
+        public string? MarketerName { get; set; }
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal PremiumAmount { get; set; }

@@ -29,6 +29,7 @@ namespace IAMS.Persistence.Contexts
         public DbSet<PolicyClaim> PolicyClaims { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
+        public DbSet<Marketer> Marketers { get; set; }
 
         // Tenant-specific configuration settings
         public DbSet<TenantSettings> TenantSettings { get; set; }

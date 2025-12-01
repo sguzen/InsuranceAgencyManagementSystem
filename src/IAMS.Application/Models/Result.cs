@@ -30,11 +30,6 @@
             return new Result<T>(true, message, default, null, 200);
         }
 
-        public static Result<T> Failure(string message, List<string>? errors = null)
-        {
-            return new Result<T>(false, message, default, errors, 400);
-        }
-
         public static Result<T> Failure(string message, string error)
         {
             return new Result<T>(false, message, default, new List<string> { error }, 400);
@@ -111,11 +106,6 @@
         public static Result Success(string message = "Operation completed successfully")
         {
             return new Result(true, message, null, 200);
-        }
-
-        public static Result Failure(string message, List<string>? errors = null)
-        {
-            return new Result(false, message, errors, 400);
         }
 
         public static Result Failure(string message, string error)

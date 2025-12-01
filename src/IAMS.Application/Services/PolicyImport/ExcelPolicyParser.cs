@@ -147,8 +147,24 @@ namespace IAMS.Application.Services.PolicyImport
             policy.BranchCode = GetCellValue(row, columnMap, "Kod", "kod");
             var brans = GetCellValue(row, columnMap, "Brans", "brans");
 
-            // Customer identifier (TC/Tax number)
-            policy.CustomerIdentifier = GetCellValue(row, columnMap, "Adr", "adr");
+            // Customer identifier (Kimlik No - format: 601-KN-207044)
+            var kimlikNo = GetCellValue(row, columnMap, "Kimlik No", "KimlikNo", "kimlikno", "Adr", "adr");
+            if (!string.IsNullOrEmpty(kimlikNo))
+            {
+                // Parse format: CountryCode-Type-IDNumber (e.g., "601-KN-207044")
+                var parts = kimlikNo.Split('-');
+                if (parts.Length >= 3)
+                {
+                    policy.CustomerIdentifier = parts[2].Trim(); // Extract ID number
+                    policy.CustomerCountryCode = parts[0].Trim(); // Country code
+                    policy.CustomerIdType = parts[1].Trim(); // ID type (KN = Kimlik Numara)
+                }
+                else
+                {
+                    // If not in expected format, use as-is
+                    policy.CustomerIdentifier = kimlikNo;
+                }
+            }
 
             // Insurance company (Acente)
             policy.InsuranceCompanyCode = GetCellValue(row, columnMap, "Acente", "acente");

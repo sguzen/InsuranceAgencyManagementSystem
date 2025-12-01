@@ -239,10 +239,34 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 }
             }
 
-            // Customer not found - this should not happen in import scenario
-            // The user should ensure customers exist before importing policies
-            throw new InvalidOperationException(
-                $"Customer not found: {dto.CustomerIdentifier}. Please create the customer before importing policies.");
+            // Customer not found - create new customer
+            if (string.IsNullOrEmpty(dto.CustomerName) || string.IsNullOrEmpty(dto.CustomerIdentifier))
+            {
+                throw new InvalidOperationException(
+                    $"Cannot create customer: missing name or identifier. Row: {dto.RowNumber}");
+            }
+
+            _logger.LogInformation("Creating new customer: {Identifier} - {Name}",
+                dto.CustomerIdentifier, dto.CustomerName);
+
+            var newCustomer = new Customer
+            {
+                Name = dto.CustomerName,
+                IdentificationNo = dto.CustomerIdentifier,
+                CustomerType = CustomerType.Individual, // Default to individual
+                Email = null, // Will be updated later if needed
+                Phone = null,
+                Address = null,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Customers.AddAsync(newCustomer);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Created new customer with ID: {CustomerId}", newCustomer.Id);
+
+            return newCustomer;
         }
 
         private async Task<InsuranceCompany> GetInsuranceCompanyAsync(ImportPolicyDto dto)

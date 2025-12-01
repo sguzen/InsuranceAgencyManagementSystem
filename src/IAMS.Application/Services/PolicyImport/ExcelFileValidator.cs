@@ -17,20 +17,20 @@ namespace IAMS.Application.Services.PolicyImport
             // Check if file exists
             if (file == null || file.Length == 0)
             {
-                return Result.Failure("No file was uploaded");
+                return Result.Failure("No file was uploaded", (List<string>?)null);
             }
 
             // Validate file extension
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedExtensions.Contains(fileExtension))
             {
-                return Result.Failure($"Invalid file format. Only Excel files ({string.Join(", ", AllowedExtensions)}) are supported");
+                return Result.Failure($"Invalid file format. Only Excel files ({string.Join(", ", AllowedExtensions)}) are supported", (List<string>?)null);
             }
 
             // Validate file size
             if (file.Length > MaxFileSize)
             {
-                return Result.Failure($"File size exceeds the maximum allowed size of {MaxFileSize / (1024 * 1024)}MB");
+                return Result.Failure($"File size exceeds the maximum allowed size of {MaxFileSize / (1024 * 1024)}MB", (List<string>?)null);
             }
 
             return Result.Success();

@@ -19,6 +19,8 @@ namespace IAMS.Application.DTOs.Policy
         // Customer Information
         public string? CustomerIdentifier { get; set; } // TC/Tax number to lookup customer
         public string? CustomerName { get; set; }
+        public string? CustomerCountryCode { get; set; } // From Kimlik No (e.g., "601")
+        public string? CustomerIdType { get; set; } // From Kimlik No (e.g., "KN")
 
         // Insurance Company
         public string? InsuranceCompanyCode { get; set; }

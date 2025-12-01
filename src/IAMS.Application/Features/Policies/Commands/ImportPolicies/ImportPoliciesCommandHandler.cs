@@ -16,17 +16,20 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExcelFileValidator _fileValidator;
         private readonly IExcelPolicyParser _policyParser;
+        private readonly IPolicyQueryService _policyQueryService;
         private readonly ILogger<ImportPoliciesCommandHandler> _logger;
 
         public ImportPoliciesCommandHandler(
             IUnitOfWork unitOfWork,
             IExcelFileValidator fileValidator,
             IExcelPolicyParser policyParser,
+            IPolicyQueryService policyQueryService,
             ILogger<ImportPoliciesCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _fileValidator = fileValidator;
             _policyParser = policyParser;
+            _policyQueryService = policyQueryService;
             _logger = logger;
         }
 
@@ -204,7 +207,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         private async Task<string> GenerateEndorsementNumberAsync(int originalPolicyId)
         {
             // Get all endorsements for this policy
-            var endorsements = await _unitOfWork.Policies.GetEndorsementsByOriginalPolicyIdAsync(originalPolicyId);
+            var endorsements = await _policyQueryService.GetEndorsementsByOriginalPolicyIdAsync(originalPolicyId);
 
             // Find the highest endorsement number
             int maxNumber = -1;

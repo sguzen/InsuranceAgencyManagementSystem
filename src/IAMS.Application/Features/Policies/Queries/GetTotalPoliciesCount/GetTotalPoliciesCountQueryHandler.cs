@@ -1,5 +1,6 @@
 ﻿using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,14 +9,14 @@ namespace IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount
 {
     public class GetTotalPoliciesCountQueryHandler : IRequestHandler<GetTotalPoliciesCountQuery, Result<int>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyAnalyticsService _policyAnalyticsService;
         private readonly ILogger<GetTotalPoliciesCountQueryHandler> _logger;
 
         public GetTotalPoliciesCountQueryHandler(
-            IUnitOfWork unitOfWork,
+            IPolicyAnalyticsService policyAnalyticsService,
             ILogger<GetTotalPoliciesCountQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _policyAnalyticsService = policyAnalyticsService;
             _logger = logger;
         }
 
@@ -24,7 +25,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount
             try
             {
 
-                var count = await _unitOfWork.Policies.GetPolicyCountAsync();
+                var count = await _policyAnalyticsService.GetPolicyCountAsync();
 
                 _logger.LogDebug("Retrieved policy count {Count} for tenant {TenantId}", count);
 

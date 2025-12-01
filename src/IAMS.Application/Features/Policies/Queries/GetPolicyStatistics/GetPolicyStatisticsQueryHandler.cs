@@ -1,6 +1,7 @@
 ﻿using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -15,13 +16,16 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
     public class GetPolicyStatisticsQueryHandler : IRequestHandler<GetPolicyStatisticsQuery, Result<PolicyStatisticsDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyAnalyticsService _policyAnalyticsService;
         private readonly ILogger<GetPolicyStatisticsQueryHandler> _logger;
 
         public GetPolicyStatisticsQueryHandler(
             IUnitOfWork unitOfWork,
+            IPolicyAnalyticsService policyAnalyticsService,
             ILogger<GetPolicyStatisticsQueryHandler> logger)
         {
             _unitOfWork = unitOfWork;
+            _policyAnalyticsService = policyAnalyticsService;
             _logger = logger;
         }
 
@@ -30,7 +34,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
             try
             {
                 // Get policy count by status
-                var policyCountByStatus = await _unitOfWork.Policies.GetPolicyCountByStatusAsync();
+                var policyCountByStatus = await _policyAnalyticsService.GetPolicyCountByStatusAsync();
 
                 // Get all policies for additional calculations
                 var allPolicies = await _unitOfWork.Policies.GetAllAsync();
@@ -80,24 +84,24 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
                     .ToDictionary(g => g.Key, g => g.Sum(p => p.PremiumAmount));
 
                 // Get policies by month (last 12 months)
-                var monthlyData = await _unitOfWork.Policies.GetRevenueByMonthAsync(12);
+                var monthlyData = await _policyAnalyticsService.GetRevenueByMonthAsync(12);
 
                 var statistics = new PolicyStatisticsDto
                 {
                     // Count statistics
-                    TotalPolicies = await _unitOfWork.Policies.GetPolicyCountAsync(),
-                    ActivePolicies = await _unitOfWork.Policies.GetActivePolicyCountAsync(),
+                    TotalPolicies = await _policyAnalyticsService.GetPolicyCountAsync(),
+                    ActivePolicies = await _policyAnalyticsService.GetActivePolicyCountAsync(),
                     DraftPolicies = policyCountByStatus.GetValueOrDefault(IAMS.Domain.Enums.PolicyStatus.Draft, 0),
-                    ExpiredPolicies = await _unitOfWork.Policies.GetExpiredPolicyCountAsync(),
+                    ExpiredPolicies = await _policyAnalyticsService.GetExpiredPolicyCountAsync(),
                     CancelledPolicies = policyCountByStatus.GetValueOrDefault(IAMS.Domain.Enums.PolicyStatus.Cancelled, 0),
                     SuspendedPolicies = policyCountByStatus.GetValueOrDefault(IAMS.Domain.Enums.PolicyStatus.Suspended, 0),
-                    ExpiringPolicies = await _unitOfWork.Policies.GetExpiringPolicyCountAsync(30),
+                    ExpiringPolicies = await _policyAnalyticsService.GetExpiringPolicyCountAsync(30),
 
                     // Financial statistics
                     TotalPremiums = totalPremiums,
                     TotalCommissions = totalCommissions,
-                    MonthlyRevenue = await _unitOfWork.Policies.GetMonthlyRevenueAsync(),
-                    YearlyRevenue = await _unitOfWork.Policies.GetYearlyRevenueAsync(),
+                    MonthlyRevenue = await _policyAnalyticsService.GetMonthlyRevenueAsync(),
+                    YearlyRevenue = await _policyAnalyticsService.GetYearlyRevenueAsync(),
                     AveragePremium = averagePremium,
                     AverageCommissionRate = averageCommissionRate,
 

@@ -1,5 +1,6 @@
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,14 +9,14 @@ namespace IAMS.Application.Features.Policies.Queries.GetMonthlyRevenueByCurrency
 {
     public class GetMonthlyRevenueByCurrencyQueryHandler : IRequestHandler<GetMonthlyRevenueByCurrencyQuery, Result<Dictionary<string, decimal>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPolicyAnalyticsService _policyAnalyticsService;
         private readonly ILogger<GetMonthlyRevenueByCurrencyQueryHandler> _logger;
 
         public GetMonthlyRevenueByCurrencyQueryHandler(
-            IUnitOfWork unitOfWork,
+            IPolicyAnalyticsService policyAnalyticsService,
             ILogger<GetMonthlyRevenueByCurrencyQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _policyAnalyticsService = policyAnalyticsService;
             _logger = logger;
         }
 
@@ -23,7 +24,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetMonthlyRevenueByCurrency
         {
             try
             {
-                var revenueByCurrency = await _unitOfWork.Policies.GetMonthlyRevenueByCurrencyAsync(request.Month);
+                var revenueByCurrency = await _policyAnalyticsService.GetMonthlyRevenueByCurrencyAsync(request.Month);
 
                 _logger.LogDebug("Retrieved monthly revenue by currency for tenant {TenantId}", revenueByCurrency);
 

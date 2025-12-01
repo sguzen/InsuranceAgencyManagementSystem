@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Entities;
 using IAMS.Application.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -7,16 +8,16 @@ namespace IAMS.Application.Services.Policies
 {
     public class PolicyReminderService : IPolicyReminderService
     {
-        private readonly IPolicyRepository _policyRepository;
+        private readonly IPolicyQueryService _policyQueryService;
         private readonly IEmailService _emailService;
         private readonly ILogger<PolicyReminderService> _logger;
 
         public PolicyReminderService(
-            IPolicyRepository policyRepository,
+            IPolicyQueryService policyQueryService,
             IEmailService emailService,
             ILogger<PolicyReminderService> logger)
         {
-            _policyRepository = policyRepository;
+            _policyQueryService = policyQueryService;
             _emailService = emailService;
             _logger = logger;
         }
@@ -24,18 +25,18 @@ namespace IAMS.Application.Services.Policies
         public async Task<IEnumerable<Policy>> GetPoliciesForReminderAsync(DateTime reminderDate, int daysBefore = 30)
         {
             var expiryDate = reminderDate.AddDays(daysBefore);
-            return await _policyRepository.GetPoliciesExpiringInDateRangeAsync(expiryDate, reminderDate);
+            return await _policyQueryService.GetPoliciesExpiringInDateRangeAsync(expiryDate, reminderDate);
         }
 
         public async Task<IEnumerable<Policy>> GetExpiringPoliciesAsync(int daysBefore = 30)
         {
             var cutoffDate = DateTime.UtcNow.AddDays(daysBefore);
-            return await _policyRepository.GetPoliciesExpiringInDateRangeAsync(cutoffDate, DateTime.UtcNow.Date);
+            return await _policyQueryService.GetPoliciesExpiringInDateRangeAsync(cutoffDate, DateTime.UtcNow.Date);
         }
 
         public async Task<IEnumerable<Policy>> GetOverduePoliciesAsync()
         {
-            return await _policyRepository.GetExpiredPoliciesAsync();
+            return await _policyQueryService.GetExpiredPoliciesAsync();
         }
 
         public async Task SendPolicyReminderAsync(Policy policy, int daysBefore)
@@ -90,7 +91,7 @@ namespace IAMS.Application.Services.Policies
         {
             _logger.LogInformation("Processing expiring policies");
 
-            var result = await _policyRepository.GetExpiringPoliciesAsync(30);
+            var result = await _policyQueryService.GetExpiringPoliciesAsync(30);
 
             if (!result.Any())
             {

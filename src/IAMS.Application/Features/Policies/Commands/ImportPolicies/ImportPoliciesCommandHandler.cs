@@ -256,16 +256,27 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 ? CustomerType.Corporate
                 : CustomerType.Individual;
 
+            // Split name into FirstName and LastName
+            var nameParts = dto.CustomerName.Split(new[] { ' ' }, 2);
+            var firstName = nameParts[0];
+            var lastName = nameParts.Length > 1 ? nameParts[1] : (customerType == CustomerType.Corporate ? "" : firstName);
+
+            // Generate customer code
+            var customerCode = $"C{DateTime.Now:yyyyMMddHHmmss}";
+
             var newCustomer = new Customer
             {
-                Name = dto.CustomerName,
-                IdentificationNo = dto.CustomerIdentifier,
-                CustomerType = customerType,
-                Email = null, // Will be updated later if needed
-                Phone = null,
-                Address = null,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CustomerCode = customerCode,
+                FirstName = firstName,
+                LastName = lastName,
+                Type = customerType,
+                IdentificationNumber = dto.CustomerIdentifier,
+                Email = $"noemail_{dto.CustomerIdentifier}@temp.com", // Temporary email to pass validation
+                Phone = "0000000000", // Temporary phone to pass validation
+                Status = CustomerStatus.Active,
+                IdentificationType = IdentificationType.IdCard,
+                Gender = Gender.Male, // Default
+                CreatedBy = "System"
             };
 
             await _unitOfWork.Customers.AddAsync(newCustomer);

@@ -247,7 +247,7 @@
         {
             if (fileInputRef?.Element != null)
             {
-                await JSRuntime.InvokeVoidAsync("eval", "$0.click()", fileInputRef.Element);
+                await JSRuntime.InvokeVoidAsync("eval", "arguments[0].click()", fileInputRef.Element);
             }
         }
         catch (Exception ex)

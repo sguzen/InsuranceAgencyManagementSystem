@@ -73,7 +73,7 @@
                 <input type="file" id="policyFileInput" accept=".xlsx,.xls" style="display: none;" />
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
-                           onclick="document.getElementById('policyFileInput').click()"
+                           onclick="selectFile()"
                            StartIcon="@Icons.Material.Filled.CloudUpload"
                            Disabled="@isUploading">
                     Dosya Seç
@@ -231,6 +231,10 @@
 
 <script>
     let dotNetHelper;
+
+    window.selectFile = () => {
+        document.getElementById('policyFileInput').click();
+    };
 
     window.initFileUpload = (helper) => {
         dotNetHelper = helper;

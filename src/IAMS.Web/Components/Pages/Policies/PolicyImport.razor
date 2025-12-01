@@ -70,19 +70,17 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudFileUpload T="IBrowserFile"
-                               Accept=".xlsx,.xls"
-                               @bind-Files="selectedFile"
-                               OnFilesChanged="OnFileSelected"
-                               MaximumFileCount="1">
-                    <ActivatorContent>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.CloudUpload">
-                            Dosya Seç
-                        </MudButton>
-                    </ActivatorContent>
-                </MudFileUpload>
+                <InputFile id="fileInput"
+                          OnChange="OnFileSelected"
+                          accept=".xlsx,.xls"
+                          hidden />
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           HtmlTag="label"
+                           for="fileInput"
+                           StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Dosya Seç
+                </MudButton>
 
                 @if (selectedFile != null)
                 {
@@ -242,11 +240,21 @@
     private bool isUploading = false;
     private PolicyImportResultDto? importResult;
 
-    private void OnFileSelected(InputFileChangeEventArgs e)
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
-        selectedFile = e.File;
-        importResult = null;
-        StateHasChanged();
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                selectedFile = file;
+                importResult = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Dosya seçilirken hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private void ClearFile()

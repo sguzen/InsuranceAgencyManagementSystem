@@ -250,6 +250,7 @@ namespace IAMS.Api.Controllers
         /// Import policies from Excel file
         /// </summary>
         [HttpPost("import")]
+        [AllowAnonymous]
         public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

@@ -39,10 +39,10 @@ public class FileUploadController : ControllerBase
             streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
             content.Add(streamContent, "file", file.FileName);
 
-            _logger.LogInformation("Forwarding to API: {Url}", $"{_httpClient.BaseAddress}/api/policies/import");
+            _logger.LogInformation("Forwarding to API: {Url}", $"{_httpClient.BaseAddress}api/policies/import");
 
             // Forward to API
-            var response = await _httpClient.PostAsync("/api/policies/import", content);
+            var response = await _httpClient.PostAsync("api/policies/import", content);
 
             _logger.LogInformation("API response status: {StatusCode}", response.StatusCode);
 

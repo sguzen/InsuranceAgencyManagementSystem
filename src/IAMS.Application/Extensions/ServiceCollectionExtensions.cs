@@ -12,6 +12,7 @@ using IAMS.Application.Services.PolicyTypes;
 using IAMS.Application.Services.Vehicles;
 using IAMS.Application.Services.Calculations;
 using IAMS.Application.Services.CustomerMappings;
+using IAMS.Application.Services.PolicyImport;
 using IAMS.Application.Validators.Customer;
 using IAMS.Application.Validators.Policy;
 using IAMS.Domain.Services;
@@ -70,6 +71,10 @@ namespace IAMS.Application.Extensions
 
             // Register External Premium Calculation Service with HttpClient
             services.AddHttpClient<IExternalPremiumCalculationService, ExternalPremiumCalculationService>();
+
+            // Register Policy Import Services
+            services.AddScoped<IExcelFileValidator, ExcelFileValidator>();
+            services.AddScoped<IExcelPolicyParser, ExcelPolicyParser>();
 
             return services;
         }

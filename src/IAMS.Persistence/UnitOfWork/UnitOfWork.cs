@@ -1,4 +1,6 @@
-﻿using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Repositories;
+using IAMS.Domain.Interfaces;
 using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ namespace IAMS.Persistence.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDomainEventDispatcher _domainEventDispatcher;
         private IDbContextTransaction? _transaction;
         private bool _disposed = false;
 
@@ -42,9 +45,15 @@ namespace IAMS.Persistence.UnitOfWork
         // Marketer Management
         private IMarketerRepository? _marketers;
 
-        public UnitOfWork(ApplicationDbContext context)
+        // Permission Management
+        private IPermissionRepository? _permissions;
+
+        public UnitOfWork(
+            ApplicationDbContext context,
+            IDomainEventDispatcher domainEventDispatcher)
         {
             _context = context;
+            _domainEventDispatcher = domainEventDispatcher;
         }
 
         public ICustomerRepository Customers =>
@@ -110,11 +119,23 @@ namespace IAMS.Persistence.UnitOfWork
         public IMarketerRepository Marketers =>
             _marketers ??= new MarketerRepository(_context);
 
+        public IPermissionRepository Permissions =>
+            _permissions ??= new PermissionRepository(_context);
+
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                return await _context.SaveChangesAsync(cancellationToken);
+                // Collect domain events from entities before saving
+                var domainEvents = CollectDomainEvents();
+
+                // Save changes to database
+                var result = await _context.SaveChangesAsync(cancellationToken);
+
+                // Dispatch domain events after successful save
+                await _domainEventDispatcher.DispatchAsync(domainEvents, cancellationToken);
+
+                return result;
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -126,6 +147,27 @@ namespace IAMS.Persistence.UnitOfWork
                 // Handle database update errors
                 throw new InvalidOperationException("An error occurred while saving changes to the database.", ex);
             }
+        }
+
+        /// <summary>
+        /// Collects domain events from tracked entities and clears them
+        /// </summary>
+        private List<IDomainEvent> CollectDomainEvents()
+        {
+            var domainEvents = new List<IDomainEvent>();
+
+            var entitiesWithEvents = _context.ChangeTracker
+                .Entries<IHasDomainEvents>()
+                .Where(e => e.Entity.DomainEvents.Any())
+                .ToList();
+
+            foreach (var entry in entitiesWithEvents)
+            {
+                domainEvents.AddRange(entry.Entity.DomainEvents);
+                entry.Entity.ClearDomainEvents();
+            }
+
+            return domainEvents;
         }
 
         public async Task BeginTransactionAsync()

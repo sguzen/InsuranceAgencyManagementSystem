@@ -32,16 +32,18 @@ public class FileUploadController : ControllerBase
 
             _logger.LogInformation("Received file: {FileName}, Size: {Size} bytes", file.FileName, file.Length);
 
-            // Create multipart form content with proper filename
+            // Create multipart form content
             using var content = new MultipartFormDataContent();
             var fileContent = new StreamContent(file.OpenReadStream());
             fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+
+            // Set Content-Disposition header with proper filename
             fileContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
             {
-                Name = "file",
-                FileName = file.FileName
+                Name = "\"file\"",
+                FileName = $"\"{file.FileName}\""
             };
-            content.Add(fileContent, "file", file.FileName);
+            content.Add(fileContent);
 
             _logger.LogInformation("Forwarding to API: {Url}", $"{_httpClient.BaseAddress}api/policies/import");
 
@@ -53,19 +55,21 @@ public class FileUploadController : ControllerBase
             if (response.IsSuccessStatusCode)
             {
                 // Redirect back to the import page on success
-                return Redirect("/policies/import?success=true");
+                return Redirect("/policies/import?success=1");
             }
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync();
                 _logger.LogError("API returned error: {Error}", errorMessage);
-                return Redirect($"/policies/import?error={Uri.EscapeDataString(errorMessage)}");
+                // Return simple error flag, full error is logged
+                return Redirect("/policies/import?error=1");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading file");
-            return Redirect($"/policies/import?error={Uri.EscapeDataString(ex.Message)}");
+            // Return simple error flag, full error is logged
+            return Redirect("/policies/import?error=1");
         }
     }
 }

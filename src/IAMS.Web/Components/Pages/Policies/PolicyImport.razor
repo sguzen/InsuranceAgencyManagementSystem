@@ -70,14 +70,13 @@
             </MudCardHeader>
             <MudCardContent>
                 <MudFileUpload T="IBrowserFile" Accept=".xlsx,.xls" FilesChanged="HandleFileSelected" MaximumFileCount="1">
-                    <ButtonTemplate>
-                        <MudButton HtmlTag="label"
-                                   Variant="Variant.Filled"
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.CloudUpload">
                             Dosya Seç
                         </MudButton>
-                    </ButtonTemplate>
+                    </ActivatorContent>
                 </MudFileUpload>
 
                 @if (selectedFile != null)

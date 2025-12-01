@@ -19,12 +19,18 @@ public class FileUploadController : ControllerBase
     [HttpPost("policies/import")]
     public async Task<IActionResult> ImportPolicies(IFormFile file)
     {
+        _logger.LogInformation("FileUploadController.ImportPolicies called");
+        _logger.LogInformation("HttpClient BaseAddress: {BaseAddress}", _httpClient.BaseAddress);
+
         try
         {
             if (file == null || file.Length == 0)
             {
+                _logger.LogWarning("No file uploaded");
                 return BadRequest("No file uploaded");
             }
+
+            _logger.LogInformation("Received file: {FileName}, Size: {Size} bytes", file.FileName, file.Length);
 
             // Create multipart form content
             using var content = new MultipartFormDataContent();
@@ -33,8 +39,12 @@ public class FileUploadController : ControllerBase
             streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
             content.Add(streamContent, "file", file.FileName);
 
+            _logger.LogInformation("Forwarding to API: {Url}", $"{_httpClient.BaseAddress}/api/policies/import");
+
             // Forward to API
             var response = await _httpClient.PostAsync("/api/policies/import", content);
+
+            _logger.LogInformation("API response status: {StatusCode}", response.StatusCode);
 
             if (response.IsSuccessStatusCode)
             {

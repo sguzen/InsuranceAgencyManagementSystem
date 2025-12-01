@@ -12,5 +12,8 @@ namespace IAMS.Application.DTOs.Currency
         public MoneyDto ConvertedAmount { get; set; } = null!;
         public decimal ExchangeRate { get; set; }
         public DateTime ConversionDate { get; set; }
+        public int TargetCurrencyId { get; internal set; }
+        public int OriginalCurrencyId { get; internal set; }
+        public string CurrencyCode { get; internal set; }
     }
 }

@@ -17,7 +17,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<Customer?> GetByPhoneAsync(string phoneNumber);
         Task<Customer?> GetByEmailAsync(string email);
         Task<Customer?> GetByCustomerCodeAsync(string customerCode);
-        Task<Customer?> GetByTaxOrIdentityNumberAsync(string number);
         Task<List<Customer>> GetCustomersWithActivePoliciesAsync();
         Task<List<Policy>> GetActivePoliciesAsync(int customerId);
         Task<(List<Customer> customers, int totalCount)> GetPagedAsync(CustomerQueryParams queryParams);

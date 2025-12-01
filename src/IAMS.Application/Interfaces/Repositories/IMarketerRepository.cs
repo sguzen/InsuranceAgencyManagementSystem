@@ -5,7 +5,7 @@ namespace IAMS.Application.Interfaces.Repositories
     /// <summary>
     /// Repository interface for Marketer entity
     /// </summary>
-    public interface IMarketerRepository : IGenericRepository<Marketer>
+    public interface IMarketerRepository : IRepository<Marketer>
     {
         /// <summary>
         /// Gets a marketer by their code

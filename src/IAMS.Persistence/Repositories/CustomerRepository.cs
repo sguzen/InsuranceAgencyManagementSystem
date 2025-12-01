@@ -467,24 +467,7 @@ namespace IAMS.Persistence.Repositories
                 .Replace("+", "")
                 .Trim();
         }
-        public async Task<Customer?> GetByTaxOrIdentityNumberAsync(string number)
-        {
-            if (string.IsNullOrWhiteSpace(number))
-                return null;
-
-            try
-            {
-                return await _dbSet
-                    .Where(c => !c.IsDeleted &&
-                               (c.IdentificationNumber == number || c.TaxNumber == number))
-                    .FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                // Log the exception if you have access to logger
-                throw;
-            }
-        }
+       
 
         #endregion
     }

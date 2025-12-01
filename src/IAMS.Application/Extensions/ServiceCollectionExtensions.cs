@@ -18,6 +18,7 @@ using IAMS.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using IAMS.Application.Services.Policies;
 
 namespace IAMS.Application.Extensions
 {

@@ -1,11 +1,11 @@
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
-using IAMS.Persistence.Context;
+using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace IAMS.Persistence.Repositories
 {
-    public class MarketerRepository : GenericRepository<Marketer>, IMarketerRepository
+    public class MarketerRepository : Repository<Marketer>, IMarketerRepository
     {
         public MarketerRepository(ApplicationDbContext context) : base(context)
         {

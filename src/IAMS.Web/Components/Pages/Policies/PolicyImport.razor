@@ -41,7 +41,7 @@
                 <MudText Typo="Typo.body2" Class="mb-2">
                     Excel dosyanızdan poliçeleri toplu olarak içe aktarabilirsiniz. Lütfen aşağıdaki adımları takip edin:
                 </MudText>
-                <MudList Dense="true">
+                <MudList Dense="true" T="String">
                     <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
                         Excel dosyanızın (.xlsx veya .xls) formatında olduğundan emin olun
                     </MudListItem>
@@ -210,7 +210,7 @@
 
                     @if (importResult.SuccessCount > 0)
                     {
-                        <MudAlert Severity="Severity.Success" Class="mt-4">
+                        <MudAlert Severity="MudBlazor.Severity.Success" Class="mt-4">
                             @importResult.SuccessCount poliçe başarıyla içe aktarıldı!
                         </MudAlert>
                     }
@@ -264,7 +264,7 @@
             const long maxFileSize = 10 * 1024 * 1024; // 10MB
             if (selectedFile.Size > maxFileSize)
             {
-                Snackbar.Add("Dosya boyutu 10 MB'dan büyük olamaz", Severity.Error);
+                Snackbar.Add("Dosya boyutu 10 MB'dan büyük olamaz", MudBlazor.Severity.Error);
                 isUploading = false;
                 return;
             }
@@ -273,7 +273,7 @@
             var extension = Path.GetExtension(selectedFile.Name).ToLowerInvariant();
             if (extension != ".xlsx" && extension != ".xls")
             {
-                Snackbar.Add("Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir", Severity.Error);
+                Snackbar.Add("Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir", MudBlazor.Severity.Error);
                 isUploading = false;
                 return;
             }
@@ -301,28 +301,28 @@
 
                     if (importResult.SuccessCount > 0)
                     {
-                        Snackbar.Add($"{importResult.SuccessCount} poliçe başarıyla içe aktarıldı!", Severity.Success);
+                        Snackbar.Add($"{importResult.SuccessCount} poliçe başarıyla içe aktarıldı!", MudBlazor.Severity.Success);
                     }
 
                     if (importResult.FailureCount > 0)
                     {
-                        Snackbar.Add($"{importResult.FailureCount} poliçe içe aktarılamadı. Detaylar için aşağıya bakın.", Severity.Warning);
+                        Snackbar.Add($"{importResult.FailureCount} poliçe içe aktarılamadı. Detaylar için aşağıya bakın.", MudBlazor.Severity.Warning);
                     }
                 }
                 else
                 {
-                    Snackbar.Add(result?.Message ?? "Poliçeler içe aktarılırken hata oluştu", Severity.Error);
+                    Snackbar.Add(result?.Message ?? "Poliçeler içe aktarılırken hata oluştu", MudBlazor.Severity.Error);
                 }
             }
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync();
-                Snackbar.Add($"Sunucu hatası: {errorMessage}", Severity.Error);
+                Snackbar.Add($"Sunucu hatası: {errorMessage}", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

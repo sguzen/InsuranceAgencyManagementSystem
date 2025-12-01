@@ -31,21 +31,21 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 // Validate file
                 if (request.File == null || request.File.Length == 0)
                 {
-                    return Result<PolicyImportResultDto>.Failure("No file was uploaded");
+                    return Result<PolicyImportResultDto>.Failure("No file was uploaded", (List<string>?)null);
                 }
 
                 // Validate file extension
                 var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
                 if (fileExtension != ".xlsx" && fileExtension != ".xls")
                 {
-                    return Result<PolicyImportResultDto>.Failure("Invalid file format. Only Excel files (.xlsx, .xls) are supported");
+                    return Result<PolicyImportResultDto>.Failure("Invalid file format. Only Excel files (.xlsx, .xls) are supported", (List<string>?)null);
                 }
 
                 // Validate file size (max 10MB)
                 const long maxFileSize = 10 * 1024 * 1024; // 10MB
                 if (request.File.Length > maxFileSize)
                 {
-                    return Result<PolicyImportResultDto>.Failure("File size exceeds the maximum allowed size of 10MB");
+                    return Result<PolicyImportResultDto>.Failure("File size exceeds the maximum allowed size of 10MB", (List<string>?)null);
                 }
 
                 _logger.LogInformation("Starting policy import from file: {FileName}, Size: {FileSize} bytes",
@@ -66,7 +66,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error importing policies from file: {FileName}", request.File?.FileName);
-                return Result<PolicyImportResultDto>.Failure($"Failed to import policies: {ex.Message}");
+                return Result<PolicyImportResultDto>.Failure($"Failed to import policies: {ex.Message}", (List<string>?)null);
             }
         }
 
@@ -594,9 +594,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 MarketerId = marketer?.Id,
 
                 CreatedBy = userId,
-                CreatedDate = DateTime.UtcNow,
-                UpdatedBy = userId,
-                UpdatedDate = DateTime.UtcNow
+                CreatedOn = DateTime.UtcNow,
+                ModifiedBy = userId,
+                ModifiedOn = DateTime.UtcNow
             };
 
             // Save policy
@@ -616,9 +616,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                     CurrencyId = currency.Id,
                     Notes = "Initial payment from import",
                     CreatedBy = userId,
-                    CreatedDate = DateTime.UtcNow,
-                    UpdatedBy = userId,
-                    UpdatedDate = DateTime.UtcNow
+                    CreatedOn = DateTime.UtcNow,
+                    ModifiedBy = userId,
+                    ModifiedOn = DateTime.UtcNow
                 };
 
                 await _unitOfWork.PolicyPayments.AddAsync(payment);
@@ -656,7 +656,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             // Try to find existing customer by identifier
             if (!string.IsNullOrEmpty(dto.CustomerIdentifier))
             {
-                var customer = await _unitOfWork.Customers.GetByTaxOrIdentityNumberAsync(dto.CustomerIdentifier);
+                var customer = await _unitOfWork.Customers.GetByIdentificationNoAsync(dto.CustomerIdentifier);
                 if (customer != null)
                 {
                     return customer;
@@ -732,9 +732,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                     Name = dto.MarketerName ?? dto.MarketerCode,
                     IsActive = true,
                     CreatedBy = userId,
-                    CreatedDate = DateTime.UtcNow,
-                    UpdatedBy = userId,
-                    UpdatedDate = DateTime.UtcNow
+                    CreatedOn = DateTime.UtcNow,
+                    ModifiedBy = userId,
+                    ModifiedOn = DateTime.UtcNow
                 };
 
                 await _unitOfWork.Marketers.AddAsync(marketer);
@@ -776,11 +776,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             {
                 CustomerId = customerId,
                 PlateNumber = dto.PlateNumber,
-                Year = dto.VehicleYear,
+                ModelYear = dto.VehicleYear,
                 CreatedBy = userId,
-                CreatedDate = DateTime.UtcNow,
-                UpdatedBy = userId,
-                UpdatedDate = DateTime.UtcNow
+                CreatedOn = DateTime.UtcNow,
+                ModifiedBy = userId,
+                ModifiedOn = DateTime.UtcNow
             };
 
             await _unitOfWork.Vehicles.AddAsync(vehicle);
@@ -830,7 +830,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 return PaymentMethod.BankTransfer;
 
             if (normalized.Contains("check") || normalized.Contains("çek"))
-                return PaymentMethod.Check;
+                return PaymentMethod.Cheque;
 
             return PaymentMethod.Cash;
         }

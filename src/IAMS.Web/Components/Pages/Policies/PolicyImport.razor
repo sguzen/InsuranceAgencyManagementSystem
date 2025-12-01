@@ -6,9 +6,9 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Net.Http.Headers
 @using System.Text.Json
-@inject HttpClient Http
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
@@ -70,40 +70,30 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <label class="file-upload-wrapper">
-                    <InputFile OnChange="OnFileSelected"
-                              accept=".xlsx,.xls"
-                              class="file-upload-input" />
-                    <div class="mud-button-root mud-button mud-button-filled mud-button-filled-primary mud-ripple">
-                        <span class="mud-button-label">
-                            <span class="mud-button-icon-start">
-                                <svg class="mud-icon-root mud-svg-icon mud-icon-size-medium" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"></path>
-                                </svg>
-                            </span>
-                            Dosya Seç
-                        </span>
-                    </div>
-                </label>
+                <input type="file" id="policyFileInput" accept=".xlsx,.xls" style="display: none;" />
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           onclick="document.getElementById('policyFileInput').click()"
+                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                           Disabled="@isUploading">
+                    Dosya Seç
+                </MudButton>
 
-                @if (selectedFile != null)
+                @if (!string.IsNullOrEmpty(selectedFileName))
                 {
                     <MudChip T="string"
                              Color="Color.Info"
                              Icon="@Icons.Material.Filled.InsertDriveFile"
                              OnClose="ClearFile"
                              Class="mt-3">
-                        @selectedFile.Name (@FormatFileSize(selectedFile.Size))
+                        @selectedFileName
                     </MudChip>
-                }
 
-                @if (selectedFile != null)
-                {
                     <MudStack Row Spacing="2" Class="mt-4">
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Success"
                                    StartIcon="@Icons.Material.Filled.Upload"
-                                   OnClick="ImportPolicies"
+                                   onclick="uploadFile()"
                                    Disabled="@isUploading">
                             @if (isUploading)
                             {
@@ -239,157 +229,163 @@
     </MudStack>
 </MudContainer>
 
-<style>
-    .file-upload-wrapper {
-        display: inline-block;
-        cursor: pointer;
-    }
+<script>
+    let dotNetHelper;
 
-    .file-upload-input {
-        position: absolute;
-        width: 0.1px;
-        height: 0.1px;
-        opacity: 0;
-        overflow: hidden;
-        z-index: -1;
-    }
+    window.initFileUpload = (helper) => {
+        dotNetHelper = helper;
 
-    .file-upload-wrapper:hover .mud-button-filled-primary {
-        background-color: var(--mud-palette-primary-darken);
-    }
-</style>
+        const fileInput = document.getElementById('policyFileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Validate file
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                const validExtensions = ['.xlsx', '.xls'];
+                const extension = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (file.size > maxSize) {
+                    dotNetHelper.invokeMethodAsync('ShowError', `Dosya boyutu çok büyük. Maksimum 10 MB olmalıdır.`);
+                    return;
+                }
+
+                if (!validExtensions.includes(extension)) {
+                    dotNetHelper.invokeMethodAsync('ShowError', 'Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir');
+                    return;
+                }
+
+                dotNetHelper.invokeMethodAsync('FileSelected', file.name);
+            });
+        }
+    };
+
+    window.uploadFile = async () => {
+        const fileInput = document.getElementById('policyFileInput');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        await dotNetHelper.invokeMethodAsync('SetUploading', true);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/policies/import', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                await dotNetHelper.invokeMethodAsync('UploadComplete', JSON.stringify(result));
+            } else {
+                const error = await response.text();
+                await dotNetHelper.invokeMethodAsync('ShowError', `Sunucu hatası: ${error}`);
+            }
+        } catch (error) {
+            await dotNetHelper.invokeMethodAsync('ShowError', `Hata: ${error.message}`);
+        } finally {
+            await dotNetHelper.invokeMethodAsync('SetUploading', false);
+        }
+    };
+
+    window.clearFileInput = () => {
+        const fileInput = document.getElementById('policyFileInput');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    };
+</script>
 
 @code {
-    private IBrowserFile? selectedFile;
+    private string? selectedFileName;
     private bool isUploading = false;
     private PolicyImportResultDto? importResult;
+    private DotNetObjectReference<PolicyImport>? dotNetRef;
 
-    private void OnFileSelected(InputFileChangeEventArgs e)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("initFileUpload", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public void FileSelected(string fileName)
+    {
+        selectedFileName = fileName;
+        importResult = null;
+        Snackbar.Add($"Dosya seçildi: {fileName}", MudBlazor.Severity.Success);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void ShowError(string message)
+    {
+        Snackbar.Add(message, MudBlazor.Severity.Error);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void SetUploading(bool uploading)
+    {
+        isUploading = uploading;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void UploadComplete(string resultJson)
     {
         try
         {
-            const long maxFileSize = 10 * 1024 * 1024; // 10MB
-
-            var file = e.File;
-            if (file != null)
+            var result = JsonSerializer.Deserialize<Result<PolicyImportResultDto>>(resultJson, new JsonSerializerOptions
             {
-                // Check file size before accepting it
-                if (file.Size > maxFileSize)
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (result != null && result.IsSuccess)
+            {
+                importResult = result.Data;
+
+                if (importResult.SuccessCount > 0)
                 {
-                    Snackbar.Add($"Dosya boyutu çok büyük. Maksimum 10 MB olmalıdır. (Seçilen: {FormatFileSize(file.Size)})", MudBlazor.Severity.Error);
-                    return;
+                    Snackbar.Add($"{importResult.SuccessCount} poliçe başarıyla içe aktarıldı!", MudBlazor.Severity.Success);
                 }
 
-                // Check file extension
-                var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-                if (extension != ".xlsx" && extension != ".xls")
+                if (importResult.FailureCount > 0)
                 {
-                    Snackbar.Add("Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir", MudBlazor.Severity.Error);
-                    return;
+                    Snackbar.Add($"{importResult.FailureCount} poliçe içe aktarılamadı. Detaylar için aşağıya bakın.", MudBlazor.Severity.Warning);
                 }
-
-                selectedFile = file;
-                importResult = null;
-
-                Snackbar.Add($"Dosya seçildi: {file.Name}", MudBlazor.Severity.Success);
             }
+            else
+            {
+                Snackbar.Add(result?.Message ?? "Poliçeler içe aktarılırken hata oluştu", MudBlazor.Severity.Error);
+            }
+
+            StateHasChanged();
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Dosya seçilirken hata: {ex.Message}", MudBlazor.Severity.Error);
-            selectedFile = null;
+            Snackbar.Add($"Sonuç işlenirken hata: {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 
     private void ClearFile()
     {
-        selectedFile = null;
+        selectedFileName = null;
         importResult = null;
-    }
-
-    private async Task ImportPolicies()
-    {
-        if (selectedFile == null) return;
-
-        isUploading = true;
-        importResult = null;
-
-        try
-        {
-            // Validate file size
-            const long maxFileSize = 10 * 1024 * 1024; // 10MB
-            if (selectedFile.Size > maxFileSize)
-            {
-                Snackbar.Add("Dosya boyutu 10 MB'dan büyük olamaz", MudBlazor.Severity.Error);
-                isUploading = false;
-                return;
-            }
-
-            // Validate file extension
-            var extension = Path.GetExtension(selectedFile.Name).ToLowerInvariant();
-            if (extension != ".xlsx" && extension != ".xls")
-            {
-                Snackbar.Add("Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir", MudBlazor.Severity.Error);
-                isUploading = false;
-                return;
-            }
-
-            // Create multipart form content
-            using var content = new MultipartFormDataContent();
-            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxFileSize));
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
-            content.Add(fileContent, "file", selectedFile.Name);
-
-            // Send to API
-            var response = await Http.PostAsync("/api/policies/import", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<Result<PolicyImportResultDto>>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (result != null && result.IsSuccess)
-                {
-                    importResult = result.Data;
-
-                    if (importResult.SuccessCount > 0)
-                    {
-                        Snackbar.Add($"{importResult.SuccessCount} poliçe başarıyla içe aktarıldı!", MudBlazor.Severity.Success);
-                    }
-
-                    if (importResult.FailureCount > 0)
-                    {
-                        Snackbar.Add($"{importResult.FailureCount} poliçe içe aktarılamadı. Detaylar için aşağıya bakın.", MudBlazor.Severity.Warning);
-                    }
-                }
-                else
-                {
-                    Snackbar.Add(result?.Message ?? "Poliçeler içe aktarılırken hata oluştu", MudBlazor.Severity.Error);
-                }
-            }
-            else
-            {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                Snackbar.Add($"Sunucu hatası: {errorMessage}", MudBlazor.Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
-        }
-        finally
-        {
-            isUploading = false;
-        }
+        JSRuntime.InvokeVoidAsync("clearFileInput");
     }
 
     private void ResetImport()
     {
-        selectedFile = null;
+        selectedFileName = null;
         importResult = null;
+        JSRuntime.InvokeVoidAsync("clearFileInput");
     }
 
     private void GoBack()
@@ -397,16 +393,8 @@
         Navigation.NavigateTo("/policies");
     }
 
-    private string FormatFileSize(long bytes)
+    public void Dispose()
     {
-        string[] sizes = { "B", "KB", "MB", "GB" };
-        double len = bytes;
-        int order = 0;
-        while (len >= 1024 && order < sizes.Length - 1)
-        {
-            order++;
-            len = len / 1024;
-        }
-        return $"{len:0.##} {sizes[order]}";
+        dotNetRef?.Dispose();
     }
 }

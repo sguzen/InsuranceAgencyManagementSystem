@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
 using MediatR;
@@ -8,14 +9,14 @@ namespace IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus
 {
     public class GetPoliciesByStatusQueryHandler : IRequestHandler<GetPoliciesByStatusQuery, Result<Dictionary<PolicyStatus, int>>>
     {
-        private readonly IPolicyRepository _policyRepository;
+        private readonly IPolicyAnalyticsService _policyAnalyticsService;
         private readonly ILogger<GetPoliciesByStatusQueryHandler> _logger;
 
         public GetPoliciesByStatusQueryHandler(
-            IPolicyRepository policyRepository,
+            IPolicyAnalyticsService policyAnalyticsService,
             ILogger<GetPoliciesByStatusQueryHandler> logger)
         {
-            _policyRepository = policyRepository;
+            _policyAnalyticsService = policyAnalyticsService;
             _logger = logger;
         }
 
@@ -24,7 +25,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus
         {
             try
             {
-                var policyCountByStatus = await _policyRepository.GetPolicyCountByStatusAsync();
+                var policyCountByStatus = await _policyAnalyticsService.GetPolicyCountByStatusAsync();
 
                 if (policyCountByStatus == null || !policyCountByStatus.Any())
                 {

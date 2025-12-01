@@ -2,6 +2,7 @@
 using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Interfaces.Repositories;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -10,16 +11,16 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicies
 {
     public class GetPoliciesQueryHandler : IRequestHandler<GetPoliciesQuery, Result<PagedResult<PolicyDto>>>
     {
-        private readonly IPolicyRepository _policyRepository;
+        private readonly IPolicyQueryService _policyQueryService;
         private readonly IMapper _mapper;
         private readonly ILogger<GetPoliciesQueryHandler> _logger;
 
         public GetPoliciesQueryHandler(
-            IPolicyRepository policyRepository,
+            IPolicyQueryService policyQueryService,
             IMapper mapper,
             ILogger<GetPoliciesQueryHandler> logger)
         {
-            _policyRepository = policyRepository;
+            _policyQueryService = policyQueryService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -28,7 +29,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicies
         {
             try
             {
-                var pagedResult = await _policyRepository.GetPoliciesPagedAsync(
+                var pagedResult = await _policyQueryService.GetPoliciesPagedAsync(
                     request.QueryParams.PageNumber,
                     request.QueryParams.PageSize,
                     request.QueryParams.SearchTerm);

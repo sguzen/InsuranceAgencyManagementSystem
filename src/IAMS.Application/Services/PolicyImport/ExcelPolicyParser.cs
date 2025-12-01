@@ -22,8 +22,8 @@ namespace IAMS.Application.Services.PolicyImport
 
         public async Task<List<ImportPolicyDto>> ParseFromStreamAsync(Stream stream, CancellationToken cancellationToken = default)
         {
-            // Create a temporary file from the stream
-            var tempFile = Path.GetTempFileName();
+            // Create a temporary file from the stream with .xlsx extension
+            var tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.xlsx");
             try
             {
                 using (var fileStream = File.Create(tempFile))

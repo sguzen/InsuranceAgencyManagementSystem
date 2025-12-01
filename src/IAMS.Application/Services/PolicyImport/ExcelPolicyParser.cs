@@ -166,9 +166,6 @@ namespace IAMS.Application.Services.PolicyImport
                 }
             }
 
-            // Insurance company (Acente)
-            policy.InsuranceCompanyCode = GetCellValue(row, columnMap, "Acente", "acente");
-
             // Policy number
             policy.PolicyNumber = GetCellValue(row, columnMap, "Pol.No", "PolNo", "polno", "policeno");
 
@@ -204,31 +201,8 @@ namespace IAMS.Application.Services.PolicyImport
             }
 
             // Customer name
-            policy.CustomerName = GetCellValue(row, columnMap,
-                "Sigortalının Adı/Unvan",
-                "sigortalininadiUnvan",
-                "sigortaliadi",
-                "musteriad",
-                "musteri",
-                "Adı/Unvan",
-                "adinvan",
-                "Unvan",
-                "unvan",
-                "Ad",
-                "ad",
-                "İsim",
-                "isim",
-                "Müşteri Adı",
-                "musteriadi",
-                "Adi",
-                "adi");
-
-            // Log if customer name is missing for debugging
-            if (string.IsNullOrEmpty(policy.CustomerName))
-            {
-                _logger.LogWarning("Customer name not found at row {RowNumber}. Available columns: {Columns}",
-                    rowNumber, string.Join(", ", columnMap.Keys));
-            }
+            policy.CustomerName = GetCellValue(row, columnMap, "Sigortalının Adı/Ünvanı", "Sigortalının Adı/Unvan", "sigortalininadiUnvan",
+                "sigortaliadi", "musteriad", "musteri");
 
             // Driver age (Yas)
             var driverAge = GetCellValue(row, columnMap, "Yas", "yas", "surucuyas");

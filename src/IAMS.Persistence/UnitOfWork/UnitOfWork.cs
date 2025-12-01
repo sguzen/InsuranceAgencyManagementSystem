@@ -39,6 +39,9 @@ namespace IAMS.Persistence.UnitOfWork
         private ICurrencyRepository? _currencies;
         private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
+        // Marketer Management
+        private IMarketerRepository? _marketers;
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
@@ -101,8 +104,11 @@ namespace IAMS.Persistence.UnitOfWork
         public ICurrencyRepository Currencies => 
             _currencies ??= new CurrencyRepository(_context);
 
-        public ICurrencyExchangeRateRepository CurrencyExchangeRates 
+        public ICurrencyExchangeRateRepository CurrencyExchangeRates
             => _currencyExchangeRates ??= new CurrencyExchangeRateRepository(_context);
+
+        public IMarketerRepository Marketers =>
+            _marketers ??= new MarketerRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

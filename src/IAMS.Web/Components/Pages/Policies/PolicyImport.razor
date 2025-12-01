@@ -264,45 +264,41 @@
     private bool isUploading = false;
     private PolicyImportResultDto? importResult;
 
-    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    private void OnFileSelected(InputFileChangeEventArgs e)
     {
-        await InvokeAsync(async () =>
+        try
         {
-            try
-            {
-                const long maxFileSize = 10 * 1024 * 1024; // 10MB
+            const long maxFileSize = 10 * 1024 * 1024; // 10MB
 
-                var file = e.File;
-                if (file != null)
+            var file = e.File;
+            if (file != null)
+            {
+                // Check file size before accepting it
+                if (file.Size > maxFileSize)
                 {
-                    // Check file size before accepting it
-                    if (file.Size > maxFileSize)
-                    {
-                        Snackbar.Add($"Dosya boyutu çok büyük. Maksimum 10 MB olmalıdır. (Seçilen: {FormatFileSize(file.Size)})", MudBlazor.Severity.Error);
-                        return;
-                    }
-
-                    // Check file extension
-                    var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-                    if (extension != ".xlsx" && extension != ".xls")
-                    {
-                        Snackbar.Add("Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir", MudBlazor.Severity.Error);
-                        return;
-                    }
-
-                    selectedFile = file;
-                    importResult = null;
-                    StateHasChanged();
-
-                    Snackbar.Add($"Dosya seçildi: {file.Name}", MudBlazor.Severity.Success);
+                    Snackbar.Add($"Dosya boyutu çok büyük. Maksimum 10 MB olmalıdır. (Seçilen: {FormatFileSize(file.Size)})", MudBlazor.Severity.Error);
+                    return;
                 }
+
+                // Check file extension
+                var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+                if (extension != ".xlsx" && extension != ".xls")
+                {
+                    Snackbar.Add("Sadece Excel dosyaları (.xlsx, .xls) yüklenebilir", MudBlazor.Severity.Error);
+                    return;
+                }
+
+                selectedFile = file;
+                importResult = null;
+
+                Snackbar.Add($"Dosya seçildi: {file.Name}", MudBlazor.Severity.Success);
             }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Dosya seçilirken hata: {ex.Message}", MudBlazor.Severity.Error);
-                selectedFile = null;
-            }
-        });
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Dosya seçilirken hata: {ex.Message}", MudBlazor.Severity.Error);
+            selectedFile = null;
+        }
     }
 
     private void ClearFile()

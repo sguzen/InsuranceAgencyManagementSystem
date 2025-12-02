@@ -60,7 +60,7 @@ namespace IAMS.Domain.Entities
         // Endorsement Information (Zeyilname)
         // All policies are treated as endorsements: 000 = main policy, 001+ = endorsements
         public string InnerCode { get; set; } = "000"; // 3-digit code: 000 for main, 001, 002, etc.
-        public StateType StateType { get; set; } = StateType.MainPolicy; // Zeyil Tipi
+        public StateType StateType { get; set; } = StateType.YeniPolice; // TIP column (P, T, V, R, X, Y)
 
         [Obsolete("Use InnerCode instead. IsEndorsement can be determined by InnerCode != \"000\"")]
         public bool IsEndorsement { get; set; } = false;
@@ -77,8 +77,12 @@ namespace IAMS.Domain.Entities
         public DriverType? DriverType { get; set; } // Sürücü - Single or Any
 
         // Marketer Information (Pazarlamacı)
+        public string? Marketer { get; set; } // Pazarlamacı Adı - stored as string
+
+        [Obsolete("Use Marketer string property instead")]
         public int? MarketerId { get; set; }
-        public virtual Marketer? Marketer { get; set; }
+        [Obsolete("Use Marketer string property instead")]
+        public virtual Marketer? MarketerEntity { get; set; }
 
 
         // Navigation properties

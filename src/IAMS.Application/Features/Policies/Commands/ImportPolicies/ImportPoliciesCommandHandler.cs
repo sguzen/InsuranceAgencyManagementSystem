@@ -124,7 +124,6 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             // Insurance company ID is passed directly, no need to fetch the entity
             // var insuranceCompany = await GetInsuranceCompanyAsync(insuranceCompanyId);
             var policyType = await GetPolicyTypeAsync(dto);
-            var marketer = await GetOrCreateMarketerAsync(dto, userId);
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
             var vehicle = await GetOrCreateVehicleAsync(dto, customer.Id, userId);
 
@@ -174,8 +173,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 DriverAge = dto.DriverAge,
                 DriverType = ParseDriverType(dto.DriverTypeText),
 
-                // Marketer fields
-                MarketerId = marketer?.Id,
+                // Marketer (stored as string)
+                Marketer = dto.Marketer,
 
                 CreatedBy = userId,
                 CreatedOn = DateTime.UtcNow,

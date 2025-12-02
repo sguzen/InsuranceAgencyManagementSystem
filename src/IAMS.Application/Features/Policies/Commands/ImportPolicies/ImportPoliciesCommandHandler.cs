@@ -44,14 +44,20 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                     return Result<PolicyImportResultDto>.Failure(validationResult.Message, (List<string>?)null);
                 }
 
-                _logger.LogInformation("Starting policy import from file: {FileName}, Size: {FileSize} bytes",
-                    request.File.FileName, request.File.Length);
+                // Validate insurance company ID
+                if (request.InsuranceCompanyId <= 0)
+                {
+                    return Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null);
+                }
+
+                _logger.LogInformation("Starting policy import from file: {FileName}, Size: {FileSize} bytes, Insurance Company ID: {InsuranceCompanyId}",
+                    request.File.FileName, request.File.Length, request.InsuranceCompanyId);
 
                 // Import policies from stream
                 PolicyImportResultDto result;
                 using (var stream = request.File.OpenReadStream())
                 {
-                    result = await ImportFromStreamAsync(stream, request.UserId, cancellationToken);
+                    result = await ImportFromStreamAsync(stream, request.UserId, request.InsuranceCompanyId, cancellationToken);
                 }
 
                 _logger.LogInformation("Policy import completed. Total: {Total}, Success: {Success}, Failure: {Failure}",
@@ -66,7 +72,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             }
         }
 
-        private async Task<PolicyImportResultDto> ImportFromStreamAsync(Stream stream, string userId, CancellationToken cancellationToken)
+        private async Task<PolicyImportResultDto> ImportFromStreamAsync(Stream stream, string userId, int insuranceCompanyId, CancellationToken cancellationToken)
         {
             var result = new PolicyImportResultDto();
 
@@ -81,7 +87,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 {
                     try
                     {
-                        var policy = await ImportSinglePolicyAsync(policyDto, userId, cancellationToken);
+                        var policy = await ImportSinglePolicyAsync(policyDto, userId, insuranceCompanyId, cancellationToken);
                         result.SuccessCount++;
                         result.ImportedPolicyIds.Add(policy.Id);
                     }
@@ -111,11 +117,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
 
         // The remaining import logic stays in the handler for now
 
-        private async Task<Policy> ImportSinglePolicyAsync(ImportPolicyDto dto, string userId, CancellationToken cancellationToken)
+        private async Task<Policy> ImportSinglePolicyAsync(ImportPolicyDto dto, string userId, int insuranceCompanyId, CancellationToken cancellationToken)
         {
             // Lookup or create related entities
             var customer = await GetOrCreateCustomerAsync(dto);
-            var insuranceCompany = await GetInsuranceCompanyAsync(dto);
+            var insuranceCompany = await GetInsuranceCompanyAsync(insuranceCompanyId);
             var policyType = await GetPolicyTypeAsync(dto);
             var marketer = await GetOrCreateMarketerAsync(dto, userId);
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
@@ -287,24 +293,14 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             return newCustomer;
         }
 
-        private async Task<InsuranceCompany> GetInsuranceCompanyAsync(ImportPolicyDto dto)
+        private async Task<InsuranceCompany> GetInsuranceCompanyAsync(int insuranceCompanyId)
         {
-            InsuranceCompany? company = null;
-
-            if (!string.IsNullOrEmpty(dto.InsuranceCompanyCode))
-            {
-                company = await _unitOfWork.InsuranceCompanies.GetByCodeAsync(dto.InsuranceCompanyCode);
-            }
-
-            if (company == null && !string.IsNullOrEmpty(dto.InsuranceCompanyName))
-            {
-                company = await _unitOfWork.InsuranceCompanies.GetByNameAsync(dto.InsuranceCompanyName);
-            }
+            var company = await _unitOfWork.InsuranceCompanies.GetByIdAsync(insuranceCompanyId);
 
             if (company == null)
             {
                 throw new InvalidOperationException(
-                    $"Insurance company not found: {dto.InsuranceCompanyCode ?? dto.InsuranceCompanyName}");
+                    $"Insurance company not found with ID: {insuranceCompanyId}");
             }
 
             return company;

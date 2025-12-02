@@ -3,8 +3,10 @@
 
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.Models
+@using System.Text.Json
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
@@ -66,8 +68,19 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <form method="post" action="/api/fileupload/policies/import" enctype="multipart/form-data" data-enhance="false">
+                <form method="post" action="/api/fileupload/policies/import" enctype="multipart/form-data" data-enhance="false" id="uploadForm">
                     <MudStack Spacing="3">
+                        <!-- Insurance Company Selection -->
+                        <MudSelect T="int" Label="Sigorta Şirketi" @bind-Value="selectedInsuranceCompanyId"
+                                   Required="true" Variant="Variant.Outlined">
+                            @foreach (var company in insuranceCompanies)
+                            {
+                                <MudSelectItem Value="@company.Id">@company.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <input type="hidden" name="insuranceCompanyId" value="@selectedInsuranceCompanyId" />
+
                         <MudText Typo="Typo.body2">
                             Dosya seçin (.xlsx veya .xls):
                         </MudText>
@@ -103,4 +116,47 @@
 </MudContainer>
 
 @code {
+    private List<InsuranceCompanyDto> insuranceCompanies = new();
+    private int selectedInsuranceCompanyId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInsuranceCompaniesAsync();
+    }
+
+    private async Task LoadInsuranceCompaniesAsync()
+    {
+        try
+        {
+            var response = await Http.GetAsync("/api/insurancecompanies");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<Result<List<InsuranceCompanyDto>>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (result != null && result.IsSuccess && result.Data != null)
+                {
+                    insuranceCompanies = result.Data;
+                    if (insuranceCompanies.Any())
+                    {
+                        selectedInsuranceCompanyId = insuranceCompanies.First().Id;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Sigorta şirketleri yüklenemedi: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    public class InsuranceCompanyDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+    }
 }

@@ -172,13 +172,25 @@ namespace IAMS.Application.Services.PolicyImport
             // Policy type code (Tec)
             policy.PolicyTypeCode = GetCellValue(row, columnMap, "Tec", "tec");
 
-            // Endorsement number (Z.No)
-            var endorsementNo = GetCellValue(row, columnMap, "Z.No", "ZNo", "zno", "zeyilno");
-            if (!string.IsNullOrEmpty(endorsementNo) && endorsementNo != "000")
+            // Inner Code / Endorsement number (Z.No) - 000 for main policy, 001+ for endorsements
+            var innerCode = GetCellValue(row, columnMap, "Z.No", "ZNo", "zno", "zeyilno", "innercode");
+            if (!string.IsNullOrEmpty(innerCode))
             {
-                policy.IsEndorsement = true;
-                policy.EndorsementNumber = endorsementNo;
+                // Ensure it's 3 digits
+                policy.InnerCode = innerCode.PadLeft(3, '0');
+
+                // Legacy fields for backward compatibility
+                policy.EndorsementNumber = policy.InnerCode;
+                policy.IsEndorsement = policy.InnerCode != "000";
             }
+            else
+            {
+                policy.InnerCode = "000"; // Default to main policy
+            }
+
+            // State Type / Tip (TIP column - column 3: P, T, V, R, X, Y)
+            var stateTypeCode = GetCellValue(row, columnMap, "TIP", "Tip", "tip");
+            policy.StateType = ParseStateType(stateTypeCode, policy.InnerCode);
 
             // Start date (Bas.Tarih)
             policy.StartDate = GetDateValue(row, columnMap, "Bas.Tarih", "BasTarih", "bastarih", "baslangictarihi");
@@ -276,11 +288,9 @@ namespace IAMS.Application.Services.PolicyImport
             // Driver type (Sürücü)
             policy.DriverTypeText = GetCellValue(row, columnMap, "Sürücü", "Surucu", "surucu", "suructipi");
 
-            // Marketer code (Paz.Kod)
-            policy.MarketerCode = GetCellValue(row, columnMap, "Paz.Kod", "PazKod", "pazkod", "pazarlamakod");
-
-            // Marketer name (Pazarlama Adı)
-            policy.MarketerName = GetCellValue(row, columnMap, "Pazarlama Adı", "PazarlamaAdi", "pazarlamaadi", "pazarlama");
+            // Marketer name (Pazarlamacı Adı) - stored as string
+            policy.Marketer = GetCellValue(row, columnMap, "Pazarlamacı Adı", "PazarlamaciAdi", "pazarlamaciadi",
+                "Pazarlama Adı", "PazarlamaAdi", "pazarlamaadi", "pazarlama", "pazarlamaci");
 
             // Set default status
             policy.Status = PolicyStatus.Active;
@@ -444,6 +454,30 @@ namespace IAMS.Application.Services.PolicyImport
 
             // Default to TRY (Turkish Lira)
             return "TRY";
+        }
+
+        private StateType ParseStateType(string? stateTypeCode, string innerCode)
+        {
+            // If no state type code provided, default based on InnerCode
+            if (string.IsNullOrWhiteSpace(stateTypeCode))
+            {
+                // InnerCode "000" = Yeni Police, otherwise default to YeniPolice
+                return StateType.YeniPolice;
+            }
+
+            var code = stateTypeCode.Trim().ToUpperInvariant();
+
+            // Parse single letter codes from TIP column
+            return code switch
+            {
+                "P" => StateType.YeniPolice,    // Yeni Police (New Policy)
+                "T" => StateType.Tecdit,        // Tecdit (Renewal)
+                "V" => StateType.Ilave,         // Ilave (Addition/Supplementary)
+                "R" => StateType.Iade,          // Iade (Return/Refund)
+                "X" => StateType.Iptal,         // Iptal (Cancellation)
+                "Y" => StateType.Yeniden,       // Yeniden (Re-issued/Again)
+                _ => StateType.YeniPolice       // Default to Yeni Police
+            };
         }
     }
 }

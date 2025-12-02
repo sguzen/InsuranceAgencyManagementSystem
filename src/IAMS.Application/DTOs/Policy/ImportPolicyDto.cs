@@ -13,7 +13,12 @@ namespace IAMS.Application.DTOs.Policy
 
         // Policy/Endorsement identification
         public string? PolicyNumber { get; set; }
-        public string? EndorsementNumber { get; set; } // 000, 001, 002, etc.
+        public string InnerCode { get; set; } = "000"; // 3-digit code: 000 for main, 001+ for endorsements
+        public StateType StateType { get; set; } = StateType.YeniPolice; // TIP column (P, T, V, R, X, Y)
+
+        [Obsolete("Use InnerCode instead")]
+        public string? EndorsementNumber { get; set; } // Legacy field
+        [Obsolete("Use InnerCode != \"000\" instead")]
         public bool IsEndorsement { get; set; }
 
         // Customer Information
@@ -45,8 +50,12 @@ namespace IAMS.Application.DTOs.Policy
         public string? DriverTypeText { get; set; } // Sürücü - will be parsed to enum
 
         // Marketer Information
-        public string? MarketerCode { get; set; } // paz.kod
-        public string? MarketerName { get; set; } // pazarlamaci adi
+        public string? Marketer { get; set; } // Pazarlamacı Adı - stored as string
+
+        [Obsolete("Use Marketer string instead")]
+        public string? MarketerCode { get; set; } // Legacy field
+        [Obsolete("Use Marketer string instead")]
+        public string? MarketerName { get; set; } // Legacy field
 
         // Vehicle Information
         public string? PlateNumber { get; set; }

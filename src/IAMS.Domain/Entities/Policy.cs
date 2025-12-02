@@ -58,9 +58,17 @@ namespace IAMS.Domain.Entities
         public virtual Policy? ParentPolicy { get; set; }
 
         // Endorsement Information (Zeyilname)
+        // All policies are treated as endorsements: 000 = main policy, 001+ = endorsements
+        public string InnerCode { get; set; } = "000"; // 3-digit code: 000 for main, 001, 002, etc.
+        public StateType StateType { get; set; } = StateType.MainPolicy; // Zeyil Tipi
+
+        [Obsolete("Use InnerCode instead. IsEndorsement can be determined by InnerCode != \"000\"")]
         public bool IsEndorsement { get; set; } = false;
-        public string? EndorsementNumber { get; set; } // 000 for first endorsement, 001, 002, etc.
-        public int? OriginalPolicyId { get; set; } // Reference to original policy if this is an endorsement
+
+        [Obsolete("Use InnerCode instead")]
+        public string? EndorsementNumber { get; set; } // Legacy field
+
+        public int? OriginalPolicyId { get; set; } // Reference to original policy if InnerCode != "000"
         public virtual Policy? OriginalPolicy { get; set; }
         public string? BranchCode { get; set; } // External code for insurance type (Kod column)
 

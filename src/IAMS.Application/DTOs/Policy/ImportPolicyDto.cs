@@ -13,7 +13,12 @@ namespace IAMS.Application.DTOs.Policy
 
         // Policy/Endorsement identification
         public string? PolicyNumber { get; set; }
-        public string? EndorsementNumber { get; set; } // 000, 001, 002, etc.
+        public string InnerCode { get; set; } = "000"; // 3-digit code: 000 for main, 001+for endorsements
+        public StateType StateType { get; set; } = StateType.MainPolicy; // Zeyil Tipi
+
+        [Obsolete("Use InnerCode instead")]
+        public string? EndorsementNumber { get; set; } // Legacy field
+        [Obsolete("Use InnerCode != \"000\" instead")]
         public bool IsEndorsement { get; set; }
 
         // Customer Information

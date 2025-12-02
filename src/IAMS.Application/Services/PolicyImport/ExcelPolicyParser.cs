@@ -172,13 +172,25 @@ namespace IAMS.Application.Services.PolicyImport
             // Policy type code (Tec)
             policy.PolicyTypeCode = GetCellValue(row, columnMap, "Tec", "tec");
 
-            // Endorsement number (Z.No)
-            var endorsementNo = GetCellValue(row, columnMap, "Z.No", "ZNo", "zno", "zeyilno");
-            if (!string.IsNullOrEmpty(endorsementNo) && endorsementNo != "000")
+            // Inner Code / Endorsement number (Z.No) - 000 for main policy, 001+ for endorsements
+            var innerCode = GetCellValue(row, columnMap, "Z.No", "ZNo", "zno", "zeyilno", "innercode");
+            if (!string.IsNullOrEmpty(innerCode))
             {
-                policy.IsEndorsement = true;
-                policy.EndorsementNumber = endorsementNo;
+                // Ensure it's 3 digits
+                policy.InnerCode = innerCode.PadLeft(3, '0');
+
+                // Legacy fields for backward compatibility
+                policy.EndorsementNumber = policy.InnerCode;
+                policy.IsEndorsement = policy.InnerCode != "000";
             }
+            else
+            {
+                policy.InnerCode = "000"; // Default to main policy
+            }
+
+            // State Type / Zeyil Tipi (Zeyiltipi column)
+            var stateTypeText = GetCellValue(row, columnMap, "Zeyiltipi", "zeyiltipi", "ZeyilTipi", "statetype", "StateType");
+            policy.StateType = ParseStateType(stateTypeText, policy.InnerCode);
 
             // Start date (Bas.Tarih)
             policy.StartDate = GetDateValue(row, columnMap, "Bas.Tarih", "BasTarih", "bastarih", "baslangictarihi");
@@ -444,6 +456,59 @@ namespace IAMS.Application.Services.PolicyImport
 
             // Default to TRY (Turkish Lira)
             return "TRY";
+        }
+
+        private StateType ParseStateType(string? stateTypeText, string innerCode)
+        {
+            // If innerCode is "000", it's always MainPolicy
+            if (innerCode == "000")
+                return StateType.MainPolicy;
+
+            // If no state type text provided, default based on other indicators
+            if (string.IsNullOrWhiteSpace(stateTypeText))
+                return StateType.Other;
+
+            var normalized = stateTypeText.ToLowerInvariant().Trim();
+
+            // Try to match common Turkish and English terms
+            if (normalized.Contains("prim") && (normalized.Contains("artı") || normalized.Contains("arti") || normalized.Contains("increase")))
+                return StateType.PremiumIncrease;
+
+            if (normalized.Contains("prim") && (normalized.Contains("azal") || normalized.Contains("decrease") || normalized.Contains("indirim")))
+                return StateType.PremiumDecrease;
+
+            if (normalized.Contains("teminat") && (normalized.Contains("ekleme") || normalized.Contains("ekle") || normalized.Contains("addition")))
+                return StateType.CoverageAddition;
+
+            if (normalized.Contains("teminat") && (normalized.Contains("çıkar") || normalized.Contains("cikar") || normalized.Contains("removal") || normalized.Contains("silme")))
+                return StateType.CoverageRemoval;
+
+            if (normalized.Contains("teminat") && (normalized.Contains("değiş") || normalized.Contains("degis") || normalized.Contains("change")))
+                return StateType.CoverageChange;
+
+            if (normalized.Contains("araç") || normalized.Contains("arac") || normalized.Contains("vehicle") || normalized.Contains("plaka"))
+                return StateType.VehicleChange;
+
+            if (normalized.Contains("müşteri") || normalized.Contains("musteri") || normalized.Contains("customer") || normalized.Contains("sigortalı") || normalized.Contains("sigortali"))
+                return StateType.CustomerChange;
+
+            if (normalized.Contains("vade") && (normalized.Contains("uzat") || normalized.Contains("extension")))
+                return StateType.TermExtension;
+
+            if (normalized.Contains("vade") && (normalized.Contains("azal") || normalized.Contains("reduction") || normalized.Contains("kısalt") || normalized.Contains("kisalt")))
+                return StateType.TermReduction;
+
+            if (normalized.Contains("iptal") || normalized.Contains("cancel"))
+                return StateType.Cancellation;
+
+            if (normalized.Contains("düzelt") || normalized.Contains("duzelt") || normalized.Contains("correction"))
+                return StateType.Correction;
+
+            if (normalized.Contains("yenile") || normalized.Contains("renewal"))
+                return StateType.Renewal;
+
+            // Default to Other if no match
+            return StateType.Other;
         }
     }
 }

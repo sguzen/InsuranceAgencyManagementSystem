@@ -128,22 +128,19 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
             var vehicle = await GetOrCreateVehicleAsync(dto, customer.Id, userId);
 
-            // Check if this is an endorsement
+            // Check if this is an endorsement (InnerCode != "000")
             Policy? originalPolicy = null;
-            string? endorsementNumber = null;
 
-            if (dto.IsEndorsement && !string.IsNullOrEmpty(dto.PolicyNumber))
+            if (dto.InnerCode != "000" && !string.IsNullOrEmpty(dto.PolicyNumber))
             {
-                // Find the original policy
+                // Find the original policy (the one with InnerCode = "000")
                 originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(dto.PolicyNumber);
                 if (originalPolicy == null)
                 {
                     throw new InvalidOperationException(
-                        $"Original policy not found for endorsement: {dto.PolicyNumber}");
+                        $"Original policy not found for endorsement: {dto.PolicyNumber}. " +
+                        $"InnerCode: {dto.InnerCode}");
                 }
-
-                // Generate endorsement number
-                endorsementNumber = await GenerateEndorsementNumberAsync(originalPolicy.Id);
             }
 
             // Create policy entity
@@ -163,11 +160,15 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 CurrencyId = currency.Id,
                 Notes = dto.Notes,
 
-                // Endorsement fields
-                IsEndorsement = dto.IsEndorsement,
-                EndorsementNumber = endorsementNumber ?? dto.EndorsementNumber,
+                // Endorsement fields (all policies are endorsements now)
+                InnerCode = dto.InnerCode,
+                StateType = dto.StateType,
                 OriginalPolicyId = originalPolicy?.Id,
                 BranchCode = dto.BranchCode,
+
+                // Legacy fields for backward compatibility
+                IsEndorsement = dto.InnerCode != "000",
+                EndorsementNumber = dto.InnerCode,
 
                 // Driver fields
                 DriverAge = dto.DriverAge,

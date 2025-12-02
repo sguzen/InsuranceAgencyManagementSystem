@@ -2,11 +2,12 @@
 @layout Layout.MainLayout
 
 @using IAMS.Application.DTOs.Policy
+@using IAMS.Application.DTOs.InsuranceCompany
+@using IAMS.Application.Services.InsuranceCompanies
 @using IAMS.Application.Models
-@using System.Text.Json
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-@inject HttpClient Http
+@inject IInsuranceCompanyService InsuranceCompanyService
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
@@ -128,35 +129,25 @@
     {
         try
         {
-            var response = await Http.GetAsync("/api/insurancecompanies");
-            if (response.IsSuccessStatusCode)
+            var result = await InsuranceCompanyService.GetActiveInsuranceCompaniesAsync();
+            if (result.IsSuccess && result.Data != null)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<Result<List<InsuranceCompanyDto>>>(json, new JsonSerializerOptions
+                insuranceCompanies = result.Data;
+                if (insuranceCompanies.Any())
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (result != null && result.IsSuccess && result.Data != null)
-                {
-                    insuranceCompanies = result.Data;
-                    if (insuranceCompanies.Any())
-                    {
-                        selectedInsuranceCompanyId = insuranceCompanies.First().Id;
-                    }
+                    selectedInsuranceCompanyId = insuranceCompanies.First().Id;
                 }
+            }
+            else
+            {
+                insuranceCompanies = new List<InsuranceCompanyDto>();
+                Snackbar.Add("Sigorta şirketleri yüklenemedi", MudBlazor.Severity.Warning);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Sigorta şirketleri yüklenemedi: {ex.Message}", MudBlazor.Severity.Error);
+            insuranceCompanies = new List<InsuranceCompanyDto>();
+            Snackbar.Add($"Sigorta şirketleri yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
         }
-    }
-
-    public class InsuranceCompanyDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
     }
 }

@@ -121,7 +121,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         {
             // Lookup or create related entities
             var customer = await GetOrCreateCustomerAsync(dto);
-            var insuranceCompany = await GetInsuranceCompanyAsync(insuranceCompanyId);
+            // Insurance company ID is passed directly, no need to fetch the entity
+            // var insuranceCompany = await GetInsuranceCompanyAsync(insuranceCompanyId);
             var policyType = await GetPolicyTypeAsync(dto);
             var marketer = await GetOrCreateMarketerAsync(dto, userId);
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
@@ -150,7 +151,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             {
                 PolicyNumber = dto.PolicyNumber ?? GeneratePolicyNumber(),
                 CustomerId = customer.Id,
-                InsuranceCompanyId = insuranceCompany.Id,
+                InsuranceCompanyId = insuranceCompanyId,
                 PolicyTypeId = policyType.Id,
                 VehicleId = vehicle?.Id,
                 StartDate = dto.StartDate ?? DateTime.Today,

@@ -251,10 +251,15 @@ namespace IAMS.Api.Controllers
         /// </summary>
         [HttpPost("import")]
         [AllowAnonymous]
-        public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file)
+        public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file, [FromForm] int insuranceCompanyId)
         {
+            if (insuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
-            var command = new ImportPoliciesCommand(file, userId);
+            var command = new ImportPoliciesCommand(file, userId, insuranceCompanyId);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)

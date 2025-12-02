@@ -9,11 +9,13 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
     {
         public IFormFile File { get; set; }
         public string UserId { get; set; }
+        public int InsuranceCompanyId { get; set; }
 
-        public ImportPoliciesCommand(IFormFile file, string userId)
+        public ImportPoliciesCommand(IFormFile file, string userId, int insuranceCompanyId)
         {
             File = file;
             UserId = userId;
+            InsuranceCompanyId = insuranceCompanyId;
         }
     }
 }

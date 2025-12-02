@@ -17,10 +17,11 @@ public class FileUploadController : ControllerBase
     }
 
     [HttpPost("policies/import")]
-    public async Task<IActionResult> ImportPolicies(IFormFile file)
+    public async Task<IActionResult> ImportPolicies(IFormFile file, [FromForm] int insuranceCompanyId)
     {
         _logger.LogInformation("FileUploadController.ImportPolicies called");
         _logger.LogInformation("HttpClient BaseAddress: {BaseAddress}", _httpClient.BaseAddress);
+        _logger.LogInformation("Insurance Company ID: {InsuranceCompanyId}", insuranceCompanyId);
 
         try
         {
@@ -28,6 +29,12 @@ public class FileUploadController : ControllerBase
             {
                 _logger.LogWarning("No file uploaded");
                 return BadRequest("No file uploaded");
+            }
+
+            if (insuranceCompanyId <= 0)
+            {
+                _logger.LogWarning("Invalid insurance company ID: {InsuranceCompanyId}", insuranceCompanyId);
+                return BadRequest("Please select an insurance company");
             }
 
             _logger.LogInformation("Received file: {FileName}, Size: {Size} bytes", file.FileName, file.Length);
@@ -44,6 +51,9 @@ public class FileUploadController : ControllerBase
                 FileName = $"\"{file.FileName}\""
             };
             content.Add(fileContent);
+
+            // Add insurance company ID
+            content.Add(new StringContent(insuranceCompanyId.ToString()), "insuranceCompanyId");
 
             _logger.LogInformation("Forwarding to API: {Url}", $"{_httpClient.BaseAddress}api/policies/import");
 

@@ -42,9 +42,6 @@ namespace IAMS.Persistence.UnitOfWork
         private ICurrencyRepository? _currencies;
         private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
-        // Marketer Management
-        private IMarketerRepository? _marketers;
-
         // Permission Management
         private IPermissionRepository? _permissions;
 
@@ -115,9 +112,6 @@ namespace IAMS.Persistence.UnitOfWork
 
         public ICurrencyExchangeRateRepository CurrencyExchangeRates
             => _currencyExchangeRates ??= new CurrencyExchangeRateRepository(_context);
-
-        public IMarketerRepository Marketers =>
-            _marketers ??= new MarketerRepository(_context);
 
         public IPermissionRepository Permissions =>
             _permissions ??= new PermissionRepository(_context);

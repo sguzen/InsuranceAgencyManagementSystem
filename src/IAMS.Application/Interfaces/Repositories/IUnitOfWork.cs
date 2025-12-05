@@ -30,9 +30,6 @@ namespace IAMS.Application.Interfaces.Repositories
         ICurrencyRepository Currencies { get; }
         ICurrencyExchangeRateRepository CurrencyExchangeRates { get; }
 
-        // Marketer Management
-        IMarketerRepository Marketers { get; }
-
         // Permission Management
         IPermissionRepository Permissions { get; }
 

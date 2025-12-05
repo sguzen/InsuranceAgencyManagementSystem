@@ -30,6 +30,10 @@ namespace IAMS.Application.Interfaces.Repositories
         ICurrencyRepository Currencies { get; }
         ICurrencyExchangeRateRepository CurrencyExchangeRates { get; }
 
+        // Import Management
+        IImportConfigurationRepository ImportConfigurations { get; }
+        IImportHistoryRepository ImportHistories { get; }
+
         // Permission Management
         IPermissionRepository Permissions { get; }
 

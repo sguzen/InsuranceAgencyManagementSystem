@@ -49,6 +49,10 @@ namespace IAMS.Persistence.Contexts
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
 
+        // Import Management
+        public DbSet<ImportConfiguration> ImportConfigurations { get; set; }
+        public DbSet<ImportHistory> ImportHistories { get; set; }
+
         // Identity entities (inherited from IdentityDbContext)
         // Users, Roles, UserRoles, etc. are already included
 

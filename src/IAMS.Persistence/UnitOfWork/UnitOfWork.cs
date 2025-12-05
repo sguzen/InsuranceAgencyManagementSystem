@@ -42,6 +42,10 @@ namespace IAMS.Persistence.UnitOfWork
         private ICurrencyRepository? _currencies;
         private ICurrencyExchangeRateRepository? _currencyExchangeRates;
 
+        // Import Management
+        private IImportConfigurationRepository? _importConfigurations;
+        private IImportHistoryRepository? _importHistories;
+
         // Permission Management
         private IPermissionRepository? _permissions;
 
@@ -112,6 +116,12 @@ namespace IAMS.Persistence.UnitOfWork
 
         public ICurrencyExchangeRateRepository CurrencyExchangeRates
             => _currencyExchangeRates ??= new CurrencyExchangeRateRepository(_context);
+
+        public IImportConfigurationRepository ImportConfigurations =>
+            _importConfigurations ??= new ImportConfigurationRepository(_context);
+
+        public IImportHistoryRepository ImportHistories =>
+            _importHistories ??= new ImportHistoryRepository(_context);
 
         public IPermissionRepository Permissions =>
             _permissions ??= new PermissionRepository(_context);

@@ -75,17 +75,38 @@ namespace IAMS.Persistence.Configurations
 
             builder.HasIndex(p => p.OriginalPolicyId);
 
-            // Endorsement fields
+            // Endorsement/StateType fields (all policies are treated as endorsements now)
+            builder.Property(p => p.InnerCode)
+                .IsRequired()
+                .HasMaxLength(3)
+                .HasDefaultValue("000");
+
+            builder.Property(p => p.StateType)
+                .IsRequired()
+                .HasConversion<int>();
+
+            builder.HasIndex(p => p.InnerCode);
+            builder.HasIndex(p => new { p.PolicyNumber, p.InnerCode });
+
+            // Legacy endorsement fields (obsolete but kept for backward compatibility)
             builder.Property(p => p.EndorsementNumber)
                 .HasMaxLength(10);
 
             builder.Property(p => p.BranchCode)
                 .HasMaxLength(50);
 
+            // Driver fields
             builder.Property(p => p.DriverType)
                 .HasConversion<int?>();
 
-            // Additional indexes for new fields
+            // Marketer stored as string
+            builder.Property(p => p.Marketer)
+                .HasMaxLength(200);
+
+            // Ignore obsolete Marketer entity properties
+            builder.Ignore(p => p.MarketerEntity);
+
+            // Additional indexes for legacy fields
             builder.HasIndex(p => p.IsEndorsement);
             builder.HasIndex(p => p.BranchCode);
 

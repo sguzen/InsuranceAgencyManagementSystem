@@ -85,14 +85,6 @@ namespace IAMS.Persistence.Configurations
             builder.Property(p => p.DriverType)
                 .HasConversion<int?>();
 
-            // Marketer relationship
-            builder.HasOne(p => p.Marketer)
-                .WithMany(m => m.Policies)
-                .HasForeignKey(p => p.MarketerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasIndex(p => p.MarketerId);
-
             // Additional indexes for new fields
             builder.HasIndex(p => p.IsEndorsement);
             builder.HasIndex(p => p.BranchCode);

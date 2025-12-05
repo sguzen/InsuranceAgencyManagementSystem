@@ -330,38 +330,6 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             return policyType;
         }
 
-        private async Task<Marketer?> GetOrCreateMarketerAsync(ImportPolicyDto dto, string userId)
-        {
-            if (string.IsNullOrEmpty(dto.MarketerCode))
-            {
-                return null;
-            }
-
-            var marketer = await _unitOfWork.Marketers.GetByCodeAsync(dto.MarketerCode);
-            if (marketer == null)
-            {
-                // Auto-create marketer from import data
-                marketer = new Marketer
-                {
-                    Code = dto.MarketerCode,
-                    Name = dto.MarketerName ?? dto.MarketerCode,
-                    IsActive = true,
-                    CreatedBy = userId,
-                    CreatedOn = DateTime.UtcNow,
-                    ModifiedBy = userId,
-                    ModifiedOn = DateTime.UtcNow
-                };
-
-                await _unitOfWork.Marketers.AddAsync(marketer);
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation("Auto-created marketer: {Code} - {Name}",
-                    marketer.Code, marketer.Name);
-            }
-
-            return marketer;
-        }
-
         private async Task<Currency> GetCurrencyAsync(string currencyCode)
         {
             var currency = await _unitOfWork.Currencies.GetByCodeAsync(currencyCode);

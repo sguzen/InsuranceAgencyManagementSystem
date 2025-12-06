@@ -5,6 +5,7 @@
 @using IAMS.Application.DTOs.InsuranceCompany
 @using IAMS.Application.Services.InsuranceCompanies
 @using IAMS.Application.Models
+@using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IInsuranceCompanyService InsuranceCompanyService
@@ -123,6 +124,26 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadInsuranceCompaniesAsync();
+        CheckImportStatus();
+    }
+
+    private void CheckImportStatus()
+    {
+        var uri = new Uri(Navigation.Uri);
+        var queryParams = QueryHelpers.ParseQuery(uri.Query);
+
+        if (queryParams.TryGetValue("success", out var successValue) && successValue == "1")
+        {
+            Snackbar.Add("Poliçeler başarıyla içe aktarıldı!", MudBlazor.Severity.Success);
+            // Clean up the URL by navigating to the same page without query parameters
+            Navigation.NavigateTo("/policies/import", replace: true);
+        }
+        else if (queryParams.TryGetValue("error", out var errorValue) && errorValue == "1")
+        {
+            Snackbar.Add("Poliçe içe aktarma işlemi sırasında bir hata oluştu. Lütfen dosyanızı kontrol edip tekrar deneyin.", MudBlazor.Severity.Error);
+            // Clean up the URL by navigating to the same page without query parameters
+            Navigation.NavigateTo("/policies/import", replace: true);
+        }
     }
 
     private async Task LoadInsuranceCompaniesAsync()

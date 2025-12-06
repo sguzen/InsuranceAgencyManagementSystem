@@ -15,11 +15,31 @@ namespace IAMS.Api.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ICountryDataService _countryDataService;
+        private readonly ILogger<ParametricController> _logger;
 
-        public ParametricController(IMediator mediator, ICountryDataService countryDataService)
+        public ParametricController(
+            IMediator mediator,
+            ICountryDataService countryDataService,
+            ILogger<ParametricController> logger)
         {
             _mediator = mediator;
             _countryDataService = countryDataService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Health check endpoint to verify controller and service registration
+        /// </summary>
+        [HttpGet("health")]
+        public IActionResult Health()
+        {
+            _logger.LogInformation("Parametric controller health check called");
+            return Ok(new {
+                status = "OK",
+                controller = "ParametricController",
+                countryServiceRegistered = _countryDataService != null,
+                timestamp = DateTime.UtcNow
+            });
         }
 
         /// <summary>

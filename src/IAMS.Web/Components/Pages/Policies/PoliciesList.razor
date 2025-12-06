@@ -283,7 +283,7 @@
                     <TemplateColumn Title="Prim Tutarı">
                         <CellTemplate>
                             <div style="text-align: right;">
-                                @context.Item.PremiumAmount.ToString("C")
+                                @FormatCurrency(context.Item.PremiumAmount, context.Item.Currency)
                             </div>
                         </CellTemplate>
                     </TemplateColumn>
@@ -425,7 +425,7 @@
                                                     }
                                                 </div>
                                             </MudTd>
-                                            <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@endorsement.PremiumAmount.ToString("C")</MudTd>
+                                            <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@FormatCurrency(endorsement.PremiumAmount, endorsement.Currency)</MudTd>
                                             <MudTd DataLabel="Durum">
                                                 <MudChip T="string" Color="@GetStatusColor(endorsement.Status)" Size="Size.Small">
                                                     @GetStatusText(endorsement.Status)
@@ -868,6 +868,26 @@
         else
         {
             expandedPolicies.Add(policyId);
+        }
+    }
+
+    private string FormatCurrency(decimal amount, string currencyCode)
+    {
+        try
+        {
+            var culture = currencyCode switch
+            {
+                "TRY" => new System.Globalization.CultureInfo("tr-TR"),
+                "USD" => new System.Globalization.CultureInfo("en-US"),
+                "EUR" => new System.Globalization.CultureInfo("de-DE"),
+                "GBP" => new System.Globalization.CultureInfo("en-GB"),
+                _ => System.Globalization.CultureInfo.CurrentCulture
+            };
+            return amount.ToString("C", culture);
+        }
+        catch
+        {
+            return $"{amount:N2} {currencyCode}";
         }
     }
 }

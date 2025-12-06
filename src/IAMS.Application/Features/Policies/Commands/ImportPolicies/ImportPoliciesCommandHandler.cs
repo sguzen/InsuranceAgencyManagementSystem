@@ -249,6 +249,34 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             // Generate customer code using the proper service
             var customerCode = await _customerCodeGenerator.GenerateAsync();
 
+            // Determine identification type and nationality based on country code
+            IdentificationType identificationType = IdentificationType.Passport; // Default to passport
+            int? nationalityCountryId = null;
+
+            if (!string.IsNullOrEmpty(dto.CustomerCountryCode))
+            {
+                // Look up country by code
+                var country = await _unitOfWork.Countries.GetByCodeAsync(dto.CustomerCountryCode);
+                if (country != null)
+                {
+                    nationalityCountryId = country.Id;
+
+                    // If country code is 601 (KKTC) or name contains KKTC, use IdCard
+                    // Otherwise use Passport for foreign nationals
+                    if (dto.CustomerCountryCode == "601" ||
+                        country.NameTr.ToUpperInvariant().Contains("KKTC") ||
+                        country.NameEn.ToUpperInvariant().Contains("KKTC"))
+                    {
+                        identificationType = IdentificationType.IdCard;
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Country not found for code: {CountryCode}. Using default identification type (Passport).",
+                        dto.CustomerCountryCode);
+                }
+            }
+
             var newCustomer = new Customer
             {
                 CustomerCode = customerCode,
@@ -259,7 +287,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 Email = $"noemail_{dto.CustomerIdentifier}@temp.com", // Temporary email to pass validation
                 Phone = "0000000000", // Temporary phone to pass validation
                 Status = CustomerStatus.Active,
-                IdentificationType = IdentificationType.IdCard,
+                IdentificationType = identificationType,
+                NationalityCountryId = nationalityCountryId,
                 Gender = Gender.Male, // Default
                 CreatedBy = "System"
             };
@@ -267,7 +296,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             await _unitOfWork.Customers.AddAsync(newCustomer);
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Created new customer with ID: {CustomerId}", newCustomer.Id);
+            _logger.LogInformation("Created new customer with ID: {CustomerId}, IdentificationType: {IdentificationType}, NationalityCountryId: {NationalityCountryId}",
+                newCustomer.Id, identificationType, nationalityCountryId);
 
             return newCustomer;
         }

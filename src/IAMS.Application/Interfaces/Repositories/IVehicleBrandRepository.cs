@@ -6,5 +6,6 @@ namespace IAMS.Application.Interfaces.Repositories
     {
         Task<IEnumerable<VehicleBrand>> GetActiveBrandsAsync();
         Task<bool> BrandNameExistsAsync(string name, int? excludeBrandId = null);
+        Task<VehicleBrand?> GetByNameAsync(string name);
     }
 }

@@ -32,6 +32,7 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IVehicleDataService, VehicleDataService>();
+            services.AddScoped<ICountryDataService, CountryDataService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped<IExternalPolicyImportService, ExternalPolicyImportService>();
 

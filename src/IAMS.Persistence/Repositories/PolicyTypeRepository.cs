@@ -23,7 +23,7 @@ namespace IAMS.Persistence.Repositories
         {
             return await _dbSet
                 .Where(pt => !pt.IsDeleted)
-                .FirstOrDefaultAsync(pt => pt.Name == name);
+                .FirstOrDefaultAsync(pt => pt.Name.ToLower().Contains(name.ToLower()));
         }
 
         public async Task<PolicyType?> GetByCodeAsync(string code)

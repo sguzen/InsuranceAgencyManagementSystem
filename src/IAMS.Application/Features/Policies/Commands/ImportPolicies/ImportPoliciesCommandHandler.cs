@@ -285,10 +285,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         {
             PolicyType? policyType = null;
 
-            if (!string.IsNullOrEmpty(dto.PolicyTypeCode))
-            {
-                policyType = await _unitOfWork.PolicyTypes.GetByCodeAsync(dto.PolicyTypeCode);
-            }
+            // TODO work on this later, for now commenting it out because the codes don't match our db codes
+            //if (!string.IsNullOrEmpty(dto.PolicyTypeCode))
+            //{
+            //    policyType = await _unitOfWork.PolicyTypes.GetByCodeAsync(dto.PolicyTypeCode);
+            //}
 
             if (policyType == null && !string.IsNullOrEmpty(dto.PolicyTypeName))
             {

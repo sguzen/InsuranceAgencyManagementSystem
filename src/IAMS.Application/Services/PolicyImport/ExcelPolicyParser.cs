@@ -145,7 +145,7 @@ namespace IAMS.Application.Services.PolicyImport
 
             // Parse each column
             policy.PolicyTypeCode = GetCellValue(row, columnMap, "Kod", "kod");
-            policy.PolicyTypeName = GetCellValue(row, columnMap, "Brans", "brans");
+            policy.PolicyTypeName = GetCellValue(row, columnMap, "Brans", "brans", "Branş Adı");
 
             // Customer identifier (Kimlik No - format: 601-KN-207044)
             var kimlikNo = GetCellValue(row, columnMap, "Kimlik No", "KimlikNo", "kimlikno", "Adr", "adr");

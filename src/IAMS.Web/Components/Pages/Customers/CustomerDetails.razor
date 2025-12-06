@@ -356,26 +356,26 @@ else
                                                         <MudTh>Durum</MudTh>
                                                         <MudTh>İşlemler</MudTh>
                                                     </HeaderContent>
-                                                    <RowTemplate>
+                                                    <RowTemplate Context="endorsement">
                                                         <MudTd DataLabel="Z.No">
                                                             <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
-                                                                <MudText Typo="Typo.body2">@context.InnerCode</MudText>
+                                                                <MudText Typo="Typo.body2">@endorsement.InnerCode</MudText>
                                                                 <MudChip Size="Size.Small" Color="Color.Info" T="string">Zeyil</MudChip>
                                                             </MudStack>
                                                         </MudTd>
-                                                        <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
-                                                        <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
-                                                        <MudTd DataLabel="Prim">@context.PremiumAmount.ToString("C2")</MudTd>
+                                                        <MudTd DataLabel="Başlangıç">@endorsement.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                                        <MudTd DataLabel="Bitiş">@endorsement.EndDate.ToString("dd.MM.yyyy")</MudTd>
+                                                        <MudTd DataLabel="Prim">@endorsement.PremiumAmount.ToString("C2")</MudTd>
                                                         <MudTd DataLabel="Durum">
-                                                            <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(context.Status)" T="PolicyStatus">
-                                                                @GetPolicyStatusText(context.Status)
+                                                            <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(endorsement.Status)" T="PolicyStatus">
+                                                                @GetPolicyStatusText(endorsement.Status)
                                                             </MudChip>
                                                         </MudTd>
                                                         <MudTd DataLabel="İşlemler">
                                                             <MudIconButton Icon="@Icons.Material.Filled.Visibility"
                                                                            Size="Size.Small"
                                                                            Color="Color.Primary"
-                                                                           OnClick="@(() => ViewPolicy(context.Id))" />
+                                                                           OnClick="@(() => ViewPolicy(endorsement.Id))" />
                                                         </MudTd>
                                                     </RowTemplate>
                                                 </MudTable>

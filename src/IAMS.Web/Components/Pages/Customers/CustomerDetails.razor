@@ -285,7 +285,9 @@ else
                     {
                         <MudTable Items="@policies" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
                             <HeaderContent>
+                                <MudTh Style="width: 50px;"></MudTh>
                                 <MudTh>Poliçe No</MudTh>
+                                <MudTh>Z.No</MudTh>
                                 <MudTh>Poliçe Türü</MudTh>
                                 <MudTh>Sigorta Şirketi</MudTh>
                                 <MudTh>Başlangıç</MudTh>
@@ -295,24 +297,93 @@ else
                                 <MudTh>İşlemler</MudTh>
                             </HeaderContent>
                             <RowTemplate>
+                                <MudTd DataLabel="">
+                                    @if (HasEndorsements(context.Id))
+                                    {
+                                        <MudIconButton Icon="@(IsExpanded(context.Id) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => ToggleExpand(context.Id))"
+                                                       Title="@(IsExpanded(context.Id) ? "Zeyilleri Gizle" : "Zeyilleri Göster")" />
+                                    }
+                                </MudTd>
                                 <MudTd DataLabel="Poliçe No">@context.PolicyNumber</MudTd>
+                                <MudTd DataLabel="Z.No">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudText Typo="Typo.body2">@context.InnerCode</MudText>
+                                        @if (HasEndorsements(context.Id))
+                                        {
+                                            <MudChip Size="Size.Small" Color="Color.Info" T="int">@GetEndorsementCount(context.Id) Zeyil</MudChip>
+                                        }
+                                    </MudStack>
+                                </MudTd>
                                 <MudTd DataLabel="Poliçe Türü">@context.PolicyType.Name</MudTd>
                                 <MudTd DataLabel="Sigorta Şirketi">@context.InsuranceCompany.Name</MudTd>
                                 <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Prim">@context.PremiumAmount.ToString("C2")</MudTd>
                                 <MudTd DataLabel="Durum">
-                                     <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(@context.Status)" T="PolicyStatus"> 
+                                     <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(@context.Status)" T="PolicyStatus">
                                         @GetPolicyStatusText(context.Status)
-                                    </MudChip> 
+                                    </MudChip>
                                 </MudTd>
                                 <MudTd DataLabel="İşlemler">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
-                                                   Size="Size.Small" 
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Size="Size.Small"
                                                    Color="Color.Primary"
                                                    OnClick="@(() => ViewPolicy(context.Id))" />
                                 </MudTd>
                             </RowTemplate>
+                            <ChildRowContent>
+                                @if (IsExpanded(context.Id) && HasEndorsements(context.Id))
+                                {
+                                    <td colspan="10" style="padding: 0;">
+                                        <MudCard Elevation="0" Class="ma-2">
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.subtitle2">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Class="mr-2" />
+                                                        Zeyilnameler (@GetEndorsementCount(context.Id))
+                                                    </MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudTable Items="@GetEndorsements(context.Id)" Hover="true" Dense="true" Elevation="0">
+                                                    <HeaderContent>
+                                                        <MudTh>Z.No</MudTh>
+                                                        <MudTh>Başlangıç</MudTh>
+                                                        <MudTh>Bitiş</MudTh>
+                                                        <MudTh>Prim</MudTh>
+                                                        <MudTh>Durum</MudTh>
+                                                        <MudTh>İşlemler</MudTh>
+                                                    </HeaderContent>
+                                                    <RowTemplate>
+                                                        <MudTd DataLabel="Z.No">
+                                                            <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                                                <MudText Typo="Typo.body2">@context.InnerCode</MudText>
+                                                                <MudChip Size="Size.Small" Color="Color.Info" T="string">Zeyil</MudChip>
+                                                            </MudStack>
+                                                        </MudTd>
+                                                        <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                                        <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
+                                                        <MudTd DataLabel="Prim">@context.PremiumAmount.ToString("C2")</MudTd>
+                                                        <MudTd DataLabel="Durum">
+                                                            <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(context.Status)" T="PolicyStatus">
+                                                                @GetPolicyStatusText(context.Status)
+                                                            </MudChip>
+                                                        </MudTd>
+                                                        <MudTd DataLabel="İşlemler">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                                           Size="Size.Small"
+                                                                           Color="Color.Primary"
+                                                                           OnClick="@(() => ViewPolicy(context.Id))" />
+                                                        </MudTd>
+                                                    </RowTemplate>
+                                                </MudTable>
+                                            </MudCardContent>
+                                        </MudCard>
+                                    </td>
+                                }
+                            </ChildRowContent>
                         </MudTable>
                     }
                 </MudTabPanel>
@@ -326,6 +397,10 @@ else
 
     private CustomerDto? customer;
     private List<PolicyDto> policies = new();
+    private List<PolicyDto> allPolicies = new(); // Stores all policies including endorsements
+    private List<PolicyDto> mainPolicies = new(); // Stores only main policies for display
+    private Dictionary<int, List<PolicyDto>> endorsementsByPolicy = new(); // Endorsements grouped by main policy ID
+    private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private bool loadingPolicies = false;
 
     protected override async Task OnInitializedAsync()
@@ -356,16 +431,47 @@ else
             var result = await PolicyService.GetPoliciesByCustomerAsync(CustomerId);
             if (result.IsSuccess && result.Data != null)
             {
-                policies = result.Data;
+                allPolicies = result.Data;
+
+                // Separate main policies from endorsements
+                mainPolicies = allPolicies.Where(p => p.InnerCode == "000").ToList();
+
+                // Group endorsements by their main policy ID
+                endorsementsByPolicy.Clear();
+                var endorsements = allPolicies.Where(p => p.InnerCode != "000" && p.OriginalPolicyId.HasValue).ToList();
+                foreach (var endorsement in endorsements)
+                {
+                    if (!endorsementsByPolicy.ContainsKey(endorsement.OriginalPolicyId.Value))
+                    {
+                        endorsementsByPolicy[endorsement.OriginalPolicyId.Value] = new List<PolicyDto>();
+                    }
+                    endorsementsByPolicy[endorsement.OriginalPolicyId.Value].Add(endorsement);
+                }
+
+                // Sort endorsements by InnerCode
+                foreach (var key in endorsementsByPolicy.Keys.ToList())
+                {
+                    endorsementsByPolicy[key] = endorsementsByPolicy[key].OrderBy(e => e.InnerCode).ToList();
+                }
+
+                // Set policies to mainPolicies for display
+                policies = mainPolicies;
             }
             else
             {
+                allPolicies = new List<PolicyDto>();
+                mainPolicies = new List<PolicyDto>();
                 policies = new List<PolicyDto>();
+                endorsementsByPolicy.Clear();
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
+            allPolicies = new List<PolicyDto>();
+            mainPolicies = new List<PolicyDto>();
+            policies = new List<PolicyDto>();
+            endorsementsByPolicy.Clear();
         }
         finally
         {
@@ -454,4 +560,37 @@ else
         PolicyStatus.Suspended => Color.Warning,
         _ => Color.Default
     };
+
+    // Endorsement accordion methods
+    private bool HasEndorsements(int policyId)
+    {
+        return endorsementsByPolicy.ContainsKey(policyId) && endorsementsByPolicy[policyId].Any();
+    }
+
+    private int GetEndorsementCount(int policyId)
+    {
+        return HasEndorsements(policyId) ? endorsementsByPolicy[policyId].Count : 0;
+    }
+
+    private List<PolicyDto> GetEndorsements(int policyId)
+    {
+        return HasEndorsements(policyId) ? endorsementsByPolicy[policyId] : new List<PolicyDto>();
+    }
+
+    private bool IsExpanded(int policyId)
+    {
+        return expandedPolicies.Contains(policyId);
+    }
+
+    private void ToggleExpand(int policyId)
+    {
+        if (expandedPolicies.Contains(policyId))
+        {
+            expandedPolicies.Remove(policyId);
+        }
+        else
+        {
+            expandedPolicies.Add(policyId);
+        }
+    }
 }

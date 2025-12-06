@@ -13,7 +13,7 @@ namespace IAMS.Persistence.Data
             var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             // Seed Countries
-            SeedCountries(modelBuilder, seedDate);
+            //SeedCountries(modelBuilder, seedDate);
 
             // Seed Occupations
             SeedOccupations(modelBuilder, seedDate);

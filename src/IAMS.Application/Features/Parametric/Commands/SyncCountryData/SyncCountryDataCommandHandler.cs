@@ -54,7 +54,7 @@ namespace IAMS.Application.Features.Parametric.Commands.SyncCountryData
 
                 // Process each country from external data
                 var displayOrder = 0;
-                foreach (var countryData in externalData.OrderBy(c => c.DisplayOrder ?? c.Id))
+                foreach (var countryData in externalData.OrderBy(c => c.Code))
                 {
                     try
                     {
@@ -78,9 +78,7 @@ namespace IAMS.Application.Features.Parametric.Commands.SyncCountryData
                             {
                                 Code = code,
                                 NameTr = nameTr,
-                                NameEn = countryData.NameEn?.Trim() ?? nameTr,
-                                PhoneCode = countryData.PhoneCode?.Trim(),
-                                IsActive = countryData.IsActive ?? true,
+                                NameEn = nameTr,
                                 DisplayOrder = displayOrder++
                             };
 
@@ -105,24 +103,10 @@ namespace IAMS.Application.Features.Parametric.Commands.SyncCountryData
                                 countryUpdated = true;
                             }
 
-                            var nameEn = countryData.NameEn?.Trim() ?? nameTr;
+                            var nameEn = nameTr;
                             if (existingCountry.NameEn != nameEn)
                             {
                                 existingCountry.NameEn = nameEn;
-                                countryUpdated = true;
-                            }
-
-                            var phoneCode = countryData.PhoneCode?.Trim();
-                            if (existingCountry.PhoneCode != phoneCode)
-                            {
-                                existingCountry.PhoneCode = phoneCode;
-                                countryUpdated = true;
-                            }
-
-                            var isActive = countryData.IsActive ?? true;
-                            if (existingCountry.IsActive != isActive)
-                            {
-                                existingCountry.IsActive = isActive;
                                 countryUpdated = true;
                             }
 

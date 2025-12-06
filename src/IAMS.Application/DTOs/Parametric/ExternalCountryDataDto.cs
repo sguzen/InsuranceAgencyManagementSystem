@@ -8,26 +8,13 @@ namespace IAMS.Application.DTOs.Parametric
     /// </summary>
     public class ExternalCountryDataDto
     {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
 
         [JsonPropertyName("kod")]
         public string Code { get; set; } = string.Empty;
 
-        [JsonPropertyName("ad")]
+        [JsonPropertyName("adi")]
         public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("adEn")]
-        public string? NameEn { get; set; }
-
-        [JsonPropertyName("telefonKodu")]
-        public string? PhoneCode { get; set; }
-
-        [JsonPropertyName("aktif")]
-        public bool? IsActive { get; set; }
-
-        [JsonPropertyName("sira")]
-        public int? DisplayOrder { get; set; }
+       
     }
 
     /// <summary>

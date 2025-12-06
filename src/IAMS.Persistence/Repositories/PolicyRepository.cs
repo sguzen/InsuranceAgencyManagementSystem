@@ -33,12 +33,36 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<Policy?> GetByPolicyNumberAsync(string policyNumber)
         {
+            // Gets the main policy (InnerCode = "000") for a given policy number
             return await _dbSet
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
                 .Include(p => p.Currency)
-                .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber && !p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber && p.InnerCode == "000" && !p.IsDeleted);
+        }
+
+        public async Task<Policy?> GetByPolicyNumberAndInnerCodeAsync(string policyNumber, string innerCode)
+        {
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
+                .FirstOrDefaultAsync(p => p.PolicyNumber == policyNumber && p.InnerCode == innerCode && !p.IsDeleted);
+        }
+
+        public async Task<List<Policy>> GetAllByPolicyNumberAsync(string policyNumber)
+        {
+            // Gets all policies (main + endorsements) for a given policy number
+            return await _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
+                .Where(p => p.PolicyNumber == policyNumber && !p.IsDeleted)
+                .OrderBy(p => p.InnerCode)
+                .ToListAsync();
         }
 
         public async Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId)
@@ -54,7 +78,20 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<bool> PolicyNumberExistsAsync(string policyNumber, int? excludePolicyId = null)
         {
-            var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber);
+            // Checks if a main policy (InnerCode = "000") exists with this policy number
+            var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber && p.InnerCode == "000");
+
+            if (excludePolicyId.HasValue)
+            {
+                query = query.Where(p => p.Id != excludePolicyId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
+
+        public async Task<bool> PolicyNumberAndInnerCodeExistsAsync(string policyNumber, string innerCode, int? excludePolicyId = null)
+        {
+            var query = _dbSet.Where(p => !p.IsDeleted && p.PolicyNumber == policyNumber && p.InnerCode == innerCode);
 
             if (excludePolicyId.HasValue)
             {

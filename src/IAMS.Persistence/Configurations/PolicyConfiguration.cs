@@ -26,7 +26,9 @@ namespace IAMS.Persistence.Configurations
             builder.Property(p => p.Notes)
                 .HasMaxLength(1000);
 
-            builder.HasIndex(p => p.PolicyNumber)
+            // Composite unique index on PolicyNumber and InnerCode
+            // This allows endorsements to share the same PolicyNumber but have different InnerCodes
+            builder.HasIndex(p => new { p.PolicyNumber, p.InnerCode })
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 
@@ -86,7 +88,6 @@ namespace IAMS.Persistence.Configurations
                 .HasConversion<int>();
 
             builder.HasIndex(p => p.InnerCode);
-            builder.HasIndex(p => new { p.PolicyNumber, p.InnerCode });
 
             builder.Property(p => p.BranchCode)
                 .HasMaxLength(50);

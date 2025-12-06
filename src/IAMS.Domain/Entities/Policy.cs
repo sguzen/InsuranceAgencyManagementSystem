@@ -62,12 +62,6 @@ namespace IAMS.Domain.Entities
         public string InnerCode { get; set; } = "000"; // 3-digit code: 000 for main, 001, 002, etc.
         public StateType StateType { get; set; } = StateType.YeniPolice; // TIP column (P, T, V, R, X, Y)
 
-        [Obsolete("Use InnerCode instead. IsEndorsement can be determined by InnerCode != \"000\"")]
-        public bool IsEndorsement { get; set; } = false;
-
-        [Obsolete("Use InnerCode instead")]
-        public string? EndorsementNumber { get; set; } // Legacy field
-
         public int? OriginalPolicyId { get; set; } // Reference to original policy if InnerCode != "000"
         public virtual Policy? OriginalPolicy { get; set; }
         public string? BranchCode { get; set; } // External code for insurance type (Kod column)
@@ -78,12 +72,6 @@ namespace IAMS.Domain.Entities
 
         // Marketer Information (Pazarlamacı)
         public string? Marketer { get; set; } // Pazarlamacı Adı - stored as string
-
-        [Obsolete("Use Marketer string property instead")]
-        public int? MarketerId { get; set; }
-        [Obsolete("Use Marketer string property instead")]
-        public virtual Marketer? MarketerEntity { get; set; }
-
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;

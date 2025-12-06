@@ -165,10 +165,6 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 OriginalPolicyId = originalPolicy?.Id,
                 BranchCode = dto.BranchCode,
 
-                // Legacy fields for backward compatibility
-                IsEndorsement = dto.InnerCode != "000",
-                EndorsementNumber = dto.InnerCode,
-
                 // Driver fields
                 DriverAge = dto.DriverAge,
                 DriverType = ParseDriverType(dto.DriverTypeText),
@@ -211,28 +207,6 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             return policy;
         }
 
-        private async Task<string> GenerateEndorsementNumberAsync(int originalPolicyId)
-        {
-            // Get all endorsements for this policy
-            var endorsements = await _policyQueryService.GetEndorsementsByOriginalPolicyIdAsync(originalPolicyId);
-
-            // Find the highest endorsement number
-            int maxNumber = -1;
-            foreach (var endorsement in endorsements)
-            {
-                if (!string.IsNullOrEmpty(endorsement.EndorsementNumber))
-                {
-                    if (int.TryParse(endorsement.EndorsementNumber, out int number))
-                    {
-                        maxNumber = Math.Max(maxNumber, number);
-                    }
-                }
-            }
-
-            // Generate next number (000, 001, 002, etc.)
-            int nextNumber = maxNumber + 1;
-            return nextNumber.ToString("000");
-        }
 
         private async Task<Customer> GetOrCreateCustomerAsync(ImportPolicyDto dto)
         {
@@ -316,15 +290,15 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 policyType = await _unitOfWork.PolicyTypes.GetByCodeAsync(dto.PolicyTypeCode);
             }
 
-            if (policyType == null && !string.IsNullOrEmpty(dto.BranchCode))
+            if (policyType == null && !string.IsNullOrEmpty(dto.PolicyTypeName))
             {
-                policyType = await _unitOfWork.PolicyTypes.GetByCodeAsync(dto.BranchCode);
+                policyType = await _unitOfWork.PolicyTypes.GetByNameAsync(dto.PolicyTypeName);
             }
 
             if (policyType == null)
             {
                 throw new InvalidOperationException(
-                    $"Policy type not found: {dto.PolicyTypeCode ?? dto.BranchCode}");
+                    $"Policy type not found: {dto.PolicyTypeCode ?? dto.PolicyTypeName}");
             }
 
             return policyType;

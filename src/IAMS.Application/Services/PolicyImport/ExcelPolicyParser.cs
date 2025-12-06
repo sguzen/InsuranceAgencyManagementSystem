@@ -144,8 +144,8 @@ namespace IAMS.Application.Services.PolicyImport
             };
 
             // Parse each column
-            policy.BranchCode = GetCellValue(row, columnMap, "Kod", "kod");
-            var brans = GetCellValue(row, columnMap, "Brans", "brans");
+            policy.PolicyTypeCode = GetCellValue(row, columnMap, "Kod", "kod");
+            policy.PolicyTypeName = GetCellValue(row, columnMap, "Brans", "brans");
 
             // Customer identifier (Kimlik No - format: 601-KN-207044)
             var kimlikNo = GetCellValue(row, columnMap, "Kimlik No", "KimlikNo", "kimlikno", "Adr", "adr");
@@ -170,7 +170,7 @@ namespace IAMS.Application.Services.PolicyImport
             policy.PolicyNumber = GetCellValue(row, columnMap, "Pol.No", "PolNo", "polno", "policeno");
 
             // Policy type code (Tec)
-            policy.PolicyTypeCode = GetCellValue(row, columnMap, "Tec", "tec");
+           // policy.PolicyTypeCode = GetCellValue(row, columnMap, "Tec", "tec");
 
             // Inner Code / Endorsement number (Z.No) - 000 for main policy, 001+ for endorsements
             var innerCode = GetCellValue(row, columnMap, "Z.No", "ZNo", "zno", "zeyilno", "innercode");
@@ -279,7 +279,7 @@ namespace IAMS.Application.Services.PolicyImport
             }
 
             // Vehicle year (Yıl)
-            var year = GetCellValue(row, columnMap, "Yıl", "Yil", "yil", "model");
+            var year = GetCellValue(row, columnMap, "Yıl", "Yil", "yil", "İ.Yılı");
             if (!string.IsNullOrEmpty(year) && int.TryParse(year, out int vehicleYear))
             {
                 policy.VehicleYear = vehicleYear;

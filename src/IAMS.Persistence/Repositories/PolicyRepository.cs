@@ -527,15 +527,15 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
                 .Include(p => p.Currency)
-                .Where(p => p.OriginalPolicyId == originalPolicyId && p.IsEndorsement && !p.IsDeleted)
-                .OrderBy(p => p.EndorsementNumber)
+                .Where(p => p.OriginalPolicyId == originalPolicyId && p.InnerCode != "000" && !p.IsDeleted)
+                .OrderBy(p => p.InnerCode)
                 .ToListAsync();
         }
 
         public async Task<int> GetEndorsementCountAsync(int originalPolicyId)
         {
             return await _dbSet
-                .Where(p => p.OriginalPolicyId == originalPolicyId && p.IsEndorsement && !p.IsDeleted)
+                .Where(p => p.OriginalPolicyId == originalPolicyId && p.InnerCode != "000" && !p.IsDeleted)
                 .CountAsync();
         }
     }

@@ -88,10 +88,6 @@ namespace IAMS.Persistence.Configurations
             builder.HasIndex(p => p.InnerCode);
             builder.HasIndex(p => new { p.PolicyNumber, p.InnerCode });
 
-            // Legacy endorsement fields (obsolete but kept for backward compatibility)
-            builder.Property(p => p.EndorsementNumber)
-                .HasMaxLength(10);
-
             builder.Property(p => p.BranchCode)
                 .HasMaxLength(50);
 
@@ -103,11 +99,7 @@ namespace IAMS.Persistence.Configurations
             builder.Property(p => p.Marketer)
                 .HasMaxLength(200);
 
-            // Ignore obsolete Marketer entity properties
-            builder.Ignore(p => p.MarketerEntity);
-
             // Additional indexes for legacy fields
-            builder.HasIndex(p => p.IsEndorsement);
             builder.HasIndex(p => p.BranchCode);
 
             // Global query filter for soft delete and tenant isolation

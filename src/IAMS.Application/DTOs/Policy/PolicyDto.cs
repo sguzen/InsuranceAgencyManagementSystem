@@ -19,19 +19,19 @@ namespace IAMS.Application.DTOs.Policy
         public int? ParentPolicyId { get; set; }
 
         // Endorsement Information (Zeyilname)
+        public string InnerCode { get; set; } = "000"; // Z.No - 3-digit code: 000 for main, 001+ for endorsements
+        public StateType StateType { get; set; } // TIP column (P, T, V, R, X, Y)
         public bool IsEndorsement { get; set; }
         public string? EndorsementNumber { get; set; }
         public int? OriginalPolicyId { get; set; }
-        public string? BranchCode { get; set; }
+        public string? BranchCode { get; set; } // Kod column - External code for insurance type
 
         // Driver Information
-        public int? DriverAge { get; set; }
-        public DriverType? DriverType { get; set; }
+        public int? DriverAge { get; set; } // YAS column
+        public DriverType? DriverType { get; set; } // Sürücü - Single or Any
 
         // Marketer Information
-        public int? MarketerId { get; set; }
-        public string? MarketerCode { get; set; }
-        public string? MarketerName { get; set; }
+        public string? Marketer { get; set; } // Pazarlamacı Adı
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

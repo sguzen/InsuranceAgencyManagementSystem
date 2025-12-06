@@ -203,6 +203,24 @@
                 </ToolBarContent>
                 <Columns>
                     <PropertyColumn Property="x => x.PolicyNumber" Title="Poliçe No" />
+                    <TemplateColumn Title="Z.No">
+                        <CellTemplate>
+                            <div style="text-align: center;">
+                                <MudText Typo="Typo.body2">@context.Item.InnerCode</MudText>
+                                @if (context.Item.InnerCode != "000")
+                                {
+                                    <MudChip Size="Size.Small" Color="Color.Info" T="string">Zeyil</MudChip>
+                                }
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="TIP">
+                        <CellTemplate>
+                            <div style="text-align: center;">
+                                <MudText Typo="Typo.caption">@GetStateTypeShortText(context.Item.StateType)</MudText>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
                     <TemplateColumn Title="Müşteri">
                         <CellTemplate>
                             <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
@@ -677,6 +695,20 @@
             PolicyStatus.Expired => "Süresi Dolmuş",
             PolicyStatus.Suspended => "Askıya Alınmış",
             _ => "Bilinmiyor"
+        };
+    }
+
+    private string GetStateTypeShortText(StateType stateType)
+    {
+        return stateType switch
+        {
+            StateType.YeniPolice => "P",
+            StateType.Tecdit => "T",
+            StateType.Ilave => "V",
+            StateType.Iade => "R",
+            StateType.Iptal => "X",
+            StateType.Yeniden => "Y",
+            _ => stateType.ToString()
         };
     }
 }

@@ -2,6 +2,7 @@ using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
+using IAMS.Application.Services;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using MediatR;
@@ -17,6 +18,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         private readonly IExcelFileValidator _fileValidator;
         private readonly IExcelPolicyParser _policyParser;
         private readonly IPolicyQueryService _policyQueryService;
+        private readonly ICustomerCodeGenerator _customerCodeGenerator;
         private readonly ILogger<ImportPoliciesCommandHandler> _logger;
 
         public ImportPoliciesCommandHandler(
@@ -24,12 +26,14 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             IExcelFileValidator fileValidator,
             IExcelPolicyParser policyParser,
             IPolicyQueryService policyQueryService,
+            ICustomerCodeGenerator customerCodeGenerator,
             ILogger<ImportPoliciesCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _fileValidator = fileValidator;
             _policyParser = policyParser;
             _policyQueryService = policyQueryService;
+            _customerCodeGenerator = customerCodeGenerator;
             _logger = logger;
         }
 
@@ -242,8 +246,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             var firstName = nameParts[0];
             var lastName = nameParts.Length > 1 ? nameParts[1] : (customerType == CustomerType.Corporate ? "" : firstName);
 
-            // Generate customer code
-            var customerCode = $"C{DateTime.Now:yyyyMMddHHmmss}";
+            // Generate customer code using the proper service
+            var customerCode = await _customerCodeGenerator.GenerateAsync();
 
             var newCustomer = new Customer
             {

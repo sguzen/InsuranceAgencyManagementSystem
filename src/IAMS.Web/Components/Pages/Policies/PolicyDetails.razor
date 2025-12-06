@@ -119,6 +119,28 @@ else
                                     <MudText><strong>@policy.PolicyNumber</strong></MudText>
                                 </MudStack>
                                 <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>İç Kod (Z.No):</MudText>
+                                    <MudText>
+                                        <strong>@policy.InnerCode</strong>
+                                        @if (policy.InnerCode != "000")
+                                        {
+                                            <MudChip Size="Size.Small" Color="Color.Info" Class="ml-2">Zeyilname</MudChip>
+                                        }
+                                    </MudText>
+                                </MudStack>
+                                <MudStack Row Justify="Justify.SpaceBetween">
+                                    <MudText>Durum Tipi (TIP):</MudText>
+                                    <MudText><strong>@GetStateTypeText(policy.StateType)</strong></MudText>
+                                </MudStack>
+                                @if (!string.IsNullOrEmpty(policy.BranchCode))
+                                {
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Branş Kodu:</MudText>
+                                        <MudText><strong>@policy.BranchCode</strong></MudText>
+                                    </MudStack>
+                                }
+                                <MudDivider />
+                                <MudStack Row Justify="Justify.SpaceBetween">
                                     <MudText>Sigorta Şirketi:</MudText>
                                     <MudText><strong>@policy.InsuranceCompany?.Name</strong></MudText>
                                 </MudStack>
@@ -130,6 +152,13 @@ else
                                     <MudText>Para Birimi:</MudText>
                                     <MudText><strong>@GetCurrencyText(policy.Currency)</strong></MudText>
                                 </MudStack>
+                                @if (!string.IsNullOrEmpty(policy.Marketer))
+                                {
+                                    <MudStack Row Justify="Justify.SpaceBetween">
+                                        <MudText>Pazarlamacı:</MudText>
+                                        <MudText><strong>@policy.Marketer</strong></MudText>
+                                    </MudStack>
+                                }
                                 <MudDivider />
                                 <MudStack Row Justify="Justify.SpaceBetween">
                                     <MudText>Başlangıç Tarihi:</MudText>
@@ -261,6 +290,21 @@ else
                                         <MudStack Row Justify="Justify.SpaceBetween">
                                             <MudText>Güncel Değer:</MudText>
                                             <MudText><strong>@policy.Vehicle.CurrentValue.Value.ToString("N2") @policy.Vehicle.Currency</strong></MudText>
+                                        </MudStack>
+                                    }
+                                    <MudDivider />
+                                    @if (policy.DriverAge.HasValue)
+                                    {
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText>Sürücü Yaşı:</MudText>
+                                            <MudText><strong>@policy.DriverAge yaş</strong></MudText>
+                                        </MudStack>
+                                    }
+                                    @if (policy.DriverType.HasValue)
+                                    {
+                                        <MudStack Row Justify="Justify.SpaceBetween">
+                                            <MudText>Sürücü Tipi:</MudText>
+                                            <MudText><strong>@GetDriverTypeText(policy.DriverType.Value)</strong></MudText>
                                         </MudStack>
                                     }
                                 </MudStack>
@@ -786,6 +830,30 @@ else
             VehicleUsageType.Courier => "Kurye",
             VehicleUsageType.SchoolBus => "Okul Servisi",
             _ => usageType.ToString()
+        };
+    }
+
+    private string GetStateTypeText(StateType stateType)
+    {
+        return stateType switch
+        {
+            StateType.YeniPolice => "Yeni Poliçe",
+            StateType.Tecdit => "Tecdit",
+            StateType.Ilave => "İlave",
+            StateType.Iade => "İade",
+            StateType.Iptal => "İptal",
+            StateType.Yeniden => "Yeniden",
+            _ => stateType.ToString()
+        };
+    }
+
+    private string GetDriverTypeText(DriverType driverType)
+    {
+        return driverType switch
+        {
+            DriverType.Single => "Tek Sürücü",
+            DriverType.Any => "Sınırsız Sürücü",
+            _ => driverType.ToString()
         };
     }
 }

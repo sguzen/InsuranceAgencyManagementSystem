@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Services;
 using IAMS.Infrastructure.Data;
 using IAMS.Infrastructure.Interfaces;
@@ -32,6 +33,7 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IVehicleDataService, VehicleDataService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+            services.AddScoped<IExternalPolicyImportService, ExternalPolicyImportService>();
 
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection(ApplicationConstants.ConfigurationSections.EmailSettings));

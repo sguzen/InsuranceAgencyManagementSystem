@@ -5,10 +5,12 @@
 
 @using IAMS.Application.Interfaces
 @using IAMS.Application.DTOs.Vehicle
+@using IAMS.Application.DTOs.Parametric
 @using IAMS.Application.Models
 @using IAMS.MultiTenancy.Interfaces
 @using Microsoft.Extensions.Configuration
 @inject IVehicleDataService VehicleDataService
+@inject ICountryDataService CountryDataService
 @inject ITenantContextAccessor TenantContext
 @inject IConfiguration Configuration
 @inject ISnackbar Snackbar
@@ -117,18 +119,84 @@
                 </MudCard>
             </MudItem>
 
-            <!-- Placeholder for future integrations -->
+            <!-- Country Data Integration -->
             <MudItem xs="12" md="6">
                 <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Public" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6">Ülke Veri Entegrasyonu</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            @if (countryConnectionStatus == ConnectionStatus.Connected)
+                            {
+                                <MudChip T="String" Color="Color.Success" Size="Size.Small">Bağlı</MudChip>
+                            }
+                            else if (countryConnectionStatus == ConnectionStatus.Disconnected)
+                            {
+                                <MudChip T="String" Color="Color.Error" Size="Size.Small">Bağlantı Yok</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="String" Color="Color.Default" Size="Size.Small">Bilinmiyor</MudChip>
+                            }
+                        </CardHeaderActions>
+                    </MudCardHeader>
                     <MudCardContent>
-                        <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Style="min-height: 200px;">
-                            <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large" Color="Color.Secondary" />
-                            <MudText Typo="Typo.h6" Color="Color.Secondary">Yeni Entegrasyon Ekle</MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
-                                Daha fazla entegrasyon yakında eklenecek
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Ülke bilgilerini harici DAS API'den senkronize edin
                             </MudText>
+                            <MudDivider />
+                            <MudStack Row Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">API URL:</MudText>
+                                <MudText Typo="Typo.caption">@countryApiBaseUrl</MudText>
+                            </MudStack>
+                            @if (lastCountrySyncTime.HasValue)
+                            {
+                                <MudStack Row Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Son Senkronizasyon:</MudText>
+                                    <MudText Typo="Typo.caption">@lastCountrySyncTime.Value.ToString("dd/MM/yyyy HH:mm")</MudText>
+                                </MudStack>
+                            }
                         </MudStack>
                     </MudCardContent>
+                    <MudCardActions>
+                        <MudButtonGroup Variant="Variant.Text" Color="Color.Primary">
+                            <MudButton OnClick="TestCountryConnection"
+                                       Disabled="@isTestingCountryConnection"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle">
+                                @if (isTestingCountryConnection)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate />
+                                    <span class="ml-2">Test Ediliyor...</span>
+                                }
+                                else
+                                {
+                                    <text>Bağlantıyı Test Et</text>
+                                }
+                            </MudButton>
+                            <MudButton OnClick="ViewCountryData"
+                                       StartIcon="@Icons.Material.Filled.Preview">
+                                Verileri Görüntüle
+                            </MudButton>
+                            <MudButton OnClick="SyncCountryData"
+                                       Disabled="@isSyncingCountries"
+                                       StartIcon="@Icons.Material.Filled.Sync">
+                                @if (isSyncingCountries)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate />
+                                    <span class="ml-2">Senkronize Ediliyor...</span>
+                                }
+                                else
+                                {
+                                    <text>Şimdi Senkronize Et</text>
+                                }
+                            </MudButton>
+                        </MudButtonGroup>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
         </MudGrid>
@@ -149,6 +217,12 @@
     private string vehicleApiBaseUrl = string.Empty;
     private DateTime? lastSyncTime = null;
 
+    private ConnectionStatus countryConnectionStatus = ConnectionStatus.Unknown;
+    private bool isTestingCountryConnection = false;
+    private bool isSyncingCountries = false;
+    private string countryApiBaseUrl = string.Empty;
+    private DateTime? lastCountrySyncTime = null;
+
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
     {
         new BreadcrumbItem("Ana Sayfa", href: "/"),
@@ -159,6 +233,7 @@
     protected override void OnInitialized()
     {
         vehicleApiBaseUrl = Configuration["VehicleDataApi:BaseUrl"] ?? "Yapılandırılmamış";
+        countryApiBaseUrl = Configuration["VehicleDataApi:BaseUrl"] ?? "Yapılandırılmamış";
     }
 
     private async Task TestVehicleConnection()
@@ -254,6 +329,100 @@
         finally
         {
             isSyncing = false;
+        }
+    }
+
+    private async Task TestCountryConnection()
+    {
+        isTestingCountryConnection = true;
+        try
+        {
+            var isConnected = await CountryDataService.TestConnectionAsync();
+            countryConnectionStatus = isConnected ? ConnectionStatus.Connected : ConnectionStatus.Disconnected;
+
+            if (isConnected)
+            {
+                Snackbar.Add("Ülke veri API'sine bağlantı başarılı", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Ülke veri API'sine bağlanılamadı", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            countryConnectionStatus = ConnectionStatus.Disconnected;
+            Snackbar.Add($"Bağlantı testi başarısız: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            isTestingCountryConnection = false;
+        }
+    }
+
+    private async Task ViewCountryData()
+    {
+        try
+        {
+            var data = await CountryDataService.FetchCountryDataAsync();
+            Snackbar.Add($"{data.Count} ülke kaydı alındı", MudBlazor.Severity.Info);
+
+            // TODO: Show data in a dialog
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Veri alınamadı: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task SyncCountryData()
+    {
+        isSyncingCountries = true;
+        try
+        {
+            // Call the API endpoint to trigger sync
+            var response = await HttpClient.PostAsync("/api/parametric/countries/sync?updateExisting=true&deactivateMissing=false", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<CountryDataSyncResult>>();
+
+                if (result?.IsSuccess == true && result.Data != null)
+                {
+                    lastCountrySyncTime = DateTime.Now;
+                    var syncResult = result.Data;
+
+                    var message = $"Senkronizasyon başarılı: {syncResult.CountriesCreated} ülke oluşturuldu, " +
+                                  $"{syncResult.CountriesUpdated} ülke güncellendi";
+
+                    Snackbar.Add(message, MudBlazor.Severity.Success);
+
+                    if (syncResult.Warnings.Any())
+                    {
+                        foreach (var warning in syncResult.Warnings)
+                        {
+                            Snackbar.Add(warning, MudBlazor.Severity.Warning);
+                        }
+                    }
+                }
+                else
+                {
+                    Snackbar.Add(result?.Message ?? "Senkronizasyon başarısız oldu", MudBlazor.Severity.Error);
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Senkronizasyon başarısız: {response.StatusCode} - {errorContent}", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Senkronizasyon başarısız: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            isSyncingCountries = false;
         }
     }
 }

@@ -31,6 +31,20 @@ namespace IAMS.MultiTenancy.Middleware
                 return;
             }
 
+            // Skip tenant middleware for parametric/reference data endpoints (shared across tenants)
+            if (context.Request.Path.StartsWithSegments("/api/parametric"))
+            {
+                await _next(context);
+                return;
+            }
+
+            // Skip tenant middleware for vehicle data endpoints (shared across tenants)
+            if (context.Request.Path.StartsWithSegments("/api/vehicles"))
+            {
+                await _next(context);
+                return;
+            }
+
             try
             {
                 var tenantService = context.RequestServices.GetRequiredService<Interfaces.ITenantService>();

@@ -193,10 +193,10 @@ namespace IAMS.Application.Services.PolicyImport
             policy.StateType = ParseStateType(stateTypeCode, policy.InnerCode);
 
             // Start date (Bas.Tarih)
-            policy.StartDate = GetDateValue(row, columnMap, "Bas.Tarih", "BasTarih", "bastarih", "baslangictarihi");
+            policy.StartDate = GetDateValue(row, columnMap, "Bas.Tarih", "Baş.Tarihi", "BasTarih", "bastarih", "baslangictarihi");
 
             // End date (Bit.Tarih)
-            var endDateCell = GetCellValue(row, columnMap, "Bit.Tarih", "BitTarih", "bittarih", "bitistarihi");
+            var endDateCell = GetCellValue(row, columnMap, "Bit.Tarih", "Bit.Tarihi", "BitTarih", "bittarih", "bitistarihi");
             policy.EndDate = ParseDateFromCell(endDateCell);
 
             // If end date cell contains policy type code (format: "1/5/2026 601-KN-207044")

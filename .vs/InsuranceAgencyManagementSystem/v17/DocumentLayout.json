@@ -3,6 +3,34 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\iams.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\iams.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\factories\\applicationdbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\factories\\applicationdbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\iams.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\iams.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\iams.persistence.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\iams.persistence.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\iams.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\iams.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ABC5075B-6C7A-4B0D-857A-5ADC090470BE}|tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\tests\\iams.unittests\\iams.unittests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{ABC5075B-6C7A-4B0D-857A-5ADC090470BE}|tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj|solutionrelative:tests\\iams.unittests\\iams.unittests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FB78F40D-E3CD-4090-845A-34A697DA5F62}|src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.multitenancy\\iams.multitenancy.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{FB78F40D-E3CD-4090-845A-34A697DA5F62}|src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj|solutionrelative:src\\iams.multitenancy\\iams.multitenancy.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\configurations\\policyconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\configurations\\policyconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -42,7 +70,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -59,6 +87,97 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "ApplicationDbContextFactory.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Factories\\ApplicationDbContextFactory.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Factories\\ApplicationDbContextFactory.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Factories\\ApplicationDbContextFactory.cs",
+              "RelativeToolTip": "src\\IAMS.Persistence\\Factories\\ApplicationDbContextFactory.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAA1wBgAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-06T07:21:27.368Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "IAMS.Web",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\IAMS.Web.csproj",
+              "RelativeDocumentMoniker": "src\\IAMS.Web\\IAMS.Web.csproj",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\IAMS.Web.csproj*",
+              "RelativeToolTip": "src\\IAMS.Web\\IAMS.Web.csproj*",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAB0AAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-06T07:19:42.133Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IAMS.Persistence",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\IAMS.Persistence.csproj",
+              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\IAMS.Persistence.csproj",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\IAMS.Persistence.csproj",
+              "RelativeToolTip": "src\\IAMS.Persistence\\IAMS.Persistence.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-06T07:19:28.452Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IAMS.Infrastructure",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj",
+              "RelativeToolTip": "src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-06T07:18:42.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IAMS.UnitTests",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj",
+              "RelativeDocumentMoniker": "tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj",
+              "RelativeToolTip": "tests\\IAMS.UnitTests\\IAMS.UnitTests.csproj",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-06T07:18:31.91Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "IAMS.MultiTenancy",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj",
+              "RelativeDocumentMoniker": "src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj",
+              "RelativeToolTip": "src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-06T07:18:23.908Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IAMS.Api",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\IAMS.Api.csproj",
+              "RelativeDocumentMoniker": "src\\IAMS.Api\\IAMS.Api.csproj",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\IAMS.Api.csproj",
+              "RelativeToolTip": "src\\IAMS.Api\\IAMS.Api.csproj",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAABTAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-06T07:12:27.155Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "PolicyRepository.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs",
@@ -66,12 +185,11 @@
               "RelativeToolTip": "src\\IAMS.Persistence\\Repositories\\PolicyRepository.cs",
               "ViewState": "AgIAAAACAAAAAAAAAAD4vxQCAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-06T06:58:59.328Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-06T06:58:59.328Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 10,
               "Title": "Policy.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Domain\\Entities\\Policy.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Domain\\Entities\\Policy.cs",
@@ -79,12 +197,11 @@
               "RelativeToolTip": "src\\IAMS.Domain\\Entities\\Policy.cs",
               "ViewState": "AgIAADQAAAAAAAAAAAA2wD4AAABpAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-05T19:41:02.512Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-05T19:41:02.512Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 7,
               "Title": "PolicyConfiguration.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Configurations\\PolicyConfiguration.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Configurations\\PolicyConfiguration.cs",
@@ -97,7 +214,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 11,
               "Title": "ExcelPolicyParser.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\PolicyImport\\ExcelPolicyParser.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\PolicyImport\\ExcelPolicyParser.cs",
@@ -105,12 +222,11 @@
               "RelativeToolTip": "src\\IAMS.Application\\Services\\PolicyImport\\ExcelPolicyParser.cs",
               "ViewState": "AgIAAIsAAAAAAAAAAAAiwKwAAABNAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-01T17:47:17.759Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-01T17:47:17.759Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 9,
               "Title": "ImportPoliciesCommandHandler.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Policies\\Commands\\ImportPolicies\\ImportPoliciesCommandHandler.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Policies\\Commands\\ImportPolicies\\ImportPoliciesCommandHandler.cs",
@@ -118,12 +234,11 @@
               "RelativeToolTip": "src\\IAMS.Application\\Features\\Policies\\Commands\\ImportPolicies\\ImportPoliciesCommandHandler.cs",
               "ViewState": "AgIAAMkAAAAAAAAAAAAMwNAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-01T17:27:34.691Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-01T17:27:34.691Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 13,
               "Title": "PoliciesController.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\PoliciesController.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\PoliciesController.cs",
@@ -135,7 +250,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 14,
               "Title": "FileUploadController.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Controllers\\FileUploadController.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Controllers\\FileUploadController.cs",
@@ -147,7 +262,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 12,
               "Title": "PolicyImport.razor",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyImport.razor",
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Policies\\PolicyImport.razor",

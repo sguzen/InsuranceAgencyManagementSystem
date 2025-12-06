@@ -269,12 +269,15 @@ namespace IAMS.Persistence.Repositories
             var startOfMonth = new DateTime(targetMonth.Year, targetMonth.Month, 1);
             var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
+            // Calculate revenue from policies that are active during the month
+            // Policy must: start on or before month end AND end on or after month start
             return await _dbSet
                 .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
-                           p.StartDate >= startOfMonth &&
-                           p.StartDate <= endOfMonth)
+                           p.InnerCode == "000" && // Only count main policies, not endorsements
+                           p.StartDate <= endOfMonth &&
+                           p.EndDate >= startOfMonth)
                 .SumAsync(p => p.PremiumAmount);
         }
 
@@ -284,13 +287,16 @@ namespace IAMS.Persistence.Repositories
             var startOfMonth = new DateTime(targetMonth.Year, targetMonth.Month, 1);
             var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
+            // Calculate revenue from policies that are active during the month
+            // Policy must: start on or before month end AND end on or after month start
             return await _dbSet
                 .Include(p => p.Currency)
                 .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
-                           p.StartDate >= startOfMonth &&
-                           p.StartDate <= endOfMonth)
+                           p.InnerCode == "000" && // Only count main policies, not endorsements
+                           p.StartDate <= endOfMonth &&
+                           p.EndDate >= startOfMonth)
                 .GroupBy(p => p.Currency.Code)
                 .Select(g => new { Currency = g.Key, Total = g.Sum(p => p.PremiumAmount) })
                 .ToDictionaryAsync(x => x.Currency, x => x.Total);
@@ -302,12 +308,15 @@ namespace IAMS.Persistence.Repositories
             var startOfYear = new DateTime(targetYear, 1, 1);
             var endOfYear = new DateTime(targetYear, 12, 31);
 
+            // Calculate revenue from policies that are active during the year
+            // Policy must: start on or before year end AND end on or after year start
             return await _dbSet
                 .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
-                           p.StartDate >= startOfYear &&
-                           p.StartDate <= endOfYear)
+                           p.InnerCode == "000" && // Only count main policies, not endorsements
+                           p.StartDate <= endOfYear &&
+                           p.EndDate >= startOfYear)
                 .SumAsync(p => p.PremiumAmount);
         }
 

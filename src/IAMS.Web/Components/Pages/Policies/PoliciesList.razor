@@ -397,38 +397,38 @@
                                             <MudTh>Durum</MudTh>
                                             <MudTh>İşlemler</MudTh>
                                         </HeaderContent>
-                                        <RowTemplate>
+                                        <RowTemplate Context="endorsement">
                                             <MudTd DataLabel="Z.No">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
-                                                    <MudText Typo="Typo.body2">@context.InnerCode</MudText>
+                                                    <MudText Typo="Typo.body2">@endorsement.InnerCode</MudText>
                                                     <MudChip Size="Size.Small" Color="Color.Info" T="string">Zeyil</MudChip>
                                                 </MudStack>
                                             </MudTd>
                                             <MudTd DataLabel="TIP">
-                                                <MudText Typo="Typo.caption">@GetStateTypeShortText(context.StateType)</MudText>
+                                                <MudText Typo="Typo.caption">@GetStateTypeShortText(endorsement.StateType)</MudText>
                                             </MudTd>
-                                            <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                            <MudTd DataLabel="Başlangıç">@endorsement.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                             <MudTd DataLabel="Bitiş">
                                                 <div>
-                                                    <div>@context.EndDate.ToString("dd.MM.yyyy")</div>
-                                                    @if (context.DaysUntilExpiry <= 30 && context.DaysUntilExpiry >= 0)
+                                                    <div>@endorsement.EndDate.ToString("dd.MM.yyyy")</div>
+                                                    @if (endorsement.DaysUntilExpiry <= 30 && endorsement.DaysUntilExpiry >= 0)
                                                     {
                                                         <div style="font-size: 0.75rem; color: var(--mud-palette-warning);">
-                                                            @context.DaysUntilExpiry gün kaldı
+                                                            @endorsement.DaysUntilExpiry gün kaldı
                                                         </div>
                                                     }
-                                                    else if (context.IsExpired)
+                                                    else if (endorsement.IsExpired)
                                                     {
                                                         <div style="font-size: 0.75rem; color: var(--mud-palette-error);">
-                                                            @Math.Abs(context.DaysUntilExpiry) gün geçti
+                                                            @Math.Abs(endorsement.DaysUntilExpiry) gün geçti
                                                         </div>
                                                     }
                                                 </div>
                                             </MudTd>
-                                            <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@context.PremiumAmount.ToString("C")</MudTd>
+                                            <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@endorsement.PremiumAmount.ToString("C")</MudTd>
                                             <MudTd DataLabel="Durum">
-                                                <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small">
-                                                    @GetStatusText(context.Status)
+                                                <MudChip T="string" Color="@GetStatusColor(endorsement.Status)" Size="Size.Small">
+                                                    @GetStatusText(endorsement.Status)
                                                 </MudChip>
                                             </MudTd>
                                             <MudTd DataLabel="İşlemler">
@@ -436,12 +436,12 @@
                                                     <MudIconButton Icon="@Icons.Material.Filled.Visibility"
                                                                    Color="Color.Info"
                                                                    Size="Size.Small"
-                                                                   OnClick="@(() => ViewPolicy(context.Id))"
+                                                                   OnClick="@(() => ViewPolicy(endorsement.Id))"
                                                                    Title="Detayları Görüntüle" />
                                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                                    Color="Color.Primary"
                                                                    Size="Size.Small"
-                                                                   OnClick="@(() => EditPolicy(context.Id))"
+                                                                   OnClick="@(() => EditPolicy(endorsement.Id))"
                                                                    Title="Düzenle" />
                                                 </MudStack>
                                             </MudTd>

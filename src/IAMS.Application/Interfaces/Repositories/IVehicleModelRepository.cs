@@ -7,5 +7,6 @@ namespace IAMS.Application.Interfaces.Repositories
         Task<IEnumerable<VehicleModel>> GetByBrandIdAsync(int brandId);
         Task<IEnumerable<VehicleModel>> GetActiveByBrandIdAsync(int brandId);
         Task<bool> ModelNameExistsAsync(int brandId, string name, int? excludeModelId = null);
+        Task<VehicleModel?> GetByNameAndBrandIdAsync(string name, int brandId);
     }
 }

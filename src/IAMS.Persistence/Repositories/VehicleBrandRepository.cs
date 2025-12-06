@@ -31,5 +31,12 @@ namespace IAMS.Persistence.Repositories
 
             return await query.AnyAsync();
         }
+
+        public async Task<VehicleBrand?> GetByNameAsync(string name)
+        {
+            return await _dbSet
+                .Where(b => !b.IsDeleted && b.Name == name)
+                .FirstOrDefaultAsync();
+        }
     }
 }

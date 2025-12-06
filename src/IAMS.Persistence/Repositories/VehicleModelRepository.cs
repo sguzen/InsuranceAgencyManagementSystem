@@ -42,5 +42,12 @@ namespace IAMS.Persistence.Repositories
 
             return await query.AnyAsync();
         }
+
+        public async Task<VehicleModel?> GetByNameAndBrandIdAsync(string name, int brandId)
+        {
+            return await _dbSet
+                .Where(m => !m.IsDeleted && m.Name == name && m.BrandId == brandId)
+                .FirstOrDefaultAsync();
+        }
     }
 }

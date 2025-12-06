@@ -329,11 +329,72 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 return vehicle;
             }
 
+            // Get or create vehicle brand
+            VehicleBrand? brand = null;
+            if (!string.IsNullOrEmpty(dto.VehicleBrand))
+            {
+                brand = await _unitOfWork.VehicleBrands.GetByNameAsync(dto.VehicleBrand);
+                if (brand == null)
+                {
+                    // Create new brand
+                    _logger.LogInformation("Creating new vehicle brand: {BrandName}", dto.VehicleBrand);
+                    brand = new VehicleBrand
+                    {
+                        Name = dto.VehicleBrand,
+                        Code = dto.VehicleBrand.ToUpperInvariant(),
+                        IsActive = true,
+                        DisplayOrder = 999,
+                        CreatedBy = userId,
+                        CreatedOn = DateTime.UtcNow,
+                        ModifiedBy = userId,
+                        ModifiedOn = DateTime.UtcNow
+                    };
+                    await _unitOfWork.VehicleBrands.AddAsync(brand);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+            }
+
+            // Get or create vehicle model
+            VehicleModel? model = null;
+            if (brand != null && !string.IsNullOrEmpty(dto.VehicleModel))
+            {
+                model = await _unitOfWork.VehicleModels.GetByNameAndBrandIdAsync(dto.VehicleModel, brand.Id);
+                if (model == null)
+                {
+                    // Create new model
+                    _logger.LogInformation("Creating new vehicle model: {ModelName} for brand: {BrandName}",
+                        dto.VehicleModel, brand.Name);
+                    model = new VehicleModel
+                    {
+                        BrandId = brand.Id,
+                        Name = dto.VehicleModel,
+                        Code = dto.VehicleModel.ToUpperInvariant(),
+                        IsActive = true,
+                        DisplayOrder = 999,
+                        CreatedBy = userId,
+                        CreatedOn = DateTime.UtcNow,
+                        ModifiedBy = userId,
+                        ModifiedOn = DateTime.UtcNow
+                    };
+                    await _unitOfWork.VehicleModels.AddAsync(model);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+            }
+
+            // Validate that we have both brand and model, or throw an error
+            if (brand == null || model == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot create vehicle without brand and model. Row: {dto.RowNumber}, Plate: {dto.PlateNumber}");
+            }
+
             // Auto-create vehicle from import data
             vehicle = new Vehicle
             {
                 CustomerId = customerId,
                 PlateNumber = dto.PlateNumber,
+                BrandId = brand.Id,
+                ModelId = model.Id,
                 ModelYear = dto.VehicleYear,
                 CreatedBy = userId,
                 CreatedOn = DateTime.UtcNow,

@@ -175,5 +175,10 @@ namespace IAMS.Application.Services.Policies
             // For now, just return - the actual implementation would be in a background service
             await Task.CompletedTask;
         }
+
+        public async Task<Result<List<PolicyDto>>> GetEndorsementsByPolicyIdAsync(int policyId)
+        {
+            return await _mediator.Send(new GetEndorsementsByPolicyIdQuery(policyId));
+        }
     }
 }

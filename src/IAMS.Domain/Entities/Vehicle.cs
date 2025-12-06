@@ -16,8 +16,8 @@ namespace IAMS.Domain.Entities
         public string? RegistrationNumber { get; set; } // Ruhsat Seri No
 
         // Vehicle Details
-        public int BrandId { get; set; } // Marka (parametric)
-        public int ModelId { get; set; } // Model (parametric)
+        public int? BrandId { get; set; } // Marka (parametric) - Optional for traffic policies
+        public int? ModelId { get; set; } // Model (parametric) - Optional for traffic policies
         public int? ModelYear { get; set; } // Model Yılı
         public VehicleType VehicleType { get; set; } // Araç Tipi
         public VehicleFuelType FuelType { get; set; } // Yakıt Tipi
@@ -50,8 +50,8 @@ namespace IAMS.Domain.Entities
         public Customer Customer { get; set; } = null!;
 
         // Navigation Properties
-        public virtual VehicleBrand Brand { get; set; } = null!;
-        public virtual VehicleModel Model { get; set; } = null!;
+        public virtual VehicleBrand? Brand { get; set; }
+        public virtual VehicleModel? Model { get; set; }
         public virtual ICollection<Policy> Policies { get; set; } = new List<Policy>();
         public virtual Currency Currency { get; set; } = null!;
 

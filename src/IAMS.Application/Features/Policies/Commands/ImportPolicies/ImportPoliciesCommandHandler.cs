@@ -333,11 +333,43 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 return vehicle;
             }
 
+            // Try to find brand and model if provided
+            int? brandId = null;
+            int? modelId = null;
+
+            if (!string.IsNullOrEmpty(dto.VehicleBrand))
+            {
+                var brand = await _unitOfWork.VehicleBrands
+                    .FindAsync(b => b.Name.ToLower() == dto.VehicleBrand.ToLower() && !b.IsDeleted);
+
+                if (brand != null && brand.Any())
+                {
+                    brandId = brand.First().Id;
+
+                    // If brand found and model provided, try to find model
+                    if (!string.IsNullOrEmpty(dto.VehicleModel) && brandId.HasValue)
+                    {
+                        var model = await _unitOfWork.VehicleModels
+                            .FindAsync(m => m.BrandId == brandId.Value &&
+                                          m.Name.ToLower() == dto.VehicleModel.ToLower() &&
+                                          !m.IsDeleted);
+
+                        if (model != null && model.Any())
+                        {
+                            modelId = model.First().Id;
+                        }
+                    }
+                }
+            }
+
             // Auto-create vehicle from import data
+            // BrandId and ModelId are now optional - only plaka is required for traffic policies
             vehicle = new Vehicle
             {
                 CustomerId = customerId,
                 PlateNumber = dto.PlateNumber,
+                BrandId = brandId,
+                ModelId = modelId,
                 ModelYear = dto.VehicleYear,
                 CreatedBy = userId,
                 CreatedOn = DateTime.UtcNow,

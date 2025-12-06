@@ -14,8 +14,11 @@ namespace IAMS.Application.Interfaces.Repositories
     {
         // Core CRUD operations only
         Task<Policy?> GetPolicyByIdWithDetailsAsync(int id);
-        Task<Policy?> GetByPolicyNumberAsync(string policyNumber);
+        Task<Policy?> GetByPolicyNumberAsync(string policyNumber); // Gets main policy (InnerCode = "000")
+        Task<Policy?> GetByPolicyNumberAndInnerCodeAsync(string policyNumber, string innerCode);
+        Task<List<Policy>> GetAllByPolicyNumberAsync(string policyNumber); // Gets all policies + endorsements
         Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId);
         Task<bool> PolicyNumberExistsAsync(string policyNumber, int? excludePolicyId = null);
+        Task<bool> PolicyNumberAndInnerCodeExistsAsync(string policyNumber, string innerCode, int? excludePolicyId = null);
     }
 }

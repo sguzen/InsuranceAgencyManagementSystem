@@ -1,16 +1,24 @@
-﻿namespace IAMS.Application.Models
+﻿using System.Text.Json.Serialization;
+
+namespace IAMS.Application.Models
 {
     public class Result<T>
     {
-        public bool IsSuccess { get; protected set; }
+        public bool IsSuccess { get; set; }
         public bool IsFailure => !IsSuccess;
-        public string Message { get; protected set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
         public string? ErrorMessage => IsFailure ? Message : null;
-        public List<string> Errors { get; protected set; } = new();
+        public List<string> Errors { get; set; } = new();
         public List<string>? ValidationErrors => Errors?.Any() == true ? Errors : null;
-        public T? Data { get; protected set; }
-        public int StatusCode { get; protected set; } = 200;
+        public T? Data { get; set; }
+        public int StatusCode { get; set; } = 200;
 
+        // Parameterless constructor for JSON deserialization
+        public Result()
+        {
+        }
+
+        [JsonConstructor]
         protected Result(bool isSuccess, string message, T? data = default, List<string>? errors = null, int statusCode = 200)
         {
             IsSuccess = isSuccess;
@@ -92,14 +100,20 @@
 
     public class Result
     {
-        public bool IsSuccess { get; protected set; }
+        public bool IsSuccess { get; set; }
         public bool IsFailure => !IsSuccess;
-        public string Message { get; protected set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
         public string? ErrorMessage => IsFailure ? Message : null;
-        public List<string> Errors { get; protected set; } = new();
+        public List<string> Errors { get; set; } = new();
         public List<string>? ValidationErrors => Errors?.Any() == true ? Errors : null;
-        public int StatusCode { get; protected set; } = 200;
+        public int StatusCode { get; set; } = 200;
 
+        // Parameterless constructor for JSON deserialization
+        public Result()
+        {
+        }
+
+        [JsonConstructor]
         protected Result(bool isSuccess, string message, List<string>? errors = null, int statusCode = 200)
         {
             IsSuccess = isSuccess;

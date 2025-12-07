@@ -322,10 +322,7 @@
                                         <CellTemplate>
                                             @if (context.Item.Customer != null)
                                             {
-                                                <MudStack Spacing="0">
-                                                    <MudText Typo="Typo.body2">@($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")</MudText>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Customer.Email</MudText>
-                                                </MudStack>
+                                                <MudText Typo="Typo.body2">@($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")</MudText>
                                             }
                                         </CellTemplate>
                                     </TemplateColumn>

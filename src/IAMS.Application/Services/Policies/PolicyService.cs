@@ -6,6 +6,7 @@ using IAMS.Application.Features.Policies.Commands.DeletePolicy;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
 using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
+using IAMS.Application.Features.Policies.Queries.GetEndorsementsByPolicyId;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPolicies;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount;
 using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue;

@@ -275,7 +275,7 @@ namespace IAMS.Persistence.Repositories
                 .Where(p =>
                            !p.IsDeleted &&
                            p.Status == PolicyStatus.Active &&
-                           p.InnerCode == "000" && // Only count main policies, not endorsements
+                          // p.InnerCode == "000" && // Only count main policies, not endorsements
                            p.StartDate <= endOfMonth &&
                            p.EndDate >= startOfMonth)
                 .SumAsync(p => p.PremiumAmount);

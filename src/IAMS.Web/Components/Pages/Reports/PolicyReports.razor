@@ -177,19 +177,22 @@
                 <MudGrid>
                     <MudItem xs="12" md="3">
                         <MudDatePicker Label="Başlangıç Tarihi"
-                                      @bind-Date="startDate"
+                                      Date="startDate"
+                                      DateChanged="OnStartDateChanged"
                                       Variant="Variant.Outlined"
                                       DateFormat="dd.MM.yyyy" />
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudDatePicker Label="Bitiş Tarihi"
-                                      @bind-Date="endDate"
+                                      Date="endDate"
+                                      DateChanged="OnEndDateChanged"
                                       Variant="Variant.Outlined"
                                       DateFormat="dd.MM.yyyy" />
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudNumericField Label="Süresi Dolacaklar (Gün)"
-                                        @bind-Value="daysAhead"
+                                        Value="daysAhead"
+                                        ValueChanged="OnDaysAheadChanged"
                                         Variant="Variant.Outlined"
                                         Min="1"
                                         Max="365" />
@@ -533,6 +536,24 @@
 
     private async Task RecalculateWithCurrency()
     {
+        await LoadStatistics();
+    }
+
+    private async Task OnStartDateChanged(DateTime? value)
+    {
+        startDate = value;
+        await LoadStatistics();
+    }
+
+    private async Task OnEndDateChanged(DateTime? value)
+    {
+        endDate = value;
+        await LoadStatistics();
+    }
+
+    private async Task OnDaysAheadChanged(int value)
+    {
+        daysAhead = value;
         await LoadStatistics();
     }
 

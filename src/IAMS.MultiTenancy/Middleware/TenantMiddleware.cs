@@ -45,6 +45,13 @@ namespace IAMS.MultiTenancy.Middleware
                 return;
             }
 
+            // Skip tenant middleware for currency endpoints (shared across tenants)
+            if (context.Request.Path.StartsWithSegments("/api/currencies"))
+            {
+                await _next(context);
+                return;
+            }
+
             try
             {
                 var tenantService = context.RequestServices.GetRequiredService<Interfaces.ITenantService>();

@@ -192,7 +192,7 @@
                     <MudItem xs="12" md="3">
                         <MudNumericField Label="Süresi Dolacaklar (Gün)"
                                         Value="daysAhead"
-                                        ValueChanged="OnDaysAheadChanged"
+                                        ValueChanged="@(async (int value) => await OnDaysAheadChanged(value))"
                                         Variant="Variant.Outlined"
                                         Min="1"
                                         Max="365" />

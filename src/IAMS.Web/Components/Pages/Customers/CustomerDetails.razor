@@ -320,7 +320,7 @@ else
                                 <MudTd DataLabel="Sigorta Şirketi">@context.InsuranceCompany.Name</MudTd>
                                 <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
-                                <MudTd DataLabel="Prim">@FormatCurrency(context.PremiumAmount, context.Currency)</MudTd>
+                                <MudTd DataLabel="Prim">@context.CurrencySymbol@context.PremiumAmount.ToString("N2")</MudTd>
                                 <MudTd DataLabel="Durum">
                                      <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(@context.Status)" T="PolicyStatus">
                                         @GetPolicyStatusText(context.Status)
@@ -365,7 +365,7 @@ else
                                                         </MudTd>
                                                         <MudTd DataLabel="Başlangıç">@endorsement.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                                         <MudTd DataLabel="Bitiş">@endorsement.EndDate.ToString("dd.MM.yyyy")</MudTd>
-                                                        <MudTd DataLabel="Prim">@FormatCurrency(endorsement.PremiumAmount, endorsement.Currency)</MudTd>
+                                                        <MudTd DataLabel="Prim">@endorsement.CurrencySymbol@endorsement.PremiumAmount.ToString("N2")</MudTd>
                                                         <MudTd DataLabel="Durum">
                                                             <MudChip Size="Size.Small" Color="@GetPolicyStatusColor(endorsement.Status)" T="PolicyStatus">
                                                                 @GetPolicyStatusText(endorsement.Status)
@@ -591,26 +591,6 @@ else
         else
         {
             expandedPolicies.Add(policyId);
-        }
-    }
-
-    private string FormatCurrency(decimal amount, string currencyCode)
-    {
-        try
-        {
-            var culture = currencyCode switch
-            {
-                "TRY" => new System.Globalization.CultureInfo("tr-TR"),
-                "USD" => new System.Globalization.CultureInfo("en-US"),
-                "EUR" => new System.Globalization.CultureInfo("de-DE"),
-                "GBP" => new System.Globalization.CultureInfo("en-GB"),
-                _ => System.Globalization.CultureInfo.CurrentCulture
-            };
-            return amount.ToString("C", culture);
-        }
-        catch
-        {
-            return $"{amount:N2} {currencyCode}";
         }
     }
 }

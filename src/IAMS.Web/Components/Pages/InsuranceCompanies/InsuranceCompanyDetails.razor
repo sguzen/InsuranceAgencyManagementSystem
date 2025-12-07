@@ -358,14 +358,14 @@
                                     <TemplateColumn Title="Prim">
                                         <CellTemplate>
                                             <div style="text-align: right;">
-                                                @context.Item.PremiumAmount.ToString("C2")
+                                                @context.Item.CurrencySymbol@context.Item.PremiumAmount.ToString("N2")
                                             </div>
                                         </CellTemplate>
                                     </TemplateColumn>
                                     <TemplateColumn Title="Komisyon">
                                         <CellTemplate>
                                             <div style="text-align: right;">
-                                                <MudText Typo="Typo.body2">@context.Item.CommissionAmount.ToString("C2")</MudText>
+                                                <MudText Typo="Typo.body2">@context.Item.CurrencySymbol@context.Item.CommissionAmount.ToString("N2")</MudText>
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.CommissionRate.ToString("F2")%</MudText>
                                             </div>
                                         </CellTemplate>
@@ -424,8 +424,8 @@
                                                             </MudTd>
                                                             <MudTd DataLabel="Başlangıç">@endorsement.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                                             <MudTd DataLabel="Bitiş">@endorsement.EndDate.ToString("dd.MM.yyyy")</MudTd>
-                                                            <MudTd DataLabel="Prim" Style="text-align: right">@endorsement.PremiumAmount.ToString("C2")</MudTd>
-                                                            <MudTd DataLabel="Komisyon" Style="text-align: right">@endorsement.CommissionAmount.ToString("C2")</MudTd>
+                                                            <MudTd DataLabel="Prim" Style="text-align: right">@endorsement.CurrencySymbol@endorsement.PremiumAmount.ToString("N2")</MudTd>
+                                                            <MudTd DataLabel="Komisyon" Style="text-align: right">@endorsement.CurrencySymbol@endorsement.CommissionAmount.ToString("N2")</MudTd>
                                                             <MudTd DataLabel="Durum" Style="text-align: center">
                                                                 <MudChip T="string" Color="@GetPolicyStatusColor(endorsement.Status)" Size="Size.Small">
                                                                     @GetPolicyStatusText(endorsement.Status)

@@ -1,3 +1,4 @@
+using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
@@ -10,6 +11,7 @@ namespace IAMS.Application.Interfaces.Services
     public interface IPolicyQueryService
     {
         // Paged queries
+        Task<PagedResult<Policy>> GetPoliciesAsync(PolicyQueryParams queryParams);
         Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
         Task<PagedResult<Policy>> GetPoliciesByStatusPagedAsync(PolicyStatus status, int pageNumber, int pageSize);
 

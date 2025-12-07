@@ -49,12 +49,12 @@
                                       DebounceInterval="300" />
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudSelect @bind-Value="selectedActiveStatus"
+                        <MudSelect Value="selectedActiveStatus"
+                                   ValueChanged="OnActiveStatusChanged"
                                    Label="Durum"
                                    Variant="Variant.Outlined"
                                    T="bool?"
-                                   Clearable="true"
-                                   OnClearButtonClick="@(() => { selectedActiveStatus = null; _ = LoadCompanies(); })">
+                                   Clearable="true">
                             <MudSelectItem T="bool?" Value="@((bool?)true)">Aktif</MudSelectItem>
                             <MudSelectItem T="bool?" Value="@((bool?)false)">Pasif</MudSelectItem>
                         </MudSelect>
@@ -315,6 +315,12 @@
     }
 
     private async Task OnSearch() => await LoadCompanies();
+
+    private async Task OnActiveStatusChanged(bool? value)
+    {
+        selectedActiveStatus = value;
+        await LoadCompanies();
+    }
 
     private void ClearFilters()
     {

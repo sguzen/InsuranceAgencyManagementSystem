@@ -314,6 +314,85 @@ else
                 </MudCard>
             }
 
+            <!-- Endorsements Section -->
+            @if (policy.InnerCode == "000" && endorsements.Any())
+            {
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                                Zeyilnameler (@endorsements.Count)
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTable Items="@endorsements" Hover="true" Dense="true" Elevation="0">
+                            <HeaderContent>
+                                <MudTh>Z.No</MudTh>
+                                <MudTh>TIP</MudTh>
+                                <MudTh>Başlangıç</MudTh>
+                                <MudTh>Bitiş</MudTh>
+                                <MudTh>Prim Tutarı</MudTh>
+                                <MudTh>Komisyon</MudTh>
+                                <MudTh>Durum</MudTh>
+                                <MudTh>İşlemler</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Z.No">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudText Typo="Typo.body2">@context.InnerCode</MudText>
+                                        <MudChip Size="Size.Small" Color="Color.Info" T="string">Zeyil</MudChip>
+                                    </MudStack>
+                                </MudTd>
+                                <MudTd DataLabel="TIP">
+                                    <MudText Typo="Typo.caption">@GetStateTypeShortText(context.StateType)</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
+                                <MudTd DataLabel="Bitiş">
+                                    <div>
+                                        <div>@context.EndDate.ToString("dd.MM.yyyy")</div>
+                                        @if (context.DaysUntilExpiry <= 30 && context.DaysUntilExpiry >= 0)
+                                        {
+                                            <div style="font-size: 0.75rem; color: var(--mud-palette-warning);">
+                                                @context.DaysUntilExpiry gün kaldı
+                                            </div>
+                                        }
+                                        else if (context.IsExpired)
+                                        {
+                                            <div style="font-size: 0.75rem; color: var(--mud-palette-error);">
+                                                @Math.Abs(context.DaysUntilExpiry) gün geçti
+                                            </div>
+                                        }
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@FormatCurrency(context.PremiumAmount, context.Currency)</MudTd>
+                                <MudTd DataLabel="Komisyon" Style="text-align: right;">@FormatCurrency(context.CommissionAmount, context.Currency)</MudTd>
+                                <MudTd DataLabel="Durum">
+                                    <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small">
+                                        @GetStatusText(context.Status)
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="İşlemler">
+                                    <MudStack Row Spacing="1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                       Color="Color.Info"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => ViewEndorsement(context.Id))"
+                                                       Title="Detayları Görüntüle" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditEndorsement(context.Id))"
+                                                       Title="Düzenle" />
+                                    </MudStack>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            }
+
             <!-- Notes Section -->
             @if (!string.IsNullOrEmpty(policy.Notes))
             {
@@ -493,10 +572,12 @@ else
     [Parameter] public int PolicyId { get; set; }
 
     private PolicyDto? policy;
+    private List<PolicyDto> endorsements = new();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPolicy();
+        await LoadEndorsements();
     }
 
     private async Task LoadPolicy()
@@ -518,6 +599,31 @@ else
         {
             Snackbar.Add($"Poliçe yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
             Navigation.NavigateTo("/policies");
+        }
+    }
+
+    private async Task LoadEndorsements()
+    {
+        try
+        {
+            // Only load endorsements if this is a main policy (InnerCode == "000")
+            if (policy?.InnerCode == "000")
+            {
+                var result = await PolicyService.GetEndorsementsByPolicyIdAsync(PolicyId);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    endorsements = result.Data;
+                }
+                else
+                {
+                    endorsements = new List<PolicyDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Zeyilnameler yüklenirken hata: {ex.Message}");
+            endorsements = new List<PolicyDto>();
         }
     }
 
@@ -855,5 +961,29 @@ else
             DriverType.Any => "Sınırsız Sürücü",
             _ => driverType.ToString()
         };
+    }
+
+    private string GetStateTypeShortText(StateType stateType)
+    {
+        return stateType switch
+        {
+            StateType.YeniPolice => "P",
+            StateType.Tecdit => "T",
+            StateType.Ilave => "V",
+            StateType.Iade => "R",
+            StateType.Iptal => "X",
+            StateType.Yeniden => "Y",
+            _ => stateType.ToString()
+        };
+    }
+
+    private void ViewEndorsement(int endorsementId)
+    {
+        Navigation.NavigateTo($"/policies/{endorsementId}");
+    }
+
+    private void EditEndorsement(int endorsementId)
+    {
+        Navigation.NavigateTo($"/policies/{endorsementId}/edit");
     }
 }

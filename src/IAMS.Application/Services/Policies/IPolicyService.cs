@@ -30,4 +30,7 @@ public interface IPolicyService
     Task<Result<Dictionary<PolicyStatus, int>>> GetPoliciesByStatusAsync();
     Task<Result<Dictionary<string, decimal>>> GetRevenueByMonthAsync(int months = 12);
     Task<Result<List<PolicyDto>>> GetTopPoliciesByPremiumAsync(int count = 10);
+
+    // Endorsement methods
+    Task<Result<List<PolicyDto>>> GetEndorsementsByPolicyIdAsync(int policyId);
 }

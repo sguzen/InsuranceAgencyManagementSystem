@@ -75,7 +75,7 @@ else
                     <MudCard Class="pa-4">
                         <MudStack AlignItems="AlignItems.Center" Spacing="2">
                             <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Primary" />
-                            <MudText Typo="Typo.h4" Color="Color.Primary">@FormatCurrency(policy.PremiumAmount, policy.Currency)</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Primary">@policy.CurrencySymbol@policy.PremiumAmount.ToString("N2")</MudText>
                             <MudText Typo="Typo.body1" Color="Color.Secondary">Prim Tutarı</MudText>
                         </MudStack>
                     </MudCard>
@@ -84,7 +84,7 @@ else
                     <MudCard Class="pa-4">
                         <MudStack AlignItems="AlignItems.Center" Spacing="2">
                             <MudIcon Icon="@Icons.Material.Filled.Paid" Size="Size.Large" Color="Color.Success" />
-                            <MudText Typo="Typo.h4" Color="Color.Success">@FormatCurrency(policy.CommissionAmount, policy.Currency)</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Success">@policy.CurrencySymbol@policy.CommissionAmount.ToString("N2")</MudText>
                             <MudText Typo="Typo.body1" Color="Color.Secondary">
                                 Komisyon (%@policy.CommissionRate.ToString("F1"))
                             </MudText>
@@ -366,8 +366,8 @@ else
                                         }
                                     </div>
                                 </MudTd>
-                                <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@FormatCurrency(context.PremiumAmount, context.Currency)</MudTd>
-                                <MudTd DataLabel="Komisyon" Style="text-align: right;">@FormatCurrency(context.CommissionAmount, context.Currency)</MudTd>
+                                <MudTd DataLabel="Prim Tutarı" Style="text-align: right;">@context.CurrencySymbol@context.PremiumAmount.ToString("N2")</MudTd>
+                                <MudTd DataLabel="Komisyon" Style="text-align: right;">@context.CurrencySymbol@context.CommissionAmount.ToString("N2")</MudTd>
                                 <MudTd DataLabel="Durum">
                                     <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small">
                                         @GetStatusText(context.Status)
@@ -850,24 +850,6 @@ else
             "GBP" => "İngiliz Sterlini (£)",
             _ => currency
         };
-    }
-
-    private string GetCurrencySymbol(string currency)
-    {
-        return currency switch
-        {
-            "TRY" => "₺",
-            "USD" => "$",
-            "EUR" => "€",
-            "GBP" => "£",
-            _ => currency
-        };
-    }
-
-    private string FormatCurrency(decimal amount, string currency)
-    {
-        var symbol = GetCurrencySymbol(currency);
-        return $"{symbol}{amount:N2}";
     }
 
     private string GetPolicyDuration()

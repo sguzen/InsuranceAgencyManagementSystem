@@ -41,6 +41,7 @@ namespace IAMS.Application.DTOs.Policy
         public PolicyStatus Status { get; set; }
         public string? Notes { get; set; }
         public string Currency { get; set; } = "TRY";
+        public string CurrencySymbol { get; set; } = "₺";
         public DateTime CreatedOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public string? CreatedBy { get; set; }

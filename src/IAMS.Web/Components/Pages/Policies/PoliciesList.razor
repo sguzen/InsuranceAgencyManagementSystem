@@ -64,7 +64,8 @@
                                       HelperText="Poliçe no, müşteri adı ile arayın" />
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudSelect @bind-Value="selectedStatus"
+                        <MudSelect Value="selectedStatus"
+                                   ValueChanged="OnStatusChanged"
                                    Label="Durum"
                                    Variant="Variant.Outlined"
                                    T="PolicyStatus?"
@@ -78,7 +79,8 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudSelect @bind-Value="selectedPolicyTypeId"
+                        <MudSelect Value="selectedPolicyTypeId"
+                                   ValueChanged="OnPolicyTypeChanged"
                                    Label="Poliçe Tipi"
                                    Variant="Variant.Outlined"
                                    T="int?"
@@ -93,13 +95,15 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudDatePicker @bind-Date="startDateFrom"
+                        <MudDatePicker Date="startDateFrom"
+                                       DateChanged="OnStartDateFromChanged"
                                        Label="Başlangıç (Den)"
                                        Variant="Variant.Outlined"
                                        Clearable="true" />
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudDatePicker @bind-Date="startDateTo"
+                        <MudDatePicker Date="startDateTo"
+                                       DateChanged="OnStartDateToChanged"
                                        Label="Başlangıç (E)"
                                        Variant="Variant.Outlined"
                                        Clearable="true" />
@@ -623,6 +627,30 @@
 
     private async Task OnSearch()
     {
+        await LoadPolicies();
+    }
+
+    private async Task OnStatusChanged(PolicyStatus? value)
+    {
+        selectedStatus = value;
+        await LoadPolicies();
+    }
+
+    private async Task OnPolicyTypeChanged(int? value)
+    {
+        selectedPolicyTypeId = value;
+        await LoadPolicies();
+    }
+
+    private async Task OnStartDateFromChanged(DateTime? value)
+    {
+        startDateFrom = value;
+        await LoadPolicies();
+    }
+
+    private async Task OnStartDateToChanged(DateTime? value)
+    {
+        startDateTo = value;
         await LoadPolicies();
     }
 

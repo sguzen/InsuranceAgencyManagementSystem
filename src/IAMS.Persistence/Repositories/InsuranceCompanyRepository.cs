@@ -89,11 +89,81 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<decimal> GetTotalPremiumAmountAsync(int companyId)
         {
-            // Sum in base currency (TRY) - use PremiumAmountInBaseCurrency if available, otherwise PremiumAmount * ExchangeRateToBase
-            return await _context.Policies
+            // Get the base currency (TRY)
+            var baseCurrency = await _context.Currencies
+                .FirstOrDefaultAsync(c => c.IsBaseCurrency && !c.IsDeleted);
+
+            if (baseCurrency == null)
+            {
+                // Fallback: sum without conversion if base currency not found
+                return await _context.Policies
+                    .Where(p => p.InsuranceCompanyId == companyId &&
+                               p.Status == PolicyStatus.Active && !p.IsDeleted)
+                    .SumAsync(p => p.PremiumAmount);
+            }
+
+            // Get all active policies with their currencies
+            var policies = await _context.Policies
                 .Where(p => p.InsuranceCompanyId == companyId &&
                            p.Status == PolicyStatus.Active && !p.IsDeleted)
-                .SumAsync(p => p.PremiumAmountInBaseCurrency ?? (p.PremiumAmount * (p.ExchangeRateToBase ?? 1)));
+                .Select(p => new
+                {
+                    p.PremiumAmount,
+                    p.PremiumAmountInBaseCurrency,
+                    p.ExchangeRateToBase,
+                    p.CurrencyId
+                })
+                .ToListAsync();
+
+            // Get current exchange rates to base currency for all distinct currencies
+            var currencyIds = policies.Select(p => p.CurrencyId).Distinct().ToList();
+            var today = DateTime.Today;
+
+            var exchangeRates = await _context.CurrencyExchangeRates
+                .Where(er => currencyIds.Contains(er.FromCurrencyId) &&
+                            er.ToCurrencyId == baseCurrency.Id &&
+                            er.EffectiveDate <= today &&
+                            (!er.ExpiryDate.HasValue || er.ExpiryDate.Value > today))
+                .GroupBy(er => er.FromCurrencyId)
+                .Select(g => new
+                {
+                    CurrencyId = g.Key,
+                    Rate = g.OrderByDescending(er => er.EffectiveDate).First().Rate
+                })
+                .ToDictionaryAsync(x => x.CurrencyId, x => x.Rate);
+
+            // Calculate total in base currency
+            decimal total = 0;
+            foreach (var policy in policies)
+            {
+                if (policy.PremiumAmountInBaseCurrency.HasValue)
+                {
+                    // Use pre-calculated amount
+                    total += policy.PremiumAmountInBaseCurrency.Value;
+                }
+                else if (policy.ExchangeRateToBase.HasValue)
+                {
+                    // Use stored exchange rate
+                    total += policy.PremiumAmount * policy.ExchangeRateToBase.Value;
+                }
+                else if (policy.CurrencyId == baseCurrency.Id)
+                {
+                    // Already in base currency
+                    total += policy.PremiumAmount;
+                }
+                else if (exchangeRates.TryGetValue(policy.CurrencyId, out var rate))
+                {
+                    // Use current exchange rate
+                    total += policy.PremiumAmount * rate;
+                }
+                else
+                {
+                    // No exchange rate available - use 1:1 (not ideal but better than skipping)
+                    total += policy.PremiumAmount;
+                }
+            }
+
+            return total;
         }
 
         public async Task<int> GetActivePoliciesCountAsync(int id)
@@ -106,11 +176,75 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<decimal> GetTotalCommissionsAsync(int id)
         {
-            // Sum commissions in base currency (TRY) - use CommissionAmount * ExchangeRateToBase
-            return await _context.Policies
+            // Get the base currency (TRY)
+            var baseCurrency = await _context.Currencies
+                .FirstOrDefaultAsync(c => c.IsBaseCurrency && !c.IsDeleted);
+
+            if (baseCurrency == null)
+            {
+                // Fallback: sum without conversion if base currency not found
+                return await _context.Policies
+                    .Where(p => p.InsuranceCompanyId == id &&
+                               p.Status == PolicyStatus.Active && !p.IsDeleted)
+                    .SumAsync(p => p.CommissionAmount);
+            }
+
+            // Get all active policies with their currencies
+            var policies = await _context.Policies
                 .Where(p => p.InsuranceCompanyId == id &&
                            p.Status == PolicyStatus.Active && !p.IsDeleted)
-                .SumAsync(p => p.CommissionAmount * (p.ExchangeRateToBase ?? 1));
+                .Select(p => new
+                {
+                    p.CommissionAmount,
+                    p.ExchangeRateToBase,
+                    p.CurrencyId
+                })
+                .ToListAsync();
+
+            // Get current exchange rates to base currency for all distinct currencies
+            var currencyIds = policies.Select(p => p.CurrencyId).Distinct().ToList();
+            var today = DateTime.Today;
+
+            var exchangeRates = await _context.CurrencyExchangeRates
+                .Where(er => currencyIds.Contains(er.FromCurrencyId) &&
+                            er.ToCurrencyId == baseCurrency.Id &&
+                            er.EffectiveDate <= today &&
+                            (!er.ExpiryDate.HasValue || er.ExpiryDate.Value > today))
+                .GroupBy(er => er.FromCurrencyId)
+                .Select(g => new
+                {
+                    CurrencyId = g.Key,
+                    Rate = g.OrderByDescending(er => er.EffectiveDate).First().Rate
+                })
+                .ToDictionaryAsync(x => x.CurrencyId, x => x.Rate);
+
+            // Calculate total in base currency
+            decimal total = 0;
+            foreach (var policy in policies)
+            {
+                if (policy.ExchangeRateToBase.HasValue)
+                {
+                    // Use stored exchange rate
+                    total += policy.CommissionAmount * policy.ExchangeRateToBase.Value;
+                }
+                else if (policy.CurrencyId == baseCurrency.Id)
+                {
+                    // Already in base currency
+                    total += policy.CommissionAmount;
+                }
+                else if (exchangeRates.TryGetValue(policy.CurrencyId, out var rate))
+                {
+                    // Use current exchange rate
+                    total += policy.CommissionAmount * rate;
+                }
+                else
+                {
+                    // No exchange rate available - use 1:1 (not ideal but better than skipping)
+                    total += policy.CommissionAmount;
+                }
+            }
+
+            return total;
         }
 
         public async Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId)

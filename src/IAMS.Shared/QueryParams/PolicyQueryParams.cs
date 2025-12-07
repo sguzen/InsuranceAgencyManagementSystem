@@ -1,7 +1,7 @@
-﻿using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 
-namespace IAMS.Application.DTOs.Policy
+namespace IAMS.Shared.QueryParams
 {
     public class PolicyQueryParams : PagedQueryParams
     {

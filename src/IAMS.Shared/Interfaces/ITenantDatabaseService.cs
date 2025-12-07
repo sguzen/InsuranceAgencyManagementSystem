@@ -1,4 +1,4 @@
-﻿namespace IAMS.Application.Interfaces
+﻿namespace IAMS.Shared.Interfaces
 {
     public interface ITenantDatabaseService
     {

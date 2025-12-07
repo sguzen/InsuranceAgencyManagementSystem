@@ -1,6 +1,6 @@
 using MediatR;
 using FluentValidation;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using System.Collections.Concurrent;
 using System.Reflection;
 

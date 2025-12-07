@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
 using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue;
 using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Application.Interfaces.Services;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;

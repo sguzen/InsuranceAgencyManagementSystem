@@ -1,5 +1,5 @@
 using IAMS.Application.DTOs.Payment;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Features.Payments.Queries.GetPaymentsPaged

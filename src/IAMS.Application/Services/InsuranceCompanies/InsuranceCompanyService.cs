@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using IAMS.Application.DTOs.InsuranceCompany;
-using IAMS.Application.Models;
+using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
 using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceCompany;

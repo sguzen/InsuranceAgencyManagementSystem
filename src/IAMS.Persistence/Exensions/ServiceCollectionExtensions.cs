@@ -1,6 +1,6 @@
 ﻿// IAMS.Persistence/Extensions/ServiceCollectionExtensions.cs
-using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.Interfaces;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;
@@ -10,7 +10,7 @@ using IAMS.Shared.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ITenantService = IAMS.Application.Interfaces.ITenantService;
+using ITenantService = IAMS.Shared.Interfaces.ITenantService;
 
 namespace IAMS.Persistence.Extensions
 {

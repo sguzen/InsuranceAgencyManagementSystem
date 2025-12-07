@@ -1,7 +1,7 @@
 ﻿using IAMS.Domain.Entities;
-using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Shared.QueryParams;
 
-namespace IAMS.Application.Interfaces.Repositories
+namespace IAMS.Shared.Interfaces.Repositories
 {
     public interface IInsuranceCompanyRepository : IRepository<InsuranceCompany>
     {

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 
 namespace IAMS.Application.Features.Customers.Commands.DeleteCustomer
 {

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 

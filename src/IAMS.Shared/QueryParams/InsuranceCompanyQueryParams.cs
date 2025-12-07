@@ -1,6 +1,6 @@
-﻿using IAMS.Application.Models;
+using IAMS.Shared.Models;
 
-namespace IAMS.Application.DTOs.InsuranceCompany
+namespace IAMS.Shared.QueryParams
 {
     public class InsuranceCompanyQueryParams : PagedQueryParams
     {

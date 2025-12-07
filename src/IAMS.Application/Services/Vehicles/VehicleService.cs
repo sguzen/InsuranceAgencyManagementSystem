@@ -16,7 +16,7 @@ using IAMS.Application.Features.Vehicles.Queries.GetVehiclesByBrand;
 using IAMS.Application.Features.Vehicles.Queries.GetVehiclesByCustomerId;
 using IAMS.Application.Features.Vehicles.Queries.GetVehiclesByYear;
 using IAMS.Application.Features.Vehicles.Queries.GetVehiclesDueForInspection;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Services.Vehicles

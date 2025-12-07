@@ -1,7 +1,7 @@
 using AutoMapper;
 using IAMS.Application.DTOs.Claim;
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.Models;
+using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
 using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Entities;
 using MediatR;

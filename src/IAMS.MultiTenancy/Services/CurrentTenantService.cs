@@ -1,5 +1,5 @@
 ﻿// IAMS.MultiTenancy/Services/CurrentTenantService.cs
-using IAMS.Application.Interfaces;
+using IAMS.Shared.Interfaces;
 using IAMS.MultiTenancy.Interfaces;
 
 namespace IAMS.MultiTenancy.Services

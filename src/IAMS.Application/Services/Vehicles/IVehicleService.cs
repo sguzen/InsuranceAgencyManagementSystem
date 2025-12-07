@@ -1,5 +1,5 @@
 ﻿using IAMS.Application.DTOs.Vehicle;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 
 namespace IAMS.Application.Services.Vehicles
 {

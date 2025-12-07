@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.DTOs.CustomerMapping;
 using IAMS.Domain.Entities;
 

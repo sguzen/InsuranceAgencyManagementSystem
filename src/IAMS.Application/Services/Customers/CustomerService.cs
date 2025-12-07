@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.Customer;
+﻿using IAMS.Shared.QueryParams;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
@@ -16,7 +16,7 @@ using IAMS.Application.Features.Customers.Queries.GetTopCustomersByPolicyCount;
 using IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount;
 using IAMS.Application.Features.Customers.Queries.ValidateEmail;
 using IAMS.Application.Features.Customers.Queries.ValidateIdentificationNo;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
 

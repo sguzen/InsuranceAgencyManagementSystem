@@ -1,5 +1,5 @@
-using IAMS.Application.DTOs.InsuranceCompany;
-using IAMS.Application.Models;
+using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany

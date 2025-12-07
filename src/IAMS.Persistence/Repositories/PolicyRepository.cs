@@ -1,6 +1,6 @@
-﻿using IAMS.Application.DTOs.Policy;
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.Models;
+﻿using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
+using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;

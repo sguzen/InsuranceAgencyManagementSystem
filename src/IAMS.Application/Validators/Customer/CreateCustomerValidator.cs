@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.QueryParams;
 using IAMS.Domain.Enums;
 
 namespace IAMS.Application.Validators.Customer

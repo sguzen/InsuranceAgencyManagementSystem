@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.Models;
+using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;

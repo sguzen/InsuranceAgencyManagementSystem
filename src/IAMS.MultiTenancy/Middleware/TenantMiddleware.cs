@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
-using IAMS.Application.Interfaces;
+using IAMS.Shared.Interfaces;
 
 namespace IAMS.MultiTenancy.Middleware
 {

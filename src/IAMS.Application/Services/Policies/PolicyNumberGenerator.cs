@@ -1,4 +1,4 @@
-﻿using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Services;
 using Microsoft.Extensions.Logging;
 

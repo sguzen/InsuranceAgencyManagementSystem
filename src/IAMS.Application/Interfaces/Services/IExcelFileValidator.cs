@@ -1,4 +1,4 @@
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace IAMS.Application.Interfaces.Services

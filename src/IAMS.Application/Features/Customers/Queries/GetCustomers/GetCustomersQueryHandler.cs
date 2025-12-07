@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using AutoMapper;
-using IAMS.Application.DTOs.Customer;
-using IAMS.Application.Models;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
+using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomers

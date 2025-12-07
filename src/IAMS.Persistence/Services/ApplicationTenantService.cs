@@ -1,4 +1,4 @@
-using IAMS.Application.Interfaces;
+using IAMS.Shared.Interfaces;
 using IAMS.Domain.Entities;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.Persistence.Contexts;
@@ -13,7 +13,7 @@ namespace IAMS.Persistence.Services
     /// Manages tenant-specific settings stored in EACH TENANT'S OWN DATABASE.
     /// Each tenant has their own ApplicationDbContext with a TenantSettings table.
     /// </summary>
-    public class ApplicationTenantService : IAMS.Application.Interfaces.ITenantService
+    public class ApplicationTenantService : IAMS.Shared.Interfaces.ITenantService
     {
         private readonly ITenantContextAccessor _tenantContextAccessor;
         private readonly ApplicationDbContext _applicationDbContext;

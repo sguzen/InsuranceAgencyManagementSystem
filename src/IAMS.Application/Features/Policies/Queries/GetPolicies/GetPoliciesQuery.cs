@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using IAMS.Application.DTOs.Policy;
-using IAMS.Application.Models;
+using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPolicies
 {

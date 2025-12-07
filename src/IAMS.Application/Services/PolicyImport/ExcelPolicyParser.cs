@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Enums;
 using ClosedXML.Excel;

@@ -1,5 +1,5 @@
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.Models;
+using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;

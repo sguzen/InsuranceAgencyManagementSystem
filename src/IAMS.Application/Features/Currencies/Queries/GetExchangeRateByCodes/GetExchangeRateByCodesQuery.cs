@@ -1,4 +1,4 @@
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Features.Currencies.Queries.GetExchangeRateByCodes

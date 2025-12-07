@@ -1,5 +1,5 @@
-﻿using IAMS.Application.DTOs.Customer;
-using IAMS.Application.Models;
+﻿using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using System;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IAMS.Application.Interfaces.Repositories
+namespace IAMS.Shared.Interfaces.Repositories
 {
     public interface ICustomerRepository : IRepository<Customer>
     {

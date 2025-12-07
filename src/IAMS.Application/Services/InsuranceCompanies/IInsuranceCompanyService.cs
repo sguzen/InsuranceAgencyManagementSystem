@@ -1,5 +1,5 @@
-﻿using IAMS.Application.DTOs.InsuranceCompany;
-using IAMS.Application.Models;
+﻿using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
 
 namespace IAMS.Application.Services.InsuranceCompanies
 {

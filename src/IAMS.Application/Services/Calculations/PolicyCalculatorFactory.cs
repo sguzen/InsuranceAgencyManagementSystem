@@ -1,5 +1,5 @@
 using IAMS.Application.Configuration;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

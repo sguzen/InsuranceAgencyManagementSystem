@@ -1,6 +1,6 @@
 using IAMS.Application.DTOs.Identity;
 using IAMS.Application.Interfaces;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

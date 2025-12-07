@@ -17,7 +17,7 @@ using IAMS.Application.Features.Currencies.Queries.GetExchangeRateByCodes;
 using IAMS.Application.Features.Currencies.Queries.GetExchangeRateByIds;
 using IAMS.Application.Features.Currencies.Queries.GetExchangeRateHistory;
 using IAMS.Application.Features.Currencies.Queries.GetLatestExchangeRate;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Services.Currencies

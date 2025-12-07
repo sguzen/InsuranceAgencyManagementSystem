@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace IAMS.Application.Interfaces.Repositories
+namespace IAMS.Shared.Interfaces.Repositories
 {
     public interface IRepository<T> where T : class
     {
@@ -16,5 +16,10 @@ namespace IAMS.Application.Interfaces.Repositories
         void RemoveRange(IEnumerable<T> entities);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+
+        /// <summary>
+        /// Returns IQueryable for complex queries. Use with caution - ensures queries are properly filtered.
+        /// </summary>
+        IQueryable<T> AsQueryable();
     }
 }

@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.QueryParams;
 
 namespace IAMS.Application.Interfaces.Services
 {

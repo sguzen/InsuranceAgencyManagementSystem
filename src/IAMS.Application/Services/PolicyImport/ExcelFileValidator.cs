@@ -1,5 +1,5 @@
 using IAMS.Application.Interfaces.Services;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace IAMS.Application.Services.PolicyImport

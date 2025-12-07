@@ -1,4 +1,4 @@
-﻿using IAMS.Application.Interfaces;
+﻿using IAMS.Shared.Interfaces;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

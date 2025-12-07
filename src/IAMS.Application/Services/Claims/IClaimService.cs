@@ -1,5 +1,5 @@
 ﻿using IAMS.Application.DTOs.Claim;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 

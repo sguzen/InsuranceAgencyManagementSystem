@@ -1,8 +1,8 @@
-﻿using IAMS.Application.DTOs.Customer;
+﻿using IAMS.Shared.QueryParams;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
 

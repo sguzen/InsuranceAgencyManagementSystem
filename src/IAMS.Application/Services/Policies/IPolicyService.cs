@@ -1,5 +1,5 @@
-﻿using IAMS.Application.DTOs.Policy;
-using IAMS.Application.Models;
+﻿using IAMS.Shared.QueryParams;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 
 public interface IPolicyService

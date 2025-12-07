@@ -1,4 +1,5 @@
-﻿using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
@@ -99,6 +100,120 @@ namespace IAMS.Persistence.Repositories
             }
 
             return await query.AnyAsync();
+        }
+
+        public async Task<PagedResult<Policy>> GetPoliciesAsync(PolicyQueryParams queryParams)
+        {
+            var query = _dbSet
+                .Include(p => p.Customer)
+                .Include(p => p.InsuranceCompany)
+                .Include(p => p.PolicyType)
+                .Include(p => p.Currency)
+                .Include(p => p.Vehicle)
+                .Where(p => !p.IsDeleted);
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+            {
+                var search = queryParams.SearchTerm.ToLower();
+                query = query.Where(p =>
+                    p.PolicyNumber.ToLower().Contains(search) ||
+                    p.Customer.FirstName.ToLower().Contains(search) ||
+                    p.Customer.LastName.ToLower().Contains(search) ||
+                    p.InsuranceCompany.Name.ToLower().Contains(search) ||
+                    p.PolicyType.Name.ToLower().Contains(search));
+            }
+
+            // Apply status filter
+            if (queryParams.Status.HasValue)
+            {
+                query = query.Where(p => p.Status == queryParams.Status.Value);
+            }
+
+            // Apply customer filter
+            if (queryParams.CustomerId.HasValue)
+            {
+                query = query.Where(p => p.CustomerId == queryParams.CustomerId.Value);
+            }
+
+            // Apply insurance company filter
+            if (queryParams.InsuranceCompanyId.HasValue)
+            {
+                query = query.Where(p => p.InsuranceCompanyId == queryParams.InsuranceCompanyId.Value);
+            }
+
+            // Apply policy type filter
+            if (queryParams.PolicyTypeId.HasValue)
+            {
+                query = query.Where(p => p.PolicyTypeId == queryParams.PolicyTypeId.Value);
+            }
+
+            // Apply start date range filter
+            if (queryParams.StartDateFrom.HasValue)
+            {
+                query = query.Where(p => p.StartDate >= queryParams.StartDateFrom.Value);
+            }
+
+            if (queryParams.StartDateTo.HasValue)
+            {
+                query = query.Where(p => p.StartDate <= queryParams.StartDateTo.Value);
+            }
+
+            // Apply end date range filter
+            if (queryParams.EndDateFrom.HasValue)
+            {
+                query = query.Where(p => p.EndDate >= queryParams.EndDateFrom.Value);
+            }
+
+            if (queryParams.EndDateTo.HasValue)
+            {
+                query = query.Where(p => p.EndDate <= queryParams.EndDateTo.Value);
+            }
+
+            // Apply expiring filter (next 30 days)
+            if (queryParams.IsExpiring.HasValue && queryParams.IsExpiring.Value)
+            {
+                var cutoffDate = DateTime.Now.AddDays(30);
+                query = query.Where(p => p.Status == PolicyStatus.Active &&
+                                        p.EndDate <= cutoffDate &&
+                                        p.EndDate >= DateTime.Now);
+            }
+
+            // Apply expired filter
+            if (queryParams.IsExpired.HasValue && queryParams.IsExpired.Value)
+            {
+                query = query.Where(p => p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now);
+            }
+
+            // Apply premium range filters
+            if (queryParams.MinPremium.HasValue)
+            {
+                query = query.Where(p => p.PremiumAmount >= queryParams.MinPremium.Value);
+            }
+
+            if (queryParams.MaxPremium.HasValue)
+            {
+                query = query.Where(p => p.PremiumAmount <= queryParams.MaxPremium.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+            var policies = new List<Policy>();
+            if (totalCount > 0)
+            {
+                policies = await query
+                    .OrderByDescending(p => p.CreatedOn)
+                    .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+                    .Take(queryParams.PageSize)
+                    .ToListAsync();
+            }
+
+            return new PagedResult<Policy>
+            {
+                Items = policies,
+                TotalCount = totalCount,
+                PageNumber = queryParams.PageNumber,
+                PageSize = queryParams.PageSize
+            };
         }
 
         public async Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)

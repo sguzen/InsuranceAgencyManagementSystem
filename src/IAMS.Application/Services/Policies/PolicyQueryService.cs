@@ -1,3 +1,4 @@
+using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Models;
@@ -21,6 +22,9 @@ namespace IAMS.Application.Services.Policies
         // Delegate to repository - the existing PolicyRepository still has these methods
         // This provides a cleaner service-based interface
         private dynamic PolicyRepo => (dynamic)_unitOfWork.Policies;
+
+        public Task<PagedResult<Policy>> GetPoliciesAsync(PolicyQueryParams queryParams)
+            => PolicyRepo.GetPoliciesAsync(queryParams);
 
         public Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
             => PolicyRepo.GetPoliciesPagedAsync(pageNumber, pageSize, searchTerm);

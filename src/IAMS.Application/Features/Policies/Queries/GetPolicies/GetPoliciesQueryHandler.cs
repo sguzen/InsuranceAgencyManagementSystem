@@ -29,10 +29,7 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicies
         {
             try
             {
-                var pagedResult = await _policyQueryService.GetPoliciesPagedAsync(
-                    request.QueryParams.PageNumber,
-                    request.QueryParams.PageSize,
-                    request.QueryParams.SearchTerm);
+                var pagedResult = await _policyQueryService.GetPoliciesAsync(request.QueryParams);
 
                 var policyDtos = new PagedResult<PolicyDto>
                 {

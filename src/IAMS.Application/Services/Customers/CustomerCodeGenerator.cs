@@ -1,6 +1,6 @@
 ﻿// IAMS.Application/Services/CustomerCodeGenerator.cs
 using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 

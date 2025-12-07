@@ -7,7 +7,7 @@ using IAMS.Application.Features.Parametric.Queries.GetOccupations;
 using IAMS.Application.Features.Parametric.Queries.GetSubdistricts;
 using IAMS.Application.Features.Parametric.Queries.GetVillages;
 using IAMS.Application.Interfaces;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Services.Parametric;

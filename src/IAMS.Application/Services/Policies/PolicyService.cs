@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.Policy;
+﻿using IAMS.Shared.QueryParams;
 using IAMS.Application.Features.Policies.Commands.ActivatePolicy;
 using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
@@ -21,7 +21,7 @@ using IAMS.Application.Features.Policies.Queries.GetRecentPolicies;
 using IAMS.Application.Features.Policies.Queries.GetRevenueByMonth;
 using IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium;
 using IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
 

@@ -1,5 +1,5 @@
-﻿using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.DTOs.InsuranceCompany;
+﻿using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;

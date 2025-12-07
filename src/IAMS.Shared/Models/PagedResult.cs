@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-namespace IAMS.Application.Models
+namespace IAMS.Shared.Models
 {
     public class PagedResult<T>
     {

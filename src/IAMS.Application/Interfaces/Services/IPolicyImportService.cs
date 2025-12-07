@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Interfaces.Services

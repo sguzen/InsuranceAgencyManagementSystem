@@ -7,7 +7,7 @@ using IAMS.Application.Features.Payments.Queries.GetPaymentById;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsPaged;
 using IAMS.Application.Features.Payments.Queries.GetTotalPaymentsByPolicyId;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
 

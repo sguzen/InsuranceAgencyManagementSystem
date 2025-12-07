@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.Policy;
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.Models;
+using IAMS.Shared.QueryParams;
+using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

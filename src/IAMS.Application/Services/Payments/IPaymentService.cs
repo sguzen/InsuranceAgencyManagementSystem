@@ -1,5 +1,5 @@
 ﻿using IAMS.Application.DTOs.Payment;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 
 namespace IAMS.Application.Services.Payments

@@ -1,7 +1,7 @@
 using IAMS.Application.Features.Currencies.Queries.GetActiveCurrencies;
 using IAMS.Application.Features.Currencies.Queries.GetBaseCurrency;
 using IAMS.Application.Features.Currencies.Queries.GetExchangeRateByIds;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

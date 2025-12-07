@@ -1,6 +1,6 @@
 ﻿using IAMS.Domain.Entities;
 
-namespace IAMS.Application.Interfaces.Repositories
+namespace IAMS.Shared.Interfaces.Repositories
 {
     public interface ICommissionRateRepository : IRepository<CommissionRate>
     {

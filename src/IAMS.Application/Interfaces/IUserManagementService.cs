@@ -1,5 +1,5 @@
 using IAMS.Application.DTOs.Identity;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 
 namespace IAMS.Application.Interfaces
 {

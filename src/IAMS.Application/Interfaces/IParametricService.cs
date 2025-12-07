@@ -1,5 +1,5 @@
 ﻿using IAMS.Application.DTOs.Parametric;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 
 namespace IAMS.Application.Interfaces
 {

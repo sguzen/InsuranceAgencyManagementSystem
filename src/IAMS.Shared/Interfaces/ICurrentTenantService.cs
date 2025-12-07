@@ -1,5 +1,4 @@
-﻿// IAMS.Application/Interfaces/ICurrentTenantService.cs
-namespace IAMS.Application.Interfaces
+﻿namespace IAMS.Shared.Interfaces
 {
     public interface ICurrentTenantService
     {

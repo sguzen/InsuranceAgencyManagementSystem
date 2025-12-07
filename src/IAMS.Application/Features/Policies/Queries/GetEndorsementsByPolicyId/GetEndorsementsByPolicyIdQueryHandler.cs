@@ -1,7 +1,7 @@
 using AutoMapper;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.Interfaces.Services;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

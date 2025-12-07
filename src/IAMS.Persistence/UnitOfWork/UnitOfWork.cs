@@ -1,5 +1,5 @@
-﻿using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
+﻿using IAMS.Shared.Interfaces;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Interfaces;
 using IAMS.Persistence.Contexts;
 using IAMS.Persistence.Repositories;

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using IAMS.Application.DTOs.Currency;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.DTOs.Parametric;
 using IAMS.Domain.Entities;
 

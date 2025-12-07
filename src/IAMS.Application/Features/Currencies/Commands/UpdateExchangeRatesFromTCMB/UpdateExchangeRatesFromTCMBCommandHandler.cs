@@ -1,7 +1,7 @@
 using IAMS.Application.DTOs.Currency;
 using IAMS.Application.Features.Currencies.Commands.SetExchangeRate;
-using IAMS.Application.Interfaces.Repositories;
-using IAMS.Application.Models;
+using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Globalization;

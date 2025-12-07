@@ -1,6 +1,6 @@
 using AutoMapper;
 using IAMS.Application.DTOs.Payment;
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

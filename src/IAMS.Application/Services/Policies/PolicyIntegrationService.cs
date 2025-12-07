@@ -1,4 +1,4 @@
-using IAMS.Application.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Entities;
 

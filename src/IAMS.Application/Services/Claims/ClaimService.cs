@@ -7,7 +7,7 @@ using IAMS.Application.Features.Claims.Queries.GetClaimsByPolicyId;
 using IAMS.Application.Features.Claims.Queries.GetClaimsByStatus;
 using IAMS.Application.Features.Claims.Queries.GetClaimsPaged;
 using IAMS.Application.Features.Claims.Queries.GetTotalClaimAmountByPolicyId;
-using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
 

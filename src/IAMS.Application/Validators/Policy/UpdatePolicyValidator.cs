@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.QueryParams;
 
 namespace IAMS.Application.Validators.Policy
 {

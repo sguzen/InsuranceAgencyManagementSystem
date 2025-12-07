@@ -1,7 +1,7 @@
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 
-namespace IAMS.Application.Interfaces.Repositories
+namespace IAMS.Shared.Interfaces.Repositories
 {
     public interface IImportHistoryRepository : IRepository<ImportHistory>
     {

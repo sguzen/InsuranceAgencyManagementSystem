@@ -564,12 +564,32 @@
 
         try
         {
-            // Get all policies
+            // Get policies with date filters applied
             var queryParams = new PolicyQueryParams
             {
                 PageSize = 10000,
                 PageNumber = 1
             };
+
+            // Apply date range filters if set
+            if (startDate.HasValue)
+            {
+                queryParams.StartDateFrom = startDate.Value;
+            }
+
+            if (endDate.HasValue)
+            {
+                queryParams.StartDateTo = endDate.Value;
+            }
+
+            // Note: daysAhead is used for display purposes to show "expiring soon" policies
+            // It doesn't filter the backend query, but affects the statistics display
+            // If you want to filter only expiring policies, you could add:
+            // if (daysAhead > 0)
+            // {
+            //     queryParams.EndDateFrom = DateTime.Now;
+            //     queryParams.EndDateTo = DateTime.Now.AddDays(daysAhead);
+            // }
 
             var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
 

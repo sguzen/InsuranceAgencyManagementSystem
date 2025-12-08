@@ -1,4 +1,5 @@
 using IAMS.Application.Features.Currencies.Queries.GetExchangeRateByCodes;
+using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;

@@ -28,7 +28,8 @@ namespace IAMS.Shared.Interfaces.Repositories
         // Dashboard and statistics methods
         Task<int> GetCustomerCountAsync();
         Task<List<Customer>> GetRecentCustomersAsync(int count = 10);
-        Task<CustomerStatisticsDto> GetCustomerStatisticsAsync();
+        // TODO: bring this back
+       // Task<CustomerStatisticsDto> GetCustomerStatisticsAsync();
         Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int count = 10);
         Task<Dictionary<CustomerStatus, int>> GetCustomersByStatusAsync();
         Task<Dictionary<string, int>> GetCustomersCreatedByMonthAsync(int months = 12);

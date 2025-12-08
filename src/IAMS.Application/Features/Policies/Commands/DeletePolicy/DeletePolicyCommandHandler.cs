@@ -1,4 +1,5 @@
 ﻿using IAMS.Application.Interfaces;
+using IAMS.Application.Models;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
@@ -9,16 +10,13 @@ namespace IAMS.Application.Features.Policies.Commands.DeletePolicy
     public class DeletePolicyCommandHandler : IRequestHandler<DeletePolicyCommand, Result>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<DeletePolicyCommandHandler> _logger;
 
         public DeletePolicyCommandHandler(
             IUnitOfWork unitOfWork,
-            ICurrentTenantService currentTenantService,
             ILogger<DeletePolicyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 

@@ -2,6 +2,7 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.Mappings
 {

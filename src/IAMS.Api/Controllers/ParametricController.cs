@@ -2,6 +2,7 @@ using IAMS.Application.DTOs.Parametric;
 using IAMS.Application.Features.Parametric.Commands.SyncCountryData;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

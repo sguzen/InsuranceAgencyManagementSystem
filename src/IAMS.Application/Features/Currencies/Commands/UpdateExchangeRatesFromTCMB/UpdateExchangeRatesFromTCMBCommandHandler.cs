@@ -1,5 +1,6 @@
 using IAMS.Application.DTOs.Currency;
 using IAMS.Application.Features.Currencies.Commands.SetExchangeRate;
+using IAMS.Application.Models;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;

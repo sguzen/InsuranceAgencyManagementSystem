@@ -4,6 +4,7 @@ using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Dashboard.Queries.GetDashboard
 {

@@ -1,5 +1,6 @@
 using AutoMapper;
 using IAMS.Application.DTOs.Vehicle;
+using IAMS.Application.Models;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;

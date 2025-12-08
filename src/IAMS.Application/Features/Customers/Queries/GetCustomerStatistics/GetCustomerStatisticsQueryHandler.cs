@@ -4,6 +4,8 @@ using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Shared.Interfaces;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatistics
 {
@@ -25,19 +27,20 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatistics
 
         public async Task<Result<CustomerStatisticsDto>> Handle(GetCustomerStatisticsQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
+            return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
+            //try
+            //{
+            //    var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
 
-                _logger.LogDebug("Retrieved customer statistics");
+            //    _logger.LogDebug("Retrieved customer statistics");
 
-                return Result<CustomerStatisticsDto>.Success(statistics, "Müşteri istatistikleri getirildi");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting customer statistics");
-                return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
-            }
+            //    return Result<CustomerStatisticsDto>.Success(statistics, "Müşteri istatistikleri getirildi");
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, "Error getting customer statistics");
+            //    return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
+            //}
         }
     }
 }

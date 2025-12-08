@@ -2,6 +2,8 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Application.DTOs.Vehicle;
 using IAMS.Domain.Enums;
+using IAMS.Application.DTOs.Customer;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.DTOs.Policy
 {

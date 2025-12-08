@@ -1,4 +1,5 @@
 using IAMS.Application.DTOs.Claim;
+using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using MediatR;
 

@@ -11,6 +11,8 @@ using IAMS.Application.Services.Currencies;
 using IAMS.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
 {
@@ -19,7 +21,6 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<UpdatePolicyDto> _validator;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly IPolicyCalculatorFactory _calculatorFactory;
         private readonly ICommissionCalculator _commissionCalculator;
         private readonly ICurrencyService _currencyService;
@@ -30,7 +31,6 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<UpdatePolicyDto> validator,
-            ICurrentTenantService currentTenantService,
             IPolicyCalculatorFactory calculatorFactory,
             ICommissionCalculator commissionCalculator,
             ICurrencyService currencyService,
@@ -40,7 +40,6 @@ namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validator = validator;
-            _currentTenantService = currentTenantService;
             _calculatorFactory = calculatorFactory;
             _commissionCalculator = commissionCalculator;
             _currencyService = currencyService;

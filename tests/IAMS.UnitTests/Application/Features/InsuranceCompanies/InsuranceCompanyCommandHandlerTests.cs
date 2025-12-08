@@ -5,10 +5,10 @@ using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompa
 using IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceCompany;
 using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
+using IAMS.Shared.Interfaces.Repositories;
 
 namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
 {

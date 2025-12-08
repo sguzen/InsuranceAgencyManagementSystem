@@ -10,6 +10,8 @@ using IAMS.Application.Features.Customers.Queries.GetCustomers;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
+using IAMS.Shared.Models;
+using IAMS.Shared.QueryParams;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

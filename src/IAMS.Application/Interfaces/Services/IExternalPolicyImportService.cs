@@ -1,5 +1,6 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Application.Interfaces.Services
 {

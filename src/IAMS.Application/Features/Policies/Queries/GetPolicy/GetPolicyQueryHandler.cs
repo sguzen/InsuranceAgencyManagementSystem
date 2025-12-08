@@ -5,6 +5,8 @@ using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPolicy
 {

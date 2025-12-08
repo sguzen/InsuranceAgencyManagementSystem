@@ -4,6 +4,8 @@ using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompany
 {
@@ -41,7 +43,8 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
                 companyDto.ActivePoliciesCount = await _insuranceCompanyRepository.GetActivePoliciesCountAsync(company.Id);
                 companyDto.TotalPremiums = await _insuranceCompanyRepository.GetTotalPremiumAmountAsync(company.Id);
                 companyDto.TotalCommissions = await _insuranceCompanyRepository.GetTotalCommissionsAsync(company.Id);
-                companyDto.CurrencyBreakdowns = await _insuranceCompanyRepository.GetCurrencyBreakdownAsync(company.Id);
+                // TODO bring back currency breakdown
+                companyDto.CurrencyBreakdowns = new List<CurrencyBreakdownDto>(); //await _insuranceCompanyRepository.GetCurrencyBreakdownAsync(company.Id);
 
                 return Result<InsuranceCompanyDto>.Success(companyDto);
             }

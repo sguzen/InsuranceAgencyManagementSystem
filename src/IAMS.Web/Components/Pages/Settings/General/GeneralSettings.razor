@@ -5,9 +5,10 @@
 @using IAMS.Application.DTOs.Settings
 @using IAMS.Application.Interfaces
 @using IAMS.MultiTenancy.Interfaces
-@inject IAMS.Application.Interfaces.ITenantService TenantService
+@using IAMS.Shared.Interfaces
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
+@inject IAMS.Shared.Interfaces.ITenantService TenantService
 
 <PageTitle>Genel Ayarlar</PageTitle>
 

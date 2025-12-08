@@ -19,6 +19,7 @@ using IAMS.Application.Features.Customers.Queries.ValidateIdentificationNo;
 using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
+using IAMS.Application.DTOs.Customer;
 
 namespace IAMS.Application.Services.Customers
 {

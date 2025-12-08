@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
 {
@@ -18,18 +20,15 @@ namespace IAMS.Application.Features.Policies.Queries.GetTopPoliciesByPremium
     {
         private readonly IPolicyQueryService _policyQueryService;
         private readonly IMapper _mapper;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetTopPoliciesByPremiumQueryHandler> _logger;
 
         public GetTopPoliciesByPremiumQueryHandler(
             IPolicyQueryService policyQueryService,
             IMapper mapper,
-            ICurrentTenantService currentTenantService,
             ILogger<GetTopPoliciesByPremiumQueryHandler> logger)
         {
             _policyQueryService = policyQueryService;
             _mapper = mapper;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 

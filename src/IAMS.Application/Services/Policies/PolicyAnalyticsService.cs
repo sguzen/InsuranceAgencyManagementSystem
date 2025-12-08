@@ -60,7 +60,7 @@ namespace IAMS.Application.Services.Policies
                 .Where(p => p.Status == PolicyStatus.Active &&
                            p.StartDate <= endOfMonth &&
                            p.EndDate >= startOfMonth)
-                .SumAsync(p => p.Premium);
+                .SumAsync(p => p.PremiumAmount);
         }
 
         public async Task<Dictionary<string, decimal>> GetMonthlyRevenueByCurrencyAsync(DateTime? month = null)
@@ -75,7 +75,7 @@ namespace IAMS.Application.Services.Policies
                            p.EndDate >= startOfMonth)
                 .Include(p => p.Currency)
                 .GroupBy(p => p.Currency.Code)
-                .ToDictionaryAsync(g => g.Key, g => g.Sum(p => p.Premium));
+                .ToDictionaryAsync(g => g.Key, g => g.Sum(p => p.PremiumAmount));
         }
 
         public async Task<decimal> GetYearlyRevenueAsync(int? year = null)
@@ -88,7 +88,7 @@ namespace IAMS.Application.Services.Policies
                 .Where(p => p.Status == PolicyStatus.Active &&
                            p.StartDate <= endOfYear &&
                            p.EndDate >= startOfYear)
-                .SumAsync(p => p.Premium);
+                .SumAsync(p => p.PremiumAmount);
         }
 
         public async Task<Dictionary<string, decimal>> GetRevenueByMonthAsync(int months = 12)
@@ -110,7 +110,7 @@ namespace IAMS.Application.Services.Policies
         {
             return await _policyRepository.AsQueryable()
                 .Where(p => p.CustomerId == customerId)
-                .SumAsync(p => p.Premium);
+                .SumAsync(p => p.PremiumAmount);
         }
 
         public async Task<Dictionary<string, object>> GetPolicyAnalyticsAsync()

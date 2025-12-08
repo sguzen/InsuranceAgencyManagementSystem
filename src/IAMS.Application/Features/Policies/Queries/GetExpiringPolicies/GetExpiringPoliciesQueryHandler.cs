@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Queries.GetExpiringPolicies
 {

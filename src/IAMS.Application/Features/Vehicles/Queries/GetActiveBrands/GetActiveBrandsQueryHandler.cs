@@ -2,6 +2,7 @@ using AutoMapper;
 using IAMS.Application.DTOs.Vehicle;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
+using IAMS.Application.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

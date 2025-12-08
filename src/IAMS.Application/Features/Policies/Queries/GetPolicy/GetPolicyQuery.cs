@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPolicy
 {

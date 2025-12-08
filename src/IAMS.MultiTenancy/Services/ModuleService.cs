@@ -6,7 +6,7 @@ using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Services
 {
-    public class ModuleService : IModuleService, Application.Interfaces.IModuleService
+    public class ModuleService : IModuleService
     {
         private readonly ITenantContextAccessor _tenantContextAccessor;
         private readonly TenantDbContext _tenantdbContext;

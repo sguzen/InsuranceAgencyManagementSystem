@@ -280,67 +280,67 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<CustomerStatisticsDto> GetCustomerStatisticsAsync()
-        {
-            try
-            {
-                var now = DateTime.UtcNow;
-                var startOfMonth = new DateTime(now.Year, now.Month, 1);
-                var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
-                var lastMonth = startOfMonth.AddMonths(-1);
+        //public async Task<CustomerStatisticsDto> GetCustomerStatisticsAsync()
+        //{
+        //    try
+        //    {
+        //        var now = DateTime.UtcNow;
+        //        var startOfMonth = new DateTime(now.Year, now.Month, 1);
+        //        var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
+        //        var lastMonth = startOfMonth.AddMonths(-1);
 
-                var allCustomers = await _dbSet.Where(c => !c.IsDeleted).ToListAsync();
+        //        var allCustomers = await _dbSet.Where(c => !c.IsDeleted).ToListAsync();
 
-                var totalCustomers = allCustomers.Count;
-                var activeCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Active);
-                var inactiveCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Inactive);
-                var newCustomersThisMonth = allCustomers.Count(c => c.CreatedOn >= startOfMonth);
-                var newCustomersThisWeek = allCustomers.Count(c => c.CreatedOn >= startOfWeek);
-                var newCustomersLastMonth = allCustomers.Count(c => c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth);
+        //        var totalCustomers = allCustomers.Count;
+        //        var activeCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Active);
+        //        var inactiveCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Inactive);
+        //        var newCustomersThisMonth = allCustomers.Count(c => c.CreatedOn >= startOfMonth);
+        //        var newCustomersThisWeek = allCustomers.Count(c => c.CreatedOn >= startOfWeek);
+        //        var newCustomersLastMonth = allCustomers.Count(c => c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth);
 
 
-                // Calculate growth percentage
-                var growthPercentage = newCustomersLastMonth > 0
-                    ? ((decimal)(newCustomersThisMonth - newCustomersLastMonth) / newCustomersLastMonth) * 100
-                    : newCustomersThisMonth > 0 ? 100 : 0;
+        //        // Calculate growth percentage
+        //        var growthPercentage = newCustomersLastMonth > 0
+        //            ? ((decimal)(newCustomersThisMonth - newCustomersLastMonth) / newCustomersLastMonth) * 100
+        //            : newCustomersThisMonth > 0 ? 100 : 0;
 
-                var customersWithActivePolicies = await _dbSet
-                    .Where(c => !c.IsDeleted &&
-                               c.Policies.Any(p => p.Status== PolicyStatus.Active && !p.IsDeleted))
-                    .CountAsync();
+        //        var customersWithActivePolicies = await _dbSet
+        //            .Where(c => !c.IsDeleted &&
+        //                       c.Policies.Any(p => p.Status== PolicyStatus.Active && !p.IsDeleted))
+        //            .CountAsync();
 
-                var customersWithoutPolicies = totalCustomers - customersWithActivePolicies;
+        //        var customersWithoutPolicies = totalCustomers - customersWithActivePolicies;
 
-                // Calculate average age
-                var averageAge = await GetAverageCustomerAgeAsync();
+        //        // Calculate average age
+        //        var averageAge = await GetAverageCustomerAgeAsync();
 
-                // Get status breakdown
-                var customersByStatus = await GetCustomersByStatusAsync();
+        //        // Get status breakdown
+        //        var customersByStatus = await GetCustomersByStatusAsync();
 
-                // Get gender breakdown
-                var customersByGender = await GetCustomersByGenderAsync();
+        //        // Get gender breakdown
+        //        var customersByGender = await GetCustomersByGenderAsync();
 
-                return new CustomerStatisticsDto
-                {
-                    TotalCustomers = totalCustomers,
-                    ActiveCustomers = activeCustomers,
-                    InactiveCustomers = inactiveCustomers,
-                    NewCustomersThisMonth = newCustomersThisMonth,
-                    NewCustomersThisWeek = newCustomersThisWeek,
-                    CustomerGrowthPercentage = growthPercentage,
-                    CustomersWithActivePolicies = customersWithActivePolicies,
-                    CustomersWithoutPolicies = customersWithoutPolicies,
-                    AverageCustomerAge = averageAge,
-                    CustomersByStatus = customersByStatus,
-                    CustomersByGender = customersByGender
-                };
-            }
-            catch (Exception ex)
-            {
-               // _logger?.LogError(ex, "Error getting customer statistics for tenant {TenantId}", tenantId);
-                throw;
-            }
-        }
+        //        return new CustomerStatisticsDto
+        //        {
+        //            TotalCustomers = totalCustomers,
+        //            ActiveCustomers = activeCustomers,
+        //            InactiveCustomers = inactiveCustomers,
+        //            NewCustomersThisMonth = newCustomersThisMonth,
+        //            NewCustomersThisWeek = newCustomersThisWeek,
+        //            CustomerGrowthPercentage = growthPercentage,
+        //            CustomersWithActivePolicies = customersWithActivePolicies,
+        //            CustomersWithoutPolicies = customersWithoutPolicies,
+        //            AverageCustomerAge = averageAge,
+        //            CustomersByStatus = customersByStatus,
+        //            CustomersByGender = customersByGender
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //       // _logger?.LogError(ex, "Error getting customer statistics for tenant {TenantId}", tenantId);
+        //        throw;
+        //    }
+        //}
 
         public async Task<List<Customer>> GetTopCustomersByPolicyCountAsync(int count = 10)
         {

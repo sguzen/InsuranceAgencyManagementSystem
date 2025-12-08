@@ -7,6 +7,7 @@ using IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceCompa
 using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompanies;
 using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompanyByName;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.Services.InsuranceCompanies
 {

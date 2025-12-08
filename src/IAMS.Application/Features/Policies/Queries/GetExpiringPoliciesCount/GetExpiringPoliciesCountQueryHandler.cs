@@ -4,22 +4,20 @@ using IAMS.Application.Interfaces.Services;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount
 {
     public class GetExpiringPoliciesCountQueryHandler : IRequestHandler<GetExpiringPoliciesCountQuery, Result<int>>
     {
         private readonly IPolicyAnalyticsService _policyAnalyticsService;
-        private readonly ICurrentTenantService _currentTenantService;
         private readonly ILogger<GetExpiringPoliciesCountQueryHandler> _logger;
 
         public GetExpiringPoliciesCountQueryHandler(
             IPolicyAnalyticsService policyAnalyticsService,
-            ICurrentTenantService currentTenantService,
             ILogger<GetExpiringPoliciesCountQueryHandler> logger)
         {
             _policyAnalyticsService = policyAnalyticsService;
-            _currentTenantService = currentTenantService;
             _logger = logger;
         }
 

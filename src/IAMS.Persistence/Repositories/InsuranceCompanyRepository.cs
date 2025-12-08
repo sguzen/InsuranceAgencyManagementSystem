@@ -247,23 +247,23 @@ namespace IAMS.Persistence.Repositories
             return total;
         }
 
-        public async Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId)
-        {
-            return await _context.Policies
-                .Where(p => p.InsuranceCompanyId == companyId &&
-                           p.Status == PolicyStatus.Active && !p.IsDeleted)
-                .GroupBy(p => new { p.CurrencyId, p.Currency.Code, p.Currency.Symbol })
-                .Select(g => new CurrencyBreakdownDto
-                {
-                    CurrencyId = g.Key.CurrencyId,
-                    CurrencyCode = g.Key.Code,
-                    CurrencySymbol = g.Key.Symbol,
-                    TotalPremiums = g.Sum(p => p.PremiumAmount),
-                    TotalCommissions = g.Sum(p => p.CommissionAmount),
-                    PolicyCount = g.Count()
-                })
-                .OrderByDescending(c => c.TotalPremiums)
-                .ToListAsync();
-        }
+        //public async Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId)
+        //{
+        //    return await _context.Policies
+        //        .Where(p => p.InsuranceCompanyId == companyId &&
+        //                   p.Status == PolicyStatus.Active && !p.IsDeleted)
+        //        .GroupBy(p => new { p.CurrencyId, p.Currency.Code, p.Currency.Symbol })
+        //        .Select(g => new CurrencyBreakdownDto
+        //        {
+        //            CurrencyId = g.Key.CurrencyId,
+        //            CurrencyCode = g.Key.Code,
+        //            CurrencySymbol = g.Key.Symbol,
+        //            TotalPremiums = g.Sum(p => p.PremiumAmount),
+        //            TotalCommissions = g.Sum(p => p.CommissionAmount),
+        //            PolicyCount = g.Count()
+        //        })
+        //        .OrderByDescending(c => c.TotalPremiums)
+        //        .ToListAsync();
+        //}
     }
 }

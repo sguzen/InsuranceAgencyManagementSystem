@@ -4,6 +4,7 @@ using IAMS.MultiTenancy.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using IAMS.Shared.Interfaces;
 
 namespace IAMS.MultiTenancy.Extensions
 {
@@ -32,9 +33,9 @@ namespace IAMS.MultiTenancy.Extensions
             // Register for both interfaces (MultiTenancy and Application) to support different layers
             services.AddScoped<ModuleService>();
             services.AddScoped<IModuleService>(sp => sp.GetRequiredService<ModuleService>());
-            services.AddScoped<Application.Interfaces.IModuleService>(sp => sp.GetRequiredService<ModuleService>());
+            services.AddScoped<IModuleService>(sp => sp.GetRequiredService<ModuleService>());
 
-            services.AddScoped<Application.Interfaces.ICurrentTenantService, CurrentTenantService>();
+            services.AddScoped<ICurrentTenantService, CurrentTenantService>();
 
             // Configure multi-tenancy options
             services.Configure<MultiTenancyOptions>(configuration.GetSection("MultiTenancy"));

@@ -5,6 +5,9 @@ using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.DTOs.Customer;
+using IAMS.Application.Models;
+using IAMS.Shared.Interfaces;
 
 namespace IAMS.Application.Features.Customers.Queries.GetRecentCustomers
 {

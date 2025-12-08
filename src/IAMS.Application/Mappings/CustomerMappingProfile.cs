@@ -2,6 +2,7 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Application.DTOs.CustomerMapping;
 using IAMS.Domain.Entities;
+using IAMS.Application.DTOs.Customer;
 
 namespace IAMS.Application.Mappings
 {

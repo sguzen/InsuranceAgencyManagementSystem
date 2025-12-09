@@ -3,6 +3,7 @@
 @using IAMS.Application.Services.Payments
 @using IAMS.Application.Interfaces
 @using IAMS.Domain.Enums
+@using IAMS.Shared.QueryParams
 @inject IPaymentService PaymentService
 @inject IPolicyService PolicyService
 @inject ISnackbar Snackbar
@@ -12,23 +13,22 @@
         <MudStack Spacing="3">
             @if (EditMode && Payment != null)
             {
-                <MudAlert Severity="Severity.Info" Dense="true">
+                <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
                     Ödeme düzenleme modu - Poliçe: @PolicyNumber
                 </MudAlert>
             }
             else if (PolicyId.HasValue)
             {
-                <MudAlert Severity="Severity.Info" Dense="true">
+                <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
                     Poliçe: @PolicyNumber
                 </MudAlert>
             }
 
-            @if (!PolicyId.HasValue)
+@*             @if (!PolicyId.HasValue)
             {
                 <MudAutocomplete T="PolicyDto"
                                  Label="Poliçe Seçin"
-                                 @bind-Value="selectedPolicy"
-                                 SearchFunc="SearchPolicies"
+                                 SearchFunc="@SearchPolicies"
                                  ToStringFunc="@(p => p?.PolicyNumber ?? "")"
                                  Required="true"
                                  RequiredError="Poliçe seçimi zorunludur"
@@ -43,7 +43,7 @@
                         </MudStack>
                     </ItemTemplate>
                 </MudAutocomplete>
-            }
+            } *@
 
             <MudNumericField @bind-Value="model.Amount"
                              Label="Tutar"
@@ -176,7 +176,15 @@
 
         try
         {
-            var result = await PolicyService.GetPoliciesAsync(1, 10, searchText);
+            var queryParams = new PolicyQueryParams
+            {
+                SearchTerm = searchText,
+                PageSize = 10,
+                Status = PolicyStatus.Active
+            };
+
+            //var result = await PolicyService.GetPoliciesAsync(1, 10, searchText);
+            var result = await PolicyService.GetPoliciesAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 return result.Data.Items;
@@ -241,18 +249,18 @@
                 var result = await PaymentService.CreateAsync(model);
                 if (result != null)
                 {
-                    Snackbar.Add("Ödeme başarıyla oluşturuldu", Severity.Success);
+                    Snackbar.Add("Ödeme başarıyla oluşturuldu", MudBlazor.Severity.Success);
                     MudDialog.Close(DialogResult.Ok(result));
                 }
                 else
                 {
-                    Snackbar.Add("Ödeme oluşturulurken hata oluştu", Severity.Error);
+                    Snackbar.Add("Ödeme oluşturulurken hata oluştu", MudBlazor.Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

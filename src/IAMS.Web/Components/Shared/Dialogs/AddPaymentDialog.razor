@@ -240,7 +240,7 @@
                 };
 
                 await PaymentService.UpdateAsync(updateDto);
-                Snackbar.Add("Ödeme başarıyla güncellendi", Severity.Success);
+                Snackbar.Add("Ödeme başarıyla güncellendi", MudBlazor.Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

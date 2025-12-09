@@ -1,10 +1,13 @@
 ﻿@page "/policies/{PolicyId:int}"
 @layout Layout.MainLayout
 @using IAMS.Application.DTOs.Policy
+@using IAMS.Application.DTOs.Payment
 @using IAMS.Application.Interfaces
+@using IAMS.Application.Services.Payments
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @inject IPolicyService PolicyService
+@inject IPaymentService PaymentService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -101,6 +104,144 @@ else
                     </MudCard>
                 </MudItem>
             </MudGrid>
+
+            <!-- Payment Tracking Section -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Payment" Class="mr-2" />
+                            Ödeme Takibi
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddPayment">
+                            Ödeme Ekle
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid Class="mb-4">
+                        <MudItem xs="12" md="3">
+                            <MudCard Outlined="true" Class="pa-4">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Size="Size.Large" Color="Color.Info" />
+                                    <MudText Typo="Typo.h5" Color="Color.Info">@policy.CurrencySymbol@policy.PremiumAmount.ToString("N2")</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Tutar</MudText>
+                                </MudStack>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudCard Outlined="true" Class="pa-4">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                                    <MudText Typo="Typo.h5" Color="Color.Success">@policy.CurrencySymbol@totalPaid.ToString("N2")</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Ödenen</MudText>
+                                </MudStack>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudCard Outlined="true" Class="pa-4">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="@(outstandingBalance > 0 ? Color.Warning : Color.Success)" />
+                                    <MudText Typo="Typo.h5" Color="@(outstandingBalance > 0 ? Color.Warning : Color.Success)">@policy.CurrencySymbol@outstandingBalance.ToString("N2")</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Kalan Bakiye</MudText>
+                                </MudStack>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudCard Outlined="true" Class="pa-4">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.ListAlt" Size="Size.Large" Color="Color.Primary" />
+                                    <MudText Typo="Typo.h5" Color="Color.Primary">@payments.Count</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Ödeme</MudText>
+                                </MudStack>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (payments.Any())
+                    {
+                        <MudTable Items="@payments" Hover="true" Dense="true" Elevation="0" Class="mt-4">
+                            <HeaderContent>
+                                <MudTh>Ödeme Tarihi</MudTh>
+                                <MudTh>Vade Tarihi</MudTh>
+                                <MudTh Style="text-align: right;">Tutar</MudTh>
+                                <MudTh>Ödeme Yöntemi</MudTh>
+                                <MudTh>Durum</MudTh>
+                                <MudTh>Referans</MudTh>
+                                <MudTh>İşlemler</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Ödeme Tarihi">
+                                    @context.PaymentDate.ToString("dd.MM.yyyy")
+                                </MudTd>
+                                <MudTd DataLabel="Vade Tarihi">
+                                    @if (context.DueDate.HasValue)
+                                    {
+                                        <div>
+                                            <div>@context.DueDate.Value.ToString("dd.MM.yyyy")</div>
+                                            @if (context.Status == PaymentStatus.Pending && context.DueDate.Value < DateTime.Today)
+                                            {
+                                                <MudChip Size="Size.Small" Color="Color.Error" T="string">Gecikmiş</MudChip>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <MudText Color="Color.Secondary">-</MudText>
+                                    }
+                                </MudTd>
+                                <MudTd DataLabel="Tutar" Style="text-align: right;">
+                                    <strong>@policy.CurrencySymbol@context.Amount.ToString("N2")</strong>
+                                </MudTd>
+                                <MudTd DataLabel="Ödeme Yöntemi">
+                                    @GetPaymentMethodText(context.PaymentMethod)
+                                </MudTd>
+                                <MudTd DataLabel="Durum">
+                                    <MudChip T="string" Color="@GetPaymentStatusColor(context.Status)" Size="Size.Small">
+                                        @GetPaymentStatusText(context.Status)
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Referans">
+                                    @(string.IsNullOrEmpty(context.Reference) ? "-" : context.Reference)
+                                </MudTd>
+                                <MudTd DataLabel="İşlemler">
+                                    <MudStack Row Spacing="1">
+                                        @if (context.Status == PaymentStatus.Pending)
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                                                           Color="Color.Success"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => MarkPaymentCompleted(context.Id))"
+                                                           Title="Tamamlandı Olarak İşaretle" />
+                                        }
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditPayment(context.Id))"
+                                                       Title="Düzenle" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => DeletePayment(context.Id))"
+                                                       Title="Sil" />
+                                    </MudStack>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            Bu poliçe için henüz ödeme kaydı bulunmamaktadır. Yukarıdaki "Ödeme Ekle" butonuna tıklayarak yeni ödeme ekleyebilirsiniz.
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
 
             <!-- Main Information Cards -->
             <MudGrid>
@@ -573,11 +714,15 @@ else
 
     private PolicyDto? policy;
     private List<PolicyDto> endorsements = new();
+    private List<PolicyPaymentDto> payments = new();
+    private decimal totalPaid = 0;
+    private decimal outstandingBalance = 0;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPolicy();
         await LoadEndorsements();
+        await LoadPayments();
     }
 
     private async Task LoadPolicy()
@@ -625,6 +770,129 @@ else
             Console.WriteLine($"Zeyilnameler yüklenirken hata: {ex.Message}");
             endorsements = new List<PolicyDto>();
         }
+    }
+
+    private async Task LoadPayments()
+    {
+        try
+        {
+            payments = await PaymentService.GetPaymentsByPolicyIdAsync(PolicyId);
+            totalPaid = await PaymentService.GetTotalPaymentsByPolicyIdAsync(PolicyId);
+            outstandingBalance = policy?.PremiumAmount ?? 0 - totalPaid;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ödemeler yüklenirken hata: {ex.Message}");
+            payments = new List<PolicyPaymentDto>();
+            totalPaid = 0;
+            outstandingBalance = policy?.PremiumAmount ?? 0;
+        }
+    }
+
+    private void AddPayment()
+    {
+        Snackbar.Add("Ödeme ekleme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private void EditPayment(int paymentId)
+    {
+        Snackbar.Add("Ödeme düzenleme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+    }
+
+    private async Task MarkPaymentCompleted(int paymentId)
+    {
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, "Bu ödemeyi tamamlandı olarak işaretlemek istediğinizden emin misiniz?" },
+            { x => x.ButtonText, "Tamamlandı İşaretle" },
+            { x => x.Color, Color.Success }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Ödeme Onayı", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                await PaymentService.UpdatePaymentStatusAsync(paymentId, PaymentStatus.Completed);
+                Snackbar.Add("Ödeme başarıyla tamamlandı olarak işaretlendi", MudBlazor.Severity.Success);
+                await LoadPayments();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Ödeme durumu güncellenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeletePayment(int paymentId)
+    {
+        var parameters = new DialogParameters<ConfirmationDialog>
+        {
+            { x => x.ContentText, "Bu ödeme kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
+            { x => x.ButtonText, "Sil" },
+            { x => x.Color, Color.Error }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Ödeme Sil", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            try
+            {
+                await PaymentService.DeleteAsync(paymentId);
+                Snackbar.Add("Ödeme kaydı başarıyla silindi", MudBlazor.Severity.Success);
+                await LoadPayments();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Ödeme silinirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private Color GetPaymentStatusColor(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Completed => Color.Success,
+            PaymentStatus.Pending => Color.Warning,
+            PaymentStatus.Failed => Color.Error,
+            PaymentStatus.Refunded => Color.Info,
+            PaymentStatus.PartiallyPaid => Color.Warning,
+            PaymentStatus.Overdue => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetPaymentStatusText(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Completed => "Tamamlandı",
+            PaymentStatus.Pending => "Bekliyor",
+            PaymentStatus.Failed => "Başarısız",
+            PaymentStatus.Refunded => "İade Edildi",
+            PaymentStatus.PartiallyPaid => "Kısmi Ödendi",
+            PaymentStatus.Overdue => "Gecikmiş",
+            _ => status.ToString()
+        };
+    }
+
+    private string GetPaymentMethodText(PaymentMethod method)
+    {
+        return method switch
+        {
+            PaymentMethod.Cash => "Nakit",
+            PaymentMethod.CreditCard => "Kredi Kartı",
+            PaymentMethod.BankTransfer => "Banka Havalesi",
+            PaymentMethod.Cheque => "Çek",
+            PaymentMethod.DebitCard => "Banka Kartı",
+            PaymentMethod.OnlinePayment => "Online Ödeme",
+            _ => method.ToString()
+        };
     }
 
     private void GoBack()

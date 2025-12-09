@@ -1,0 +1,238 @@
+@using IAMS.Application.DTOs.Payment
+@using IAMS.Application.DTOs.Policy
+@using IAMS.Application.Services.Payments
+@using IAMS.Application.Interfaces
+@using IAMS.Domain.Enums
+@inject IPaymentService PaymentService
+@inject IPolicyService PolicyService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (EditMode && Payment != null)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">
+                    Ödeme düzenleme modu - Poliçe: @PolicyNumber
+                </MudAlert>
+            }
+            else if (PolicyId.HasValue)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">
+                    Poliçe: @PolicyNumber
+                </MudAlert>
+            }
+
+            @if (!PolicyId.HasValue)
+            {
+                <MudAutocomplete T="PolicyDto"
+                                 Label="Poliçe Seçin"
+                                 @bind-Value="selectedPolicy"
+                                 SearchFunc="SearchPolicies"
+                                 ToStringFunc="@(p => p?.PolicyNumber ?? "")"
+                                 Required="true"
+                                 RequiredError="Poliçe seçimi zorunludur"
+                                 Variant="Variant.Outlined"
+                                 Clearable="true">
+                    <ItemTemplate Context="policy">
+                        <MudStack Row Justify="Justify.SpaceBetween">
+                            <MudText>@policy.PolicyNumber</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                @policy.Customer?.FirstName @policy.Customer?.LastName
+                            </MudText>
+                        </MudStack>
+                    </ItemTemplate>
+                </MudAutocomplete>
+            }
+
+            <MudNumericField @bind-Value="model.Amount"
+                             Label="Tutar"
+                             Required="true"
+                             RequiredError="Tutar zorunludur"
+                             Min="0.01m"
+                             Variant="Variant.Outlined"
+                             Format="N2"
+                             Adornment="Adornment.Start"
+                             AdornmentText="₺" />
+
+            <MudDatePicker @bind-Date="paymentDate"
+                           Label="Ödeme Tarihi"
+                           Required="true"
+                           RequiredError="Ödeme tarihi zorunludur"
+                           Variant="Variant.Outlined"
+                           DateFormat="dd.MM.yyyy" />
+
+            <MudDatePicker @bind-Date="dueDate"
+                           Label="Vade Tarihi (İsteğe Bağlı)"
+                           Variant="Variant.Outlined"
+                           DateFormat="dd.MM.yyyy"
+                           Clearable="true" />
+
+            <MudSelect @bind-Value="model.PaymentMethod"
+                       Label="Ödeme Yöntemi"
+                       Required="true"
+                       Variant="Variant.Outlined">
+                <MudSelectItem Value="PaymentMethod.Cash">Nakit</MudSelectItem>
+                <MudSelectItem Value="PaymentMethod.CreditCard">Kredi Kartı</MudSelectItem>
+                <MudSelectItem Value="PaymentMethod.BankTransfer">Banka Havalesi</MudSelectItem>
+                <MudSelectItem Value="PaymentMethod.Cheque">Çek</MudSelectItem>
+                <MudSelectItem Value="PaymentMethod.DebitCard">Banka Kartı</MudSelectItem>
+                <MudSelectItem Value="PaymentMethod.OnlinePayment">Online Ödeme</MudSelectItem>
+            </MudSelect>
+
+            <MudSelect @bind-Value="model.Status"
+                       Label="Durum"
+                       Required="true"
+                       Variant="Variant.Outlined">
+                <MudSelectItem Value="PaymentStatus.Pending">Bekliyor</MudSelectItem>
+                <MudSelectItem Value="PaymentStatus.Completed">Tamamlandı</MudSelectItem>
+                <MudSelectItem Value="PaymentStatus.Failed">Başarısız</MudSelectItem>
+                <MudSelectItem Value="PaymentStatus.PartiallyPaid">Kısmi Ödendi</MudSelectItem>
+            </MudSelect>
+
+            <MudTextField @bind-Value="model.Reference"
+                          Label="Referans Numarası (İsteğe Bağlı)"
+                          Variant="Variant.Outlined"
+                          MaxLength="100" />
+
+            <MudTextField @bind-Value="model.Notes"
+                          Label="Notlar (İsteğe Bağlı)"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          MaxLength="1000" />
+
+            @if (isSaving)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="isSaving">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="isSaving || !IsValid()">
+            @(EditMode ? "Güncelle" : "Kaydet")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public int? PolicyId { get; set; }
+    [Parameter] public string? PolicyNumber { get; set; }
+    [Parameter] public PolicyPaymentDto? Payment { get; set; }
+
+    private CreatePolicyPaymentDto model = new();
+    private PolicyDto? selectedPolicy;
+    private DateTime? paymentDate = DateTime.Today;
+    private DateTime? dueDate;
+    private bool isSaving = false;
+    private bool EditMode => Payment != null;
+
+    protected override void OnInitialized()
+    {
+        if (Payment != null)
+        {
+            // Edit mode - populate from existing payment
+            model.PolicyId = Payment.PolicyId;
+            model.Amount = Payment.Amount;
+            paymentDate = Payment.PaymentDate;
+            dueDate = Payment.DueDate;
+            model.PaymentMethod = Payment.PaymentMethod;
+            model.Status = Payment.Status;
+            model.Reference = Payment.Reference;
+            model.Notes = Payment.Notes;
+        }
+        else if (PolicyId.HasValue)
+        {
+            // Create mode with pre-selected policy
+            model.PolicyId = PolicyId.Value;
+        }
+    }
+
+    private async Task<IEnumerable<PolicyDto>> SearchPolicies(string searchText)
+    {
+        if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
+            return new List<PolicyDto>();
+
+        try
+        {
+            var result = await PolicyService.GetPoliciesAsync(1, 10, searchText);
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching policies: {ex.Message}");
+        }
+
+        return new List<PolicyDto>();
+    }
+
+    private bool IsValid()
+    {
+        return (PolicyId.HasValue || selectedPolicy != null) &&
+               model.Amount > 0 &&
+               paymentDate.HasValue;
+    }
+
+    private async Task Submit()
+    {
+        if (!IsValid())
+            return;
+
+        isSaving = true;
+
+        try
+        {
+            // Set policy ID from selected policy if not already set
+            if (!PolicyId.HasValue && selectedPolicy != null)
+            {
+                model.PolicyId = selectedPolicy.Id;
+            }
+
+            model.PaymentDate = paymentDate!.Value;
+            model.DueDate = dueDate;
+
+            if (EditMode && Payment != null)
+            {
+                // Update existing payment - for now we'll just close
+                // In a full implementation, you'd call an update endpoint
+                Snackbar.Add("Ödeme düzenleme özelliği yakında eklenecek", Severity.Info);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                // Create new payment
+                var result = await PaymentService.CreateAsync(model);
+                if (result != null)
+                {
+                    Snackbar.Add("Ödeme başarıyla oluşturuldu", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(result));
+                }
+                else
+                {
+                    Snackbar.Add("Ödeme oluşturulurken hata oluştu", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

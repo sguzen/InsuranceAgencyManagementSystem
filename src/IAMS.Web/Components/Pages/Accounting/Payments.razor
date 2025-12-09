@@ -4,6 +4,7 @@
 @using IAMS.Application.Services.Payments
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
+@using IAMS.Web.Components.Shared.Dialogs
 @inject IPaymentService PaymentService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -319,14 +320,47 @@
         await LoadPayments();
     }
 
-    private void AddPayment()
+    private async Task AddPayment()
     {
-        Snackbar.Add("Ödeme ekleme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Yeni Ödeme Ekle");
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await LoadPayments();
+        }
     }
 
-    private void EditPayment(int paymentId)
+    private async Task EditPayment(int paymentId)
     {
-        Snackbar.Add("Ödeme düzenleme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        try
+        {
+            var payment = allPayments.FirstOrDefault(p => p.Id == paymentId);
+            if (payment == null)
+            {
+                Snackbar.Add("Ödeme bulunamadı", MudBlazor.Severity.Error);
+                return;
+            }
+
+            var parameters = new DialogParameters
+            {
+                ["Payment"] = payment,
+                ["PolicyId"] = payment.PolicyId,
+                ["PolicyNumber"] = payment.PolicyNumber
+            };
+
+            var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Ödeme Düzenle", parameters);
+            var result = await dialog.Result;
+
+            if (result != null && !result.Canceled)
+            {
+                await LoadPayments();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private async Task MarkPaymentCompleted(int paymentId)

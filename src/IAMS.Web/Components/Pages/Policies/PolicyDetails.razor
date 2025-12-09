@@ -6,6 +6,7 @@
 @using IAMS.Application.Services.Payments
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
+@using IAMS.Web.Components.Shared.Dialogs
 @inject IPolicyService PolicyService
 @inject IPaymentService PaymentService
 @inject NavigationManager Navigation
@@ -789,14 +790,53 @@ else
         }
     }
 
-    private void AddPayment()
+    private async Task AddPayment()
     {
-        Snackbar.Add("Ödeme ekleme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        var parameters = new DialogParameters
+        {
+            ["PolicyId"] = PolicyId,
+            ["PolicyNumber"] = policy?.PolicyNumber
+        };
+
+        var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Yeni Ödeme Ekle", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await LoadPayments();
+        }
     }
 
-    private void EditPayment(int paymentId)
+    private async Task EditPayment(int paymentId)
     {
-        Snackbar.Add("Ödeme düzenleme özelliği yakında eklenecek", MudBlazor.Severity.Info);
+        try
+        {
+            var payment = payments.FirstOrDefault(p => p.Id == paymentId);
+            if (payment == null)
+            {
+                Snackbar.Add("Ödeme bulunamadı", MudBlazor.Severity.Error);
+                return;
+            }
+
+            var parameters = new DialogParameters
+            {
+                ["Payment"] = payment,
+                ["PolicyId"] = PolicyId,
+                ["PolicyNumber"] = policy?.PolicyNumber
+            };
+
+            var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Ödeme Düzenle", parameters);
+            var result = await dialog.Result;
+
+            if (result != null && !result.Canceled)
+            {
+                await LoadPayments();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
     }
 
     private async Task MarkPaymentCompleted(int paymentId)

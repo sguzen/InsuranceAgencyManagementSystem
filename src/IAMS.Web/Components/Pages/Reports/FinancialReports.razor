@@ -10,9 +10,11 @@
 @using IAMS.MultiTenancy.Interfaces
 
 @using IAMS.Application.Services.Claims
+@using IAMS.Application.Services.Payments
 @using IAMS.Shared.QueryParams
 @inject IPolicyService PolicyService
 @inject IClaimService ClaimService
+@inject IPaymentService PaymentService
 @inject ICurrencyService CurrencyService
 @inject IReportingService ReportingService
 @inject ITenantContextAccessor TenantContext
@@ -452,6 +454,206 @@
                     </MudCardContent>
                 </MudCard>
             </MudTabPanel>
+
+            <!-- Payment Reports Tab -->
+            <MudTabPanel Icon="@Icons.Material.Filled.Payment" Text="Ödeme Raporu">
+                <MudCard Elevation="0">
+                    <MudCardContent>
+                        <!-- Payment Report Parameters -->
+                        <MudGrid Class="mb-4 no-print">
+                            <MudItem xs="12" md="4">
+                                <MudDatePicker Label="Başlangıç Tarihi"
+                                              @bind-Date="paymentStartDate"
+                                              Variant="Variant.Outlined"
+                                              DateFormat="dd.MM.yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudDatePicker Label="Bitiş Tarihi"
+                                              @bind-Date="paymentEndDate"
+                                              Variant="Variant.Outlined"
+                                              DateFormat="dd.MM.yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="4" Class="d-flex align-end">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Refresh"
+                                          OnClick="LoadPaymentReport"
+                                          FullWidth="true">
+                                    Raporu Oluştur
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Payment Report Summary -->
+                        <MudText Typo="Typo.h6" Class="mb-3">Ödeme Özeti</MudText>
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Toplam Ödeme</MudText>
+                                        <MudText Typo="Typo.h5">@paymentTotalCount.ToString("N0")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Tahsil Edilen (@selectedCurrencyCode)</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Success">@paymentTotalCollected.ToString("N2")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Bekleyen (@selectedCurrencyCode)</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Warning">@paymentTotalPending.ToString("N2")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.body2" Color="Color.Default">Gecikmiş (@selectedCurrencyCode)</MudText>
+                                        <MudText Typo="Typo.h5" Color="Color.Error">@paymentTotalOverdue.ToString("N2")</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Outstanding Balance by Customer -->
+                        <MudText Typo="Typo.h6" Class="mb-3">Müşteri Bazlı Kalan Bakiye (Top 10)</MudText>
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        @if (customersWithOutstanding?.Any() == true)
+                                        {
+                                            <MudTable Items="customersWithOutstanding.Take(10)" Dense="true" Hover="true">
+                                                <HeaderContent>
+                                                    <MudTh>Müşteri</MudTh>
+                                                    <MudTh>E-posta</MudTh>
+                                                    <MudTh Style="text-align:right">Aktif Poliçe</MudTh>
+                                                    <MudTh Style="text-align:right">Bekleyen Ödeme</MudTh>
+                                                    <MudTh Style="text-align:right">Kalan Bakiye</MudTh>
+                                                </HeaderContent>
+                                                <RowTemplate>
+                                                    <MudTd DataLabel="Müşteri">@context.CustomerName</MudTd>
+                                                    <MudTd DataLabel="E-posta">@context.CustomerEmail</MudTd>
+                                                    <MudTd DataLabel="Aktif Poliçe" Style="text-align:right">@context.ActivePoliciesCount</MudTd>
+                                                    <MudTd DataLabel="Bekleyen Ödeme" Style="text-align:right">@context.PendingPaymentsCount</MudTd>
+                                                    <MudTd DataLabel="Kalan Bakiye" Style="text-align:right">
+                                                        <MudChip Size="Size.Small" Color="Color.Error">₺@context.OutstandingBalance.ToString("N2")</MudChip>
+                                                    </MudTd>
+                                                </RowTemplate>
+                                            </MudTable>
+                                        }
+                                        else
+                                        {
+                                            <MudText Color="Color.Secondary">Kalan bakiyesi olan müşteri bulunmuyor</MudText>
+                                        }
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Payments Due This Month -->
+                        <MudText Typo="Typo.h6" Class="mb-3">Bu Ay Ödenecekler</MudText>
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12">
+                                <MudCard Outlined="true">
+                                    <MudCardContent>
+                                        @if (paymentsDueThisMonth?.Any() == true)
+                                        {
+                                            <MudTable Items="paymentsDueThisMonth.Take(10)" Dense="true" Hover="true">
+                                                <HeaderContent>
+                                                    <MudTh>Müşteri</MudTh>
+                                                    <MudTh>Poliçe</MudTh>
+                                                    <MudTh>Vade Tarihi</MudTh>
+                                                    <MudTh Style="text-align:right">Tutar</MudTh>
+                                                    <MudTh>Durum</MudTh>
+                                                </HeaderContent>
+                                                <RowTemplate>
+                                                    <MudTd DataLabel="Müşteri">@context.CustomerName</MudTd>
+                                                    <MudTd DataLabel="Poliçe">@context.PolicyNumber</MudTd>
+                                                    <MudTd DataLabel="Vade Tarihi">@context.DueDate?.ToString("dd MMM yyyy")</MudTd>
+                                                    <MudTd DataLabel="Tutar" Style="text-align:right">@context.CurrencySymbol@context.Amount.ToString("N2")</MudTd>
+                                                    <MudTd DataLabel="Durum">
+                                                        @if (context.DueDate.HasValue && context.DueDate.Value < DateTime.Today)
+                                                        {
+                                                            <MudChip Size="Size.Small" Color="Color.Error">Gecikmiş</MudChip>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudChip Size="Size.Small" Color="Color.Warning">Bekliyor</MudChip>
+                                                        }
+                                                    </MudTd>
+                                                </RowTemplate>
+                                            </MudTable>
+                                        }
+                                        else
+                                        {
+                                            <MudText Color="Color.Secondary">Bu ay ödenecek ödeme bulunmuyor</MudText>
+                                        }
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Export and Print Buttons -->
+                        <MudGrid Class="no-print">
+                            <MudItem xs="12" md="4">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Error"
+                                          StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                          OnClick="@(() => ExportPaymentReport("pdf"))"
+                                          FullWidth="true"
+                                          Disabled="exportingPayment">
+                                    @if (exportingPayment && paymentExportFormat == "pdf")
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                        <span class="ml-2">Dışa Aktarılıyor...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>PDF Olarak İndir</span>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Success"
+                                          StartIcon="@Icons.Material.Filled.TableChart"
+                                          OnClick="@(() => ExportPaymentReport("excel"))"
+                                          FullWidth="true"
+                                          Disabled="exportingPayment">
+                                    @if (exportingPayment && paymentExportFormat == "excel")
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                                        <span class="ml-2">Dışa Aktarılıyor...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Excel Olarak İndir</span>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Print"
+                                          OnClick="PrintPaymentReport"
+                                          FullWidth="true">
+                                    Yazdır
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudTabPanel>
         </MudTabs>
     }
 </MudContainer>
@@ -515,12 +717,25 @@
     private decimal claimsRejectedAmount = 0;
     private decimal claimsSettledAmount = 0;
 
+    // Payment Report
+    private DateTime? paymentStartDate = DateTime.Now.AddMonths(-1);
+    private DateTime? paymentEndDate = DateTime.Now;
+    private bool exportingPayment = false;
+    private string paymentExportFormat = "";
+    private int paymentTotalCount = 0;
+    private decimal paymentTotalCollected = 0;
+    private decimal paymentTotalPending = 0;
+    private decimal paymentTotalOverdue = 0;
+    private List<IAMS.Application.DTOs.Payment.CustomerOutstandingBalanceDto>? customersWithOutstanding;
+    private List<IAMS.Application.DTOs.Payment.PolicyPaymentDto>? paymentsDueThisMonth;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrencies();
         await LoadFinancialSummary();
         await LoadCommissionReport();
         await LoadClaimsReport();
+        await LoadPaymentReport();
     }
 
     private async Task LoadCurrencies()
@@ -544,6 +759,7 @@
         await LoadFinancialSummary();
         await LoadCommissionReport();
         await LoadClaimsReport();
+        await LoadPaymentReport();
     }
 
     private async Task LoadFinancialSummary()
@@ -860,5 +1076,127 @@
         {
             Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
         }
+    }
+
+    private async Task LoadPaymentReport()
+    {
+        try
+        {
+            // Get all payments in date range
+            var allPayments = await PaymentService.GetPaymentsPagedAsync(1, 10000, null);
+
+            if (allPayments != null && allPayments.Items != null)
+            {
+                var payments = allPayments.Items.ToList();
+
+                // Filter by date range if specified
+                if (paymentStartDate.HasValue)
+                {
+                    payments = payments.Where(p => p.PaymentDate >= paymentStartDate.Value).ToList();
+                }
+                if (paymentEndDate.HasValue)
+                {
+                    payments = payments.Where(p => p.PaymentDate <= paymentEndDate.Value).ToList();
+                }
+
+                // Filter by selected currency
+                payments = payments.Where(p => !string.IsNullOrEmpty(p.CurrencySymbol) && p.CurrencySymbol.Trim() == GetCurrencySymbol(selectedCurrencyCode).Trim()).ToList();
+
+                // Calculate payment metrics
+                paymentTotalCount = payments.Count;
+                paymentTotalCollected = payments.Where(p => p.Status == IAMS.Domain.Enums.PaymentStatus.Completed).Sum(p => p.Amount);
+                paymentTotalPending = payments.Where(p => p.Status == IAMS.Domain.Enums.PaymentStatus.Pending).Sum(p => p.Amount);
+
+                var today = DateTime.Today;
+                paymentTotalOverdue = payments.Where(p => p.Status == IAMS.Domain.Enums.PaymentStatus.Pending &&
+                                                          p.DueDate.HasValue &&
+                                                          p.DueDate.Value < today).Sum(p => p.Amount);
+
+                // Load customers with outstanding balance
+                customersWithOutstanding = await PaymentService.GetCustomersWithOutstandingBalanceAsync();
+
+                // Load payments due this month
+                paymentsDueThisMonth = await PaymentService.GetPaymentsDueThisMonthAsync();
+
+                Snackbar.Add("Ödeme raporu oluşturuldu", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                // No payments found
+                paymentTotalCount = 0;
+                paymentTotalCollected = 0;
+                paymentTotalPending = 0;
+                paymentTotalOverdue = 0;
+                customersWithOutstanding = new List<IAMS.Application.DTOs.Payment.CustomerOutstandingBalanceDto>();
+                paymentsDueThisMonth = new List<IAMS.Application.DTOs.Payment.PolicyPaymentDto>();
+
+                Snackbar.Add("Ödeme kaydı bulunamadı", MudBlazor.Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task ExportPaymentReport(string format)
+    {
+        exportingPayment = true;
+        paymentExportFormat = format;
+        StateHasChanged();
+
+        try
+        {
+            var parameters = new ReportParameters
+            {
+                StartDate = paymentStartDate,
+                EndDate = paymentEndDate
+            };
+
+            var reportData = await ReportingService.ExportReportAsync("payment-report", parameters, format);
+
+            if (reportData != null && reportData.Length > 0)
+            {
+                Snackbar.Add($"Ödeme raporu {format.ToUpper()} formatında dışa aktarıldı", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Rapor oluşturulurken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            exportingPayment = false;
+            paymentExportFormat = "";
+            StateHasChanged();
+        }
+    }
+
+    private async Task PrintPaymentReport()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.print");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Yazdırma hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private string GetCurrencySymbol(string currencyCode)
+    {
+        return currencyCode switch
+        {
+            "TRY" => "₺",
+            "USD" => "$",
+            "EUR" => "€",
+            "GBP" => "£",
+            _ => currencyCode
+        };
     }
 }

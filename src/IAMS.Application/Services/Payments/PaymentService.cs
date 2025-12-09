@@ -8,6 +8,9 @@ using IAMS.Application.Features.Payments.Queries.GetPaymentById;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsPaged;
 using IAMS.Application.Features.Payments.Queries.GetTotalPaymentsByPolicyId;
+using IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth;
+using IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstandingBalance;
+using IAMS.Application.Features.Payments.Queries.GetTotalOutstandingBalanceByCustomerId;
 using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
@@ -83,6 +86,21 @@ namespace IAMS.Application.Services.Payments
         public async Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId)
         {
             return await _mediator.Send(new GetTotalPaymentsByPolicyIdQuery(policyId));
+        }
+
+        public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync()
+        {
+            return await _mediator.Send(new GetPaymentsDueThisMonthQuery());
+        }
+
+        public async Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync()
+        {
+            return await _mediator.Send(new GetCustomersWithOutstandingBalanceQuery());
+        }
+
+        public async Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId)
+        {
+            return await _mediator.Send(new GetTotalOutstandingBalanceByCustomerIdQuery(customerId));
         }
     }
 }

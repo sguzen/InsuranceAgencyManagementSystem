@@ -72,5 +72,70 @@ namespace IAMS.Persistence.Repositories
                 .Select(pp => (DateTime?)pp.PaymentDate)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync()
+        {
+            var today = DateTime.Today;
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+            return await _dbSet
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Customer)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.InsuranceCompany)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Currency)
+                .Where(pp => !pp.IsDeleted &&
+                            pp.Status == Domain.Enums.PaymentStatus.Pending &&
+                            pp.DueDate.HasValue &&
+                            pp.DueDate.Value >= startOfMonth &&
+                            pp.DueDate.Value <= endOfMonth)
+                .OrderBy(pp => pp.DueDate)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<int, decimal>> GetOutstandingBalanceByCustomerAsync()
+        {
+            // Get all policies with their payments
+            var policiesWithPayments = await _context.Policies
+                .Include(p => p.PolicyPayments)
+                .Include(p => p.Currency)
+                .Where(p => !p.IsDeleted)
+                .Select(p => new
+                {
+                    CustomerId = p.CustomerId,
+                    PremiumAmount = p.PremiumAmount,
+                    TotalPaid = p.PolicyPayments
+                        .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
+                        .Sum(pp => pp.Amount)
+                })
+                .ToListAsync();
+
+            // Group by customer and calculate outstanding balance
+            return policiesWithPayments
+                .GroupBy(p => p.CustomerId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(p => p.PremiumAmount - p.TotalPaid)
+                );
+        }
+
+        public async Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId)
+        {
+            var policiesWithPayments = await _context.Policies
+                .Include(p => p.PolicyPayments)
+                .Where(p => !p.IsDeleted && p.CustomerId == customerId)
+                .Select(p => new
+                {
+                    PremiumAmount = p.PremiumAmount,
+                    TotalPaid = p.PolicyPayments
+                        .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
+                        .Sum(pp => pp.Amount)
+                })
+                .ToListAsync();
+
+            return policiesWithPayments.Sum(p => p.PremiumAmount - p.TotalPaid);
+        }
     }
 }

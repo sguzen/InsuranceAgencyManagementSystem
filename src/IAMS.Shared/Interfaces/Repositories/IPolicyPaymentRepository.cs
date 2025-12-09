@@ -10,5 +10,8 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<IEnumerable<PolicyPayment>> GetPaymentsByDateRangeAsync(DateTime fromDate, DateTime toDate);
         Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId);
         Task<DateTime?> GetLastPaymentDateAsync(int customerId);
+        Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync();
+        Task<Dictionary<int, decimal>> GetOutstandingBalanceByCustomerAsync();
+        Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId);
     }
 }

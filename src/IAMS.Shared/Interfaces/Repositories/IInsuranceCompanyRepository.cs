@@ -16,6 +16,6 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<decimal> GetTotalPremiumAmountAsync(int companyId);
         Task<int> GetActivePoliciesCountAsync(int id);
         Task<decimal> GetTotalCommissionsAsync(int id);
-        Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId);
+        Task<List<CurrencyBreakdown>> GetCurrencyBreakdownAsync(int companyId);
     }
 }

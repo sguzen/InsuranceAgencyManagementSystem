@@ -29,9 +29,25 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatistics
             {
                 var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
 
+                // Map from value object to DTO
+                var dto = new CustomerStatisticsDto
+                {
+                    TotalCustomers = statistics.TotalCustomers,
+                    ActiveCustomers = statistics.ActiveCustomers,
+                    InactiveCustomers = statistics.InactiveCustomers,
+                    NewCustomersThisMonth = statistics.NewCustomersThisMonth,
+                    NewCustomersThisWeek = statistics.NewCustomersThisWeek,
+                    CustomerGrowthPercentage = statistics.CustomerGrowthPercentage,
+                    CustomersWithActivePolicies = statistics.CustomersWithActivePolicies,
+                    CustomersWithoutPolicies = statistics.CustomersWithoutPolicies,
+                    AverageCustomerAge = statistics.AverageCustomerAge,
+                    CustomersByStatus = statistics.CustomersByStatus,
+                    CustomersByGender = statistics.CustomersByGender
+                };
+
                 _logger.LogDebug("Retrieved customer statistics");
 
-                return Result<CustomerStatisticsDto>.Success(statistics, "Müşteri istatistikleri getirildi");
+                return Result<CustomerStatisticsDto>.Success(dto, "Müşteri istatistikleri getirildi");
             }
             catch (Exception ex)
             {

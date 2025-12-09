@@ -280,7 +280,7 @@ namespace IAMS.Persistence.Repositories
             }
         }
 
-        public async Task<CustomerStatisticsDto> GetCustomerStatisticsAsync()
+        public async Task<CustomerStatistics> GetCustomerStatisticsAsync()
         {
             try
             {
@@ -320,7 +320,7 @@ namespace IAMS.Persistence.Repositories
                 // Get gender breakdown
                 var customersByGender = await GetCustomersByGenderAsync();
 
-                return new CustomerStatisticsDto
+                return new CustomerStatistics
                 {
                     TotalCustomers = totalCustomers,
                     ActiveCustomers = activeCustomers,

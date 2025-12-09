@@ -247,13 +247,13 @@ namespace IAMS.Persistence.Repositories
             return total;
         }
 
-        public async Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId)
+        public async Task<List<CurrencyBreakdown>> GetCurrencyBreakdownAsync(int companyId)
         {
             return await _context.Policies
                 .Where(p => p.InsuranceCompanyId == companyId &&
                            p.Status == PolicyStatus.Active && !p.IsDeleted)
                 .GroupBy(p => new { p.CurrencyId, p.Currency.Code, p.Currency.Symbol })
-                .Select(g => new CurrencyBreakdownDto
+                .Select(g => new CurrencyBreakdown
                 {
                     CurrencyId = g.Key.CurrencyId,
                     CurrencyCode = g.Key.Code,

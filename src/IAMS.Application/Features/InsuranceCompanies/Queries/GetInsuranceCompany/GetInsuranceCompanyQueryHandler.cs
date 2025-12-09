@@ -41,7 +41,18 @@ namespace IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompa
                 companyDto.ActivePoliciesCount = await _insuranceCompanyRepository.GetActivePoliciesCountAsync(company.Id);
                 companyDto.TotalPremiums = await _insuranceCompanyRepository.GetTotalPremiumAmountAsync(company.Id);
                 companyDto.TotalCommissions = await _insuranceCompanyRepository.GetTotalCommissionsAsync(company.Id);
-                companyDto.CurrencyBreakdowns = await _insuranceCompanyRepository.GetCurrencyBreakdownAsync(company.Id);
+
+                // Map from value objects to DTOs
+                var currencyBreakdowns = await _insuranceCompanyRepository.GetCurrencyBreakdownAsync(company.Id);
+                companyDto.CurrencyBreakdowns = currencyBreakdowns.Select(cb => new CurrencyBreakdownDto
+                {
+                    CurrencyId = cb.CurrencyId,
+                    CurrencyCode = cb.CurrencyCode,
+                    CurrencySymbol = cb.CurrencySymbol,
+                    TotalPremiums = cb.TotalPremiums,
+                    TotalCommissions = cb.TotalCommissions,
+                    PolicyCount = cb.PolicyCount
+                }).ToList();
 
                 return Result<InsuranceCompanyDto>.Success(companyDto);
             }

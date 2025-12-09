@@ -15,5 +15,8 @@ namespace IAMS.Application.Services.Payments
         Task<List<PolicyPaymentDto>> GetOverduePaymentsAsync();
         Task<PagedResult<PolicyPaymentDto>> GetPaymentsPagedAsync(int pageNumber, int pageSize, string searchTerm = null);
         Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId);
+        Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync();
+        Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync();
+        Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId);
     }
 }

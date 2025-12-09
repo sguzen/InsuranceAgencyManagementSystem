@@ -1,0 +1,9 @@
+using IAMS.Application.DTOs.Payment;
+using MediatR;
+
+namespace IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth
+{
+    public class GetPaymentsDueThisMonthQuery : IRequest<List<PolicyPaymentDto>>
+    {
+    }
+}

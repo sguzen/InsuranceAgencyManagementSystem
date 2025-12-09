@@ -331,11 +331,11 @@
 
     private async Task MarkPaymentCompleted(int paymentId)
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, "Bu ödemeyi tamamlandı olarak işaretlemek istediğinizden emin misiniz?" },
-            { x => x.ButtonText, "Tamamlandı İşaretle" },
-            { x => x.Color, Color.Success }
+            ["ContentText"] = "Bu ödemeyi tamamlandı olarak işaretlemek istediğinizden emin misiniz?",
+            ["ButtonText"] = "Tamamlandı İşaretle",
+            ["Color"] = Color.Success
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Ödeme Onayı", parameters);
@@ -358,11 +358,11 @@
 
     private async Task DeletePayment(int paymentId)
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, "Bu ödeme kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
-            { x => x.ButtonText, "Sil" },
-            { x => x.Color, Color.Error }
+            ["ContentText"] = "Bu ödeme kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+            ["ButtonText"] = "Sil",
+            ["Color"] = Color.Error
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Ödeme Sil", parameters);

@@ -779,7 +779,7 @@ else
         {
             payments = await PaymentService.GetPaymentsByPolicyIdAsync(PolicyId);
             totalPaid = await PaymentService.GetTotalPaymentsByPolicyIdAsync(PolicyId);
-            outstandingBalance = policy?.PremiumAmount ?? 0 - totalPaid;
+            outstandingBalance = (policy?.PremiumAmount ?? 0) - totalPaid;
         }
         catch (Exception ex)
         {

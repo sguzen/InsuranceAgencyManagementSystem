@@ -218,9 +218,21 @@
 
             if (EditMode && Payment != null)
             {
-                // Update existing payment - for now we'll just close
-                // In a full implementation, you'd call an update endpoint
-                Snackbar.Add("Ödeme düzenleme özelliği yakında eklenecek", Severity.Info);
+                // Update existing payment
+                var updateDto = new UpdatePolicyPaymentDto
+                {
+                    Id = Payment.Id,
+                    Amount = model.Amount,
+                    PaymentDate = model.PaymentDate,
+                    DueDate = model.DueDate,
+                    PaymentMethod = model.PaymentMethod,
+                    Status = model.Status,
+                    Notes = model.Notes,
+                    Reference = model.Reference
+                };
+
+                await PaymentService.UpdateAsync(updateDto);
+                Snackbar.Add("Ödeme başarıyla güncellendi", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

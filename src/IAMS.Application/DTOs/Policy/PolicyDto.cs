@@ -42,6 +42,7 @@ namespace IAMS.Application.DTOs.Policy
         public decimal CommissionRate { get; set; }
         public PolicyStatus Status { get; set; }
         public string? Notes { get; set; }
+        public int CurrencyId { get; set; }
         public string Currency { get; set; } = "TRY";
         public string CurrencySymbol { get; set; } = "₺";
         public DateTime CreatedOn { get; set; }

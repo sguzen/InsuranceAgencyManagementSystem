@@ -14,6 +14,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.DefaultCommissionRate, opt => opt.MapFrom(src => 0)); // Default value if not available
 
             CreateMap<Policy, PolicyDto>()
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId))
                 .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency != null ? src.Currency.Code : "TRY"))
                 .ForMember(dest => dest.CurrencySymbol, opt => opt.MapFrom(src => src.Currency != null ? src.Currency.Symbol : "₺"));
 

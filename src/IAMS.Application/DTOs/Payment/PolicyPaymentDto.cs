@@ -8,6 +8,7 @@ namespace IAMS.Application.DTOs.Payment
         public int Id { get; set; }
         public int PolicyId { get; set; }
         public string PolicyNumber { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }
         public DateTime? DueDate { get; set; }
@@ -15,6 +16,7 @@ namespace IAMS.Application.DTOs.Payment
         public PaymentStatus Status { get; set; }
         public string? Notes { get; set; }
         public string? Reference { get; set; }
+        public string CurrencySymbol { get; set; } = "₺";
         public DateTime CreatedOn { get; set; }
     }
 }

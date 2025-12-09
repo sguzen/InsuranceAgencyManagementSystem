@@ -4,6 +4,7 @@ using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace IAMS.Application.Features.Payments.Queries.GetPaymentsPaged
 {
@@ -27,7 +28,15 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsPaged
         {
             try
             {
-                var query = (await _unitOfWork.PolicyPayments.GetAllAsync()).AsQueryable();
+                // Get all payments with related entities
+                var allPayments = await _unitOfWork.PolicyPayments.GetAllAsync();
+
+                // Since GetAllAsync doesn't include related entities, we need to fetch them separately
+                // For now, let's get by date range which includes related entities
+                var paymentsWithRelations = await _unitOfWork.PolicyPayments.GetPaymentsByDateRangeAsync(
+                    DateTime.MinValue, DateTime.MaxValue);
+
+                var query = paymentsWithRelations.AsQueryable();
 
                 // Apply search filter if provided
                 if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -35,7 +44,8 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsPaged
                     var searchTerm = request.SearchTerm.ToLower();
                     query = query.Where(p =>
                         (p.Reference != null && p.Reference.ToLower().Contains(searchTerm)) ||
-                        (p.Notes != null && p.Notes.ToLower().Contains(searchTerm)));
+                        (p.Notes != null && p.Notes.ToLower().Contains(searchTerm)) ||
+                        (p.Policy != null && p.Policy.PolicyNumber != null && p.Policy.PolicyNumber.ToLower().Contains(searchTerm)));
                 }
 
                 var totalCount = query.Count();

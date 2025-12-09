@@ -26,7 +26,7 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentById
         {
             try
             {
-                var payment = await _unitOfWork.PolicyPayments.GetByIdAsync(request.Id);
+                var payment = await _unitOfWork.PolicyPayments.GetByIdWithRelationsAsync(request.Id);
                 return payment != null ? _mapper.Map<PolicyPaymentDto>(payment) : null;
             }
             catch (Exception ex)

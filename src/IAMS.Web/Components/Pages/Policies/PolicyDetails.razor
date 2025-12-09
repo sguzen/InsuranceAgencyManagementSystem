@@ -795,7 +795,9 @@ else
         var parameters = new DialogParameters
         {
             ["PolicyId"] = PolicyId,
-            ["PolicyNumber"] = policy?.PolicyNumber
+            ["PolicyNumber"] = policy?.PolicyNumber,
+            ["CurrencyId"] = policy?.CurrencyId,
+            ["CurrencySymbol"] = policy?.CurrencySymbol
         };
 
         var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Yeni Ödeme Ekle", parameters);
@@ -822,7 +824,9 @@ else
             {
                 ["Payment"] = payment,
                 ["PolicyId"] = PolicyId,
-                ["PolicyNumber"] = policy?.PolicyNumber
+                ["PolicyNumber"] = policy?.PolicyNumber,
+                ["CurrencyId"] = policy?.CurrencyId,
+                ["CurrencySymbol"] = policy?.CurrencySymbol
             };
 
             var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Ödeme Düzenle", parameters);

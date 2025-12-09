@@ -2,10 +2,12 @@
 @layout Layout.MainLayout
 @using IAMS.Application.DTOs.Payment
 @using IAMS.Application.Services.Payments
+@using IAMS.Application.Interfaces
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Components.Shared.Dialogs
 @inject IPaymentService PaymentService
+@inject IPolicyService PolicyService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -342,11 +344,24 @@
                 return;
             }
 
+            // Load policy to get currency information
+            var policyResult = await PolicyService.GetPolicyByIdAsync(payment.PolicyId);
+            string? currencySymbol = null;
+            int? currencyId = null;
+
+            if (policyResult.IsSuccess && policyResult.Data != null)
+            {
+                currencySymbol = policyResult.Data.CurrencySymbol;
+                currencyId = policyResult.Data.CurrencyId;
+            }
+
             var parameters = new DialogParameters
             {
                 ["Payment"] = payment,
                 ["PolicyId"] = payment.PolicyId,
-                ["PolicyNumber"] = payment.PolicyNumber
+                ["PolicyNumber"] = payment.PolicyNumber,
+                ["CurrencyId"] = currencyId,
+                ["CurrencySymbol"] = currencySymbol
             };
 
             var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Ödeme Düzenle", parameters);

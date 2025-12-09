@@ -13,5 +13,6 @@ namespace IAMS.Application.DTOs.Payment
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public string? Notes { get; set; }
         public string? Reference { get; set; }
+        public int CurrencyId { get; set; }
     }
 }

@@ -11,6 +11,19 @@ namespace IAMS.Persistence.Repositories
         {
         }
 
+        public async Task<PolicyPayment?> GetByIdWithRelationsAsync(int id)
+        {
+            return await _dbSet
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Customer)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.InsuranceCompany)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Currency)
+                .Where(pp => pp.Id == id && !pp.IsDeleted)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<IEnumerable<PolicyPayment>> GetPaymentsByPolicyIdAsync(int policyId)
         {
             return await _dbSet
@@ -18,6 +31,8 @@ namespace IAMS.Persistence.Repositories
                     .ThenInclude(p => p.Customer)
                 .Include(pp => pp.Policy)
                     .ThenInclude(p => p.InsuranceCompany)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Currency)
                 .Where(pp => pp.PolicyId == policyId && !pp.IsDeleted)
                 .OrderByDescending(pp => pp.PaymentDate)
                 .ToListAsync();
@@ -31,6 +46,8 @@ namespace IAMS.Persistence.Repositories
                     .ThenInclude(p => p.Customer)
                 .Include(pp => pp.Policy)
                     .ThenInclude(p => p.InsuranceCompany)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Currency)
                 .Where(pp => !pp.IsDeleted &&
                             pp.Status == Domain.Enums.PaymentStatus.Pending &&
                             pp.DueDate.HasValue &&
@@ -46,6 +63,8 @@ namespace IAMS.Persistence.Repositories
                     .ThenInclude(p => p.Customer)
                 .Include(pp => pp.Policy)
                     .ThenInclude(p => p.InsuranceCompany)
+                .Include(pp => pp.Policy)
+                    .ThenInclude(p => p.Currency)
                 .Where(pp => !pp.IsDeleted &&
                             pp.PaymentDate >= fromDate &&
                             pp.PaymentDate <= toDate)

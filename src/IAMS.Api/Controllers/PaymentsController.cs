@@ -7,6 +7,7 @@ using IAMS.Application.Features.Payments.Queries.GetPaymentById;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsPaged;
 using IAMS.Application.Features.Payments.Queries.GetTotalPaymentsByPolicyId;
+using IAMS.Application.Models;
 using IAMS.Domain.Enums;
 using IAMS.Shared.Models;
 using MediatR;
@@ -31,24 +32,12 @@ namespace IAMS.Api.Controllers
         /// Get all payments with pagination and filtering
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<Result<PagedResult<PolicyPaymentDto>>>> GetPayments(
+        public async Task<ActionResult<PagedResult<PolicyPaymentDto>>> GetPayments(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] int? policyId = null,
-            [FromQuery] PaymentStatus? status = null,
-            [FromQuery] DateTime? fromDate = null,
-            [FromQuery] DateTime? toDate = null)
+            [FromQuery] string? searchTerm = null)
         {
-            var query = new GetPaymentsPagedQuery
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                PolicyId = policyId,
-                Status = status,
-                FromDate = fromDate,
-                ToDate = toDate
-            };
-
+            var query = new GetPaymentsPagedQuery(pageNumber, pageSize, searchTerm);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
@@ -57,13 +46,13 @@ namespace IAMS.Api.Controllers
         /// Get payment by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Result<PolicyPaymentDto>>> GetPayment(int id)
+        public async Task<ActionResult<PolicyPaymentDto>> GetPayment(int id)
         {
             var query = new GetPaymentByIdQuery(id);
             var result = await _mediator.Send(query);
 
-            if (!result.IsSuccess)
-                return NotFound(result);
+            if (result == null)
+                return NotFound();
 
             return Ok(result);
         }
@@ -72,14 +61,10 @@ namespace IAMS.Api.Controllers
         /// Get all payments for a specific policy
         /// </summary>
         [HttpGet("policy/{policyId}")]
-        public async Task<ActionResult<Result<IEnumerable<PolicyPaymentDto>>>> GetPaymentsByPolicy(int policyId)
+        public async Task<ActionResult<List<PolicyPaymentDto>>> GetPaymentsByPolicy(int policyId)
         {
             var query = new GetPaymentsByPolicyIdQuery(policyId);
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return NotFound(result);
-
             return Ok(result);
         }
 
@@ -87,14 +72,10 @@ namespace IAMS.Api.Controllers
         /// Get total payments amount for a specific policy
         /// </summary>
         [HttpGet("policy/{policyId}/total")]
-        public async Task<ActionResult<Result<decimal>>> GetTotalPaymentsByPolicy(int policyId)
+        public async Task<ActionResult<decimal>> GetTotalPaymentsByPolicy(int policyId)
         {
             var query = new GetTotalPaymentsByPolicyIdQuery(policyId);
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return NotFound(result);
-
             return Ok(result);
         }
 
@@ -102,11 +83,10 @@ namespace IAMS.Api.Controllers
         /// Get all overdue payments
         /// </summary>
         [HttpGet("overdue")]
-        public async Task<ActionResult<Result<IEnumerable<PolicyPaymentDto>>>> GetOverduePayments()
+        public async Task<ActionResult<List<PolicyPaymentDto>>> GetOverduePayments()
         {
             var query = new GetOverduePaymentsQuery();
             var result = await _mediator.Send(query);
-
             return Ok(result);
         }
 
@@ -114,7 +94,7 @@ namespace IAMS.Api.Controllers
         /// Create a new payment
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<Result<int>>> CreatePayment([FromBody] CreatePolicyPaymentDto paymentDto)
+        public async Task<ActionResult<Result<PolicyPaymentDto>>> CreatePayment([FromBody] CreatePolicyPaymentDto paymentDto)
         {
             var command = new CreatePaymentCommand(paymentDto);
             var result = await _mediator.Send(command);
@@ -122,18 +102,18 @@ namespace IAMS.Api.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return CreatedAtAction(nameof(GetPayment), new { id = result.Data }, result);
+            return CreatedAtAction(nameof(GetPayment), new { id = result.Data?.Id }, result);
         }
 
         /// <summary>
         /// Update payment status
         /// </summary>
         [HttpPatch("{id}/status")]
-        public async Task<ActionResult<Result<bool>>> UpdatePaymentStatus(
+        public async Task<ActionResult<Result>> UpdatePaymentStatus(
             int id,
             [FromBody] UpdatePaymentStatusRequest request)
         {
-            var command = new UpdatePaymentStatusCommand(id, request.Status, request.Notes);
+            var command = new UpdatePaymentStatusCommand(id, request.Status);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -146,7 +126,7 @@ namespace IAMS.Api.Controllers
         /// Delete a payment
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Result<bool>>> DeletePayment(int id)
+        public async Task<ActionResult<Result>> DeletePayment(int id)
         {
             var command = new DeletePaymentCommand(id);
             var result = await _mediator.Send(command);
@@ -164,6 +144,5 @@ namespace IAMS.Api.Controllers
     public class UpdatePaymentStatusRequest
     {
         public PaymentStatus Status { get; set; }
-        public string? Notes { get; set; }
     }
 }

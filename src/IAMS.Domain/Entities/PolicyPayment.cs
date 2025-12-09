@@ -9,6 +9,7 @@ namespace IAMS.Domain.Entities
         public int PolicyId { get; set; }
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public string? Reference { get; set; }
         public PaymentStatus Status { get; set; }
@@ -42,6 +43,6 @@ namespace IAMS.Domain.Entities
             UpdateAuditInfo(processedBy);
         }
 
-        public bool IsOverdue => Status == PaymentStatus.Pending && PaymentDate < DateTime.Today;
+        public bool IsOverdue => Status == PaymentStatus.Pending && DueDate.HasValue && DueDate.Value < DateTime.Today;
     }
 }

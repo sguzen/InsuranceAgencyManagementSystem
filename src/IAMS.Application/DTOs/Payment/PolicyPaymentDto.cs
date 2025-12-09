@@ -10,7 +10,8 @@ namespace IAMS.Application.DTOs.Payment
         public string PolicyNumber { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus Status { get; set; }
         public string? Notes { get; set; }
         public string? Reference { get; set; }

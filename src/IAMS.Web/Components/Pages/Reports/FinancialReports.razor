@@ -546,7 +546,7 @@
                                                     <MudTd DataLabel="Aktif Poliçe" Style="text-align:right">@context.ActivePoliciesCount</MudTd>
                                                     <MudTd DataLabel="Bekleyen Ödeme" Style="text-align:right">@context.PendingPaymentsCount</MudTd>
                                                     <MudTd DataLabel="Kalan Bakiye" Style="text-align:right">
-                                                        <MudChip Size="Size.Small" Color="Color.Error">₺@context.OutstandingBalance.ToString("N2")</MudChip>
+                                                        <MudChip T="String" Size="Size.Small" Color="Color.Error">₺@context.OutstandingBalance.ToString("N2")</MudChip>
                                                     </MudTd>
                                                 </RowTemplate>
                                             </MudTable>
@@ -584,11 +584,11 @@
                                                     <MudTd DataLabel="Durum">
                                                         @if (context.DueDate.HasValue && context.DueDate.Value < DateTime.Today)
                                                         {
-                                                            <MudChip Size="Size.Small" Color="Color.Error">Gecikmiş</MudChip>
+                                                            <MudChip T="String" Size="Size.Small" Color="Color.Error">Gecikmiş</MudChip>
                                                         }
                                                         else
                                                         {
-                                                            <MudChip Size="Size.Small" Color="Color.Warning">Bekliyor</MudChip>
+                                                            <MudChip T="String" Size="Size.Small" Color="Color.Warning">Bekliyor</MudChip>
                                                         }
                                                     </MudTd>
                                                 </RowTemplate>

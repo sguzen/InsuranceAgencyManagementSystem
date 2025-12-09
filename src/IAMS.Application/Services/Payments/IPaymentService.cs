@@ -9,6 +9,7 @@ namespace IAMS.Application.Services.Payments
         Task<List<PolicyPaymentDto>> GetPaymentsByPolicyIdAsync(int policyId);
         Task<PolicyPaymentDto?> GetByIdAsync(int id);
         Task<PolicyPaymentDto> CreateAsync(CreatePolicyPaymentDto paymentDto);
+        Task UpdateAsync(UpdatePolicyPaymentDto paymentDto);
         Task UpdatePaymentStatusAsync(int id, PaymentStatus status);
         Task DeleteAsync(int id);
         Task<List<PolicyPaymentDto>> GetOverduePaymentsAsync();

@@ -1,0 +1,16 @@
+using IAMS.Application.DTOs.Payment;
+using IAMS.Application.Models;
+using MediatR;
+
+namespace IAMS.Application.Features.Payments.Commands.UpdatePayment
+{
+    public class UpdatePaymentCommand : IRequest<Result>
+    {
+        public UpdatePolicyPaymentDto PaymentDto { get; set; }
+
+        public UpdatePaymentCommand(UpdatePolicyPaymentDto paymentDto)
+        {
+            PaymentDto = paymentDto;
+        }
+    }
+}

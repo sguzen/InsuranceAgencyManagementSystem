@@ -1,6 +1,7 @@
 using IAMS.Application.DTOs.Payment;
 using IAMS.Application.Features.Payments.Commands.CreatePayment;
 using IAMS.Application.Features.Payments.Commands.DeletePayment;
+using IAMS.Application.Features.Payments.Commands.UpdatePayment;
 using IAMS.Application.Features.Payments.Commands.UpdatePaymentStatus;
 using IAMS.Application.Features.Payments.Queries.GetOverduePayments;
 using IAMS.Application.Features.Payments.Queries.GetPaymentById;
@@ -40,6 +41,15 @@ namespace IAMS.Application.Services.Payments
                 throw new InvalidOperationException(result.Message);
             }
             return result.Data;
+        }
+
+        public async Task UpdateAsync(UpdatePolicyPaymentDto paymentDto)
+        {
+            var result = await _mediator.Send(new UpdatePaymentCommand(paymentDto));
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException(result.Message);
+            }
         }
 
         public async Task UpdatePaymentStatusAsync(int id, PaymentStatus status)

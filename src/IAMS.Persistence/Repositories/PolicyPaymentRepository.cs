@@ -32,8 +32,9 @@ namespace IAMS.Persistence.Repositories
                 .Include(pp => pp.Policy)
                     .ThenInclude(p => p.InsuranceCompany)
                 .Where(pp => !pp.IsDeleted &&
-                            pp.PaymentDate < today &&
-                            pp.IsOverdue)
+                            pp.Status == Domain.Enums.PaymentStatus.Pending &&
+                            pp.DueDate.HasValue &&
+                            pp.DueDate.Value < today)
                 .OrderBy(pp => pp.PaymentDate)
                 .ToListAsync();
         }
@@ -55,7 +56,9 @@ namespace IAMS.Persistence.Repositories
         public async Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId)
         {
             return await _dbSet
-                .Where(pp => pp.PolicyId == policyId && !pp.IsDeleted && !pp.IsOverdue)
+                .Where(pp => pp.PolicyId == policyId &&
+                            !pp.IsDeleted &&
+                            pp.Status == Domain.Enums.PaymentStatus.Completed)
                 .SumAsync(pp => pp.Amount);
         }
 

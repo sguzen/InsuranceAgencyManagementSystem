@@ -6,6 +6,8 @@ using IAMS.Shared.Models;
 using IAMS.Domain.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Commands.RenewPolicy
 {

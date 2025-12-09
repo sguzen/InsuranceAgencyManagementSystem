@@ -1,4 +1,5 @@
-﻿using IAMS.Shared.Models;
+﻿using IAMS.Application.Models;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount

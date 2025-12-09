@@ -4,6 +4,7 @@ using IAMS.Application.Interfaces.Services;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount
 {

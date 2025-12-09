@@ -1,6 +1,7 @@
 using IAMS.Application.DTOs.Currency;
 using IAMS.Application.Features.Currencies.Queries.ConvertAmountByIds;
 using IAMS.Application.Features.Currencies.Queries.GetCurrencyById;
+using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;

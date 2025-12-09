@@ -1,6 +1,6 @@
 using IAMS.Application.DTOs.Identity;
-using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
+using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;

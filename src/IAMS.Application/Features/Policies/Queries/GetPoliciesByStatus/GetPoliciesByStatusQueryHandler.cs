@@ -4,6 +4,7 @@ using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPoliciesByStatus
 {

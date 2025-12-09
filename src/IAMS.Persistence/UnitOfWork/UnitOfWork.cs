@@ -11,7 +11,8 @@ namespace IAMS.Persistence.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
-        private readonly IDomainEventDispatcher _domainEventDispatcher;
+       // TODO: bring this back
+      //  private readonly IDomainEventDispatcher _domainEventDispatcher;
         private IDbContextTransaction? _transaction;
         private bool _disposed = false;
 
@@ -50,11 +51,11 @@ namespace IAMS.Persistence.UnitOfWork
         private IPermissionRepository? _permissions;
 
         public UnitOfWork(
-            ApplicationDbContext context,
-            IDomainEventDispatcher domainEventDispatcher)
+            ApplicationDbContext context)
+           // IDomainEventDispatcher domainEventDispatcher)
         {
             _context = context;
-            _domainEventDispatcher = domainEventDispatcher;
+            //_domainEventDispatcher = domainEventDispatcher;
         }
 
         public ICustomerRepository Customers =>
@@ -137,7 +138,7 @@ namespace IAMS.Persistence.UnitOfWork
                 var result = await _context.SaveChangesAsync(cancellationToken);
 
                 // Dispatch domain events after successful save
-                await _domainEventDispatcher.DispatchAsync(domainEvents, cancellationToken);
+               // await _domainEventDispatcher.DispatchAsync(domainEvents, cancellationToken);
 
                 return result;
             }

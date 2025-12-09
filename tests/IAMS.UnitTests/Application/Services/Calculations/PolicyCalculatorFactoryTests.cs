@@ -1,8 +1,8 @@
 using FluentAssertions;
 using IAMS.Application.Configuration;
-using IAMS.Application.Interfaces.Repositories;
 using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Entities;
+using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;

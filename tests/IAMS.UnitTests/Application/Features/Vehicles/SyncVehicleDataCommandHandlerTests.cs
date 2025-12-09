@@ -2,8 +2,8 @@ using FluentAssertions;
 using IAMS.Application.DTOs.Vehicle;
 using IAMS.Application.Features.Vehicles.Commands.SyncVehicleData;
 using IAMS.Application.Interfaces;
-using IAMS.Application.Interfaces.Repositories;
 using IAMS.Domain.Entities;
+using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;
 using Moq;
 

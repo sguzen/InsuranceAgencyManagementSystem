@@ -6,6 +6,8 @@ using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromApi
 {

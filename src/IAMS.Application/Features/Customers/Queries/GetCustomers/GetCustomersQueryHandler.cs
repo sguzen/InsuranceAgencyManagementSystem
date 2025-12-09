@@ -4,6 +4,8 @@ using IAMS.Shared.QueryParams;
 using IAMS.Shared.Models;
 using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.Customer;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomers
 {

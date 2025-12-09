@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using IAMS.Shared.Models;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Commands.DeletePolicy
 {

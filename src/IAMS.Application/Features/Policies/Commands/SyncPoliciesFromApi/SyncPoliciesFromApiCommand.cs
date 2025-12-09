@@ -1,6 +1,8 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Shared.Models;
 using MediatR;
+using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromApi
 {

@@ -212,5 +212,10 @@ namespace IAMS.Persistence.Repositories
 
             return addedCount;
         }
+
+        public IQueryable<Permission> AsQueryable()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

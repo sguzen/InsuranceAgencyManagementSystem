@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Enums;
+using IAMS.Application.DTOs.Customer;
 
 namespace IAMS.Application.Validators.Customer
 {

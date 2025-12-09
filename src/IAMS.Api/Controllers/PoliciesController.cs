@@ -16,6 +16,8 @@ using IAMS.Application.Features.Policies.Queries.GetPolicyByNumber;
 using IAMS.Application.Features.Policies.Queries.GetPolicyStatistics;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
+using IAMS.Shared.Models;
+using IAMS.Shared.QueryParams;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

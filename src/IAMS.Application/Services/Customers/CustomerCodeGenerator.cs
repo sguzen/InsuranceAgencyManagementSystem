@@ -3,6 +3,7 @@ using IAMS.Application.Interfaces;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using IAMS.Shared.Interfaces;
 
 namespace IAMS.Application.Services
 {

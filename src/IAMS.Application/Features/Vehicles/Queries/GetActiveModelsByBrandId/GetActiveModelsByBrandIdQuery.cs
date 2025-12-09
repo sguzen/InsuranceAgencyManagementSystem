@@ -1,5 +1,6 @@
 using IAMS.Application.DTOs.Vehicle;
 using IAMS.Shared.Models;
+using IAMS.Application.Models;
 using MediatR;
 
 namespace IAMS.Application.Features.Vehicles.Queries.GetActiveModelsByBrandId

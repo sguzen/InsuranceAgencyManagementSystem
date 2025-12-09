@@ -6,6 +6,7 @@ using IAMS.Application.Services.Calculations;
 using IAMS.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.Claims.Commands.CreateClaim
 {

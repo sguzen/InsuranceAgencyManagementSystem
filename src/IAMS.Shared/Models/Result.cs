@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace IAMS.Application.Models
+namespace IAMS.Shared.Models
 {
     public class Result<T>
     {

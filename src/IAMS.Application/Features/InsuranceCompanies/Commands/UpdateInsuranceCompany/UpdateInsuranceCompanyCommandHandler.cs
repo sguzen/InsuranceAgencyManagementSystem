@@ -5,6 +5,8 @@ using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using IAMS.Application.Models;
+using IAMS.Application.DTOs.InsuranceCompany;
 
 namespace IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany
 {

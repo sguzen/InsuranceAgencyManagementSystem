@@ -16,7 +16,6 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<decimal> GetTotalPremiumAmountAsync(int companyId);
         Task<int> GetActivePoliciesCountAsync(int id);
         Task<decimal> GetTotalCommissionsAsync(int id);
-        // TODO adding reference to Application just so that I can move on. This however needs refactoring.
-      //  Task<List<CurrencyBreakdownDto>> GetCurrencyBreakdownAsync(int companyId);
+        Task<List<CurrencyBreakdown>> GetCurrencyBreakdownAsync(int companyId);
     }
 }

@@ -32,15 +32,31 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatistics
             //{
             //    var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
 
-            //    _logger.LogDebug("Retrieved customer statistics");
+                // Map from value object to DTO
+                var dto = new CustomerStatisticsDto
+                {
+                    TotalCustomers = statistics.TotalCustomers,
+                    ActiveCustomers = statistics.ActiveCustomers,
+                    InactiveCustomers = statistics.InactiveCustomers,
+                    NewCustomersThisMonth = statistics.NewCustomersThisMonth,
+                    NewCustomersThisWeek = statistics.NewCustomersThisWeek,
+                    CustomerGrowthPercentage = statistics.CustomerGrowthPercentage,
+                    CustomersWithActivePolicies = statistics.CustomersWithActivePolicies,
+                    CustomersWithoutPolicies = statistics.CustomersWithoutPolicies,
+                    AverageCustomerAge = statistics.AverageCustomerAge,
+                    CustomersByStatus = statistics.CustomersByStatus,
+                    CustomersByGender = statistics.CustomersByGender
+                };
 
-            //    return Result<CustomerStatisticsDto>.Success(statistics, "Müşteri istatistikleri getirildi");
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError(ex, "Error getting customer statistics");
-            //    return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
-            //}
+                _logger.LogDebug("Retrieved customer statistics");
+
+                return Result<CustomerStatisticsDto>.Success(dto, "Müşteri istatistikleri getirildi");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting customer statistics");
+                return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
+            }
         }
     }
 }

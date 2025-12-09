@@ -27,10 +27,10 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatistics
 
         public async Task<Result<CustomerStatisticsDto>> Handle(GetCustomerStatisticsQuery request, CancellationToken cancellationToken)
         {
-            return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
-            //try
-            //{
-            //    var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
+            //return Result<CustomerStatisticsDto>.InternalError("Müşteri istatistikleri alınırken beklenmeyen bir hata oluştu");
+            try
+            {
+                var statistics = await _unitOfWork.Customers.GetCustomerStatisticsAsync();
 
                 // Map from value object to DTO
                 var dto = new CustomerStatisticsDto

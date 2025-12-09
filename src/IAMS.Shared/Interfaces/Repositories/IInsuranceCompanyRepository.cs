@@ -1,4 +1,5 @@
 ﻿using IAMS.Domain.Entities;
+using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 
 namespace IAMS.Shared.Interfaces.Repositories

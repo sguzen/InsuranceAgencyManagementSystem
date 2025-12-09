@@ -4,6 +4,7 @@ using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using IAMS.Shared.Models;
 
 namespace IAMS.Persistence.Repositories
 {

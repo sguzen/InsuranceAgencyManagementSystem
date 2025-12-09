@@ -801,11 +801,11 @@ else
 
     private async Task MarkPaymentCompleted(int paymentId)
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, "Bu ödemeyi tamamlandı olarak işaretlemek istediğinizden emin misiniz?" },
-            { x => x.ButtonText, "Tamamlandı İşaretle" },
-            { x => x.Color, Color.Success }
+            ["ContentText"] = "Bu ödemeyi tamamlandı olarak işaretlemek istediğinizden emin misiniz?",
+            ["ButtonText"] = "Tamamlandı İşaretle",
+            ["Color"] = Color.Success
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Ödeme Onayı", parameters);
@@ -828,11 +828,11 @@ else
 
     private async Task DeletePayment(int paymentId)
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, "Bu ödeme kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
-            { x => x.ButtonText, "Sil" },
-            { x => x.Color, Color.Error }
+            ["ContentText"] = "Bu ödeme kaydını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+            ["ButtonText"] = "Sil",
+            ["Color"] = Color.Error
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Ödeme Sil", parameters);
@@ -920,11 +920,11 @@ else
 
     private async Task ActivatePolicy()
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi aktifleştirmek istediğinizden emin misiniz?" },
-            { x => x.ButtonText, "Aktifleştir" },
-            { x => x.Color, Color.Success }
+            ["ContentText"] = $"{policy!.PolicyNumber} numaralı poliçeyi aktifleştirmek istediğinizden emin misiniz?",
+            ["ButtonText"] = "Aktifleştir",
+            ["Color"] = Color.Success
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçe Aktifleştir", parameters);
@@ -954,11 +954,11 @@ else
 
     private async Task SuspendPolicy()
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi askıya almak istediğinizden emin misiniz?" },
-            { x => x.ButtonText, "Askıya Al" },
-            { x => x.Color, Color.Warning }
+            ["ContentText"] = $"{policy!.PolicyNumber} numaralı poliçeyi askıya almak istediğinizden emin misiniz?",
+            ["ButtonText"] = "Askıya Al",
+            ["Color"] = Color.Warning
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçeyi Askıya Al", parameters);
@@ -988,11 +988,11 @@ else
 
     private async Task CancelPolicy()
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
-            { x => x.ButtonText, "İptal Et" },
-            { x => x.Color, Color.Error }
+            ["ContentText"] = $"{policy!.PolicyNumber} numaralı poliçeyi iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+            ["ButtonText"] = "İptal Et",
+            ["Color"] = Color.Error
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçeyi İptal Et", parameters);
@@ -1022,11 +1022,11 @@ else
 
     private async Task DeletePolicy()
     {
-        var parameters = new DialogParameters<ConfirmationDialog>
+        var parameters = new DialogParameters
         {
-            { x => x.ContentText, $"{policy!.PolicyNumber} numaralı poliçeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz." },
-            { x => x.ButtonText, "Sil" },
-            { x => x.Color, Color.Error }
+            ["ContentText"] = $"{policy!.PolicyNumber} numaralı poliçeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+            ["ButtonText"] = "Sil",
+            ["Color"] = Color.Error
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Poliçeyi Sil", parameters);

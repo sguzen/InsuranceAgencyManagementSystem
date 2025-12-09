@@ -53,7 +53,7 @@
                              Variant="Variant.Outlined"
                              Format="N2"
                              Adornment="Adornment.Start"
-                             AdornmentText="₺" />
+                             AdornmentText="@currencySymbol" />
 
             <MudDatePicker @bind-Date="paymentDate"
                            Label="Ödeme Tarihi"
@@ -123,6 +123,8 @@
 
     [Parameter] public int? PolicyId { get; set; }
     [Parameter] public string? PolicyNumber { get; set; }
+    [Parameter] public int? CurrencyId { get; set; }
+    [Parameter] public string? CurrencySymbol { get; set; }
     [Parameter] public PolicyPaymentDto? Payment { get; set; }
 
     private CreatePolicyPaymentDto model = new();
@@ -131,9 +133,16 @@
     private DateTime? dueDate;
     private bool isSaving = false;
     private bool EditMode => Payment != null;
+    private string currencySymbol = "₺";
 
     protected override void OnInitialized()
     {
+        // Set currency symbol from parameter or default
+        if (!string.IsNullOrEmpty(CurrencySymbol))
+        {
+            currencySymbol = CurrencySymbol;
+        }
+
         if (Payment != null)
         {
             // Edit mode - populate from existing payment
@@ -145,11 +154,18 @@
             model.Status = Payment.Status;
             model.Reference = Payment.Reference;
             model.Notes = Payment.Notes;
+            // Note: CurrencyId should come from the payment's policy
         }
         else if (PolicyId.HasValue)
         {
             // Create mode with pre-selected policy
             model.PolicyId = PolicyId.Value;
+        }
+
+        // Set currency ID if provided
+        if (CurrencyId.HasValue)
+        {
+            model.CurrencyId = CurrencyId.Value;
         }
     }
 
@@ -198,10 +214,11 @@
 
         try
         {
-            // Set policy ID from selected policy if not already set
+            // Set policy ID and currency from selected policy if not already set
             if (!PolicyId.HasValue && selectedPolicy != null)
             {
                 model.PolicyId = selectedPolicy.Id;
+                model.CurrencyId = selectedPolicy.CurrencyId;
             }
 
             model.PaymentDate = paymentDate!.Value;

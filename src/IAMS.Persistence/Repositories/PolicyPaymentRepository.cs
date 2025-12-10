@@ -1,4 +1,4 @@
-﻿using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;

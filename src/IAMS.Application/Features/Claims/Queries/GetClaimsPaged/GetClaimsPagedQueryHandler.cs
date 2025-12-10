@@ -1,8 +1,10 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using IAMS.Application.DTOs.Claim;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Claims.Queries.GetClaimsPaged
@@ -27,26 +29,30 @@ namespace IAMS.Application.Features.Claims.Queries.GetClaimsPaged
         {
             try
             {
-                var query = (await _unitOfWork.PolicyClaims.GetAllAsync()).AsQueryable();
+                // OPTIMIZED: Use IQueryable + ProjectTo pattern
+                // 1. Get count before pagination (need to build query without skip/take)
+                var countQuery = _unitOfWork.PolicyClaims.AsQueryable().Where(pc => !pc.IsDeleted);
 
-                // Apply search filter if provided
                 if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 {
-                    var searchTerm = request.SearchTerm.ToLower();
-                    query = query.Where(c =>
-                        c.ClaimNumber.ToLower().Contains(searchTerm) ||
-                        c.Description.ToLower().Contains(searchTerm) ||
-                        (c.Notes != null && c.Notes.ToLower().Contains(searchTerm)));
+                    var search = request.SearchTerm.ToLower();
+                    countQuery = countQuery.Where(pc =>
+                        pc.ClaimNumber.ToLower().Contains(search) ||
+                        pc.Description.ToLower().Contains(search) ||
+                        (pc.Notes != null && pc.Notes.ToLower().Contains(search)));
                 }
 
-                var totalCount = query.Count();
-                var claims = query
-                    .OrderByDescending(c => c.CreatedOn)
-                    .Skip((request.PageNumber - 1) * request.PageSize)
-                    .Take(request.PageSize)
-                    .ToList();
+                var totalCount = await countQuery.CountAsync(cancellationToken);
 
-                var claimDtos = _mapper.Map<List<PolicyClaimDto>>(claims);
+                // 2. Get paginated data with ProjectTo for efficient database-level projection
+                var query = _unitOfWork.PolicyClaims.GetPagedClaimsQuery(
+                    request.PageNumber,
+                    request.PageSize,
+                    request.SearchTerm);
+
+                var claimDtos = await query
+                    .ProjectTo<PolicyClaimDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
 
                 return PagedResult<PolicyClaimDto>.Success(claimDtos, totalCount, request.PageNumber, request.PageSize);
             }

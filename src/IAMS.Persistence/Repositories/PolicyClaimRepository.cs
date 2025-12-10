@@ -112,5 +112,32 @@ namespace IAMS.Persistence.Repositories
 
             return await query.SumAsync(pc => pc.ClaimAmount);
         }
+
+        // ========================================
+        // IQueryable Methods for AutoMapper ProjectTo
+        // Return IQueryable to allow Application layer to project to DTOs
+        // Keeps clean architecture - no Application -> Persistence dependency
+        // ========================================
+
+        public IQueryable<PolicyClaim> GetPagedClaimsQuery(int pageNumber, int pageSize, string? searchTerm = null)
+        {
+            var query = _dbSet.Where(pc => !pc.IsDeleted);
+
+            // Apply search filter if provided
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var search = searchTerm.ToLower();
+                query = query.Where(pc =>
+                    pc.ClaimNumber.ToLower().Contains(search) ||
+                    pc.Description.ToLower().Contains(search) ||
+                    (pc.Notes != null && pc.Notes.ToLower().Contains(search)));
+            }
+
+            // Apply sorting and pagination
+            return query
+                .OrderByDescending(pc => pc.CreatedOn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+        }
     }
 }

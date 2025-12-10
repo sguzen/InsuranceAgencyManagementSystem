@@ -14,5 +14,8 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<List<PolicyClaim>> GetClaimsByCustomerIdAsync(int customerId);
         Task<int> GetClaimCountByStatusAsync(ClaimStatus status);
         Task<decimal> GetTotalClaimAmountAsync(DateTime? startDate = null, DateTime? endDate = null);
+
+        // IQueryable methods for ProjectTo optimization
+        IQueryable<PolicyClaim> GetPagedClaimsQuery(int pageNumber, int pageSize, string? searchTerm = null);
     }
 }

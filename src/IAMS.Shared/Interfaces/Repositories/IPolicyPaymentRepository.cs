@@ -1,4 +1,5 @@
-﻿using IAMS.Domain.Entities;
+﻿using IAMS.Application.DTOs.Payment;
+using IAMS.Domain.Entities;
 
 
 namespace IAMS.Shared.Interfaces.Repositories
@@ -14,5 +15,12 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync();
         Task<Dictionary<int, decimal>> GetOutstandingBalanceByCustomerAsync();
         Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId);
+
+        // Optimized DTO projection methods - use these for better performance
+        Task<PolicyPaymentDto?> GetByIdDtoAsync(int id);
+        Task<List<PolicyPaymentListDto>> GetPaymentsByPolicyIdDtoAsync(int policyId);
+        Task<List<PolicyPaymentListDto>> GetOverduePaymentsDtoAsync();
+        Task<List<PolicyPaymentListDto>> GetPaymentsByDateRangeDtoAsync(DateTime fromDate, DateTime toDate);
+        Task<List<PolicyPaymentListDto>> GetPaymentsDueThisMonthDtoAsync();
     }
 }

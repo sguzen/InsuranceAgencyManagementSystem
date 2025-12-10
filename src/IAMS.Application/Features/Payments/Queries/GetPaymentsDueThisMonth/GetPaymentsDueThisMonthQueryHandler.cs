@@ -26,7 +26,8 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth
         {
             try
             {
-                var payments = await _unitOfWork.PolicyPayments.GetPaymentsDueThisMonthAsync();
+                // Use optimized DTO projection method - projects directly in database
+                var payments = await _unitOfWork.PolicyPayments.GetPaymentsDueThisMonthDtoAsync();
                 return _mapper.Map<List<PolicyPaymentDto>>(payments);
             }
             catch (Exception ex)

@@ -197,6 +197,39 @@ return await _dbSet
 3. **Monitor production** - Track actual performance gains
 4. **Extend pattern** - Apply to other repositories (Invoice, Vehicle, etc.)
 
+## Architecture Notes
+
+### Why Query Handlers Inject Concrete Repository Types
+
+The optimized DTO projection methods (e.g., `GetOverduePaymentsDtoAsync()`) are **not** part of the repository interfaces in `IAMS.Shared`. This is intentional to avoid circular dependencies:
+
+- **IAMS.Shared** cannot reference **IAMS.Application** (where DTOs live)
+- Therefore, DTO methods cannot be declared in `IPolicyPaymentRepository`
+
+**Solution:** Query handlers that need optimized DTO projections inject the **concrete repository type** (`PolicyPaymentRepository`) instead of the interface:
+
+```csharp
+// Instead of:
+public GetOverduePaymentsQueryHandler(IUnitOfWork unitOfWork, ...)
+
+// We use:
+public GetOverduePaymentsQueryHandler(PolicyPaymentRepository repository, ...)
+```
+
+This is acceptable because:
+1. Query handlers are read-only operations
+2. They don't need transaction control from UnitOfWork
+3. Direct repository injection is a valid pattern in CQRS
+4. The performance benefits outweigh the slight coupling to concrete types
+
+### Old Methods Still Available
+
+All original methods remain in the repository interfaces for backward compatibility. Other parts of the codebase can continue using:
+- `GetOverduePaymentsAsync()` → Returns `IEnumerable<PolicyPayment>`
+- `GetPaymentsByPolicyIdAsync()` → Returns `IEnumerable<PolicyPayment>`
+
+These methods still work but are less efficient due to loading full entity graphs.
+
 ## Files Modified
 
 ### New Files:
@@ -204,14 +237,13 @@ return await _dbSet
 - `src/IAMS.Application/DTOs/Customer/CustomerListDto.cs`
 
 ### Modified Files:
-- `src/IAMS.Shared/Interfaces/Repositories/IPolicyPaymentRepository.cs`
-- `src/IAMS.Persistence/Repositories/PolicyPaymentRepository.cs`
-- `src/IAMS.Persistence/Repositories/PolicyRepository.cs`
-- `src/IAMS.Persistence/Repositories/CustomerRepository.cs`
-- `src/IAMS.Application/Mappings/PaymentMappingProfile.cs`
-- `src/IAMS.Application/Features/Payments/Queries/GetOverduePayments/GetOverduePaymentsQueryHandler.cs`
-- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsByPolicyId/GetPaymentsByPolicyIdQueryHandler.cs`
-- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsDueThisMonth/GetPaymentsDueThisMonthQueryHandler.cs`
+- `src/IAMS.Persistence/Repositories/PolicyPaymentRepository.cs` - Added 5 DTO projection methods
+- `src/IAMS.Persistence/Repositories/PolicyRepository.cs` - Added 2 DTO projection methods
+- `src/IAMS.Persistence/Repositories/CustomerRepository.cs` - Fixed Include placement and aggregations
+- `src/IAMS.Application/Mappings/PaymentMappingProfile.cs` - Added ListDto mapping
+- `src/IAMS.Application/Features/Payments/Queries/GetOverduePayments/GetOverduePaymentsQueryHandler.cs` - Now injects concrete repository
+- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsByPolicyId/GetPaymentsByPolicyIdQueryHandler.cs` - Now injects concrete repository
+- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsDueThisMonth/GetPaymentsDueThisMonthQueryHandler.cs` - Now injects concrete repository
 
 ## Estimated Overall Impact
 

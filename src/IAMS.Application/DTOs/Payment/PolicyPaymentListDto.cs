@@ -17,6 +17,7 @@ namespace IAMS.Application.DTOs.Payment
         public DateTime PaymentDate { get; set; }
         public DateTime? DueDate { get; set; }
         public PaymentStatus Status { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
         public string CurrencyCode { get; set; } = "TRY";
         public string? Reference { get; set; }
     }

@@ -18,5 +18,6 @@ namespace IAMS.Shared.Interfaces.Repositories
         IQueryable<PolicyPayment> GetPaymentsByPolicyIdQuery(int policyId);
         IQueryable<PolicyPayment> GetPaymentsByDateRangeQuery(DateTime fromDate, DateTime toDate);
         IQueryable<PolicyPayment> GetPaymentsDueThisMonthQuery();
+        IQueryable<PolicyPayment> GetPagedPaymentsQuery(int pageNumber, int pageSize, string? searchTerm = null);
     }
 }

@@ -29,6 +29,13 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.InsuranceCompanyName, opt => opt.MapFrom(src => src.Policy.InsuranceCompany.Name))
                 .ForMember(dest => dest.CurrencyCode, opt => opt.MapFrom(src => src.Policy.Currency.Code));
 
+            // Map from lightweight DTO to full DTO
+            CreateMap<PolicyPaymentListDto, PolicyPaymentDto>()
+                .ForMember(dest => dest.CurrencySymbol, opt => opt.MapFrom(src =>
+                    src.CurrencyCode == "TRY" ? "₺" :
+                    src.CurrencyCode == "USD" ? "$" :
+                    src.CurrencyCode == "EUR" ? "€" : src.CurrencyCode));
+
             CreateMap<CreatePolicyPaymentDto, PolicyPayment>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())

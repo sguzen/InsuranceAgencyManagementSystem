@@ -3,6 +3,7 @@ using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using IAMS.Application.Models;
 
@@ -23,22 +24,46 @@ namespace IAMS.Application.Features.Dashboard.Queries.GetDashboard
         {
             try
             {
-                var customers = await _unitOfWork.Customers.GetAllAsync();
-                var policies = await _unitOfWork.Policies.GetAllAsync();
-                var companies = await _unitOfWork.InsuranceCompanies.GetAllAsync();
+                // OPTIMIZED: Use database aggregations instead of loading everything into memory
+                // Each query runs independently and efficiently in SQL
+
+                var customersQuery = _unitOfWork.Customers.AsQueryable().Where(c => !c.IsDeleted);
+                var policiesQuery = _unitOfWork.Policies.AsQueryable().Where(p => !p.IsDeleted);
+
+                // Run all queries in parallel for better performance
+                var totalCustomersTask = customersQuery.CountAsync(cancellationToken);
+                var activeCustomersTask = customersQuery.CountAsync(c => c.IsActive, cancellationToken);
+                var totalPoliciesTask = policiesQuery.CountAsync(cancellationToken);
+                var activePoliciesTask = policiesQuery.CountAsync(p => p.Status == PolicyStatus.Active, cancellationToken);
+
+                var now = DateTime.Now;
+                var startOfMonth = new DateTime(now.Year, now.Month, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+                var expiringPoliciesTask = policiesQuery.CountAsync(p =>
+                    p.EndDate >= startOfMonth && p.EndDate <= endOfMonth, cancellationToken);
+
+                var totalPremiumTask = policiesQuery.SumAsync(p => p.PremiumAmount, cancellationToken);
+                var totalCommissionTask = policiesQuery.SumAsync(p => p.CommissionAmount, cancellationToken);
+
+                // Wait for all tasks to complete
+                await Task.WhenAll(
+                    totalCustomersTask,
+                    activeCustomersTask,
+                    totalPoliciesTask,
+                    activePoliciesTask,
+                    expiringPoliciesTask,
+                    totalPremiumTask,
+                    totalCommissionTask);
 
                 var dashboard = new DashboardDto
                 {
-                    TotalCustomers = customers.Count(),
-                    ActiveCustomers = customers.Count(c => c.IsActive),
-                    TotalPolicies = policies.Count(),
-                    ActivePolicies = policies.Count(p => p.Status == PolicyStatus.Active),
-                    ExpiringPoliciesThisMonth = policies.Count(p =>
-                        p.EndDate.Year == DateTime.Now.Year &&
-                        p.EndDate.Month == DateTime.Now.Month),
-                    TotalPremiumAmount = policies.Sum(p => p.PremiumAmount),
-                    TotalCommissionAmount = policies.Sum(p => p.CommissionAmount),
-                    // Add more calculations as needed
+                    TotalCustomers = await totalCustomersTask,
+                    ActiveCustomers = await activeCustomersTask,
+                    TotalPolicies = await totalPoliciesTask,
+                    ActivePolicies = await activePoliciesTask,
+                    ExpiringPoliciesThisMonth = await expiringPoliciesTask,
+                    TotalPremiumAmount = await totalPremiumTask,
+                    TotalCommissionAmount = await totalCommissionTask,
                 };
 
                 return Result<DashboardDto>.Success(dashboard);

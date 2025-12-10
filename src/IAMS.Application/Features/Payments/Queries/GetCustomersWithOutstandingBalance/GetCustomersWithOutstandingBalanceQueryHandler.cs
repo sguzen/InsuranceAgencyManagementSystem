@@ -26,7 +26,7 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
                 // OPTIMIZED: Single database query with aggregations
                 // No N+1 queries, no loading all payments multiple times
                 // Everything calculated in the database
-                var result = await _unitOfWork.Customers.GetAll()
+                var result = await _unitOfWork.Customers.AsQueryable()
                     .Where(c => !c.IsDeleted)
                     .Select(c => new
                     {

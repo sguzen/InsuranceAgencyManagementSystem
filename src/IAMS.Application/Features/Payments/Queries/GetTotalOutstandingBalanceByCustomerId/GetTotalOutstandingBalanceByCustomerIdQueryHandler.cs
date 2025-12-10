@@ -24,7 +24,7 @@ namespace IAMS.Application.Features.Payments.Queries.GetTotalOutstandingBalanceB
             {
                 // OPTIMIZED: Single database query with aggregation
                 // Calculate outstanding balance directly in SQL
-                var outstandingBalance = await _unitOfWork.Policies.GetAll()
+                var outstandingBalance = await _unitOfWork.Policies.AsQueryable()
                     .Where(p => !p.IsDeleted && p.CustomerId == request.CustomerId)
                     .SumAsync(p => p.PremiumAmount -
                         p.PolicyPayments

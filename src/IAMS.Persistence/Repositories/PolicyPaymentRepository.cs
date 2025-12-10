@@ -161,5 +161,27 @@ namespace IAMS.Persistence.Repositories
                             pp.DueDate.Value <= endOfMonth)
                 .OrderBy(pp => pp.DueDate);
         }
+
+        public IQueryable<PolicyPayment> GetPagedPaymentsQuery(int pageNumber, int pageSize, string? searchTerm = null)
+        {
+            var query = _dbSet.Where(pp => !pp.IsDeleted);
+
+            // Apply search filter if provided
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var search = searchTerm.ToLower();
+                query = query.Where(pp =>
+                    (pp.Reference != null && pp.Reference.ToLower().Contains(search)) ||
+                    (pp.Notes != null && pp.Notes.ToLower().Contains(search)) ||
+                    pp.Policy.PolicyNumber.ToLower().Contains(search) ||
+                    (pp.Policy.Customer.FirstName + " " + pp.Policy.Customer.LastName).ToLower().Contains(search));
+            }
+
+            // Apply sorting and pagination
+            return query
+                .OrderByDescending(pp => pp.CreatedOn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+        }
     }
 }

@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using IAMS.Application.DTOs.Payment;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
@@ -28,36 +29,36 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsPaged
         {
             try
             {
-                // Get all payments with related entities
-                var allPayments = await _unitOfWork.PolicyPayments.GetAllAsync();
+                // OPTIMIZED: Use IQueryable + ProjectTo pattern
+                // 1. Get count before pagination (need to build query without skip/take)
+                var countQuery = _unitOfWork.PolicyPayments.AsQueryable().Where(pp => !pp.IsDeleted);
 
-                // Since GetAllAsync doesn't include related entities, we need to fetch them separately
-                // For now, let's get by date range which includes related entities
-                var paymentsWithRelations = await _unitOfWork.PolicyPayments.GetPaymentsByDateRangeAsync(
-                    DateTime.MinValue, DateTime.MaxValue);
-
-                var query = paymentsWithRelations.AsQueryable();
-
-                // Apply search filter if provided
                 if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 {
-                    var searchTerm = request.SearchTerm.ToLower();
-                    query = query.Where(p =>
-                        (p.Reference != null && p.Reference.ToLower().Contains(searchTerm)) ||
-                        (p.Notes != null && p.Notes.ToLower().Contains(searchTerm)) ||
-                        (p.Policy != null && p.Policy.PolicyNumber != null && p.Policy.PolicyNumber.ToLower().Contains(searchTerm)));
+                    var search = request.SearchTerm.ToLower();
+                    countQuery = countQuery.Where(pp =>
+                        (pp.Reference != null && pp.Reference.ToLower().Contains(search)) ||
+                        (pp.Notes != null && pp.Notes.ToLower().Contains(search)) ||
+                        pp.Policy.PolicyNumber.ToLower().Contains(search) ||
+                        (pp.Policy.Customer.FirstName + " " + pp.Policy.Customer.LastName).ToLower().Contains(search));
                 }
 
-                var totalCount = query.Count();
-                var payments = query
-                    .OrderByDescending(p => p.CreatedOn)
-                    .Skip((request.PageNumber - 1) * request.PageSize)
-                    .Take(request.PageSize)
-                    .ToList();
+                var totalCount = await countQuery.CountAsync(cancellationToken);
 
-                var paymentDtos = _mapper.Map<List<PolicyPaymentDto>>(payments);
+                // 2. Get paginated data with ProjectTo for efficient database-level projection
+                var query = _unitOfWork.PolicyPayments.GetPagedPaymentsQuery(
+                    request.PageNumber,
+                    request.PageSize,
+                    request.SearchTerm);
 
-                return PagedResult<PolicyPaymentDto>.Success(paymentDtos, totalCount, request.PageNumber, request.PageSize);
+                var paymentDtos = await query
+                    .ProjectTo<PolicyPaymentListDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
+
+                // Map to full DTO if needed (or return PolicyPaymentListDto directly)
+                var fullDtos = _mapper.Map<List<PolicyPaymentDto>>(paymentDtos);
+
+                return PagedResult<PolicyPaymentDto>.Success(fullDtos, totalCount, request.PageNumber, request.PageSize);
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ using IAMS.Application.DTOs.Vehicle;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Vehicles.Queries.GetAllVehicles
@@ -27,50 +28,49 @@ namespace IAMS.Application.Features.Vehicles.Queries.GetAllVehicles
         {
             try
             {
-                var vehicles = await _unitOfWork.Vehicles.GetAllAsync();
+                // OPTIMIZED: Use IQueryable for database-level filtering and pagination
+                var query = _unitOfWork.Vehicles.AsQueryable().Where(v => !v.IsDeleted);
 
-                // Apply filters from query params
-                var filteredVehicles = vehicles.AsQueryable();
-
+                // Apply filters from query params at database level
                 if (!string.IsNullOrEmpty(request.QueryParams.PlateNumber))
                 {
-                    filteredVehicles = filteredVehicles.Where(v =>
-                        v.PlateNumber.Contains(request.QueryParams.PlateNumber, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(v => v.PlateNumber.Contains(request.QueryParams.PlateNumber));
                 }
 
                 if (!string.IsNullOrEmpty(request.QueryParams.ChassisNumber))
                 {
-                    filteredVehicles = filteredVehicles.Where(v =>
-                        v.ChassisNumber.Contains(request.QueryParams.ChassisNumber, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(v => v.ChassisNumber.Contains(request.QueryParams.ChassisNumber));
                 }
 
                 if (request.QueryParams.CustomerId.HasValue)
                 {
-                    filteredVehicles = filteredVehicles.Where(v => v.CustomerId == request.QueryParams.CustomerId.Value);
+                    query = query.Where(v => v.CustomerId == request.QueryParams.CustomerId.Value);
                 }
 
                 if (request.QueryParams.BrandId.HasValue)
                 {
-                    filteredVehicles = filteredVehicles.Where(v => v.BrandId == request.QueryParams.BrandId.Value);
+                    query = query.Where(v => v.BrandId == request.QueryParams.BrandId.Value);
                 }
 
                 if (request.QueryParams.ModelId.HasValue)
                 {
-                    filteredVehicles = filteredVehicles.Where(v => v.ModelId == request.QueryParams.ModelId.Value);
+                    query = query.Where(v => v.ModelId == request.QueryParams.ModelId.Value);
                 }
 
                 if (request.QueryParams.ModelYear.HasValue)
                 {
-                    filteredVehicles = filteredVehicles.Where(v => v.ModelYear == request.QueryParams.ModelYear.Value);
+                    query = query.Where(v => v.ModelYear == request.QueryParams.ModelYear.Value);
                 }
 
-                var totalCount = filteredVehicles.Count();
+                // Get count at database level
+                var totalCount = await query.CountAsync(cancellationToken);
 
-                // Apply pagination
-                var pagedVehicles = filteredVehicles
+                // Apply pagination at database level
+                var pagedVehicles = await query
+                    .OrderByDescending(v => v.CreatedOn)
                     .Skip((request.QueryParams.PageNumber - 1) * request.QueryParams.PageSize)
                     .Take(request.QueryParams.PageSize)
-                    .ToList();
+                    .ToListAsync(cancellationToken);
 
                 var vehicleDtos = _mapper.Map<List<VehicleDto>>(pagedVehicles);
 

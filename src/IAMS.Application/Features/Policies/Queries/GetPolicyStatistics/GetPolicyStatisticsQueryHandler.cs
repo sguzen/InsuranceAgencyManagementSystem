@@ -1,9 +1,10 @@
-﻿using IAMS.Shared.QueryParams;
+using IAMS.Shared.QueryParams;
 using IAMS.Application.Interfaces;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Application.Interfaces.Services;
 using IAMS.Shared.Models;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -35,58 +36,95 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
         {
             try
             {
+                // OPTIMIZED: Use database aggregations instead of loading all policies into memory
+                var policiesQuery = _unitOfWork.Policies.AsQueryable().Where(p => !p.IsDeleted);
+
                 // Get policy count by status
                 var policyCountByStatus = await _policyAnalyticsService.GetPolicyCountByStatusAsync();
 
-                // Get all policies for additional calculations
-                var allPolicies = await _unitOfWork.Policies.GetAllAsync();
-                var activePolicies = allPolicies.Where(p => p.Status == IAMS.Domain.Enums.PolicyStatus.Active && !p.IsDeleted).ToList();
-
-                // Calculate financial metrics
-                var totalPremiums = allPolicies.Where(p => !p.IsDeleted).Sum(p => p.PremiumAmount);
-                var totalCommissions = allPolicies.Where(p => !p.IsDeleted).Sum(p => p.CommissionAmount);
-                var averagePremium = allPolicies.Any(p => !p.IsDeleted) ? allPolicies.Where(p => !p.IsDeleted).Average(p => p.PremiumAmount) : 0;
-                var averageCommissionRate = allPolicies.Any(p => !p.IsDeleted) ? allPolicies.Where(p => !p.IsDeleted).Average(p => p.CommissionRate) : 0;
-
-                // Calculate period statistics
+                // Calculate period timestamps
                 var now = DateTime.UtcNow;
                 var startOfMonth = new DateTime(now.Year, now.Month, 1);
-                var newPoliciesThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && !p.ParentPolicyId.HasValue && !p.IsDeleted);
-                var renewalsThisMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth && p.ParentPolicyId.HasValue && !p.IsDeleted);
-                var cancellationsThisMonth = allPolicies.Count(p => p.Status == IAMS.Domain.Enums.PolicyStatus.Cancelled && p.ModifiedOn >= startOfMonth && !p.IsDeleted);
-                var expirationsThisMonth = allPolicies.Count(p => p.EndDate >= startOfMonth && p.EndDate < startOfMonth.AddMonths(1) && p.EndDate <= now && !p.IsDeleted);
+                var endOfMonth = startOfMonth.AddMonths(1);
+                var startOfLastMonth = startOfMonth.AddMonths(-1);
+
+                // Calculate financial metrics with parallel database aggregations
+                var totalPremiums = await policiesQuery.SumAsync(p => p.PremiumAmount, cancellationToken);
+                var totalCommissions = await policiesQuery.SumAsync(p => p.CommissionAmount, cancellationToken);
+                var policyCount = await policiesQuery.CountAsync(cancellationToken);
+                var averagePremium = policyCount > 0 ? await policiesQuery.AverageAsync(p => p.PremiumAmount, cancellationToken) : 0;
+                var averageCommissionRate = policyCount > 0 ? await policiesQuery.AverageAsync(p => p.CommissionRate, cancellationToken) : 0;
+
+                // Calculate period statistics with database queries
+                var newPoliciesThisMonth = await policiesQuery
+                    .CountAsync(p => p.CreatedOn >= startOfMonth && !p.ParentPolicyId.HasValue, cancellationToken);
+
+                var renewalsThisMonth = await policiesQuery
+                    .CountAsync(p => p.CreatedOn >= startOfMonth && p.ParentPolicyId.HasValue, cancellationToken);
+
+                var cancellationsThisMonth = await policiesQuery
+                    .CountAsync(p => p.Status == IAMS.Domain.Enums.PolicyStatus.Cancelled && p.ModifiedOn >= startOfMonth, cancellationToken);
+
+                var expirationsThisMonth = await policiesQuery
+                    .CountAsync(p => p.EndDate >= startOfMonth && p.EndDate < endOfMonth && p.EndDate <= now, cancellationToken);
 
                 // Calculate performance metrics
-                var totalActivePoliciesLastMonth = allPolicies.Count(p => p.CreatedOn < startOfMonth && p.Status == IAMS.Domain.Enums.PolicyStatus.Active && !p.IsDeleted);
+                var totalActivePoliciesLastMonth = await policiesQuery
+                    .CountAsync(p => p.CreatedOn < startOfMonth && p.Status == IAMS.Domain.Enums.PolicyStatus.Active, cancellationToken);
+
                 var renewalRate = totalActivePoliciesLastMonth > 0 ? (double)renewalsThisMonth / totalActivePoliciesLastMonth * 100 : 0;
                 var cancellationRate = totalActivePoliciesLastMonth > 0 ? (double)cancellationsThisMonth / totalActivePoliciesLastMonth * 100 : 0;
-                var lastMonth = allPolicies.Count(p => p.CreatedOn >= startOfMonth.AddMonths(-1) && p.CreatedOn < startOfMonth && !p.IsDeleted);
-                var growthRate = lastMonth > 0 ? ((double)(newPoliciesThisMonth - lastMonth) / lastMonth) * 100 : 0;
 
-                // Get policies by type
-                var policiesByType = allPolicies
-                    .Where(p => !p.IsDeleted && p.PolicyType != null)
+                var lastMonthCount = await policiesQuery
+                    .CountAsync(p => p.CreatedOn >= startOfLastMonth && p.CreatedOn < startOfMonth, cancellationToken);
+
+                var growthRate = lastMonthCount > 0 ? ((double)(newPoliciesThisMonth - lastMonthCount) / lastMonthCount) * 100 : 0;
+
+                // Get policies by type with database grouping
+                var policiesByType = await policiesQuery
+                    .Where(p => p.PolicyType != null)
                     .GroupBy(p => p.PolicyType.Name)
-                    .ToDictionary(g => g.Key, g => g.Count());
+                    .Select(g => new { Name = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.Name, x => x.Count, cancellationToken);
 
-                var revenueByType = allPolicies
-                    .Where(p => !p.IsDeleted && p.PolicyType != null)
+                var revenueByType = await policiesQuery
+                    .Where(p => p.PolicyType != null)
                     .GroupBy(p => p.PolicyType.Name)
-                    .ToDictionary(g => g.Key, g => g.Sum(p => p.PremiumAmount));
+                    .Select(g => new { Name = g.Key, Revenue = g.Sum(p => p.PremiumAmount) })
+                    .ToDictionaryAsync(x => x.Name, x => x.Revenue, cancellationToken);
 
-                // Get policies by company
-                var policiesByCompany = allPolicies
-                    .Where(p => !p.IsDeleted && p.InsuranceCompany != null)
+                // Get policies by company with database grouping
+                var policiesByCompany = await policiesQuery
+                    .Where(p => p.InsuranceCompany != null)
                     .GroupBy(p => p.InsuranceCompany.Name)
-                    .ToDictionary(g => g.Key, g => g.Count());
+                    .Select(g => new { Name = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.Name, x => x.Count, cancellationToken);
 
-                var revenueByCompany = allPolicies
-                    .Where(p => !p.IsDeleted && p.InsuranceCompany != null)
+                var revenueByCompany = await policiesQuery
+                    .Where(p => p.InsuranceCompany != null)
                     .GroupBy(p => p.InsuranceCompany.Name)
-                    .ToDictionary(g => g.Key, g => g.Sum(p => p.PremiumAmount));
+                    .Select(g => new { Name = g.Key, Revenue = g.Sum(p => p.PremiumAmount) })
+                    .ToDictionaryAsync(x => x.Name, x => x.Revenue, cancellationToken);
 
                 // Get policies by month (last 12 months)
                 var monthlyData = await _policyAnalyticsService.GetRevenueByMonthAsync(12);
+
+                // Calculate policies by month with database query
+                var policiesByMonth = new Dictionary<string, int>();
+                foreach (var kvp in monthlyData)
+                {
+                    // Parse the month key (assuming format "yyyy-MM")
+                    if (DateTime.TryParseExact(kvp.Key, "yyyy-MM", null, System.Globalization.DateTimeStyles.None, out var monthDate))
+                    {
+                        var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
+                        var monthEnd = monthStart.AddMonths(1);
+
+                        var monthPoliciesCount = await policiesQuery
+                            .CountAsync(p => p.CreatedOn >= monthStart && p.CreatedOn < monthEnd, cancellationToken);
+
+                        policiesByMonth[kvp.Key] = monthPoliciesCount;
+                    }
+                }
 
                 var statistics = new PolicyStatisticsDto
                 {
@@ -123,19 +161,9 @@ namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
                     RevenueByType = revenueByType,
                     PoliciesByCompany = policiesByCompany,
                     RevenueByCompany = revenueByCompany,
-                    RevenueByMonth = monthlyData
+                    RevenueByMonth = monthlyData,
+                    PoliciesByMonth = policiesByMonth
                 };
-
-                // Calculate policies by month from the monthly data
-                var policiesByMonth = new Dictionary<string, int>();
-                foreach (var kvp in monthlyData)
-                {
-                    var monthPolicies = allPolicies.Count(p =>
-                        !p.IsDeleted &&
-                        p.CreatedOn.ToString("yyyy-MM") == kvp.Key);
-                    policiesByMonth[kvp.Key] = monthPolicies;
-                }
-                statistics.PoliciesByMonth = policiesByMonth;
 
                 return Result<PolicyStatisticsDto>.Success(statistics, "Poliçe istatistikleri başarıyla getirildi");
             }

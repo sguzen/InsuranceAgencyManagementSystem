@@ -38,5 +38,11 @@ namespace IAMS.Application.Interfaces.Services
         Task<bool> HasOverduePaymentsAsync(int policyId);
         Task<bool> CanBeCancelledAsync(int policyId);
         Task<bool> CanBeRenewedAsync(int policyId);
+
+        // IQueryable methods for ProjectTo optimization
+        IQueryable<Policy> GetPoliciesQuery(PolicyQueryParams queryParams);
+        IQueryable<Policy> SearchPoliciesQuery(string searchTerm);
+        IQueryable<Policy> GetRecentPoliciesQuery(int count);
+        IQueryable<Policy> GetTopPoliciesByPremiumQuery(int count);
     }
 }

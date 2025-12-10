@@ -1,5 +1,6 @@
 using IAMS.Shared.Interfaces.Repositories;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Payments.Queries.GetTotalOutstandingBalanceByCustomerId
@@ -21,7 +22,17 @@ namespace IAMS.Application.Features.Payments.Queries.GetTotalOutstandingBalanceB
         {
             try
             {
-                return await _unitOfWork.PolicyPayments.GetTotalOutstandingBalanceByCustomerIdAsync(request.CustomerId);
+                // OPTIMIZED: Single database query with aggregation
+                // Calculate outstanding balance directly in SQL
+                var outstandingBalance = await _unitOfWork.Policies.GetAll()
+                    .Where(p => !p.IsDeleted && p.CustomerId == request.CustomerId)
+                    .SumAsync(p => p.PremiumAmount -
+                        p.PolicyPayments
+                            .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
+                            .Sum(pp => (decimal?)pp.Amount) ?? 0,
+                        cancellationToken);
+
+                return outstandingBalance;
             }
             catch (Exception ex)
             {

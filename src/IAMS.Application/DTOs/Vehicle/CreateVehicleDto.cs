@@ -14,8 +14,10 @@ namespace IAMS.Application.DTOs.Vehicle
         public string ChassisNumber { get; set; } = string.Empty;
         public string? EngineNumber { get; set; }
         public string? RegistrationNumber { get; set; }
-        public int BrandId { get; set; }
-        public int ModelId { get; set; }
+        public int? BrandId { get; set; }
+        public string? BrandName { get; set; }
+        public int? ModelId { get; set; }
+        public string? ModelName { get; set; }
         public int? ModelYear { get; set; }
         public VehicleType VehicleType { get; set; }
         public VehicleFuelType FuelType { get; set; }

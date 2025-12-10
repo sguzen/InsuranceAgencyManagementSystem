@@ -66,8 +66,8 @@ namespace IAMS.Application.Mappings
 
             // Vehicle mappings
             CreateMap<Vehicle, VehicleDto>()
-                .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand.Name))
-                .ForMember(dest => dest.ModelName, opt => opt.MapFrom(src => src.Model.Name))
+                .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.BrandName ?? src.Brand.Name ?? string.Empty))
+                .ForMember(dest => dest.ModelName, opt => opt.MapFrom(src => src.ModelName ?? src.Model.Name ?? string.Empty))
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? $"{src.Customer.FirstName} {src.Customer.LastName}" : string.Empty))
                 .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency != null ? src.Currency.Code : "TRY"))
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName));

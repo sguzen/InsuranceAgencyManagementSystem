@@ -17,7 +17,9 @@ namespace IAMS.Domain.Entities
 
         // Vehicle Details
         public int? BrandId { get; set; } // Marka (parametric) - Optional for traffic policies
+        public string? BrandName { get; set; } // Raw brand name from import
         public int? ModelId { get; set; } // Model (parametric) - Optional for traffic policies
+        public string? ModelName { get; set; } // Raw model name from import
         public int? ModelYear { get; set; } // Model Yılı
         public VehicleType VehicleType { get; set; } // Araç Tipi
         public VehicleFuelType FuelType { get; set; } // Yakıt Tipi
@@ -58,6 +60,6 @@ namespace IAMS.Domain.Entities
         // Computed Properties
         public int VehicleAge => ModelYear.HasValue ? DateTime.Today.Year - ModelYear.Value : 0;
         public bool IsInspectionDue => NextInspectionDate.HasValue && NextInspectionDate.Value <= DateTime.Today.AddDays(30);
-        public string FullName => $"{Brand?.Name} {Model?.Name} - {PlateNumber}";
+        public string FullName => $"{BrandName ?? Brand?.Name} {ModelName ?? Model?.Name} - {PlateNumber}".Trim();
     }
 }

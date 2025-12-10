@@ -16,10 +16,26 @@ namespace IAMS.Application.Mappings
             // Lightweight list DTO mapping - optimized for ProjectTo
             // AutoMapper will automatically only select required fields when using ProjectTo
             CreateMap<Customer, CustomerListDto>()
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src =>
+                    src.MobilePhoneNumber ?? src.HomePhone))
                 .ForMember(dest => dest.ActivePoliciesCount, opt => opt.MapFrom(src =>
                     src.Policies.Count(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)))
                 .ForMember(dest => dest.TotalPoliciesCount, opt => opt.MapFrom(src =>
-                    src.Policies.Count(p => !p.IsDeleted)));
+                    src.Policies.Count(p => !p.IsDeleted)))
+                .ForMember(dest => dest.TotalPremium, opt => opt.MapFrom(src =>
+                    src.Policies.Where(p => !p.IsDeleted).Sum(p => (decimal?)p.PremiumAmount) ?? 0))
+                .ForMember(dest => dest.TotalCommissions, opt => opt.MapFrom(src =>
+                    src.Policies.Where(p => !p.IsDeleted).Sum(p => (decimal?)p.CommissionAmount) ?? 0))
+                .ForMember(dest => dest.LastPolicyDate, opt => opt.MapFrom(src =>
+                    src.Policies.Where(p => !p.IsDeleted).Max(p => (DateTime?)p.CreatedOn)));
+
+            // Map from lightweight DTO to full DTO
+            CreateMap<CustomerListDto, CustomerDto>()
+                .ForMember(dest => dest.PolicyCount, opt => opt.MapFrom(src => src.TotalPoliciesCount))
+                .ForMember(dest => dest.ActivePolicyCount, opt => opt.MapFrom(src => src.ActivePoliciesCount))
+                .ForMember(dest => dest.TotalPolicyCount, opt => opt.MapFrom(src => src.TotalPoliciesCount))
+                .ForMember(dest => dest.HasActivePolicies, opt => opt.MapFrom(src => src.ActivePoliciesCount > 0))
+                .ForMember(dest => dest.MobilePhoneNumber, opt => opt.MapFrom(src => src.Phone));
 
             CreateMap<CreateOrUpdateCustomerDto, Customer>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

@@ -22,5 +22,8 @@ namespace IAMS.Application.DTOs.Customer
         // Lightweight aggregates (computed in query)
         public int ActivePoliciesCount { get; set; }
         public int TotalPoliciesCount { get; set; }
+        public decimal TotalPremium { get; set; }
+        public decimal TotalCommissions { get; set; }
+        public DateTime? LastPolicyDate { get; set; }
     }
 }

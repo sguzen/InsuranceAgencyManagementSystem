@@ -77,7 +77,22 @@
                         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                             <MudStack Spacing="1">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Tutar</MudText>
-                                <MudText Typo="Typo.h5">₺@totalAmount.ToString("N2")</MudText>
+                                @if (totalsByCurrency.Count <= 1)
+                                {
+                                    var total = totalsByCurrency.FirstOrDefault();
+                                    <MudText Typo="Typo.h5">@total.Key@total.Value.ToString("N2")</MudText>
+                                }
+                                else
+                                {
+                                    @foreach (var total in totalsByCurrency.OrderByDescending(t => t.Value).Take(2))
+                                    {
+                                        <MudText Typo="Typo.body1">@total.Key@total.Value.ToString("N2")</MudText>
+                                    }
+                                    @if (totalsByCurrency.Count > 2)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">+@(totalsByCurrency.Count - 2) diğer</MudText>
+                                    }
+                                }
                             </MudStack>
                             <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Large" Color="Color.Info" />
                         </MudStack>
@@ -185,7 +200,7 @@
                                 }
                             </MudTd>
                             <MudTd DataLabel="Tutar" Style="text-align: right;">
-                                <strong>₺@context.Amount.ToString("N2")</strong>
+                                <strong>@context.CurrencySymbol@context.Amount.ToString("N2")</strong>
                             </MudTd>
                             <MudTd DataLabel="Ödeme Yöntemi">
                                 @GetPaymentMethodText(context.PaymentMethod)
@@ -258,7 +273,7 @@
     private int pendingCount = 0;
     private int completedCount = 0;
     private int overdueCount = 0;
-    private decimal totalAmount = 0;
+    private Dictionary<string, decimal> totalsByCurrency = new();
 
     // Filters
     private PaymentStatus? filterStatus = null;
@@ -304,7 +319,18 @@
         completedCount = allPayments.Count(p => p.Status == PaymentStatus.Completed);
         overdueCount = allPayments.Count(p => p.Status == PaymentStatus.Overdue ||
             (p.Status == PaymentStatus.Pending && p.DueDate.HasValue && p.DueDate.Value < DateTime.Today));
-        totalAmount = allPayments.Where(p => p.Status == PaymentStatus.Completed).Sum(p => p.Amount);
+
+        // Calculate totals grouped by currency
+        totalsByCurrency = allPayments
+            .Where(p => p.Status == PaymentStatus.Completed)
+            .GroupBy(p => p.CurrencySymbol)
+            .ToDictionary(g => g.Key, g => g.Sum(p => p.Amount));
+
+        // Ensure at least one entry exists for display
+        if (!totalsByCurrency.Any())
+        {
+            totalsByCurrency.Add("₺", 0);
+        }
     }
 
     private async Task ApplyFilters()

@@ -68,26 +68,28 @@
                            DateFormat="dd.MM.yyyy"
                            Clearable="true" />
 
-            <MudSelect @bind-Value="model.PaymentMethod"
+            <MudSelect T="PaymentMethod"
+                       @bind-Value="model.PaymentMethod"
                        Label="Ödeme Yöntemi"
                        Required="true"
                        Variant="Variant.Outlined">
-                <MudSelectItem Value="PaymentMethod.Cash">Nakit</MudSelectItem>
-                <MudSelectItem Value="PaymentMethod.CreditCard">Kredi Kartı</MudSelectItem>
-                <MudSelectItem Value="PaymentMethod.BankTransfer">Banka Havalesi</MudSelectItem>
-                <MudSelectItem Value="PaymentMethod.Cheque">Çek</MudSelectItem>
-                <MudSelectItem Value="PaymentMethod.DebitCard">Banka Kartı</MudSelectItem>
-                <MudSelectItem Value="PaymentMethod.OnlinePayment">Online Ödeme</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.Cash">Nakit</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.CreditCard">Kredi Kartı</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.BankTransfer">Banka Havalesi</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.Cheque">Çek</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.DebitCard">Banka Kartı</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.OnlinePayment">Online Ödeme</MudSelectItem>
             </MudSelect>
 
-            <MudSelect @bind-Value="model.Status"
+            <MudSelect T="PaymentStatus"
+                       @bind-Value="model.Status"
                        Label="Durum"
                        Required="true"
                        Variant="Variant.Outlined">
-                <MudSelectItem Value="PaymentStatus.Pending">Bekliyor</MudSelectItem>
-                <MudSelectItem Value="PaymentStatus.Completed">Tamamlandı</MudSelectItem>
-                <MudSelectItem Value="PaymentStatus.Failed">Başarısız</MudSelectItem>
-                <MudSelectItem Value="PaymentStatus.PartiallyPaid">Kısmi Ödendi</MudSelectItem>
+                <MudSelectItem T="PaymentStatus" Value="PaymentStatus.Pending">Bekliyor</MudSelectItem>
+                <MudSelectItem T="PaymentStatus" Value="PaymentStatus.Completed">Tamamlandı</MudSelectItem>
+                <MudSelectItem T="PaymentStatus" Value="PaymentStatus.Failed">Başarısız</MudSelectItem>
+                <MudSelectItem T="PaymentStatus" Value="PaymentStatus.PartiallyPaid">Kısmi Ödendi</MudSelectItem>
             </MudSelect>
 
             <MudTextField @bind-Value="model.Reference"

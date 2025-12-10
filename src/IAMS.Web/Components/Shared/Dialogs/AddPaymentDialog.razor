@@ -137,7 +137,7 @@
     private bool EditMode => Payment != null;
     private string currencySymbol = "₺";
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
         // Set currency symbol from parameter or default
         if (!string.IsNullOrEmpty(CurrencySymbol))
@@ -148,26 +148,35 @@
         if (Payment != null)
         {
             // Edit mode - populate from existing payment
-            model.PolicyId = Payment.PolicyId;
-            model.Amount = Payment.Amount;
+            model = new CreatePolicyPaymentDto
+            {
+                PolicyId = Payment.PolicyId,
+                Amount = Payment.Amount,
+                PaymentDate = Payment.PaymentDate,
+                DueDate = Payment.DueDate,
+                PaymentMethod = Payment.PaymentMethod,
+                Status = Payment.Status,
+                Reference = Payment.Reference,
+                Notes = Payment.Notes,
+                CurrencyId = CurrencyId ?? 0
+            };
+
             paymentDate = Payment.PaymentDate;
             dueDate = Payment.DueDate;
-            model.PaymentMethod = Payment.PaymentMethod;
-            model.Status = Payment.Status;
-            model.Reference = Payment.Reference;
-            model.Notes = Payment.Notes;
-            // Note: CurrencyId should come from the payment's policy
         }
-        else if (PolicyId.HasValue)
+        else
         {
-            // Create mode with pre-selected policy
-            model.PolicyId = PolicyId.Value;
-        }
+            // Create mode - initialize with defaults if model is not set
+            if (model.PolicyId == 0 && PolicyId.HasValue)
+            {
+                model.PolicyId = PolicyId.Value;
+            }
 
-        // Set currency ID if provided
-        if (CurrencyId.HasValue)
-        {
-            model.CurrencyId = CurrencyId.Value;
+            // Set currency ID if provided
+            if (CurrencyId.HasValue && model.CurrencyId == 0)
+            {
+                model.CurrencyId = CurrencyId.Value;
+            }
         }
     }
 

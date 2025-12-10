@@ -79,5 +79,18 @@ namespace IAMS.Application.Services.Policies
 
         public Task<bool> CanBeRenewedAsync(int policyId)
             => PolicyRepo.CanBeRenewedAsync(policyId);
+
+        // IQueryable methods for ProjectTo optimization
+        public IQueryable<Policy> GetPoliciesQuery(PolicyQueryParams queryParams)
+            => PolicyRepo.GetPoliciesQuery(queryParams);
+
+        public IQueryable<Policy> SearchPoliciesQuery(string searchTerm)
+            => PolicyRepo.SearchPoliciesQuery(searchTerm);
+
+        public IQueryable<Policy> GetRecentPoliciesQuery(int count)
+            => PolicyRepo.GetRecentPoliciesQuery(count);
+
+        public IQueryable<Policy> GetTopPoliciesByPremiumQuery(int count)
+            => PolicyRepo.GetTopPoliciesByPremiumQuery(count);
     }
 }

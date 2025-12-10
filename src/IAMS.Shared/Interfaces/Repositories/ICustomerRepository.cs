@@ -36,5 +36,10 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<double> GetAverageCustomerAgeAsync();
         Task<Dictionary<Gender, int>> GetCustomersByGenderAsync();
         Task<Customer?> GetLastCustomerAsync();
+
+        // IQueryable methods for ProjectTo optimization
+        IQueryable<Customer> GetPagedQuery(CustomerQueryParams queryParams);
+        IQueryable<Customer> GetRecentCustomersQuery(int count = 10);
+        IQueryable<Customer> GetCustomersWithActivePoliciesQuery();
     }
 }

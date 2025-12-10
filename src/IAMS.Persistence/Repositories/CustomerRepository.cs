@@ -1,5 +1,4 @@
-﻿using IAMS.Application.DTOs.Customer;
-using IAMS.Shared.Interfaces.Repositories;
+﻿using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;

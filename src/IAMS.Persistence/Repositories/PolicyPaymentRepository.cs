@@ -114,49 +114,6 @@ namespace IAMS.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Dictionary<int, decimal>> GetOutstandingBalanceByCustomerAsync()
-        {
-            // Get all policies with their payments
-            var policiesWithPayments = await _context.Policies
-                .Include(p => p.PolicyPayments)
-                .Include(p => p.Currency)
-                .Where(p => !p.IsDeleted)
-                .Select(p => new
-                {
-                    CustomerId = p.CustomerId,
-                    PremiumAmount = p.PremiumAmount,
-                    TotalPaid = p.PolicyPayments
-                        .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
-                        .Sum(pp => pp.Amount)
-                })
-                .ToListAsync();
-
-            // Group by customer and calculate outstanding balance
-            return policiesWithPayments
-                .GroupBy(p => p.CustomerId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(p => p.PremiumAmount - p.TotalPaid)
-                );
-        }
-
-        public async Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId)
-        {
-            var policiesWithPayments = await _context.Policies
-                .Include(p => p.PolicyPayments)
-                .Where(p => !p.IsDeleted && p.CustomerId == customerId)
-                .Select(p => new
-                {
-                    PremiumAmount = p.PremiumAmount,
-                    TotalPaid = p.PolicyPayments
-                        .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
-                        .Sum(pp => pp.Amount)
-                })
-                .ToListAsync();
-
-            return policiesWithPayments.Sum(p => p.PremiumAmount - p.TotalPaid);
-        }
-
         // ========================================
         // IQueryable Methods for AutoMapper ProjectTo
         // Return IQueryable to allow Application layer to project to DTOs

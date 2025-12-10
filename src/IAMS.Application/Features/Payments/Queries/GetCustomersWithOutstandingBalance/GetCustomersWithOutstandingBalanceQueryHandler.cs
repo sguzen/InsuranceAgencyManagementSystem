@@ -23,37 +23,46 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
         {
             try
             {
-                var outstandingBalances = await _unitOfWork.PolicyPayments.GetOutstandingBalanceByCustomerAsync();
-
-                var result = new List<CustomerOutstandingBalanceDto>();
-
-                foreach (var balance in outstandingBalances.Where(b => b.Value > 0))
-                {
-                    var customer = await _unitOfWork.Customers.GetByIdAsync(balance.Key);
-                    if (customer != null)
+                // OPTIMIZED: Single database query with aggregations
+                // No N+1 queries, no loading all payments multiple times
+                // Everything calculated in the database
+                var result = await _unitOfWork.Customers.GetAll()
+                    .Where(c => !c.IsDeleted)
+                    .Select(c => new
                     {
-                        var customerPolicies = await _unitOfWork.Policies.GetPoliciesByCustomerIdAsync(customer.Id);
-                        var activePoliciesCount = customerPolicies.Count();
+                        CustomerId = c.Id,
+                        CustomerName = c.FirstName + " " + c.LastName,
+                        CustomerEmail = c.Email ?? string.Empty,
+                        // Outstanding balance: sum of (premium - total paid) for all policies
+                        OutstandingBalance = c.Policies
+                            .Where(p => !p.IsDeleted)
+                            .Sum(p => p.PremiumAmount -
+                                p.PolicyPayments
+                                    .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
+                                    .Sum(pp => (decimal?)pp.Amount) ?? 0),
+                        // Active policies count
+                        ActivePoliciesCount = c.Policies
+                            .Count(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active),
+                        // Pending payments count across all customer's policies
+                        PendingPaymentsCount = c.Policies
+                            .Where(p => !p.IsDeleted)
+                            .SelectMany(p => p.PolicyPayments)
+                            .Count(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Pending)
+                    })
+                    .Where(x => x.OutstandingBalance > 0)  // Only customers with outstanding balance
+                    .OrderByDescending(x => x.OutstandingBalance)
+                    .ToListAsync(cancellationToken);
 
-                        var pendingPayments = await _unitOfWork.PolicyPayments.GetPaymentsByDateRangeAsync(
-                            DateTime.MinValue, DateTime.MaxValue);
-                        var pendingPaymentsCount = pendingPayments
-                            .Count(p => p.Policy.CustomerId == customer.Id &&
-                                       p.Status == Domain.Enums.PaymentStatus.Pending);
-
-                        result.Add(new CustomerOutstandingBalanceDto
-                        {
-                            CustomerId = customer.Id,
-                            CustomerName = $"{customer.FirstName} {customer.LastName}",
-                            CustomerEmail = customer.Email,
-                            OutstandingBalance = balance.Value,
-                            ActivePoliciesCount = activePoliciesCount,
-                            PendingPaymentsCount = pendingPaymentsCount
-                        });
-                    }
-                }
-
-                return result.OrderByDescending(x => x.OutstandingBalance).ToList();
+                // Map to DTO
+                return result.Select(x => new CustomerOutstandingBalanceDto
+                {
+                    CustomerId = x.CustomerId,
+                    CustomerName = x.CustomerName,
+                    CustomerEmail = x.CustomerEmail,
+                    OutstandingBalance = x.OutstandingBalance,
+                    ActivePoliciesCount = x.ActivePoliciesCount,
+                    PendingPaymentsCount = x.PendingPaymentsCount
+                }).ToList();
             }
             catch (Exception ex)
             {

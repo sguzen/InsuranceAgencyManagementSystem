@@ -27,10 +27,14 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
                     src.Policy.Customer.FirstName + " " + src.Policy.Customer.LastName))
                 .ForMember(dest => dest.InsuranceCompanyName, opt => opt.MapFrom(src => src.Policy.InsuranceCompany.Name))
-                .ForMember(dest => dest.CurrencyCode, opt => opt.MapFrom(src => src.Policy.Currency.Code));
+                .ForMember(dest => dest.CurrencyCode, opt => opt.MapFrom(src => src.Policy.Currency.Code))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
             // Map from lightweight DTO to full DTO
             CreateMap<PolicyPaymentListDto, PolicyPaymentDto>()
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CurrencySymbol, opt => opt.MapFrom(src =>
                     src.CurrencyCode == "TRY" ? "₺" :
                     src.CurrencyCode == "USD" ? "$" :

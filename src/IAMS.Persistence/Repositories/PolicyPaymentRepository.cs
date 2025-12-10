@@ -159,9 +159,57 @@ namespace IAMS.Persistence.Repositories
         }
 
         // ========================================
-        // Optimized DTO Projection Methods
+        // IQueryable Methods for AutoMapper ProjectTo
+        // Return IQueryable to allow Application layer to project to DTOs
+        // Keeps clean architecture - no Application -> Persistence dependency
+        // ========================================
+
+        public IQueryable<PolicyPayment> GetOverduePaymentsQuery()
+        {
+            var today = DateTime.Today;
+            return _dbSet
+                .Where(pp => !pp.IsDeleted &&
+                            pp.Status == Domain.Enums.PaymentStatus.Pending &&
+                            pp.DueDate.HasValue &&
+                            pp.DueDate.Value < today)
+                .OrderBy(pp => pp.PaymentDate);
+        }
+
+        public IQueryable<PolicyPayment> GetPaymentsByPolicyIdQuery(int policyId)
+        {
+            return _dbSet
+                .Where(pp => pp.PolicyId == policyId && !pp.IsDeleted)
+                .OrderByDescending(pp => pp.PaymentDate);
+        }
+
+        public IQueryable<PolicyPayment> GetPaymentsByDateRangeQuery(DateTime fromDate, DateTime toDate)
+        {
+            return _dbSet
+                .Where(pp => !pp.IsDeleted &&
+                            pp.PaymentDate >= fromDate &&
+                            pp.PaymentDate <= toDate)
+                .OrderByDescending(pp => pp.PaymentDate);
+        }
+
+        public IQueryable<PolicyPayment> GetPaymentsDueThisMonthQuery()
+        {
+            var today = DateTime.Today;
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+            return _dbSet
+                .Where(pp => !pp.IsDeleted &&
+                            pp.Status == Domain.Enums.PaymentStatus.Pending &&
+                            pp.DueDate.HasValue &&
+                            pp.DueDate.Value >= startOfMonth &&
+                            pp.DueDate.Value <= endOfMonth)
+                .OrderBy(pp => pp.DueDate);
+        }
+
+        // ========================================
+        // Legacy DTO Projection Methods (Can be removed)
         // These methods use Select() to project directly to DTOs in the database
-        // Significantly reduces data transfer and improves performance
+        // Now superseded by IQueryable methods + ProjectTo in Application layer
         // ========================================
 
         public async Task<PolicyPaymentDto?> GetByIdDtoAsync(int id)

@@ -8,6 +8,7 @@ namespace IAMS.Application.Mappings
     {
         public PaymentMappingProfile()
         {
+            // Main mapping with all navigation properties
             CreateMap<PolicyPayment, PolicyPaymentDto>()
                 .ForMember(dest => dest.PolicyNumber, opt => opt.MapFrom(src => src.Policy.PolicyNumber))
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
@@ -19,8 +20,14 @@ namespace IAMS.Application.Mappings
                         ? src.Policy.Currency.Symbol
                         : "₺"));
 
-            // Mapping for lightweight list DTO
-            CreateMap<PolicyPaymentListDto, PolicyPaymentDto>();
+            // Lightweight list DTO mapping - optimized for ProjectTo
+            // AutoMapper will automatically only select required fields when using ProjectTo
+            CreateMap<PolicyPayment, PolicyPaymentListDto>()
+                .ForMember(dest => dest.PolicyNumber, opt => opt.MapFrom(src => src.Policy.PolicyNumber))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
+                    src.Policy.Customer.FirstName + " " + src.Policy.Customer.LastName))
+                .ForMember(dest => dest.InsuranceCompanyName, opt => opt.MapFrom(src => src.Policy.InsuranceCompany.Name))
+                .ForMember(dest => dest.CurrencyCode, opt => opt.MapFrom(src => src.Policy.Currency.Code));
 
             CreateMap<CreatePolicyPaymentDto, PolicyPayment>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

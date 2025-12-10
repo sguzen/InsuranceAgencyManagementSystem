@@ -199,51 +199,100 @@ return await _dbSet
 
 ## Architecture Notes
 
-### Why Query Handlers Inject Concrete Repository Types
+### Clean Architecture with AutoMapper ProjectTo
 
-The optimized DTO projection methods (e.g., `GetOverduePaymentsDtoAsync()`) are **not** part of the repository interfaces in `IAMS.Shared`. This is intentional to avoid circular dependencies:
+To maintain clean architecture while achieving database-level DTO projections, we use **AutoMapper's ProjectTo**:
 
-- **IAMS.Shared** cannot reference **IAMS.Application** (where DTOs live)
-- Therefore, DTO methods cannot be declared in `IPolicyPaymentRepository`
+**The Problem:**
+- `IAMS.Shared` (interfaces) cannot reference `IAMS.Application` (DTOs) - circular dependency
+- `IAMS.Application` should NOT reference `IAMS.Persistence` (implementations) - violates dependency inversion
 
-**Solution:** Query handlers that need optimized DTO projections inject the **concrete repository type** (`PolicyPaymentRepository`) instead of the interface:
+**The Solution: IQueryable + ProjectTo**
 
+1. **Repository Interface** (in Shared) returns `IQueryable<PolicyPayment>`:
 ```csharp
-// Instead of:
-public GetOverduePaymentsQueryHandler(IUnitOfWork unitOfWork, ...)
-
-// We use:
-public GetOverduePaymentsQueryHandler(PolicyPaymentRepository repository, ...)
+// IPolicyPaymentRepository
+IQueryable<PolicyPayment> GetOverduePaymentsQuery();
 ```
 
-This is acceptable because:
-1. Query handlers are read-only operations
-2. They don't need transaction control from UnitOfWork
-3. Direct repository injection is a valid pattern in CQRS
-4. The performance benefits outweigh the slight coupling to concrete types
+2. **Repository Implementation** (in Persistence) returns filtered/sorted query:
+```csharp
+// PolicyPaymentRepository
+public IQueryable<PolicyPayment> GetOverduePaymentsQuery()
+{
+    return _dbSet
+        .Where(pp => !pp.IsDeleted && pp.Status == PaymentStatus.Pending)
+        .OrderBy(pp => pp.PaymentDate);
+}
+```
+
+3. **Query Handler** (in Application) projects to DTO in database:
+```csharp
+// GetOverduePaymentsQueryHandler
+var query = _unitOfWork.PolicyPayments.GetOverduePaymentsQuery();
+var payments = await query
+    .ProjectTo<PolicyPaymentListDto>(_mapper.ConfigurationProvider)
+    .ToListAsync();
+```
+
+**Benefits:**
+- ✅ Clean architecture maintained - no circular dependencies
+- ✅ No Application → Persistence reference
+- ✅ Database-level projection (AutoMapper generates optimized SQL SELECT)
+- ✅ 70-80% data reduction still achieved
+- ✅ Repository returns IQueryable - allows Application layer flexibility
+
+### How ProjectTo Works
+
+AutoMapper's `ProjectTo` examines the mapping configuration and generates SQL SELECT statements that only retrieve the exact columns needed:
+
+```csharp
+// Mapping configuration
+CreateMap<PolicyPayment, PolicyPaymentListDto>()
+    .ForMember(dest => dest.PolicyNumber, opt => opt.MapFrom(src => src.Policy.PolicyNumber))
+    .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
+        src.Policy.Customer.FirstName + " " + src.Policy.Customer.LastName));
+
+// ProjectTo generates SQL like:
+// SELECT pp.Id, pp.Amount, p.PolicyNumber,
+//        c.FirstName + ' ' + c.LastName as CustomerName
+// FROM PolicyPayments pp
+// INNER JOIN Policies p ON ...
+// INNER JOIN Customers c ON ...
+```
+
+Instead of loading 100+ fields, it selects only ~11 fields.
 
 ### Old Methods Still Available
 
 All original methods remain in the repository interfaces for backward compatibility. Other parts of the codebase can continue using:
-- `GetOverduePaymentsAsync()` → Returns `IEnumerable<PolicyPayment>`
-- `GetPaymentsByPolicyIdAsync()` → Returns `IEnumerable<PolicyPayment>`
+- `GetOverduePaymentsAsync()` → Returns `IEnumerable<PolicyPayment>` (loads full entities with Includes)
+- `GetOverduePaymentsQuery()` → Returns `IQueryable<PolicyPayment>` (use with ProjectTo for optimization)
 
-These methods still work but are less efficient due to loading full entity graphs.
+The `*Query()` methods are the new recommended approach for list/search operations.
 
 ## Files Modified
 
 ### New Files:
-- `src/IAMS.Application/DTOs/Payment/PolicyPaymentListDto.cs`
-- `src/IAMS.Application/DTOs/Customer/CustomerListDto.cs`
+- `src/IAMS.Application/DTOs/Payment/PolicyPaymentListDto.cs` - Lightweight DTO for payment lists
+- `src/IAMS.Application/DTOs/Customer/CustomerListDto.cs` - Lightweight DTO for customer lists
 
 ### Modified Files:
-- `src/IAMS.Persistence/Repositories/PolicyPaymentRepository.cs` - Added 5 DTO projection methods
-- `src/IAMS.Persistence/Repositories/PolicyRepository.cs` - Added 2 DTO projection methods
-- `src/IAMS.Persistence/Repositories/CustomerRepository.cs` - Fixed Include placement and aggregations
-- `src/IAMS.Application/Mappings/PaymentMappingProfile.cs` - Added ListDto mapping
-- `src/IAMS.Application/Features/Payments/Queries/GetOverduePayments/GetOverduePaymentsQueryHandler.cs` - Now injects concrete repository
-- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsByPolicyId/GetPaymentsByPolicyIdQueryHandler.cs` - Now injects concrete repository
-- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsDueThisMonth/GetPaymentsDueThisMonthQueryHandler.cs` - Now injects concrete repository
+
+**Shared (Interfaces):**
+- `src/IAMS.Shared/Interfaces/Repositories/IPolicyPaymentRepository.cs` - Added IQueryable methods for ProjectTo
+
+**Persistence (Implementations):**
+- `src/IAMS.Persistence/Repositories/PolicyPaymentRepository.cs` - Added 4 IQueryable methods + fixed GetLastPaymentDateAsync
+- `src/IAMS.Persistence/Repositories/PolicyRepository.cs` - Added 2 DTO projection methods (legacy - can use ProjectTo instead)
+- `src/IAMS.Persistence/Repositories/CustomerRepository.cs` - Fixed Include placement and database aggregations
+- `src/IAMS.Persistence/Exensions/ServiceCollectionExtensions.cs` - Removed concrete repository registrations
+
+**Application (Query Handlers):**
+- `src/IAMS.Application/Mappings/PaymentMappingProfile.cs` - Added PolicyPayment → PolicyPaymentListDto mapping
+- `src/IAMS.Application/Features/Payments/Queries/GetOverduePayments/GetOverduePaymentsQueryHandler.cs` - Uses IQueryable + ProjectTo
+- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsByPolicyId/GetPaymentsByPolicyIdQueryHandler.cs` - Uses IQueryable + ProjectTo
+- `src/IAMS.Application/Features/Payments/Queries/GetPaymentsDueThisMonth/GetPaymentsDueThisMonthQueryHandler.cs` - Uses IQueryable + ProjectTo
 
 ## Estimated Overall Impact
 

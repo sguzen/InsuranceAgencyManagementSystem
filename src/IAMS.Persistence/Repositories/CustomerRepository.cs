@@ -460,6 +460,68 @@ namespace IAMS.Persistence.Repositories
                 .CountAsync();
         }
 
+        // ========================================
+        // IQueryable Methods for AutoMapper ProjectTo
+        // Return IQueryable to allow Application layer to project to DTOs
+        // Keeps clean architecture - no Application -> Persistence dependency
+        // ========================================
+
+        public IQueryable<Customer> GetPagedQuery(CustomerQueryParams queryParams)
+        {
+            var query = _dbSet.Where(c => !c.IsDeleted);
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+            {
+                var search = queryParams.SearchTerm.ToLower();
+                query = query.Where(c =>
+                    c.FirstName.ToLower().Contains(search) ||
+                    c.LastName.ToLower().Contains(search) ||
+                    c.IdentificationNumber.ToLower().Contains(search) ||
+                    (c.Email != null && c.Email.ToLower().Contains(search)) ||
+                    (c.Phone != null && c.Phone.Contains(search)));
+            }
+
+            // Apply status filter
+            if (queryParams.Status.HasValue)
+            {
+                query = query.Where(c => c.Status == queryParams.Status.Value);
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrWhiteSpace(queryParams.SortBy))
+            {
+                var sortDirection = queryParams.SortDirection == "desc" ? "DESC" : "ASC";
+                query = query.OrderBy($"{queryParams.SortBy} {sortDirection}");
+            }
+            else
+            {
+                query = query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName);
+            }
+
+            // Apply pagination
+            return query
+                .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+                .Take(queryParams.PageSize);
+        }
+
+        public IQueryable<Customer> GetRecentCustomersQuery(int count = 10)
+        {
+            return _dbSet
+                .Where(c => !c.IsDeleted)
+                .OrderByDescending(c => c.CreatedOn)
+                .Take(count);
+        }
+
+        public IQueryable<Customer> GetCustomersWithActivePoliciesQuery()
+        {
+            return _dbSet
+                .Where(c => !c.IsDeleted &&
+                           c.Policies.Any(p => !p.IsDeleted && p.Status == PolicyStatus.Active))
+                .OrderBy(c => c.LastName)
+                .ThenBy(c => c.FirstName);
+        }
+
         #region private methods
         private static string CleanPhoneNumber(string phoneNumber)
         {
@@ -474,7 +536,7 @@ namespace IAMS.Persistence.Repositories
                 .Replace("+", "")
                 .Trim();
         }
-       
+
 
         #endregion
     }

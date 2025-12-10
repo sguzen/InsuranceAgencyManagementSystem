@@ -699,5 +699,105 @@ namespace IAMS.Persistence.Repositories
                 .Where(p => p.OriginalPolicyId == originalPolicyId && p.InnerCode != "000" && !p.IsDeleted)
                 .CountAsync();
         }
+
+        // ========================================
+        // IQueryable Methods for AutoMapper ProjectTo
+        // Return IQueryable to allow Application layer to project to DTOs
+        // Keeps clean architecture - no Application -> Persistence dependency
+        // ========================================
+
+        public IQueryable<Policy> GetPoliciesQuery(PolicyQueryParams queryParams)
+        {
+            var query = _dbSet.Where(p => !p.IsDeleted);
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+            {
+                var search = queryParams.SearchTerm.ToLower();
+                query = query.Where(p =>
+                    p.PolicyNumber.ToLower().Contains(search) ||
+                    p.Customer.FirstName.ToLower().Contains(search) ||
+                    p.Customer.LastName.ToLower().Contains(search) ||
+                    p.InsuranceCompany.Name.ToLower().Contains(search) ||
+                    p.PolicyType.Name.ToLower().Contains(search));
+            }
+
+            // Apply filters
+            if (queryParams.Status.HasValue)
+                query = query.Where(p => p.Status == queryParams.Status.Value);
+
+            if (queryParams.CustomerId.HasValue)
+                query = query.Where(p => p.CustomerId == queryParams.CustomerId.Value);
+
+            if (queryParams.InsuranceCompanyId.HasValue)
+                query = query.Where(p => p.InsuranceCompanyId == queryParams.InsuranceCompanyId.Value);
+
+            if (queryParams.PolicyTypeId.HasValue)
+                query = query.Where(p => p.PolicyTypeId == queryParams.PolicyTypeId.Value);
+
+            if (queryParams.StartDateFrom.HasValue)
+                query = query.Where(p => p.StartDate >= queryParams.StartDateFrom.Value);
+
+            if (queryParams.StartDateTo.HasValue)
+                query = query.Where(p => p.StartDate <= queryParams.StartDateTo.Value);
+
+            if (queryParams.EndDateFrom.HasValue)
+                query = query.Where(p => p.EndDate >= queryParams.EndDateFrom.Value);
+
+            if (queryParams.EndDateTo.HasValue)
+                query = query.Where(p => p.EndDate <= queryParams.EndDateTo.Value);
+
+            if (queryParams.IsExpiring.HasValue && queryParams.IsExpiring.Value)
+            {
+                var cutoffDate = DateTime.Now.AddDays(30);
+                query = query.Where(p => p.Status == PolicyStatus.Active &&
+                                        p.EndDate <= cutoffDate &&
+                                        p.EndDate >= DateTime.Now);
+            }
+
+            if (queryParams.IsExpired.HasValue && queryParams.IsExpired.Value)
+                query = query.Where(p => p.Status == PolicyStatus.Expired || p.EndDate < DateTime.Now);
+
+            if (queryParams.MinPremium.HasValue)
+                query = query.Where(p => p.PremiumAmount >= queryParams.MinPremium.Value);
+
+            if (queryParams.MaxPremium.HasValue)
+                query = query.Where(p => p.PremiumAmount <= queryParams.MaxPremium.Value);
+
+            // Apply pagination
+            return query
+                .OrderByDescending(p => p.CreatedOn)
+                .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+                .Take(queryParams.PageSize);
+        }
+
+        public IQueryable<Policy> SearchPoliciesQuery(string searchTerm)
+        {
+            var search = searchTerm.ToLower();
+            return _dbSet
+                .Where(p => !p.IsDeleted &&
+                           (p.PolicyNumber.ToLower().Contains(search) ||
+                            p.Customer.FirstName.ToLower().Contains(search) ||
+                            p.Customer.LastName.ToLower().Contains(search) ||
+                            p.InsuranceCompany.Name.ToLower().Contains(search) ||
+                            p.PolicyType.Name.ToLower().Contains(search)))
+                .OrderByDescending(p => p.CreatedOn);
+        }
+
+        public IQueryable<Policy> GetRecentPoliciesQuery(int count)
+        {
+            return _dbSet
+                .Where(p => !p.IsDeleted)
+                .OrderByDescending(p => p.CreatedOn)
+                .Take(count);
+        }
+
+        public IQueryable<Policy> GetTopPoliciesByPremiumQuery(int count)
+        {
+            return _dbSet
+                .Where(p => !p.IsDeleted)
+                .OrderByDescending(p => p.PremiumAmount)
+                .Take(count);
+        }
     }
 }

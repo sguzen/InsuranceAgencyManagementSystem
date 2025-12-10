@@ -1,6 +1,6 @@
 using AutoMapper;
 using IAMS.Application.DTOs.Payment;
-using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Persistence.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -8,16 +8,16 @@ namespace IAMS.Application.Features.Payments.Queries.GetOverduePayments
 {
     public class GetOverduePaymentsQueryHandler : IRequestHandler<GetOverduePaymentsQuery, List<PolicyPaymentDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly PolicyPaymentRepository _repository;
         private readonly IMapper _mapper;
         private readonly ILogger<GetOverduePaymentsQueryHandler> _logger;
 
         public GetOverduePaymentsQueryHandler(
-            IUnitOfWork unitOfWork,
+            PolicyPaymentRepository repository,
             IMapper mapper,
             ILogger<GetOverduePaymentsQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -26,9 +26,8 @@ namespace IAMS.Application.Features.Payments.Queries.GetOverduePayments
         {
             try
             {
-                // Use optimized DTO projection method - no AutoMapper needed, projects in database
-                var payments = await _unitOfWork.PolicyPayments.GetOverduePaymentsDtoAsync();
-                // Convert from List to DTO if return type requires it
+                // Use optimized DTO projection method - projects directly in database
+                var payments = await _repository.GetOverduePaymentsDtoAsync();
                 return _mapper.Map<List<PolicyPaymentDto>>(payments);
             }
             catch (Exception ex)

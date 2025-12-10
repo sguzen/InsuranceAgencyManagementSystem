@@ -1,6 +1,6 @@
 using AutoMapper;
 using IAMS.Application.DTOs.Payment;
-using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Persistence.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -8,16 +8,16 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId
 {
     public class GetPaymentsByPolicyIdQueryHandler : IRequestHandler<GetPaymentsByPolicyIdQuery, List<PolicyPaymentDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly PolicyPaymentRepository _repository;
         private readonly IMapper _mapper;
         private readonly ILogger<GetPaymentsByPolicyIdQueryHandler> _logger;
 
         public GetPaymentsByPolicyIdQueryHandler(
-            IUnitOfWork unitOfWork,
+            PolicyPaymentRepository repository,
             IMapper mapper,
             ILogger<GetPaymentsByPolicyIdQueryHandler> logger)
         {
-            _unitOfWork = unitOfWork;
+            _repository = repository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -27,7 +27,7 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId
             try
             {
                 // Use optimized DTO projection method - projects directly in database
-                var payments = await _unitOfWork.PolicyPayments.GetPaymentsByPolicyIdDtoAsync(request.PolicyId);
+                var payments = await _repository.GetPaymentsByPolicyIdDtoAsync(request.PolicyId);
                 return _mapper.Map<List<PolicyPaymentDto>>(payments);
             }
             catch (Exception ex)

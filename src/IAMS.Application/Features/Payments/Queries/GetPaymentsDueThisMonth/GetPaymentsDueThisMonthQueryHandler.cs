@@ -1,23 +1,25 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using IAMS.Application.DTOs.Payment;
-using IAMS.Persistence.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth
 {
     public class GetPaymentsDueThisMonthQueryHandler : IRequestHandler<GetPaymentsDueThisMonthQuery, List<PolicyPaymentDto>>
     {
-        private readonly PolicyPaymentRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<GetPaymentsDueThisMonthQueryHandler> _logger;
 
         public GetPaymentsDueThisMonthQueryHandler(
-            PolicyPaymentRepository repository,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<GetPaymentsDueThisMonthQueryHandler> logger)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -26,8 +28,12 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth
         {
             try
             {
-                // Use optimized DTO projection method - projects directly in database
-                var payments = await _repository.GetPaymentsDueThisMonthDtoAsync();
+                // Use IQueryable + ProjectTo for optimized database projection
+                var query = _unitOfWork.PolicyPayments.GetPaymentsDueThisMonthQuery();
+                var payments = await query
+                    .ProjectTo<PolicyPaymentListDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
+
                 return _mapper.Map<List<PolicyPaymentDto>>(payments);
             }
             catch (Exception ex)

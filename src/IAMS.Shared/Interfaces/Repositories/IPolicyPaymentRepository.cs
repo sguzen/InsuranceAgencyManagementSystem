@@ -14,5 +14,11 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync();
         Task<Dictionary<int, decimal>> GetOutstandingBalanceByCustomerAsync();
         Task<decimal> GetTotalOutstandingBalanceByCustomerIdAsync(int customerId);
+
+        // Query methods that return IQueryable for ProjectTo optimization
+        IQueryable<PolicyPayment> GetOverduePaymentsQuery();
+        IQueryable<PolicyPayment> GetPaymentsByPolicyIdQuery(int policyId);
+        IQueryable<PolicyPayment> GetPaymentsByDateRangeQuery(DateTime fromDate, DateTime toDate);
+        IQueryable<PolicyPayment> GetPaymentsDueThisMonthQuery();
     }
 }

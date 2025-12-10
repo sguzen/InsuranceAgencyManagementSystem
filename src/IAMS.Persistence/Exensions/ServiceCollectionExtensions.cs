@@ -77,12 +77,6 @@ namespace IAMS.Persistence.Extensions
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<ICommissionRateRepository, CommissionRateRepository>();
 
-            // Register concrete repository types for query handlers that need DTO projection methods
-            // These handlers inject concrete types to access optimized methods not in the interface
-            services.AddScoped<PolicyPaymentRepository>();
-            services.AddScoped<PolicyRepository>();
-            services.AddScoped<CustomerRepository>();
-
             // Register tenant service (moved from Infrastructure to fix dependency direction)
             // This service uses ApplicationDbContext directly, so it belongs in Persistence layer
             services.AddScoped<ITenantService, ApplicationTenantService>();

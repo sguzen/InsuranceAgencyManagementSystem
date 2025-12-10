@@ -1,23 +1,25 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using IAMS.Application.DTOs.Payment;
-using IAMS.Persistence.Repositories;
+using IAMS.Shared.Interfaces.Repositories;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Payments.Queries.GetOverduePayments
 {
     public class GetOverduePaymentsQueryHandler : IRequestHandler<GetOverduePaymentsQuery, List<PolicyPaymentDto>>
     {
-        private readonly PolicyPaymentRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<GetOverduePaymentsQueryHandler> _logger;
 
         public GetOverduePaymentsQueryHandler(
-            PolicyPaymentRepository repository,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<GetOverduePaymentsQueryHandler> logger)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -26,8 +28,13 @@ namespace IAMS.Application.Features.Payments.Queries.GetOverduePayments
         {
             try
             {
-                // Use optimized DTO projection method - projects directly in database
-                var payments = await _repository.GetOverduePaymentsDtoAsync();
+                // Use IQueryable + ProjectTo for optimized database projection
+                // AutoMapper generates SQL SELECT with only required fields
+                var query = _unitOfWork.PolicyPayments.GetOverduePaymentsQuery();
+                var payments = await query
+                    .ProjectTo<PolicyPaymentListDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
+
                 return _mapper.Map<List<PolicyPaymentDto>>(payments);
             }
             catch (Exception ex)

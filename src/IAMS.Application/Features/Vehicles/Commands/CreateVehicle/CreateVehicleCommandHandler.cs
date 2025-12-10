@@ -40,23 +40,29 @@ namespace IAMS.Application.Features.Vehicles.Commands.CreateVehicle
                     return Result<VehicleDto>.NotFound($"Customer with ID {request.VehicleDto.CustomerId} not found");
                 }
 
-                // Verify brand exists
-                var brand = await _unitOfWork.VehicleBrands.GetByIdAsync(request.VehicleDto.BrandId);
-                if (brand == null)
+                // Verify brand exists (optional - only if BrandId is provided)
+                if (request.VehicleDto.BrandId.HasValue)
                 {
-                    return Result<VehicleDto>.NotFound($"Vehicle brand with ID {request.VehicleDto.BrandId} not found");
+                    var brand = await _unitOfWork.VehicleBrands.GetByIdAsync(request.VehicleDto.BrandId.Value);
+                    if (brand == null)
+                    {
+                        return Result<VehicleDto>.NotFound($"Vehicle brand with ID {request.VehicleDto.BrandId} not found");
+                    }
                 }
 
-                // Verify model exists and belongs to brand
-                var model = await _unitOfWork.VehicleModels.GetByIdAsync(request.VehicleDto.ModelId);
-                if (model == null)
+                // Verify model exists and belongs to brand (optional - only if ModelId is provided)
+                if (request.VehicleDto.ModelId.HasValue)
                 {
-                    return Result<VehicleDto>.NotFound($"Vehicle model with ID {request.VehicleDto.ModelId} not found");
-                }
+                    var model = await _unitOfWork.VehicleModels.GetByIdAsync(request.VehicleDto.ModelId.Value);
+                    if (model == null)
+                    {
+                        return Result<VehicleDto>.NotFound($"Vehicle model with ID {request.VehicleDto.ModelId} not found");
+                    }
 
-                if (model.BrandId != request.VehicleDto.BrandId)
-                {
-                    return Result<VehicleDto>.Failure("Model does not belong to the specified brand", string.Empty);
+                    if (request.VehicleDto.BrandId.HasValue && model.BrandId != request.VehicleDto.BrandId.Value)
+                    {
+                        return Result<VehicleDto>.Failure("Model does not belong to the specified brand", string.Empty);
+                    }
                 }
 
                 // Check if plate number already exists

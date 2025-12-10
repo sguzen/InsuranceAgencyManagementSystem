@@ -19,6 +19,9 @@ namespace IAMS.Application.Mappings
                         ? src.Policy.Currency.Symbol
                         : "₺"));
 
+            // Mapping for lightweight list DTO
+            CreateMap<PolicyPaymentListDto, PolicyPaymentDto>();
+
             CreateMap<CreatePolicyPaymentDto, PolicyPayment>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedOn, opt => opt.Ignore())

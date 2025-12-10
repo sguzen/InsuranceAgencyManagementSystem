@@ -1,4 +1,5 @@
-﻿using IAMS.Shared.Interfaces.Repositories;
+﻿using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
@@ -266,11 +267,12 @@ namespace IAMS.Persistence.Repositories
         {
             try
             {
+                // OPTIMIZED: Move Include before OrderByDescending for better performance
                 return await _dbSet
                     .Where(c => !c.IsDeleted)
+                    .Include(c => c.Policies.Where(p => !p.IsDeleted))
                     .OrderByDescending(c => c.CreatedOn)
                     .Take(count)
-                    .Include(c => c.Policies.Where(p => !p.IsDeleted))
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -289,14 +291,15 @@ namespace IAMS.Persistence.Repositories
                 var startOfWeek = now.AddDays(-(int)now.DayOfWeek);
                 var lastMonth = startOfMonth.AddMonths(-1);
 
-                var allCustomers = await _dbSet.Where(c => !c.IsDeleted).ToListAsync();
+                // OPTIMIZED: Use database aggregations instead of loading all customers
+                var baseQuery = _dbSet.Where(c => !c.IsDeleted);
 
-                var totalCustomers = allCustomers.Count;
-                var activeCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Active);
-                var inactiveCustomers = allCustomers.Count(c => c.Status == CustomerStatus.Inactive);
-                var newCustomersThisMonth = allCustomers.Count(c => c.CreatedOn >= startOfMonth);
-                var newCustomersThisWeek = allCustomers.Count(c => c.CreatedOn >= startOfWeek);
-                var newCustomersLastMonth = allCustomers.Count(c => c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth);
+                var totalCustomers = await baseQuery.CountAsync();
+                var activeCustomers = await baseQuery.CountAsync(c => c.Status == CustomerStatus.Active);
+                var inactiveCustomers = await baseQuery.CountAsync(c => c.Status == CustomerStatus.Inactive);
+                var newCustomersThisMonth = await baseQuery.CountAsync(c => c.CreatedOn >= startOfMonth);
+                var newCustomersThisWeek = await baseQuery.CountAsync(c => c.CreatedOn >= startOfWeek);
+                var newCustomersLastMonth = await baseQuery.CountAsync(c => c.CreatedOn >= lastMonth && c.CreatedOn < startOfMonth);
 
 
                 // Calculate growth percentage
@@ -346,11 +349,16 @@ namespace IAMS.Persistence.Repositories
         {
             try
             {
+                // OPTIMIZED: Count in database, then load customers
                 return await _dbSet
                     .Where(c => !c.IsDeleted)
-                    .Include(c => c.Policies.Where(p => !p.IsDeleted))
-                    .OrderByDescending(c => c.Policies.Count(p => !p.IsDeleted))
+                    .Select(c => new {
+                        Customer = c,
+                        PolicyCount = c.Policies.Count(p => !p.IsDeleted)
+                    })
+                    .OrderByDescending(x => x.PolicyCount)
                     .Take(count)
+                    .Select(x => x.Customer)
                     .ToListAsync();
             }
             catch (Exception ex)

@@ -26,7 +26,9 @@ namespace IAMS.Application.Features.Payments.Queries.GetOverduePayments
         {
             try
             {
-                var payments = await _unitOfWork.PolicyPayments.GetOverduePaymentsAsync();
+                // Use optimized DTO projection method - no AutoMapper needed, projects in database
+                var payments = await _unitOfWork.PolicyPayments.GetOverduePaymentsDtoAsync();
+                // Convert from List to DTO if return type requires it
                 return _mapper.Map<List<PolicyPaymentDto>>(payments);
             }
             catch (Exception ex)

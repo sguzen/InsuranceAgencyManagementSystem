@@ -35,7 +35,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
                 var customer = await _unitOfWork.Customers.GetByIdAsync(request.CustomerId);
                 if (customer == null)
                 {
-                    return Result<CustomerMultiCurrencyStatementDto>.Failure("Müşteri bulunamadı");
+                    return Result<CustomerMultiCurrencyStatementDto>.Failure("Müşteri bulunamadı", (List<string>?)null);
                 }
 
                 // Get all policies for the customer
@@ -44,7 +44,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
 
                 // Get all payments for these policies
                 var paymentsQuery = _unitOfWork.PolicyPayments
-                    .Query()
+                    .AsQueryable()
                     .Include(p => p.Currency)
                     .Include(p => p.Policy)
                     .Where(p => policyIds.Contains(p.PolicyId));
@@ -58,7 +58,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
                     .ToList();
 
                 var currencies = await _unitOfWork.Currencies
-                    .Query()
+                    .AsQueryable()
                     .Where(c => currencyIds.Contains(c.Id))
                     .ToListAsync(cancellationToken);
 
@@ -70,7 +70,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
 
                     if (requestedCurrency == null)
                     {
-                        return Result<CustomerMultiCurrencyStatementDto>.Failure($"Para birimi bulunamadı: {request.CurrencyCode}");
+                        return Result<CustomerMultiCurrencyStatementDto>.Failure($"Para birimi bulunamadı: {request.CurrencyCode}", (List<string>?)null);
                     }
 
                     currencies = new List<IAMS.Domain.Entities.Currency> { requestedCurrency };
@@ -191,7 +191,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
                         PaymentMethod.Cash => "NAKİT",
                         PaymentMethod.CreditCard => "KREDİ KARTI",
                         PaymentMethod.BankTransfer => "BANKA HAVALESI",
-                        PaymentMethod.Check => "ÇEK",
+                        PaymentMethod.Cheque => "ÇEK",
                         _ => payment.PaymentMethod.ToString().ToUpper()
                     };
 

@@ -11,11 +11,13 @@
 @using IAMS.Application.Services.Currencies
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
+@using System.Net.Http.Json
 @inject ICustomerService CustomerService
 @inject IPolicyService PolicyService
 @inject ICurrencyService CurrencyService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject HttpClient Http
 
 <PageTitle>Müşteri Raporu</PageTitle>
 
@@ -442,6 +444,192 @@
                     </MudCardContent>
                 </MudCard>
             }
+
+            <!-- Customer Statement Section -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Class="mr-2" />
+                            Müşteri Hesap Özeti
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Refresh"
+                                   OnClick="LoadCustomerStatement"
+                                   Disabled="@loadingStatement"
+                                   Size="Size.Small">
+                            Hesap Özeti Getir
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid Class="mb-4">
+                        <MudItem xs="12" md="4">
+                            <MudDatePicker Label="Başlangıç Tarihi"
+                                           @bind-Date="statementStartDate"
+                                           Variant="Variant.Outlined"
+                                           Editable="true"
+                                           DateFormat="dd.MM.yyyy" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudDatePicker Label="Bitiş Tarihi"
+                                           @bind-Date="statementEndDate"
+                                           Variant="Variant.Outlined"
+                                           Editable="true"
+                                           DateFormat="dd.MM.yyyy" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSelect Label="Para Birimi (Opsiyonel)"
+                                       Variant="Variant.Outlined"
+                                       T="string"
+                                       @bind-Value="statementCurrencyFilter"
+                                       Clearable="true">
+                                @if (currencies != null)
+                                {
+                                    @foreach (var currency in currencies)
+                                    {
+                                        <MudSelectItem Value="@currency.Code">
+                                            @currency.Code - @currency.Name
+                                        </MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (loadingStatement)
+                    {
+                        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8">
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                            <MudText Typo="Typo.body1">Hesap özeti yükleniyor...</MudText>
+                        </MudStack>
+                    }
+                    else if (customerStatement != null && customerStatement.CurrencyStatements != null && customerStatement.CurrencyStatements.Any())
+                    {
+                        @foreach (var currencyStatement in customerStatement.CurrencyStatements)
+                        {
+                            <MudPaper Class="pa-4 mb-4" Elevation="2">
+                                <MudStack Spacing="3">
+                                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.h6" Color="Color.Primary">
+                                            @currencyStatement.CurrencyCode (@currencyStatement.CurrencySymbol) - @currencyStatement.CurrencyName
+                                        </MudText>
+                                        <MudChip T="string" Color="Color.Info">
+                                            @currencyStatement.Transactions.Count İşlem
+                                        </MudChip>
+                                    </MudStack>
+
+                                    <!-- Summary Cards -->
+                                    <MudGrid>
+                                        <MudItem xs="12" sm="6" md="3">
+                                            <MudCard Outlined="true">
+                                                <MudCardContent Class="pb-2">
+                                                    <MudStack Spacing="1">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Açılış Bakiyesi</MudText>
+                                                        <MudText Typo="Typo.h6">@currencyStatement.OpeningBalance.ToString("N2") @currencyStatement.CurrencySymbol</MudText>
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="6" md="3">
+                                            <MudCard Outlined="true">
+                                                <MudCardContent Class="pb-2">
+                                                    <MudStack Spacing="1">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Toplam Borç</MudText>
+                                                        <MudText Typo="Typo.h6" Color="Color.Error">@currencyStatement.TotalDebit.ToString("N2") @currencyStatement.CurrencySymbol</MudText>
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="6" md="3">
+                                            <MudCard Outlined="true">
+                                                <MudCardContent Class="pb-2">
+                                                    <MudStack Spacing="1">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Toplam Alacak</MudText>
+                                                        <MudText Typo="Typo.h6" Color="Color.Success">@currencyStatement.TotalCredit.ToString("N2") @currencyStatement.CurrencySymbol</MudText>
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="6" md="3">
+                                            <MudCard Outlined="true">
+                                                <MudCardContent Class="pb-2">
+                                                    <MudStack Spacing="1">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Kapanış Bakiyesi</MudText>
+                                                        <MudText Typo="Typo.h6" Color="@(currencyStatement.ClosingBalance >= 0 ? Color.Success : Color.Error)">
+                                                            @currencyStatement.ClosingBalance.ToString("N2") @currencyStatement.CurrencySymbol
+                                                        </MudText>
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                    </MudGrid>
+
+                                    <!-- Transactions Table -->
+                                    <MudTable Items="@currencyStatement.Transactions"
+                                              Hover="true"
+                                              Striped="true"
+                                              Dense="true"
+                                              Breakpoint="Breakpoint.Sm">
+                                        <HeaderContent>
+                                            <MudTh>DE-NO</MudTh>
+                                            <MudTh>TARİH</MudTh>
+                                            <MudTh Style="text-align: right">BORÇ</MudTh>
+                                            <MudTh Style="text-align: right">ALACAK</MudTh>
+                                            <MudTh Style="text-align: right">BAKİYE</MudTh>
+                                            <MudTh>AÇIKLAMA</MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="DE-NO">
+                                                <MudText Typo="Typo.body2" Style="font-family: monospace;">@context.DocumentNumber</MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="TARİH">
+                                                <MudText Typo="Typo.body2">@context.TransactionDate.ToString("dd.MM.yyyy")</MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="BORÇ" Style="text-align: right">
+                                                <MudText Typo="Typo.body2" Color="@(context.Debit > 0 ? Color.Error : Color.Default)">
+                                                    @(context.Debit > 0 ? context.Debit.ToString("N2") : "")
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="ALACAK" Style="text-align: right">
+                                                <MudText Typo="Typo.body2" Color="@(context.Credit > 0 ? Color.Success : Color.Default)">
+                                                    @(context.Credit > 0 ? context.Credit.ToString("N2") : "")
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="BAKİYE" Style="text-align: right">
+                                                <MudText Typo="Typo.body2" Style="font-weight: bold;" Color="@(context.Balance >= 0 ? Color.Success : Color.Error)">
+                                                    @context.Balance.ToString("N2")
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="AÇIKLAMA">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2">@context.Description</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.TransactionType</MudText>
+                                                </MudStack>
+                                            </MudTd>
+                                        </RowTemplate>
+                                    </MudTable>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    }
+                    else if (customerStatement != null)
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Seçilen tarih aralığında işlem bulunamadı.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Normal">
+                            Hesap özetini görüntülemek için yukarıdaki "Hesap Özeti Getir" butonuna tıklayın.
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
         }
         else
         {
@@ -499,6 +687,13 @@
     private decimal totalPremiums = 0;
     private decimal totalCommissions = 0;
     private List<PolicyTypeBreakdown> policyBreakdown = new();
+
+    // Customer Statement
+    private bool loadingStatement = false;
+    private CustomerMultiCurrencyStatementDto? customerStatement = null;
+    private DateTime? statementStartDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DateTime? statementEndDate = DateTime.Today;
+    private string? statementCurrencyFilter = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -779,6 +974,47 @@
         else
         {
             expandedPolicies.Add(policyId);
+        }
+    }
+
+    private async Task LoadCustomerStatement()
+    {
+        if (selectedCustomer == null) return;
+
+        loadingStatement = true;
+        customerStatement = null;
+        StateHasChanged();
+
+        try
+        {
+            // Build query parameters
+            var startParam = statementStartDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd");
+            var endParam = statementEndDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd");
+            var currencyParam = !string.IsNullOrWhiteSpace(statementCurrencyFilter) ? $"&currencyCode={statementCurrencyFilter}" : "";
+
+            var url = $"api/customers/{selectedCustomer.Id}/statement?startDate={startParam}&endDate={endParam}{currencyParam}";
+
+            var response = await Http.GetFromJsonAsync<IAMS.Shared.Models.Result<CustomerMultiCurrencyStatementDto>>(url);
+
+            if (response != null && response.IsSuccess && response.Data != null)
+            {
+                customerStatement = response.Data;
+                Snackbar.Add("Hesap özeti başarıyla yüklendi", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(response?.Message ?? "Hesap özeti yüklenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading customer statement: {ex.Message}");
+            Snackbar.Add($"Hesap özeti yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loadingStatement = false;
+            StateHasChanged();
         }
     }
 

@@ -7,6 +7,7 @@ using IAMS.Application.Features.Customers.Queries.GetCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificationNo;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByPhone;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
+using IAMS.Application.Features.Customers.Queries.GetCustomerStatement;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
@@ -121,6 +122,29 @@ namespace IAMS.Api.Controllers
         {
             var query = new GetPoliciesByCustomerQuery(id );
             var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get customer statement (multi-currency account statement with all transactions)
+        /// </summary>
+        [HttpGet("{id}/statement")]
+        public async Task<ActionResult<Result<CustomerMultiCurrencyStatementDto>>> GetCustomerStatement(
+            int id,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? currencyCode = null)
+        {
+            // Default to current month if no dates provided
+            var start = startDate ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            var end = endDate ?? DateTime.Today;
+
+            var query = new GetCustomerStatementQuery(id, start, end, currencyCode);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
             return Ok(result);
         }
 

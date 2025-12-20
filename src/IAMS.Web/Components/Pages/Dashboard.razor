@@ -99,86 +99,6 @@
         </MudItem>
     </MudGrid>
 
-    <!-- Recent Customers -->
-    <MudGrid Class="mt-8">
-        <MudItem xs="12" md="6">
-            <MudCard Elevation="4">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Son Müşteriler</MudText>
-                    </CardHeaderContent>
-                    <CardHeaderActions>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Text"
-                                   OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
-                            Yeni Ekle
-                        </MudButton>
-                    </CardHeaderActions>
-                </MudCardHeader>
-                <MudCardContent>
-                    @if (_recentCustomers?.Any() == true)
-                    {
-                        <MudList T="CustomerDto">
-                            @foreach (var customer in _recentCustomers)
-                            {
-                                <MudListItem>
-                                    <div class="d-flex justify-space-between align-center w-100">
-                                        <div>
-                                            <MudText Typo="Typo.subtitle1">@customer.FirstName @customer.LastName</MudText>
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@customer.Email</MudText>
-                                        </div>
-                                        <MudChip Size="Size.Small" Color="Color.Success">Aktif</MudChip>
-                                    </div>
-                                </MudListItem>
-                            }
-                        </MudList>
-                    }
-                    else
-                    {
-                        <MudText Color="Color.Secondary">Son müşteri bulunmuyor</MudText>
-                    }
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Quick Actions -->
-        <MudItem xs="12" md="6">
-            <MudCard Elevation="4">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudStack>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.PersonAdd"
-                                   OnClick="@(() => Navigation.NavigateTo("/customers/create"))">
-                            Müşteri Ekle
-                        </MudButton>
-
-                        <MudButton Color="Color.Secondary"
-                                   Variant="Variant.Outlined"
-                                   StartIcon="@Icons.Material.Filled.Add"
-                                   OnClick="@(() => Navigation.NavigateTo("/policies/create"))">
-                            Poliçe Oluştur
-                        </MudButton>
-
-                        <!-- Admin only button -->
-                        <AuthorizeView Roles="Admin">
-                            <MudButton Color="Color.Warning"
-                                       Variant="Variant.Text"
-                                       StartIcon="@Icons.Material.Filled.Settings"
-                                       OnClick="@(() => Navigation.NavigateTo("/admin"))">
-                                Yönetim Paneli
-                            </MudButton>
-                        </AuthorizeView>
-                    </MudStack>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
 
     <!-- Payment Information Section -->
     <MudGrid Class="mt-8">
@@ -297,7 +217,7 @@
     private int _totalPolicies = 0;
     private int _expiringPolicies = 0;
     private Dictionary<string, decimal>? _monthlyRevenueByCurrency = null;
-    private List<IAMS.Application.DTOs.Customer.CustomerDto>? _recentCustomers;
+  //  private List<IAMS.Application.DTOs.Customer.CustomerDto>? _recentCustomers;
     private List<IAMS.Application.DTOs.Payment.CustomerOutstandingBalanceDto>? _customersWithOutstanding;
     private List<IAMS.Application.DTOs.Payment.PolicyPaymentDto>? _paymentsDueThisMonth;
 
@@ -326,7 +246,7 @@
             _monthlyRevenueByCurrency = monthlyRevenueByCurrency.Data;
 
             // Load recent customers
-            _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
+           // _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
 
             // Load payment information
             _customersWithOutstanding = await PaymentService.GetCustomersWithOutstandingBalanceAsync();

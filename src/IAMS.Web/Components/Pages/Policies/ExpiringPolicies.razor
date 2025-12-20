@@ -5,7 +5,8 @@
 @using IAMS.Application.Interfaces
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
-@inject IPolicyService PolicyService
+@using IAMS.Web.Services.ApiClient
+@inject IPoliciesApiClient PoliciesApi
 @inject IEmailService EmailService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -382,7 +383,7 @@
         loading = true;
         try
         {
-            var result = await PolicyService.GetExpiringPoliciesAsync(selectedDaysFilter);
+            var result = await PoliciesApi.GetExpiringPoliciesAsync(selectedDaysFilter);
             if (result.IsSuccess && result.Data != null)
             {
                 var allPolicies = result.Data;
@@ -438,14 +439,14 @@
     {
         try
         {
-            var expiring7Result = await PolicyService.GetExpiringPoliciesCountAsync(7);
-            if (expiring7Result.IsSuccess) expiring7Days = expiring7Result.Data;
+            var expiring7Result = await PoliciesApi.GetExpiringPoliciesAsync(7);
+            if (expiring7Result.IsSuccess && expiring7Result.Data != null) expiring7Days = expiring7Result.Data.Count;
 
-            var expiring30Result = await PolicyService.GetExpiringPoliciesCountAsync(30);
-            if (expiring30Result.IsSuccess) expiring30Days = expiring30Result.Data;
+            var expiring30Result = await PoliciesApi.GetExpiringPoliciesAsync(30);
+            if (expiring30Result.IsSuccess && expiring30Result.Data != null) expiring30Days = expiring30Result.Data.Count;
 
-            var expiredResult = await PolicyService.GetExpiredPoliciesAsync();
-            if (expiredResult.IsSuccess && expiredResult.Data != null) expiredCount = expiredResult.Data.Count;
+            var expiredResult = await PoliciesApi.GetExpiringPoliciesAsync(-1);
+            if (expiredResult.IsSuccess && expiredResult.Data != null) expiredCount = expiredResult.Data.Where(p => p.IsExpired).Count();
 
             // Count renewable policies
             renewableCount = expiringPolicies.Count(p => p.CanRenew);

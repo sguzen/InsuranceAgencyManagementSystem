@@ -3,12 +3,13 @@
 
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.DTOs.InsuranceCompany
-@using IAMS.Application.Services.InsuranceCompanies
 @using IAMS.Application.Models
 @using Microsoft.AspNetCore.WebUtilities
+@using IAMS.Web.Services.ApiClient
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-@inject IInsuranceCompanyService InsuranceCompanyService
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject IPoliciesApiClient PoliciesApi
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
@@ -150,7 +151,7 @@
     {
         try
         {
-            var result = await InsuranceCompanyService.GetActiveInsuranceCompaniesAsync();
+            var result = await InsuranceCompaniesApi.GetActiveAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 insuranceCompanies = result.Data;

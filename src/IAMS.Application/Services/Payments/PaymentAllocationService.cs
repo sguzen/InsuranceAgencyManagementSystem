@@ -75,6 +75,7 @@ namespace IAMS.Application.Services.Payments
                 };
 
                 allocations.Add(allocation);
+                payment.PaymentAllocations.Add(allocation); // Add to navigation property
                 payment.AddAllocation(allocationAmount);
                 remainingAmount -= allocationAmount;
 
@@ -83,13 +84,14 @@ namespace IAMS.Application.Services.Payments
                     allocationAmount, customerPaymentId, policy.Id, remainingAmount);
             }
 
-            // Save all allocations
+            // Save all allocations by adding them to the payment's collection
             if (allocations.Any())
             {
-                foreach (var allocation in allocations)
-                {
-                    await _unitOfWork.Set<PaymentAllocation>().AddAsync(allocation);
-                }
+                // Note: The allocations will be saved through the CustomerPayment's navigation property
+                // when SaveChanges is called, as they're already added to payment.PaymentAllocations
+                // via the relationship tracking
+
+                _unitOfWork.CustomerPayments.Update(payment);
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation(
@@ -105,11 +107,13 @@ namespace IAMS.Application.Services.Payments
         /// </summary>
         private async Task<decimal> GetPolicyAllocatedAmountAsync(int policyId)
         {
-            var allocations = await _unitOfWork.Set<PaymentAllocation>()
+            // Query through customer payments to get all allocations for this policy
+            var customerPayments = await _unitOfWork.CustomerPayments.AsQueryable()
+                .SelectMany(cp => cp.PaymentAllocations)
                 .Where(pa => pa.PolicyId == policyId && !pa.IsDeleted)
                 .ToListAsync();
 
-            return allocations.Sum(pa => pa.AllocatedAmount);
+            return customerPayments.Sum(pa => pa.AllocatedAmount);
         }
     }
 }

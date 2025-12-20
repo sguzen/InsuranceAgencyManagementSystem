@@ -20,7 +20,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<PolicyDto>> RenewPolicyAsync(int id, DateTime startDate, DateTime endDate, decimal premiumAmount);
         Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30);
         Task<Result<List<PolicyDto>>> GetPoliciesByCustomerAsync(int customerId);
-        Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync();
+        Task<Result<PolicyStatisticsDto>> GetStatisticsAsync();
         Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId);
     }
 
@@ -111,7 +111,7 @@ namespace IAMS.Web.Services.ApiClient
             return await GetAsync<List<PolicyDto>>($"api/policies/customer/{customerId}");
         }
 
-        public async Task<Result<PolicyStatisticsDto>> GetPolicyStatisticsAsync()
+        public async Task<Result<PolicyStatisticsDto>> GetStatisticsAsync()
         {
             return await GetAsync<PolicyStatisticsDto>("api/policies/statistics");
         }

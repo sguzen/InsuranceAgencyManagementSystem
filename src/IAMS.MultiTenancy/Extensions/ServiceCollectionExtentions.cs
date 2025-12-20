@@ -26,7 +26,7 @@ namespace IAMS.MultiTenancy.Extensions
             services.AddMemoryCache();
 
             // Register multi-tenancy core services
-           // services.AddScoped<ITenantService, TenantService>();
+            services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
 
             // Register module management service

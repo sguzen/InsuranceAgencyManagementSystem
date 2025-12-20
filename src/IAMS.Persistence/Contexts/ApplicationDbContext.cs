@@ -30,6 +30,10 @@ namespace IAMS.Persistence.Contexts
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
 
+        // Customer Payment Management
+        public DbSet<CustomerPayment> CustomerPayments { get; set; }
+        public DbSet<PaymentAllocation> PaymentAllocations { get; set; }
+
         // Tenant-specific configuration settings
         public DbSet<TenantSettings> TenantSettings { get; set; }
 

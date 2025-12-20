@@ -27,6 +27,9 @@ namespace IAMS.Persistence.UnitOfWork
         private ICommissionRateRepository? _commissionRates;
         private IInvoiceRepository? _invoices;
 
+        // Customer Payment Management
+        private ICustomerPaymentRepository? _customerPayments;
+
         private ICountryRepository? _countries;
         private IOccupationRepository? _occupations;
         private ICityRepository? _cities;
@@ -84,6 +87,9 @@ namespace IAMS.Persistence.UnitOfWork
 
         public IInvoiceRepository Invoices =>
             _invoices ??= new InvoiceRepository(_context);
+
+        public ICustomerPaymentRepository CustomerPayments =>
+            _customerPayments ??= new CustomerPaymentRepository(_context);
 
         public ICountryRepository Countries =>
             _countries ??= new CountryRepository(_context);

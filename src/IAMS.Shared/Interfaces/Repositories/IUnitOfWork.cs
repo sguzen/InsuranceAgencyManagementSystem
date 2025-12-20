@@ -14,6 +14,9 @@ namespace IAMS.Shared.Interfaces.Repositories
         ICommissionRateRepository CommissionRates { get; }
         IInvoiceRepository Invoices { get; }
 
+        // Customer Payment Management
+        ICustomerPaymentRepository CustomerPayments { get; }
+
         ICountryRepository Countries { get; }
         IOccupationRepository Occupations { get; }
         ICityRepository Cities { get; }

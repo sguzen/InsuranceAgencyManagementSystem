@@ -107,6 +107,12 @@ builder.Services.AddScoped<IPoliciesApiClient, PoliciesApiClient>(sp =>
     return new PoliciesApiClient(httpClient);
 });
 
+builder.Services.AddScoped<IPaymentsApiClient, PaymentsApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new PaymentsApiClient(httpClient);
+});
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();

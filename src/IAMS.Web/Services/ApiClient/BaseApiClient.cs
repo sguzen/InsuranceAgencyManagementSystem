@@ -85,6 +85,27 @@ namespace IAMS.Web.Services.ApiClient
             }
         }
 
+        protected async Task<Result> PatchAsync(string endpoint, object data)
+        {
+            try
+            {
+                var response = await _httpClient.PatchAsJsonAsync(endpoint, data, _jsonOptions);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                return result ?? Result.Failure("Empty response from API");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
+            }
+        }
+
         protected async Task<Result> DeleteAsync(string endpoint)
         {
             try

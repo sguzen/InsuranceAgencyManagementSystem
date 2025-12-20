@@ -27,7 +27,7 @@ namespace IAMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "ApiKeyOrJwt")]
     public class PoliciesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -50,7 +50,7 @@ namespace IAMS.Api.Controllers
             [FromQuery] int? policyTypeId = null,
             [FromQuery] string? status = null)
         {
-            var query = new PolicyQueryParams
+            var queryParams = new PolicyQueryParams
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
@@ -58,9 +58,10 @@ namespace IAMS.Api.Controllers
                 CustomerId = customerId,
                 InsuranceCompanyId = insuranceCompanyId,
                 PolicyTypeId = policyTypeId,
-                Status = Enum.Parse<PolicyStatus>(status)
+                Status = string.IsNullOrEmpty(status) ? PolicyStatus.Active : Enum.Parse<PolicyStatus>(status)
             };
 
+            var query = new GetPoliciesQuery(queryParams);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
@@ -252,7 +253,6 @@ namespace IAMS.Api.Controllers
         /// Import policies from Excel file
         /// </summary>
         [HttpPost("import")]
-        [AllowAnonymous]
         public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file, [FromForm] int insuranceCompanyId)
         {
             if (insuranceCompanyId <= 0)

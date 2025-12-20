@@ -11,8 +11,8 @@ namespace IAMS.Web.Services.ApiClient
     {
         Task<Result<PagedResult<CustomerDto>>> GetCustomersAsync(CustomerQueryParams queryParams);
         Task<Result<CustomerDto>> GetCustomerByIdAsync(int id);
-        Task<Result<CustomerDto>> CreateCustomerAsync(CreateCustomerDto customerDto);
-        Task<Result<CustomerDto>> UpdateCustomerAsync(int id, UpdateCustomerDto customerDto);
+        Task<Result<CustomerDto>> CreateCustomerAsync(CreateOrUpdateCustomerDto customerDto);
+        Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto customerDto);
         Task<Result> DeleteCustomerAsync(int id);
         Task<Result<CustomerStatisticsDto>> GetCustomerStatisticsAsync();
         Task<Result<CustomerBalanceDto>> GetCustomerBalanceAsync(int id);
@@ -45,12 +45,12 @@ namespace IAMS.Web.Services.ApiClient
             return await GetAsync<CustomerDto>($"api/customers/{id}");
         }
 
-        public async Task<Result<CustomerDto>> CreateCustomerAsync(CreateCustomerDto customerDto)
+        public async Task<Result<CustomerDto>> CreateCustomerAsync(CreateOrUpdateCustomerDto customerDto)
         {
             return await PostAsync<CustomerDto>("api/customers", customerDto);
         }
 
-        public async Task<Result<CustomerDto>> UpdateCustomerAsync(int id, UpdateCustomerDto customerDto)
+        public async Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto customerDto)
         {
             return await PutAsync<CustomerDto>($"api/customers/{id}", customerDto);
         }

@@ -156,7 +156,6 @@ namespace IAMS.Api.Controllers
         /// Get customer balance (multi-currency)
         /// </summary>
         [HttpGet("{id}/balance")]
-        [AllowAnonymous] // TODO: Remove for production, add proper auth
         public async Task<ActionResult<Result<CustomerBalanceDto>>> GetCustomerBalance(int id)
         {
             var query = new GetCustomerBalanceQuery(id);
@@ -172,7 +171,6 @@ namespace IAMS.Api.Controllers
         /// Get all payments for a customer
         /// </summary>
         [HttpGet("{id}/payments")]
-        [AllowAnonymous] // TODO: Remove for production, add proper auth
         public async Task<ActionResult<Result<List<CustomerPaymentDto>>>> GetCustomerPayments(int id)
         {
             var query = new GetCustomerPaymentsQuery(id);
@@ -188,7 +186,6 @@ namespace IAMS.Api.Controllers
         /// Create a customer payment (not tied to specific policy)
         /// </summary>
         [HttpPost("{id}/payments")]
-        [AllowAnonymous] // TODO: Remove for production, add proper auth
         public async Task<ActionResult<Result<CustomerPaymentDto>>> CreateCustomerPayment(
             int id,
             [FromBody] CreateCustomerPaymentDto paymentDto)

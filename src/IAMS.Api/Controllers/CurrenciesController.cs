@@ -1,5 +1,6 @@
 using IAMS.Application.DTOs.Currency;
 using IAMS.Application.Features.Currencies.Commands.UpdateExchangeRatesFromTCMB;
+using IAMS.Application.Features.Currencies.Queries.GetCurrencies;
 using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using MediatR;
@@ -17,6 +18,22 @@ namespace IAMS.Api.Controllers
         public CurrenciesController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        /// <summary>
+        /// Get all active currencies
+        /// </summary>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult<Result<List<CurrencyDto>>>> GetCurrencies()
+        {
+            var query = new GetCurrenciesQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
         /// <summary>

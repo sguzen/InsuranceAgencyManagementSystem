@@ -162,8 +162,8 @@ app.UseHttpsRedirection();
 
 app.UseCors("DefaultPolicy");
 
-// 6. Multi-tenancy middleware - establish tenant context before authentication
-app.UseMultiTenancy();
+// 6. Multi-tenancy middleware - disabled (each tenant uses their own database via connection string)
+// app.UseMultiTenancy();
 
 // 7. Authentication & Authorization
 app.UseAuthentication();

@@ -4,12 +4,11 @@
 
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.DTOs.Parametric
-@using IAMS.Application.Interfaces
 @using IAMS.Domain.Enums
 @using FluentValidation
-@using IAMS.Application.Services.Customers
-@inject ICustomerService CustomerService
-@inject IParametricService ParametricService
+@using IAMS.Web.Services.ApiClient
+@inject ICustomersApiClient CustomersApi
+@inject IParametricApiClient ParametricApi
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -473,22 +472,22 @@
         try
         {
             // Load all parametric data in parallel
-            var countriesResult = await ParametricService.GetCountriesAsync();
+            var countriesResult = await ParametricApi.GetCountriesAsync();
             countries = countriesResult.IsSuccess ? countriesResult.Data ?? new List<CountryDto>() : new List<CountryDto>();
 
-            var occupationsResult = await ParametricService.GetOccupationsAsync();
+            var occupationsResult = await ParametricApi.GetOccupationsAsync();
             occupations = occupationsResult.IsSuccess ? occupationsResult.Data ?? new List<OccupationDto>() : new List<OccupationDto>();
 
-            var citiesResult = await ParametricService.GetCitiesAsync();
+            var citiesResult = await ParametricApi.GetCitiesAsync();
             cities = citiesResult.IsSuccess ? citiesResult.Data ?? new List<CityDto>() : new List<CityDto>();
 
-            var districtsResult = await ParametricService.GetDistrictsAsync();
+            var districtsResult = await ParametricApi.GetDistrictsAsync();
             districts = districtsResult.IsSuccess ? districtsResult.Data ?? new List<DistrictDto>() : new List<DistrictDto>();
 
-            var subdistrictsResult = await ParametricService.GetSubdistrictsAsync();
+            var subdistrictsResult = await ParametricApi.GetSubdistrictsAsync();
             subdistricts = subdistrictsResult.IsSuccess ? subdistrictsResult.Data ?? new List<SubdistrictDto>() : new List<SubdistrictDto>();
 
-            var villagesResult = await ParametricService.GetVillagesAsync();
+            var villagesResult = await ParametricApi.GetVillagesAsync();
             villages = villagesResult.IsSuccess ? villagesResult.Data ?? new List<VillageDto>() : new List<VillageDto>();
         }
         catch (Exception ex)
@@ -501,7 +500,7 @@
     {
         try
         {
-            var result = await CustomerService.GetCustomerByIdAsync(CustomerId!.Value);
+            var result = await CustomersApi.GetCustomerByIdAsync(CustomerId!.Value);
             if (result.IsSuccess && result.Data != null)
             {
                 var customer = result.Data;
@@ -569,7 +568,7 @@
         {
             if (IsEdit)
             {
-                var result = await CustomerService.UpdateCustomerAsync(CustomerId!.Value, model);
+                var result = await CustomersApi.UpdateCustomerAsync(CustomerId!.Value, model);
                 if (result.IsSuccess)
                 {
                     Snackbar.Add("Müşteri başarıyla güncellendi", MudBlazor.Severity.Success);
@@ -592,7 +591,7 @@
             }
             else
             {
-                var result = await CustomerService.CreateCustomerAsync(model);
+                var result = await CustomersApi.CreateCustomerAsync(model);
                 if (result.IsSuccess)
                 {
                     Snackbar.Add("Müşteri başarıyla oluşturuldu", MudBlazor.Severity.Success);
@@ -609,7 +608,7 @@
                     }
                     else
                     {
-                        Snackbar.Add(result.Message ?? "Oluşturma başarısız", MudBlazor.Severity.Error);
+                        Snackbar.Add(result.Message ?? "Oluşturma başarísız", MudBlazor.Severity.Error);
                     }
                 }
             }

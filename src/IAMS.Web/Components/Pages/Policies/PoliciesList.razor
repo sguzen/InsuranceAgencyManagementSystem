@@ -2,17 +2,12 @@
 @page "/policies/list"
 @layout Layout.MainLayout
 
-@using IAMS.Application.Interfaces
-@using IAMS.Application.Services.Customers
-@using IAMS.Application.Services.PolicyTypes
-@using IAMS.MultiTenancy.Interfaces
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
-@inject IPolicyService PolicyService
-@inject ICustomerService CustomerService
-@inject IPolicyTypeService PolicyTypeService
-@inject ITenantContextAccessor TenantContext
+@using IAMS.Web.Services.ApiClient
+@inject IPoliciesApiClient PoliciesApi
+@inject IPolicyTypesApiClient PolicyTypesApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -534,7 +529,7 @@
                 PageNumber = 1
             };
 
-            var result = await PolicyService.GetPoliciesAsync(queryParams);
+            var result = await PoliciesApi.GetPoliciesAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 allPolicies = result.Data.Items.ToList();
@@ -593,20 +588,15 @@
     {
         try
         {
-            var totalResult = await PolicyService.GetTotalPoliciesCountAsync();
-            if (totalResult.IsSuccess) totalPolicies = totalResult.Data;
-
-            var activeResult = await PolicyService.GetPoliciesByStatusAsync();
-            if (activeResult.IsSuccess && activeResult.Data != null)
+            var statisticsResult = await PoliciesApi.GetStatisticsAsync();
+            if (statisticsResult.IsSuccess && statisticsResult.Data != null)
             {
-                activePolicies = activeResult.Data.GetValueOrDefault(PolicyStatus.Active, 0);
+                var stats = statisticsResult.Data;
+                totalPolicies = stats.TotalPolicies;
+                activePolicies = stats.ActivePolicies;
+                expiringCount = stats.ExpiringPoliciesCount;
+                monthlyRevenue = stats.MonthlyRevenue;
             }
-
-            var expiringResult = await PolicyService.GetExpiringPoliciesCountAsync(30);
-            if (expiringResult.IsSuccess) expiringCount = expiringResult.Data;
-
-            var revenueResult = await PolicyService.GetMonthlyRevenueAsync();
-            if (revenueResult.IsSuccess) monthlyRevenue = revenueResult.Data;
         }
         catch (Exception ex)
         {
@@ -618,7 +608,11 @@
     {
         try
         {
-            policyTypes = await PolicyTypeService.GetActiveTypesAsync();
+            var result = await PolicyTypesApi.GetActiveAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                policyTypes = result.Data;
+            }
         }
         catch (Exception ex)
         {
@@ -701,7 +695,7 @@
         {
             try
             {
-                var activateResult = await PolicyService.ActivatePolicyAsync(policy.Id);
+                var activateResult = await PoliciesApi.ActivatePolicyAsync(policy.Id);
                 if (activateResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla aktifleştirildi", MudBlazor.Severity.Success);
@@ -736,7 +730,7 @@
         {
             try
             {
-                var suspendResult = await PolicyService.SuspendPolicyAsync(policy.Id, "Kullanıcı tarafından askıya alındı");
+                var suspendResult = await PoliciesApi.SuspendPolicyAsync(policy.Id, "Kullanıcı tarafından askıya alındı");
                 if (suspendResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla askıya alındı", MudBlazor.Severity.Success);
@@ -771,7 +765,7 @@
         {
             try
             {
-                var cancelResult = await PolicyService.CancelPolicyAsync(policy.Id, "Kullanıcı tarafından iptal edildi");
+                var cancelResult = await PoliciesApi.CancelPolicyAsync(policy.Id, "Kullanıcı tarafından iptal edildi");
                 if (cancelResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla iptal edildi", MudBlazor.Severity.Success);
@@ -806,7 +800,7 @@
         {
             try
             {
-                var deleteResult = await PolicyService.DeletePolicyAsync(policy.Id);
+                var deleteResult = await PoliciesApi.DeletePolicyAsync(policy.Id);
                 if (deleteResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla silindi", MudBlazor.Severity.Success);

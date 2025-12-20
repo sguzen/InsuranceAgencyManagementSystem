@@ -1,8 +1,7 @@
 ﻿@using IAMS.Application.DTOs.Customer
-@using IAMS.Application.Interfaces
-@using IAMS.Application.Services.Customers
 @using IAMS.Shared.QueryParams
-@inject ICustomerService CustomerService
+@using IAMS.Web.Services.ApiClient
+@inject ICustomersApiClient CustomersApi
 @inject ISnackbar Snackbar
 
 <MudAutocomplete T="CustomerDto"
@@ -78,14 +77,18 @@
 
         try
         {
-            var result = await CustomerService.GetCustomersAsync(new CustomerQueryParams
+            var result = await CustomersApi.GetCustomersAsync(new CustomerQueryParams
             {
                 SearchTerm = value,
                 PageSize = MaxItems,
                 PageNumber = 1
             });
 
-            return result.Data.Items;
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items;
+            }
+            return new List<CustomerDto>();
         }
         catch (Exception ex)
         {

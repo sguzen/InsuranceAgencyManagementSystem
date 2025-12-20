@@ -6,15 +6,19 @@
 @using IAMS.Application.DTOs.Currency
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
+@using IAMS.Application.Features.CustomerPayments.Commands.CreateCustomerPayment
+@using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerBalance
+@using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerPayments
+@using IAMS.Application.Features.Currencies.Queries.GetCurrencies
 @using IAMS.Domain.Enums
 @using IAMS.Shared.Models
-@using System.Net.Http.Json
+@using MediatR
 @inject ICustomerService CustomerService
 @inject IPolicyService PolicyService
+@inject IMediator Mediator
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-@inject HttpClient Http
 
 <PageTitle>Müşteri Detayları</PageTitle>
 

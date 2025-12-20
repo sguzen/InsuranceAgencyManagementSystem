@@ -1,13 +1,12 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-@using IAMS.Application.Services.Customers
-@using IAMS.Application.Services.Payments
 @using IAMS.Web.Services
+@using IAMS.Web.Services.ApiClient
 @using MudBlazor
 @attribute [Authorize]
-@inject ICustomerService CustomerService
-@inject IPolicyService PolicyService
-@inject IPaymentService PaymentService
+@inject ICustomersApiClient CustomersApi
+@inject IPoliciesApiClient PoliciesApi
+@inject IPaymentsApiClient PaymentsApi
 @inject ITenantContextAccessor TenantContext
 @inject NavigationManager Navigation
 
@@ -312,25 +311,25 @@
 
         try
         {
-            // Load dashboard statistics using your existing services
-            var totalCustomers = await CustomerService.GetTotalCustomersCountAsync();
+            // Load dashboard statistics using API clients
+            var totalCustomers = await CustomersApi.GetTotalCustomersCountAsync();
             _totalCustomers = totalCustomers.Data;
 
-            var totalPolicies = await PolicyService.GetTotalPoliciesCountAsync();
+            var totalPolicies = await PoliciesApi.GetTotalPoliciesCountAsync();
             _totalPolicies = totalPolicies.Data;
 
-            var expiringPolicies = await PolicyService.GetExpiringPoliciesCountAsync(30);
+            var expiringPolicies = await PoliciesApi.GetExpiringPoliciesCountAsync(30);
             _expiringPolicies = expiringPolicies.Data;
 
-            var monthlyRevenueByCurrency = await PolicyService.GetMonthlyRevenueByCurrencyAsync();
+            var monthlyRevenueByCurrency = await PoliciesApi.GetMonthlyRevenueByCurrencyAsync();
             _monthlyRevenueByCurrency = monthlyRevenueByCurrency.Data;
 
             // Load recent customers
-            _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
+            _recentCustomers = (await CustomersApi.GetRecentCustomersAsync(5)).Data;
 
             // Load payment information
-            _customersWithOutstanding = await PaymentService.GetCustomersWithOutstandingBalanceAsync();
-            _paymentsDueThisMonth = await PaymentService.GetPaymentsDueThisMonthAsync();
+            _customersWithOutstanding = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync();
+            _paymentsDueThisMonth = await PaymentsApi.GetPaymentsDueThisMonthAsync();
         }
         catch (Exception ex)
         {

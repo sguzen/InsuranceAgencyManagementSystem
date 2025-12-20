@@ -45,15 +45,15 @@ namespace IAMS.Api.Controllers
             [FromQuery] string? searchTerm = null,
             [FromQuery] string? status = null)
         {
-            CustomerStatus _status;
-            var query = new CustomerQueryParams
+            var queryParams = new CustomerQueryParams
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Status = Enum.Parse<CustomerStatus>(status)
+                Status = string.IsNullOrEmpty(status) ? CustomerStatus.Active : Enum.Parse<CustomerStatus>(status)
             };
 
+            var query = new GetCustomersQuery(queryParams);
             var result = await _mediator.Send(query);
             return Ok(result);
         }

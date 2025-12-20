@@ -9,7 +9,7 @@
 @using IAMS.MultiTenancy.Interfaces
 
 @inject ICustomerService CustomerService
-@inject IReportingService ReportingService
+@inject IReportingApiClient ReportingApi
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -400,7 +400,7 @@
                 EndDate = endDate
             };
 
-            var reportData = await ReportingService.ExportReportAsync("customer-summary", parameters, format);
+            var reportData = await ReportingApi.ExportReportAsync("customer-summary", parameters, format);
 
             if (reportData != null && reportData.Length > 0)
             {

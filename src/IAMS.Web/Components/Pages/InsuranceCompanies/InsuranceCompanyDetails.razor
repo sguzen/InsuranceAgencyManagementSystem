@@ -4,15 +4,15 @@
 
 @using IAMS.Application.DTOs.InsuranceCompany
 @using IAMS.Application.DTOs.Policy
-@using IAMS.Application.Services.InsuranceCompanies
 @using IAMS.Application.Interfaces
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
 @using MudBlazor
 
 @attribute [Authorize]
-@inject IInsuranceCompanyService InsuranceCompanyService
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
 @inject IPolicyService PolicyService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -615,7 +615,7 @@
         loading = true;
         try
         {
-            var result = await InsuranceCompanyService.GetInsuranceCompanyByIdAsync(CompanyId);
+            var result = await InsuranceCompaniesApi.GetInsuranceCompanyByIdAsync(CompanyId);
             if (result.IsSuccess && result.Data != null)
             {
                 company = result.Data;
@@ -658,7 +658,7 @@
         {
             try
             {
-                var deleteResult = await InsuranceCompanyService.DeleteInsuranceCompanyAsync(CompanyId);
+                var deleteResult = await InsuranceCompaniesApi.DeleteInsuranceCompanyAsync(CompanyId);
                 if (deleteResult.IsSuccess)
                 {
                     Snackbar.Add("Şirket başarıyla silindi", MudBlazor.Severity.Success);

@@ -1,10 +1,10 @@
 @using IAMS.Application.DTOs.Payment
 @using IAMS.Application.DTOs.Policy
-@using IAMS.Application.Services.Payments
 @using IAMS.Application.Interfaces
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
-@inject IPaymentService PaymentService
+@inject IPaymentsApiClient PaymentsApi
 @inject IPolicyService PolicyService
 @inject ISnackbar Snackbar
 
@@ -250,14 +250,14 @@
                     Reference = model.Reference
                 };
 
-                await PaymentService.UpdateAsync(updateDto);
+                await PaymentsApi.UpdateAsync(updateDto);
                 Snackbar.Add("Ödeme başarıyla güncellendi", MudBlazor.Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
                 // Create new payment
-                var result = await PaymentService.CreateAsync(model);
+                var result = await PaymentsApi.CreateAsync(model);
                 if (result != null)
                 {
                     Snackbar.Add("Ödeme başarıyla oluşturuldu", MudBlazor.Severity.Success);

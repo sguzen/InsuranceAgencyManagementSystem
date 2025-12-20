@@ -132,7 +132,7 @@
 
     private async Task LoadRoles()
     {
-        var result = await UserService.GetAllRolesAsync();
+        var result = await UsersApi.GetAllRolesAsync();
         if (result.IsSuccess && result.Data != null)
         {
             availableRoles = result.Data;
@@ -183,7 +183,7 @@
         saving = true;
         try
         {
-            var result = await UserService.CreateUserAsync(model);
+            var result = await UsersApi.CreateUserAsync(model);
             if (result.IsSuccess)
             {
                 Snackbar.Add("Kullanıcı başarıyla oluşturuldu", MudBlazor.Severity.Success);

@@ -16,7 +16,7 @@
 @inject IClaimService ClaimService
 @inject IPaymentService PaymentService
 @inject ICurrencyService CurrencyService
-@inject IReportingService ReportingService
+@inject IReportingApiClient ReportingApi
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -988,7 +988,7 @@
                 EndDate = commissionEndDate
             };
 
-            var reportData = await ReportingService.ExportReportAsync("commission-report", parameters, format);
+            var reportData = await ReportingApi.ExportReportAsync("commission-report", parameters, format);
 
             if (reportData != null && reportData.Length > 0)
             {
@@ -1025,7 +1025,7 @@
                 EndDate = claimsEndDate
             };
 
-            var reportData = await ReportingService.ExportReportAsync("claims-summary", parameters, format);
+            var reportData = await ReportingApi.ExportReportAsync("claims-summary", parameters, format);
 
             if (reportData != null && reportData.Length > 0)
             {
@@ -1153,7 +1153,7 @@
                 EndDate = paymentEndDate
             };
 
-            var reportData = await ReportingService.ExportReportAsync("payment-report", parameters, format);
+            var reportData = await ReportingApi.ExportReportAsync("payment-report", parameters, format);
 
             if (reportData != null && reportData.Length > 0)
             {

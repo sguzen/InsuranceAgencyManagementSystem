@@ -7,19 +7,15 @@
 @using IAMS.Application.DTOs.InsuranceCompany
 @using IAMS.Application.DTOs.PolicyType
 @using IAMS.Application.DTOs.Vehicle
-@using IAMS.Application.Interfaces
-@using IAMS.Application.Services.Customers
-@using IAMS.Application.Services.InsuranceCompanies
-@using IAMS.Application.Services.PolicyTypes
-@using IAMS.Application.Services.Vehicles
 @using IAMS.Domain.Enums
+@using IAMS.Web.Services.ApiClient
 @using FluentValidation
 @using IAMS.Shared.QueryParams
-@inject IPolicyService PolicyService
-@inject ICustomerService CustomerService
-@inject IPolicyTypeService PolicyTypeService
-@inject IInsuranceCompanyService InsuranceCompanyService
-@inject IVehicleService VehicleService
+@inject IPoliciesApiClient PoliciesApi
+@inject ICustomersApiClient CustomersApi
+@inject IPolicyTypesApiClient PolicyTypesApi
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject IVehiclesApiClient VehiclesApi
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -536,7 +532,7 @@
     {
         try
         {
-            var result = await InsuranceCompanyService.GetActiveInsuranceCompaniesAsync();
+            var result = await InsuranceCompaniesApi.GetActiveInsuranceCompaniesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 insuranceCompanies = result.Data;
@@ -557,7 +553,7 @@
     {
         try
         {
-            policyTypes = await PolicyTypeService.GetActiveTypesAsync();
+            policyTypes = await PolicyTypesApi.GetActiveTypesAsync();
         }
         catch (Exception ex)
         {
@@ -570,7 +566,7 @@
     {
         try
         {
-            var result = await CustomerService.GetCustomerByIdAsync(customerId);
+            var result = await CustomersApi.GetCustomerByIdAsync(customerId);
             if (result.IsSuccess && result.Data != null)
             {
                 // Setting selectedCustomer will automatically trigger OnCustomerChangedAsync
@@ -591,7 +587,7 @@
         loading = true;
         try
         {
-            var result = await PolicyService.GetPolicyByIdAsync(PolicyId.Value);
+            var result = await PoliciesApi.GetPolicyByIdAsync(PolicyId.Value);
             if (result.IsSuccess && result.Data != null)
             {
                 var policy = result.Data;
@@ -664,7 +660,7 @@
                 SortBy = "CreatedAt"
             };
 
-            var result = await CustomerService.GetCustomersAsync(queryParams);
+            var result = await CustomersApi.GetCustomersAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 return result.Data.Items;
@@ -750,7 +746,7 @@
                     NumberOfPayments = model.NumberOfPayments
                 };
 
-                var updateResult = await PolicyService.UpdatePolicyAsync(PolicyId!.Value, updateDto);
+                var updateResult = await PoliciesApi.UpdatePolicyAsync(PolicyId!.Value, updateDto);
                 if (updateResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla güncellendi", MudBlazor.Severity.Success);
@@ -773,7 +769,7 @@
             }
             else
             {
-                var createResult = await PolicyService.CreatePolicyAsync(model);
+                var createResult = await PoliciesApi.CreatePolicyAsync(model);
                 if (createResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla oluşturuldu", MudBlazor.Severity.Success);
@@ -840,7 +836,7 @@
     {
         try
         {
-            var result = await VehicleService.GetByCustomerIdAsync(customerId);
+            var result = await VehiclesApi.GetByCustomerIdAsync(customerId);
             if (result.IsSuccess && result.Data != null)
             {
                 customerVehicles = result.Data;

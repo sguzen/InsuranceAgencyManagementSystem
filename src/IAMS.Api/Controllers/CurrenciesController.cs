@@ -11,7 +11,7 @@ namespace IAMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "ApiKeyOrJwt")]
     public class CurrenciesController : ControllerBase
     {
         private readonly IMediator _mediator;

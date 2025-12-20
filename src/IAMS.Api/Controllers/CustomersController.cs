@@ -3,6 +3,7 @@ using IAMS.Application.DTOs.Payment;
 using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Features.CustomerPayments.Commands.CreateCustomerPayment;
 using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerBalance;
+using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerPayments;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
@@ -162,6 +163,21 @@ namespace IAMS.Api.Controllers
 
             if (!result.IsSuccess)
                 return NotFound(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get all payments for a customer
+        /// </summary>
+        [HttpGet("{id}/payments")]
+        public async Task<ActionResult<Result<List<CustomerPaymentDto>>>> GetCustomerPayments(int id)
+        {
+            var query = new GetCustomerPaymentsQuery(id);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
             return Ok(result);
         }

@@ -2,14 +2,19 @@
 @layout Layout.MainLayout
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.DTOs.Policy
+@using IAMS.Application.DTOs.Payment
+@using IAMS.Application.DTOs.Currency
 @using IAMS.Application.Interfaces
 @using IAMS.Application.Services.Customers
 @using IAMS.Domain.Enums
+@using IAMS.Shared.Models
+@using System.Net.Http.Json
 @inject ICustomerService CustomerService
 @inject IPolicyService PolicyService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject HttpClient Http
 
 <PageTitle>Müşteri Detayları</PageTitle>
 
@@ -387,10 +392,202 @@ else
                         </MudTable>
                     }
                 </MudTabPanel>
+
+                <!-- Payments & Balance Tab -->
+                <MudTabPanel Text="Ödemeler ve Bakiye" Icon="@Icons.Material.Filled.AccountBalance">
+                    <!-- Header -->
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                        <MudText Typo="Typo.h6">Müşteri Bakiye ve Ödemeleri</MudText>
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  StartIcon="@Icons.Material.Filled.Add"
+                                  OnClick="OpenPaymentDialog">
+                            Ödeme Kaydet
+                        </MudButton>
+                    </MudStack>
+
+                    @if (loadingBalance)
+                    {
+                        <MudProgressLinear Indeterminate="true" />
+                    }
+                    else if (customerBalance != null && customerBalance.Balances.Any())
+                    {
+                        <!-- Balance Cards -->
+                        <MudGrid Class="mb-6">
+                            @foreach (var balance in customerBalance.Balances)
+                            {
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudCard>
+                                        <MudCardContent>
+                                            <MudStack Spacing="2">
+                                                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                                    <MudText Typo="Typo.h6">@balance.CurrencyCode</MudText>
+                                                    <MudChip Color="@(balance.IsPositive ? Color.Success : Color.Error)"
+                                                            Size="Size.Small" T="bool">
+                                                        @(balance.IsPositive ? "Alacak" : "Borç")
+                                                    </MudChip>
+                                                </MudStack>
+
+                                                <MudDivider />
+
+                                                <MudStack Row Justify="Justify.SpaceBetween">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Borç:</MudText>
+                                                    <MudText Typo="Typo.body1">@balance.CurrencySymbol@balance.TotalDebt.ToString("N2")</MudText>
+                                                </MudStack>
+
+                                                <MudStack Row Justify="Justify.SpaceBetween">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Ödenen:</MudText>
+                                                    <MudText Typo="Typo.body1">@balance.CurrencySymbol@balance.TotalPaid.ToString("N2")</MudText>
+                                                </MudStack>
+
+                                                <MudDivider />
+
+                                                <MudStack Row Justify="Justify.SpaceBetween">
+                                                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Bakiye:</MudText>
+                                                    <MudText Typo="Typo.h6" Color="@(balance.IsPositive ? Color.Success : Color.Error)">
+                                                        @balance.CurrencySymbol@Math.Abs(balance.Balance).ToString("N2")
+                                                    </MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                    else
+                    {
+                        <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info" Class="mb-6">
+                            Bu müşteriye ait bakiye bilgisi bulunmamaktadır.
+                        </MudAlert>
+                    }
+
+                    <!-- Payments Table -->
+                    <MudText Typo="Typo.h6" Class="mb-4">Son Ödemeler</MudText>
+
+                    @if (loadingPayments)
+                    {
+                        <MudProgressLinear Indeterminate="true" />
+                    }
+                    else if (customerPayments.Count == 0)
+                    {
+                        <MudAlert MudBlazor.Severity="MudBlazor.Severity.Info">
+                            Bu müşteriye ait ödeme kaydı bulunmamaktadır.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable Items="@customerPayments" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Tarih</MudTh>
+                                <MudTh>Tutar</MudTh>
+                                <MudTh>Para Birimi</MudTh>
+                                <MudTh>Ödeme Yöntemi</MudTh>
+                                <MudTh>Referans</MudTh>
+                                <MudTh>Dağıtım Durumu</MudTh>
+                                <MudTh>Dağıtılan</MudTh>
+                                <MudTh>Dağıtılmamış</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Tarih">@context.PaymentDate.ToString("dd.MM.yyyy")</MudTd>
+                                <MudTd DataLabel="Tutar">@context.CurrencySymbol@context.Amount.ToString("N2")</MudTd>
+                                <MudTd DataLabel="Para Birimi">@context.CurrencyCode</MudTd>
+                                <MudTd DataLabel="Ödeme Yöntemi">@GetPaymentMethodText(context.PaymentMethod)</MudTd>
+                                <MudTd DataLabel="Referans">@context.Reference</MudTd>
+                                <MudTd DataLabel="Dağıtım Durumu">
+                                    <MudChip Size="Size.Small" Color="@GetAllocationStatusColor(context.AllocationStatus)" T="AllocationStatus">
+                                        @GetAllocationStatusText(context.AllocationStatus)
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Dağıtılan">@context.CurrencySymbol@context.AllocatedAmount.ToString("N2")</MudTd>
+                                <MudTd DataLabel="Dağıtılmamış">@context.CurrencySymbol@context.UnallocatedAmount.ToString("N2")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudTabPanel>
             </MudTabs>
         </MudStack>
     </MudContainer>
 }
+
+<!-- Payment Dialog -->
+<MudDialog @bind-IsVisible="showPaymentDialog" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Payment" Class="mr-3" /> Yeni Ödeme Kaydet
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="newPayment.Amount"
+                                Label="Tutar"
+                                Variant="Variant.Outlined"
+                                Min="0.01m"
+                                Step="0.01m"
+                                Format="N2"
+                                Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="newPayment.CurrencyId"
+                          Label="Para Birimi"
+                          Variant="Variant.Outlined"
+                          Required="true">
+                    @foreach (var currency in currencies)
+                    {
+                        <MudSelectItem Value="@currency.Id">@currency.Code - @currency.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="paymentDate"
+                              Label="Ödeme Tarihi"
+                              Variant="Variant.Outlined"
+                              Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="newPayment.PaymentMethod"
+                          Label="Ödeme Yöntemi"
+                          Variant="Variant.Outlined"
+                          Required="true">
+                    <MudSelectItem Value="@PaymentMethod.Cash">Nakit</MudSelectItem>
+                    <MudSelectItem Value="@PaymentMethod.BankTransfer">Banka Havalesi</MudSelectItem>
+                    <MudSelectItem Value="@PaymentMethod.Cheque">Çek</MudSelectItem>
+                    <MudSelectItem Value="@PaymentMethod.CreditCard">Kredi Kartı</MudSelectItem>
+                    <MudSelectItem Value="@PaymentMethod.DebitCard">Banka Kartı</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="newPayment.Reference"
+                             Label="Referans / Belge No"
+                             Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="newPayment.Notes"
+                             Label="Notlar"
+                             Variant="Variant.Outlined"
+                             Lines="3" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="ClosePaymentDialog">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                  Variant="Variant.Filled"
+                  OnClick="SavePayment"
+                  Disabled="savingPayment">
+            @if (savingPayment)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <span class="ml-2">Kaydediliyor...</span>
+            }
+            else
+            {
+                <span>Kaydet</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     [Parameter] public int CustomerId { get; set; }
@@ -403,10 +600,27 @@ else
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private bool loadingPolicies = false;
 
+    // Payment and Balance related fields
+    private CustomerBalanceDto? customerBalance;
+    private List<CustomerPaymentDto> customerPayments = new();
+    private List<CurrencyDto> currencies = new();
+    private bool loadingBalance = false;
+    private bool loadingPayments = false;
+    private bool showPaymentDialog = false;
+    private bool savingPayment = false;
+    private CreateCustomerPaymentDto newPayment = new();
+    private DateTime? paymentDate = DateTime.Today;
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
     protected override async Task OnInitializedAsync()
     {
         await LoadCustomer();
-        await LoadPolicies();
+        await Task.WhenAll(
+            LoadPolicies(),
+            LoadBalance(),
+            LoadPayments(),
+            LoadCurrencies()
+        );
     }
 
     private async Task LoadCustomer()
@@ -593,4 +807,165 @@ else
             expandedPolicies.Add(policyId);
         }
     }
+
+    // Payment and Balance Methods
+    private async Task LoadBalance()
+    {
+        loadingBalance = true;
+        try
+        {
+            var response = await Http.GetFromJsonAsync<Result<CustomerBalanceDto>>($"api/customers/{CustomerId}/balance");
+            if (response?.IsSuccess == true && response.Data != null)
+            {
+                customerBalance = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Bakiye yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
+        }
+        finally
+        {
+            loadingBalance = false;
+        }
+    }
+
+    private async Task LoadPayments()
+    {
+        loadingPayments = true;
+        try
+        {
+            var response = await Http.GetFromJsonAsync<Result<List<CustomerPaymentDto>>>($"api/customers/{CustomerId}/payments");
+            if (response?.IsSuccess == true && response.Data != null)
+            {
+                customerPayments = response.Data;
+            }
+            else
+            {
+                customerPayments = new List<CustomerPaymentDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ödemeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
+            customerPayments = new List<CustomerPaymentDto>();
+        }
+        finally
+        {
+            loadingPayments = false;
+        }
+    }
+
+    private async Task LoadCurrencies()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<Result<List<CurrencyDto>>>("api/currencies");
+            if (response?.IsSuccess == true && response.Data != null)
+            {
+                currencies = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Para birimleri yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Warning);
+        }
+    }
+
+    private void OpenPaymentDialog()
+    {
+        newPayment = new CreateCustomerPaymentDto
+        {
+            CustomerId = CustomerId,
+            PaymentDate = DateTime.Today,
+            PaymentMethod = PaymentMethod.Cash,
+            CurrencyId = currencies.FirstOrDefault()?.Id ?? 0
+        };
+        paymentDate = DateTime.Today;
+        showPaymentDialog = true;
+    }
+
+    private void ClosePaymentDialog()
+    {
+        showPaymentDialog = false;
+        newPayment = new CreateCustomerPaymentDto();
+        paymentDate = null;
+    }
+
+    private async Task SavePayment()
+    {
+        if (newPayment.Amount <= 0)
+        {
+            Snackbar.Add("Ödeme tutarı sıfırdan büyük olmalıdır", MudBlazor.Severity.Error);
+            return;
+        }
+
+        if (newPayment.CurrencyId == 0)
+        {
+            Snackbar.Add("Para birimi seçmelisiniz", MudBlazor.Severity.Error);
+            return;
+        }
+
+        savingPayment = true;
+        try
+        {
+            newPayment.PaymentDate = paymentDate ?? DateTime.Today;
+
+            var response = await Http.PostAsJsonAsync($"api/customers/{CustomerId}/payments", newPayment);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Result<CustomerPaymentDto>>();
+                if (result?.IsSuccess == true)
+                {
+                    Snackbar.Add("Ödeme başarıyla kaydedildi", MudBlazor.Severity.Success);
+                    ClosePaymentDialog();
+
+                    // Reload balance and payments
+                    await Task.WhenAll(LoadBalance(), LoadPayments());
+                }
+                else
+                {
+                    Snackbar.Add(result?.Message ?? "Ödeme kaydedilirken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Ödeme kaydedilirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ödeme kaydedilirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            savingPayment = false;
+        }
+    }
+
+    private string GetPaymentMethodText(PaymentMethod method) => method switch
+    {
+        PaymentMethod.Cash => "Nakit",
+        PaymentMethod.BankTransfer => "Banka Havalesi",
+        PaymentMethod.Cheque => "Çek",
+        PaymentMethod.CreditCard => "Kredi Kartı",
+        PaymentMethod.DebitCard => "Banka Kartı",
+        _ => method.ToString()
+    };
+
+    private string GetAllocationStatusText(AllocationStatus status) => status switch
+    {
+        AllocationStatus.Unallocated => "Dağıtılmamış",
+        AllocationStatus.PartiallyAllocated => "Kısmi Dağıtılmış",
+        AllocationStatus.FullyAllocated => "Tam Dağıtılmış",
+        _ => status.ToString()
+    };
+
+    private Color GetAllocationStatusColor(AllocationStatus status) => status switch
+    {
+        AllocationStatus.Unallocated => Color.Warning,
+        AllocationStatus.PartiallyAllocated => Color.Info,
+        AllocationStatus.FullyAllocated => Color.Success,
+        _ => Color.Default
+    };
 }

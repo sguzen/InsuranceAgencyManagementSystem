@@ -32,8 +32,8 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result> TestCountryConnectionAsync()
         {
-            return await GetAsync<Result>("api/parametric/countries/test-connection")
-                .ContinueWith(t => t.Result.IsSuccess ? Result.Success(t.Result.Data?.Message ?? "Connected") : Result.Failure(t.Result.Message));
+            var result = await GetAsync<string>("api/parametric/countries/test-connection");
+            return result.IsSuccess ? Result.Success(result.Message) : Result.Failure(result.Message, (List<string>?)null);
         }
 
         public async Task<Result<List<ExternalCountryDataDto>>> FetchExternalCountryDataAsync()

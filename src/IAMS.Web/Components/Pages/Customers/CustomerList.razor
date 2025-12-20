@@ -181,6 +181,11 @@
                                                Size="Size.Small"
                                                OnClick="@(() => ViewCustomer(context.Item.Id))"
                                                Title="Detayları Görüntüle" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Payment"
+                                               Color="Color.Success"
+                                               Size="Size.Small"
+                                               OnClick="@(() => Navigation.NavigateTo($"/customers/{context.Item.Id}#payments"))"
+                                               Title="Ödeme Kaydet" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Primary"
                                                Size="Size.Small"

@@ -53,6 +53,7 @@ namespace IAMS.Application.Extensions
             // Register new services
             services.AddScoped<IClaimService, ClaimService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<PaymentAllocationService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<IUserManagementService, UserManagementService>();

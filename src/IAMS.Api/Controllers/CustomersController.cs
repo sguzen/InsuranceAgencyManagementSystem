@@ -1,5 +1,8 @@
 ﻿using IAMS.Application.DTOs.Customer;
+using IAMS.Application.DTOs.Payment;
 using IAMS.Application.DTOs.Policy;
+using IAMS.Application.Features.CustomerPayments.Commands.CreateCustomerPayment;
+using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerBalance;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
@@ -144,6 +147,44 @@ namespace IAMS.Api.Controllers
 
             if (!result.IsSuccess)
                 return NotFound(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get customer balance (multi-currency)
+        /// </summary>
+        [HttpGet("{id}/balance")]
+        public async Task<ActionResult<Result<CustomerBalanceDto>>> GetCustomerBalance(int id)
+        {
+            var query = new GetCustomerBalanceQuery(id);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Create a customer payment (not tied to specific policy)
+        /// </summary>
+        [HttpPost("{id}/payments")]
+        public async Task<ActionResult<Result<CustomerPaymentDto>>> CreateCustomerPayment(
+            int id,
+            [FromBody] CreateCustomerPaymentDto paymentDto)
+        {
+            // Ensure the customer ID matches the route
+            if (paymentDto.CustomerId != id)
+            {
+                paymentDto = paymentDto with { CustomerId = id };
+            }
+
+            var command = new CreateCustomerPaymentCommand(paymentDto);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
             return Ok(result);
         }

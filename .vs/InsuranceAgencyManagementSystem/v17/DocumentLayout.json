@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\customerpayments\\commands\\createcustomerpayment\\createcustomerpaymentcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\customerpayments\\commands\\createcustomerpayment\\createcustomerpaymentcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\services\\payments\\paymentallocationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\services\\payments\\paymentallocationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -71,6 +75,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "CreateCustomerPaymentCommandHandler.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\CustomerPayments\\Commands\\CreateCustomerPayment\\CreateCustomerPaymentCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\CustomerPayments\\Commands\\CreateCustomerPayment\\CreateCustomerPaymentCommandHandler.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\CustomerPayments\\Commands\\CreateCustomerPayment\\CreateCustomerPaymentCommandHandler.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\CustomerPayments\\Commands\\CreateCustomerPayment\\CreateCustomerPaymentCommandHandler.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-20T11:41:54.994Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "PaymentAllocationService.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Services\\Payments\\PaymentAllocationService.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Services\\Payments\\PaymentAllocationService.cs",
@@ -83,7 +100,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "CustomerReport.razor",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Reports\\CustomerReport.razor",
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Reports\\CustomerReport.razor",
@@ -96,7 +113,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "GetCustomerStatementQueryHandler.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Customers\\Queries\\GetCustomerStatement\\GetCustomerStatementQueryHandler.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Customers\\Queries\\GetCustomerStatement\\GetCustomerStatementQueryHandler.cs",
@@ -108,7 +125,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "CustomersController.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\CustomersController.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\CustomersController.cs",
@@ -120,7 +137,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "PaymentMappingProfile.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Mappings\\PaymentMappingProfile.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Mappings\\PaymentMappingProfile.cs",
@@ -132,7 +149,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "PolicyPaymentListDto.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\DTOs\\Payment\\PolicyPaymentListDto.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\DTOs\\Payment\\PolicyPaymentListDto.cs",
@@ -144,7 +161,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "GetPaymentsByPolicyIdQueryHandler.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Payments\\Queries\\GetPaymentsByPolicyId\\GetPaymentsByPolicyIdQueryHandler.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Payments\\Queries\\GetPaymentsByPolicyId\\GetPaymentsByPolicyIdQueryHandler.cs",
@@ -156,7 +173,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "GetPaymentByIdQueryHandler.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Payments\\Queries\\GetPaymentById\\GetPaymentByIdQueryHandler.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Payments\\Queries\\GetPaymentById\\GetPaymentByIdQueryHandler.cs",
@@ -168,7 +185,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "GetPaymentByIdQuery.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\Payments\\Queries\\GetPaymentById\\GetPaymentByIdQuery.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\Payments\\Queries\\GetPaymentById\\GetPaymentByIdQuery.cs",
@@ -180,7 +197,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "AddPaymentDialog.razor",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Shared\\Dialogs\\AddPaymentDialog.razor",
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Shared\\Dialogs\\AddPaymentDialog.razor",
@@ -192,7 +209,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "Payments.razor",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Accounting\\Payments.razor",
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Accounting\\Payments.razor",

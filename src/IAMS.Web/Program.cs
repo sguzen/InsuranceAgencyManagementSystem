@@ -125,6 +125,30 @@ builder.Services.AddScoped<IPolicyTypesApiClient, PolicyTypesApiClient>(sp =>
     return new PolicyTypesApiClient(httpClient);
 });
 
+builder.Services.AddScoped<IVehiclesApiClient, VehiclesApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new VehiclesApiClient(httpClient);
+});
+
+builder.Services.AddScoped<IParametricApiClient, ParametricApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new ParametricApiClient(httpClient);
+});
+
+builder.Services.AddScoped<IUsersApiClient, UsersApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new UsersApiClient(httpClient);
+});
+
+builder.Services.AddScoped<IReportingApiClient, ReportingApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new ReportingApiClient(httpClient);
+});
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();

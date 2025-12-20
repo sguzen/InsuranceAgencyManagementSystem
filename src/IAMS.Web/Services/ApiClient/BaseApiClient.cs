@@ -31,8 +31,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<T>.Failure($"API request failed: {response.StatusCode}",
-                        new List<string> { errorContent });
+                    return Result<T>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
@@ -40,8 +39,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<T>.Failure($"API call failed: {ex.Message}",
-                    new List<string> { ex.ToString() });
+                return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -54,8 +52,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<T>.Failure($"API request failed: {response.StatusCode}",
-                        new List<string> { errorContent });
+                    return Result<T>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
@@ -63,8 +60,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<T>.Failure($"API call failed: {ex.Message}",
-                    new List<string> { ex.ToString() });
+                return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -77,8 +73,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<T>.Failure($"API request failed: {response.StatusCode}",
-                        new List<string> { errorContent });
+                    return Result<T>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
@@ -86,8 +81,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<T>.Failure($"API call failed: {ex.Message}",
-                    new List<string> { ex.ToString() });
+                return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -100,8 +94,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API request failed: {response.StatusCode}",
-                        new List<string> { errorContent });
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
@@ -109,8 +102,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API call failed: {ex.Message}",
-                    new List<string> { ex.ToString() });
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
     }

@@ -113,6 +113,18 @@ builder.Services.AddScoped<IPaymentsApiClient, PaymentsApiClient>(sp =>
     return new PaymentsApiClient(httpClient);
 });
 
+builder.Services.AddScoped<IInsuranceCompaniesApiClient, InsuranceCompaniesApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new InsuranceCompaniesApiClient(httpClient);
+});
+
+builder.Services.AddScoped<IPolicyTypesApiClient, PolicyTypesApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new PolicyTypesApiClient(httpClient);
+});
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();

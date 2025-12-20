@@ -7,14 +7,14 @@
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.DTOs.Currency
-@using IAMS.Application.Services.Customers
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Application.Services.Currencies
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
 @using System.Net.Http.Json
-@inject ICustomerService CustomerService
-@inject IPolicyService PolicyService
-@inject ICurrencyService CurrencyService
+@inject ICustomersApiClient CustomersApi
+@inject IPoliciesApiClient PoliciesApi
+@inject ICurrenciesApiClient CurrenciesApi
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
@@ -704,7 +704,7 @@
     {
         try
         {
-            var result = await CurrencyService.GetActiveCurrenciesAsync();
+            var result = await CurrenciesApi.GetActiveCurrenciesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 currencies = result.Data;
@@ -747,7 +747,7 @@
                 PageNumber = 1
             };
 
-            var result = await PolicyService.GetPoliciesAsync(queryParams);
+            var result = await PoliciesApi.GetPoliciesAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 customerPolicies = result.Data.Items.ToList();
@@ -850,7 +850,7 @@
                 PageNumber = 1
             };
 
-            var result = await CustomerService.GetCustomersAsync(queryParams);
+            var result = await CustomersApi.GetCustomersAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 return result.Data.Items;

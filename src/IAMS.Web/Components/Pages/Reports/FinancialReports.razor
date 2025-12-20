@@ -4,18 +4,18 @@
 
 @attribute [Authorize]
 @using IAMS.Application.DTOs.Currency
-@using IAMS.Application.Services.Policies
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Application.Services.Currencies
 @using IAMS.Infrastructure.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 
 @using IAMS.Application.Services.Claims
-@using IAMS.Application.Services.Payments
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Shared.QueryParams
-@inject IPolicyService PolicyService
+@inject IPoliciesApiClient PoliciesApi
 @inject IClaimService ClaimService
-@inject IPaymentService PaymentService
-@inject ICurrencyService CurrencyService
+@inject IPaymentsApiClient PaymentsApi
+@inject ICurrenciesApiClient CurrenciesApi
 @inject IReportingApiClient ReportingApi
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
@@ -742,7 +742,7 @@
     {
         try
         {
-            var result = await CurrencyService.GetActiveCurrenciesAsync();
+            var result = await CurrenciesApi.GetActiveCurrenciesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 currencies = result.Data;
@@ -776,7 +776,7 @@
                 PageNumber = 1
             };
 
-            var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
+            var policiesResult = await PoliciesApi.GetPoliciesAsync(queryParams);
 
             if (policiesResult.IsSuccess && policiesResult.Data != null)
             {
@@ -841,7 +841,7 @@
                 PageNumber = 1
             };
 
-            var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
+            var policiesResult = await PoliciesApi.GetPoliciesAsync(queryParams);
 
             if (policiesResult.IsSuccess && policiesResult.Data != null)
             {
@@ -1083,7 +1083,7 @@
         try
         {
             // Get all payments in date range
-            var allPayments = await PaymentService.GetPaymentsPagedAsync(1, 10000, null);
+            var allPayments = await PaymentsApi.GetPaymentsPagedAsync(1, 10000, null);
 
             if (allPayments != null && allPayments.Items != null)
             {
@@ -1113,10 +1113,10 @@
                                                           p.DueDate.Value < today).Sum(p => p.Amount);
 
                 // Load customers with outstanding balance
-                customersWithOutstanding = await PaymentService.GetCustomersWithOutstandingBalanceAsync();
+                customersWithOutstanding = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync();
 
                 // Load payments due this month
-                paymentsDueThisMonth = await PaymentService.GetPaymentsDueThisMonthAsync();
+                paymentsDueThisMonth = await PaymentsApi.GetPaymentsDueThisMonthAsync();
 
                 Snackbar.Add("Ödeme raporu oluşturuldu", MudBlazor.Severity.Success);
             }

@@ -7,7 +7,8 @@
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Components.Shared.Dialogs
-@inject IPolicyService PolicyService
+@using IAMS.Web.Services.ApiClient
+@inject IPoliciesApiClient PoliciesApi
 @inject IPaymentService PaymentService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -730,7 +731,7 @@ else
     {
         try
         {
-            var result = await PolicyService.GetPolicyByIdAsync(PolicyId);
+            var result = await PoliciesApi.GetPolicyByIdAsync(PolicyId);
             if (result.IsSuccess && result.Data != null)
             {
                 policy = result.Data;
@@ -755,7 +756,7 @@ else
             // Only load endorsements if this is a main policy (InnerCode == "000")
             if (policy?.InnerCode == "000")
             {
-                var result = await PolicyService.GetEndorsementsByPolicyIdAsync(PolicyId);
+                var result = await PoliciesApi.GetEndorsementsByPolicyIdAsync(PolicyId);
                 if (result.IsSuccess && result.Data != null)
                 {
                     endorsements = result.Data;
@@ -978,7 +979,7 @@ else
         {
             try
             {
-                var activateResult = await PolicyService.ActivatePolicyAsync(PolicyId);
+                var activateResult = await PoliciesApi.ActivatePolicyAsync(PolicyId);
                 if (activateResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla aktifleştirildi", MudBlazor.Severity.Success);
@@ -1012,7 +1013,7 @@ else
         {
             try
             {
-                var suspendResult = await PolicyService.SuspendPolicyAsync(PolicyId, "Kullanıcı tarafından askıya alındı");
+                var suspendResult = await PoliciesApi.SuspendPolicyAsync(PolicyId, "Kullanıcı tarafından askıya alındı");
                 if (suspendResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla askıya alındı", MudBlazor.Severity.Success);
@@ -1046,7 +1047,7 @@ else
         {
             try
             {
-                var cancelResult = await PolicyService.CancelPolicyAsync(PolicyId, "Kullanıcı tarafından iptal edildi");
+                var cancelResult = await PoliciesApi.CancelPolicyAsync(PolicyId, "Kullanıcı tarafından iptal edildi");
                 if (cancelResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla iptal edildi", MudBlazor.Severity.Success);
@@ -1080,7 +1081,7 @@ else
         {
             try
             {
-                var deleteResult = await PolicyService.DeletePolicyAsync(PolicyId);
+                var deleteResult = await PoliciesApi.DeletePolicyAsync(PolicyId);
                 if (deleteResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla silindi", MudBlazor.Severity.Success);

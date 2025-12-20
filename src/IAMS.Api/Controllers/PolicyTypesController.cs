@@ -32,7 +32,7 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(Result<List<PolicyTypeDto>>.Failure($"Error retrieving policy types: {ex.Message}"));
+                return BadRequest(Result<List<PolicyTypeDto>>.Failure($"Error retrieving policy types: {ex.Message}", ex.ToString()));
             }
         }
 
@@ -49,7 +49,7 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(Result<List<PolicyTypeDto>>.Failure($"Error retrieving active policy types: {ex.Message}"));
+                return BadRequest(Result<List<PolicyTypeDto>>.Failure($"Error retrieving active policy types: {ex.Message}", ex.ToString()));
             }
         }
 
@@ -69,7 +69,7 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(Result<PolicyTypeDto>.Failure($"Error retrieving policy type: {ex.Message}"));
+                return BadRequest(Result<PolicyTypeDto>.Failure($"Error retrieving policy type: {ex.Message}", ex.ToString()));
             }
         }
 
@@ -86,7 +86,7 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(Result<PolicyTypeDto>.Failure($"Error creating policy type: {ex.Message}"));
+                return BadRequest(Result<PolicyTypeDto>.Failure($"Error creating policy type: {ex.Message}", ex.ToString()));
             }
         }
 
@@ -103,7 +103,7 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(Result.Failure($"Error updating policy type: {ex.Message}"));
+                return BadRequest(Result.Failure($"Error updating policy type: {ex.Message}", ex.ToString()));
             }
         }
 
@@ -120,7 +120,7 @@ namespace IAMS.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(Result.Failure($"Error deleting policy type: {ex.Message}"));
+                return BadRequest(Result.Failure($"Error deleting policy type: {ex.Message}", ex.ToString()));
             }
         }
     }

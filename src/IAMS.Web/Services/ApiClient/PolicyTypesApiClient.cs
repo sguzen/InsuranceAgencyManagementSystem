@@ -42,12 +42,12 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result> UpdateAsync(int id, UpdatePolicyTypeDto policyTypeDto)
         {
-            return await PutAsync<Result>($"api/policytypes/{id}", policyTypeDto);
+            return await PutAsync($"api/policytypes/{id}", policyTypeDto);
         }
 
         public async Task<Result> DeleteAsync(int id)
         {
-            return await DeleteAsync($"api/policytypes/{id}");
+            return await base.DeleteAsync($"api/policytypes/{id}");
         }
     }
 }

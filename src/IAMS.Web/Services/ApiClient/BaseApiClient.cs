@@ -11,7 +11,7 @@ namespace IAMS.Web.Services.ApiClient
     public class BaseApiClient
     {
         protected readonly HttpClient _httpClient;
-        private readonly JsonSerializerOptions _jsonOptions;
+        protected readonly JsonSerializerOptions _jsonOptions;
 
         public BaseApiClient(HttpClient httpClient)
         {
@@ -82,6 +82,27 @@ namespace IAMS.Web.Services.ApiClient
             catch (Exception ex)
             {
                 return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
+            }
+        }
+
+        protected async Task<Result> PutAsync(string endpoint, object data)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync(endpoint, data, _jsonOptions);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                return result ?? Result.Failure("Empty response from API");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 

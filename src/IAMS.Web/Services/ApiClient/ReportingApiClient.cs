@@ -67,8 +67,8 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result<bool>> CancelScheduledReportAsync(int reportId)
         {
-            return await base.DeleteAsync($"api/reporting/scheduled/{reportId}")
-                .ContinueWith(t => t.Result.IsSuccess ? Result<bool>.Success(true) : Result<bool>.Failure(t.Result.Message));
+            var result = await base.DeleteAsync($"api/reporting/scheduled/{reportId}");
+            return result.IsSuccess ? Result<bool>.Success(true) : Result<bool>.Failure(result.Message, (List<string>?)null);
         }
     }
 }

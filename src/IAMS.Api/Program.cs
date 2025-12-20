@@ -7,6 +7,7 @@ using IAMS.Persistence.Extensions;
 using IAMS.Identity.Extensions;
 using IAMS.MultiTenancy.Extensions;
 using IAMS.Api.Middleware;
+using IAMS.Api.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -76,6 +77,21 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ClockSkew = TimeSpan.Zero
     };
+})
+.AddApiKeyAuthentication(options =>
+{
+    options.ApiKey = builder.Configuration["ApiSettings:ApiKey"] ?? throw new InvalidOperationException("API Key not configured");
+});
+
+// Add authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    // Policy that allows either JWT or API Key authentication
+    options.AddPolicy("ApiKeyOrJwt", policy =>
+    {
+        policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, ApiKeyAuthenticationOptions.DefaultScheme);
+        policy.RequireAuthenticatedUser();
+    });
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -99,6 +115,16 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
+    // Add API Key authentication to Swagger
+    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Description = "API Key for service-to-service authentication. Enter your API key in the text input below.",
+        Name = "X-API-Key",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "ApiKey"
+    });
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -108,6 +134,17 @@ builder.Services.AddSwaggerGen(c =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
+                }
+            },
+            new string[] {}
+        },
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
                 }
             },
             new string[] {}

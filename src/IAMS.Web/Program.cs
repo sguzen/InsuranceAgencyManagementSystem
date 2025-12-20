@@ -71,6 +71,15 @@ builder.Services.AddScoped(sp =>
 
     var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
 
+    // Add API Key for service-to-service authentication
+    var apiKey = configuration["ApiSettings:ApiKey"];
+    if (string.IsNullOrEmpty(apiKey))
+    {
+        throw new InvalidOperationException(
+            "ApiSettings:ApiKey is not configured. Please set it in appsettings.json or as an environment variable (ApiSettings__ApiKey)");
+    }
+    httpClient.DefaultRequestHeaders.Add("X-API-Key", apiKey);
+
     // Log the configured API base URL for debugging
     var logger = sp.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("API Base URL configured: {ApiBaseUrl} (Environment: {Environment})",

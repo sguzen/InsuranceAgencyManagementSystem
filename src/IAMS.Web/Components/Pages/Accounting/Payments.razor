@@ -294,7 +294,7 @@
         isLoading = true;
         try
         {
-            pagedPayments = await PaymentsApi.GetPaymentsPagedAsync(
+            pagedPayments = await PaymentsApi.GetPaymentsAsync(
                 currentPage,
                 pageSize,
                 null);

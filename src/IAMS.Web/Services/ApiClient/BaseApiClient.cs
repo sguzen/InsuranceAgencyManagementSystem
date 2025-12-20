@@ -98,7 +98,7 @@ namespace IAMS.Web.Services.ApiClient
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
-                return result ?? Result.Failure("Empty response from API");
+                return result ?? Result.Failure("Empty response from API", new List<string>());
             }
             catch (Exception ex)
             {

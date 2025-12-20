@@ -5,13 +5,12 @@
 @using IAMS.Application.DTOs.Payment
 @using IAMS.Application.DTOs.Currency
 @using IAMS.Application.Interfaces
-@using IAMS.Application.Services.Customers
 @using IAMS.Domain.Enums
 @using IAMS.Shared.Models
-@using System.Net.Http.Json
-@inject ICustomerService CustomerService
+@using IAMS.Web.Services.ApiClient
+@inject ICustomersApiClient CustomersApi
+@inject ICurrenciesApiClient CurrenciesApi
 @inject IPolicyService PolicyService
-@inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -625,7 +624,7 @@ else
 
     private async Task LoadCustomer()
     {
-        var result = await CustomerService.GetCustomerByIdAsync(CustomerId);
+        var result = await CustomersApi.GetCustomerByIdAsync(CustomerId);
         if (result.IsSuccess && result.Data != null)
         {
             customer = result.Data;
@@ -814,10 +813,10 @@ else
         loadingBalance = true;
         try
         {
-            var response = await Http.GetFromJsonAsync<Result<CustomerBalanceDto>>($"api/customers/{CustomerId}/balance");
-            if (response?.IsSuccess == true && response.Data != null)
+            var result = await CustomersApi.GetCustomerBalanceAsync(CustomerId);
+            if (result.IsSuccess && result.Data != null)
             {
-                customerBalance = response.Data;
+                customerBalance = result.Data;
             }
         }
         catch (Exception ex)
@@ -835,10 +834,10 @@ else
         loadingPayments = true;
         try
         {
-            var response = await Http.GetFromJsonAsync<Result<List<CustomerPaymentDto>>>($"api/customers/{CustomerId}/payments");
-            if (response?.IsSuccess == true && response.Data != null)
+            var result = await CustomersApi.GetCustomerPaymentsAsync(CustomerId);
+            if (result.IsSuccess && result.Data != null)
             {
-                customerPayments = response.Data;
+                customerPayments = result.Data;
             }
             else
             {
@@ -860,10 +859,10 @@ else
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<Result<List<CurrencyDto>>>("api/currencies");
-            if (response?.IsSuccess == true && response.Data != null)
+            var result = await CurrenciesApi.GetCurrenciesAsync();
+            if (result.IsSuccess && result.Data != null)
             {
-                currencies = response.Data;
+                currencies = result.Data;
             }
         }
         catch (Exception ex)
@@ -911,26 +910,18 @@ else
         {
             newPayment.PaymentDate = paymentDate ?? DateTime.Today;
 
-            var response = await Http.PostAsJsonAsync($"api/customers/{CustomerId}/payments", newPayment);
-            if (response.IsSuccessStatusCode)
+            var result = await CustomersApi.CreateCustomerPaymentAsync(CustomerId, newPayment);
+            if (result.IsSuccess)
             {
-                var result = await response.Content.ReadFromJsonAsync<Result<CustomerPaymentDto>>();
-                if (result?.IsSuccess == true)
-                {
-                    Snackbar.Add("Ödeme başarıyla kaydedildi", MudBlazor.Severity.Success);
-                    ClosePaymentDialog();
+                Snackbar.Add("Ödeme başarıyla kaydedildi", MudBlazor.Severity.Success);
+                ClosePaymentDialog();
 
-                    // Reload balance and payments
-                    await Task.WhenAll(LoadBalance(), LoadPayments());
-                }
-                else
-                {
-                    Snackbar.Add(result?.Message ?? "Ödeme kaydedilirken hata oluştu", MudBlazor.Severity.Error);
-                }
+                // Reload balance and payments
+                await Task.WhenAll(LoadBalance(), LoadPayments());
             }
             else
             {
-                Snackbar.Add("Ödeme kaydedilirken hata oluştu", MudBlazor.Severity.Error);
+                Snackbar.Add(result.Message ?? "Ödeme kaydedilirken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)

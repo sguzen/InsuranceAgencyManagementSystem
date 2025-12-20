@@ -5,6 +5,7 @@ using IAMS.Persistence.Extensions;
 using IAMS.Identity.Extensions;
 using IAMS.Web.Components;
 using IAMS.Web.Services;
+using IAMS.Web.Services.ApiClient;
 using IAMS.Web.Extensions;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -76,6 +77,19 @@ builder.Services.AddScoped(sp =>
         apiBaseUrl, environment.EnvironmentName);
 
     return httpClient;
+});
+
+// Register API Clients (for calling the shared API)
+builder.Services.AddScoped<ICustomersApiClient, CustomersApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new CustomersApiClient(httpClient);
+});
+
+builder.Services.AddScoped<ICurrenciesApiClient, CurrenciesApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new CurrenciesApiClient(httpClient);
 });
 
 // Register services

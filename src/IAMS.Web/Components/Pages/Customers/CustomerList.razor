@@ -4,12 +4,12 @@
 
 @using IAMS.Application.DTOs.Customer
 @using IAMS.Application.Interfaces
-@using IAMS.Application.Services.Customers
 @using IAMS.MultiTenancy.Interfaces
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
-@inject ICustomerService CustomerService
+@using IAMS.Web.Services.ApiClient
+@inject ICustomersApiClient CustomersApi
 @inject ITenantContextAccessor TenantContext
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -271,7 +271,7 @@
                 PageNumber = 1
             };
 
-            var result = await CustomerService.GetCustomersAsync(queryParams);
+            var result = await CustomersApi.GetCustomersAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 customers = result.Data.Items.ToList();
@@ -300,7 +300,7 @@
     {
         try
         {
-            var statisticsResult = await CustomerService.GetCustomerStatisticsAsync();
+            var statisticsResult = await CustomersApi.GetCustomerStatisticsAsync();
             if (statisticsResult.IsSuccess && statisticsResult.Data != null)
             {
                 var stats = statisticsResult.Data;
@@ -361,7 +361,7 @@
         {
             try
             {
-                var deleteResult = await CustomerService.DeleteCustomerAsync(customer.Id);
+                var deleteResult = await CustomersApi.DeleteCustomerAsync(customer.Id);
                 if (deleteResult.IsSuccess)
                 {
                     Snackbar.Add("Müşteri başarıyla silindi", MudBlazor.Severity.Success);

@@ -150,7 +150,7 @@
 
     private async Task LoadRoles()
     {
-        var result = await UserService.GetAllRolesAsync();
+        var result = await UsersApi.GetAllRolesAsync();
         if (result.IsSuccess && result.Data != null)
         {
             availableRoles = result.Data;
@@ -218,7 +218,7 @@
         try
         {
             // Update user information
-            var result = await UserService.UpdateUserAsync(model);
+            var result = await UsersApi.UpdateUserAsync(model);
             if (!result.IsSuccess)
             {
                 if (result.Errors?.Any() == true)
@@ -239,7 +239,7 @@
             // Change password only if provided
             if (!string.IsNullOrEmpty(newPassword))
             {
-                var passwordResult = await UserService.ChangePasswordAsync(model.Id, newPassword);
+                var passwordResult = await UsersApi.ChangePasswordAsync(model.Id, newPassword);
                 if (!passwordResult.IsSuccess)
                 {
                     Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", MudBlazor.Severity.Warning);

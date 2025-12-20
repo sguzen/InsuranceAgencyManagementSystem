@@ -4,12 +4,11 @@
 @rendermode InteractiveServer
 
 @using IAMS.Application.DTOs.InsuranceCompany
-@using IAMS.Application.Services.InsuranceCompanies
 @using FluentValidation
 @using MudBlazor
 
 @attribute [Authorize]
-@inject IInsuranceCompanyService InsuranceCompanyService
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -190,7 +189,7 @@
         loading = true;
         try
         {
-            var result = await InsuranceCompanyService.GetInsuranceCompanyByIdAsync(CompanyId!.Value);
+            var result = await InsuranceCompaniesApi.GetInsuranceCompanyByIdAsync(CompanyId!.Value);
             if (result.IsSuccess && result.Data != null)
             {
                 var company = result.Data;
@@ -239,7 +238,7 @@
                     Website = model.Website
                 };
 
-                var result = await InsuranceCompanyService.UpdateInsuranceCompanyAsync(CompanyId!.Value, updateDto);
+                var result = await InsuranceCompaniesApi.UpdateInsuranceCompanyAsync(CompanyId!.Value, updateDto);
                 if (result.IsSuccess)
                 {
                     Snackbar.Add("Şirket başarıyla güncellendi", MudBlazor.Severity.Success);
@@ -259,7 +258,7 @@
             }
             else
             {
-                var result = await InsuranceCompanyService.CreateInsuranceCompanyAsync(model);
+                var result = await InsuranceCompaniesApi.CreateInsuranceCompanyAsync(model);
                 if (result.IsSuccess)
                 {
                     Snackbar.Add("Şirket başarıyla oluşturuldu", MudBlazor.Severity.Success);

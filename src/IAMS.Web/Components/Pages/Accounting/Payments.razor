@@ -1,12 +1,12 @@
 @page "/accounting/payments"
 @layout Layout.MainLayout
 @using IAMS.Application.DTOs.Payment
-@using IAMS.Application.Services.Payments
 @using IAMS.Application.Interfaces
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Components.Shared.Dialogs
-@inject IPaymentService PaymentService
+@inject IPaymentsApiClient PaymentsApi
 @inject IPolicyService PolicyService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -294,7 +294,7 @@
         isLoading = true;
         try
         {
-            pagedPayments = await PaymentService.GetPaymentsPagedAsync(
+            pagedPayments = await PaymentsApi.GetPaymentsPagedAsync(
                 currentPage,
                 pageSize,
                 null);
@@ -420,7 +420,7 @@
         {
             try
             {
-                await PaymentService.UpdatePaymentStatusAsync(paymentId, PaymentStatus.Completed);
+                await PaymentsApi.UpdatePaymentStatusAsync(paymentId, PaymentStatus.Completed);
                 Snackbar.Add("Ödeme başarıyla tamamlandı olarak işaretlendi", MudBlazor.Severity.Success);
                 await LoadPayments();
             }
@@ -447,7 +447,7 @@
         {
             try
             {
-                await PaymentService.DeleteAsync(paymentId);
+                await PaymentsApi.DeleteAsync(paymentId);
                 Snackbar.Add("Ödeme kaydı başarıyla silindi", MudBlazor.Severity.Success);
                 await LoadPayments();
             }

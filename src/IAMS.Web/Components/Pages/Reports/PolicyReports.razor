@@ -13,7 +13,7 @@
 
 @inject IPolicyService PolicyService
 @inject ICurrencyService CurrencyService
-@inject IReportingService ReportingService
+@inject IReportingApiClient ReportingApi
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -715,7 +715,7 @@
                 }
             };
 
-            var reportData = await ReportingService.ExportReportAsync("policy-expiry", parameters, format);
+            var reportData = await ReportingApi.ExportReportAsync("policy-expiry", parameters, format);
 
             if (reportData != null && reportData.Length > 0)
             {

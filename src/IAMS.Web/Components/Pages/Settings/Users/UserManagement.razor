@@ -143,7 +143,7 @@
         loading = true;
         try
         {
-            var result = await UserService.GetAllUsersAsync();
+            var result = await UsersApi.GetAllUsersAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 users = result.Data;
@@ -225,7 +225,7 @@
 
         if (confirmed == true)
         {
-            var result = await UserService.ToggleUserStatusAsync(user.Id, !user.IsActive);
+            var result = await UsersApi.ToggleUserStatusAsync(user.Id, !user.IsActive);
             if (result.IsSuccess)
             {
                 Snackbar.Add($"Kullanıcı durumu güncellendi", MudBlazor.Severity.Success);
@@ -247,7 +247,7 @@
 
         if (confirmed == true)
         {
-            var result = await UserService.DeleteUserAsync(user.Id);
+            var result = await UsersApi.DeleteUserAsync(user.Id);
             if (result.IsSuccess)
             {
                 Snackbar.Add("Kullanıcı başarıyla silindi", MudBlazor.Severity.Success);

@@ -175,10 +175,7 @@ namespace IAMS.Api.Controllers
             [FromBody] CreateCustomerPaymentDto paymentDto)
         {
             // Ensure the customer ID matches the route
-            if (paymentDto.CustomerId != id)
-            {
-                paymentDto = paymentDto with { CustomerId = id };
-            }
+            paymentDto.CustomerId = id;
 
             var command = new CreateCustomerPaymentCommand(paymentDto);
             var result = await _mediator.Send(command);

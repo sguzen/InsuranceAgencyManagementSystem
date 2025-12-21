@@ -62,10 +62,14 @@ namespace IAMS.Api.Controllers
         /// Get all payments for a specific policy
         /// </summary>
         [HttpGet("policy/{policyId}")]
-        public async Task<ActionResult<List<PolicyPaymentDto>>> GetPaymentsByPolicy(int policyId)
+        public async Task<ActionResult<Result<List<PolicyPaymentDto>>>> GetPaymentsByPolicy(int policyId)
         {
             var query = new GetPaymentsByPolicyIdQuery(policyId);
             var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
 
@@ -73,10 +77,14 @@ namespace IAMS.Api.Controllers
         /// Get total payments amount for a specific policy
         /// </summary>
         [HttpGet("policy/{policyId}/total")]
-        public async Task<ActionResult<decimal>> GetTotalPaymentsByPolicy(int policyId)
+        public async Task<ActionResult<Result<decimal>>> GetTotalPaymentsByPolicy(int policyId)
         {
             var query = new GetTotalPaymentsByPolicyIdQuery(policyId);
             var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
 

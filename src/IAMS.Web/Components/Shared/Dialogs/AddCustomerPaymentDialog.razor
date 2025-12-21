@@ -1,0 +1,154 @@
+@using IAMS.Shared.DTOs.Payment
+@using IAMS.Shared.DTOs.Currency
+@using IAMS.Domain.Enums
+@using IAMS.Web.Services.ApiClient
+@inject ICustomersApiClient CustomersApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
+                Müşteri için genel ödeme kaydı
+            </MudAlert>
+
+            <MudNumericField @bind-Value="model.Amount"
+                             Label="Tutar"
+                             Required="true"
+                             RequiredError="Tutar zorunludur"
+                             Min="0.01m"
+                             Variant="Variant.Outlined"
+                             Format="N2"
+                             Adornment="Adornment.Start"
+                             AdornmentText="@GetCurrencySymbol()" />
+
+            <MudSelect @bind-Value="model.CurrencyId"
+                       Label="Para Birimi"
+                       Required="true"
+                       Variant="Variant.Outlined">
+                @foreach (var currency in Currencies)
+                {
+                    <MudSelectItem Value="@currency.Id">@currency.Code - @currency.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudDatePicker @bind-Date="paymentDate"
+                           Label="Ödeme Tarihi"
+                           Required="true"
+                           RequiredError="Ödeme tarihi zorunludur"
+                           Variant="Variant.Outlined"
+                           DateFormat="dd.MM.yyyy" />
+
+            <MudSelect T="PaymentMethod"
+                       @bind-Value="model.PaymentMethod"
+                       Label="Ödeme Yöntemi"
+                       Required="true"
+                       Variant="Variant.Outlined">
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.Cash">Nakit</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.CreditCard">Kredi Kartı</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.BankTransfer">Banka Havalesi</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.Cheque">Çek</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.DebitCard">Banka Kartı</MudSelectItem>
+                <MudSelectItem T="PaymentMethod" Value="PaymentMethod.OnlinePayment">Online Ödeme</MudSelectItem>
+            </MudSelect>
+
+            <MudTextField @bind-Value="model.Reference"
+                          Label="Referans Numarası (İsteğe Bağlı)"
+                          Variant="Variant.Outlined"
+                          MaxLength="100" />
+
+            <MudTextField @bind-Value="model.Notes"
+                          Label="Notlar (İsteğe Bağlı)"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          MaxLength="1000" />
+
+            @if (isSaving)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="isSaving">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="isSaving || !IsValid()">
+            Kaydet
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public int CustomerId { get; set; }
+    [Parameter] public List<CurrencyDto> Currencies { get; set; } = new();
+
+    private CreateCustomerPaymentDto model = new();
+    private DateTime? paymentDate = DateTime.Today;
+    private bool isSaving = false;
+
+    protected override void OnParametersSet()
+    {
+        model = new CreateCustomerPaymentDto
+        {
+            CustomerId = CustomerId,
+            PaymentDate = DateTime.Today,
+            PaymentMethod = PaymentMethod.Cash,
+            CurrencyId = Currencies.FirstOrDefault()?.Id ?? 0
+        };
+        paymentDate = DateTime.Today;
+    }
+
+    private bool IsValid()
+    {
+        return model.Amount > 0 &&
+               model.CurrencyId > 0 &&
+               paymentDate.HasValue;
+    }
+
+    private string GetCurrencySymbol()
+    {
+        var currency = Currencies.FirstOrDefault(c => c.Id == model.CurrencyId);
+        return currency?.Symbol ?? "₺";
+    }
+
+    private async Task Submit()
+    {
+        if (!IsValid())
+            return;
+
+        isSaving = true;
+
+        try
+        {
+            model.PaymentDate = paymentDate!.Value;
+
+            var result = await CustomersApi.CreateCustomerPaymentAsync(CustomerId, model);
+            if (result.IsSuccess && result.Data != null)
+            {
+                Snackbar.Add("Ödeme başarıyla kaydedildi", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result.Data));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Ödeme kaydedilirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

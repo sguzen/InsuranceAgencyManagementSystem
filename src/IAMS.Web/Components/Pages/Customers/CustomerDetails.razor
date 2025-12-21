@@ -8,6 +8,7 @@
 @using IAMS.Domain.Enums
 @using IAMS.Shared.Models
 @using IAMS.Web.Services.ApiClient
+@using IAMS.Web.Components.Shared.Dialogs
 @inject ICustomersApiClient CustomersApi
 @inject ICurrenciesApiClient CurrenciesApi
 @inject IPoliciesApiClient PoliciesApi
@@ -871,18 +872,21 @@ else
         }
     }
 
-    private void OpenPaymentDialog()
+    private async Task OpenPaymentDialog()
     {
-        newPayment = new CreateCustomerPaymentDto
+        var parameters = new DialogParameters
         {
-            CustomerId = CustomerId,
-            PaymentDate = DateTime.Today,
-            PaymentMethod = PaymentMethod.Cash,
-            CurrencyId = currencies.FirstOrDefault()?.Id ?? 0
+            ["CustomerId"] = CustomerId,
+            ["Currencies"] = currencies
         };
-        paymentDate = DateTime.Today;
-        showPaymentDialog = true;
-        StateHasChanged(); // Force UI update to show dialog
+
+        var dialog = await DialogService.ShowAsync<AddCustomerPaymentDialog>("Yeni Ödeme Kaydet", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await Task.WhenAll(LoadBalance(), LoadPayments());
+        }
     }
 
     private void ClosePaymentDialog()

@@ -7,6 +7,7 @@ using IAMS.Application.Features.Payments.Queries.GetPaymentById;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsPaged;
 using IAMS.Application.Features.Payments.Queries.GetTotalPaymentsByPolicyId;
+using IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstandingBalance;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
 using IAMS.Shared.DTOs.Payment;
@@ -95,6 +96,17 @@ namespace IAMS.Api.Controllers
         public async Task<ActionResult<List<PolicyPaymentDto>>> GetOverduePayments()
         {
             var query = new GetOverduePaymentsQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get customers with outstanding balances
+        /// </summary>
+        [HttpGet("outstanding-balances")]
+        public async Task<ActionResult<List<CustomerOutstandingBalanceDto>>> GetCustomersWithOutstandingBalance()
+        {
+            var query = new GetCustomersWithOutstandingBalanceQuery();
             var result = await _mediator.Send(query);
             return Ok(result);
         }

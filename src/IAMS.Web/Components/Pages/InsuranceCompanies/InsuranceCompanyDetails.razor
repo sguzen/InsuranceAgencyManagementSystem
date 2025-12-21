@@ -13,7 +13,7 @@
 
 @attribute [Authorize]
 @inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
-@inject IPolicyService PolicyService
+@inject IPoliciesApiClient PoliciesApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -688,7 +688,7 @@
                 PageNumber = 1
             };
 
-            var result = await PolicyService.GetPoliciesAsync(queryParams);
+            var result = await PoliciesApi.GetPoliciesAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 policies = result.Data.Items.ToList();

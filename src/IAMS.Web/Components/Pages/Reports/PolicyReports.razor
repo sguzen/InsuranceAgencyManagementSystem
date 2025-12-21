@@ -5,14 +5,13 @@
 @attribute [Authorize]
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.DTOs.Currency
-@using IAMS.Application.Services.Policies
-@using IAMS.Application.Services.Currencies
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Infrastructure.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 @using IAMS.Shared.QueryParams
 
-@inject IPolicyService PolicyService
-@inject ICurrencyService CurrencyService
+@inject IPoliciesApiClient PoliciesApi
+@inject ICurrenciesApiClient CurrenciesApi
 @inject IReportingApiClient ReportingApi
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
@@ -523,7 +522,7 @@
     {
         try
         {
-            var result = await CurrencyService.GetActiveCurrenciesAsync();
+            var result = await CurrenciesApi.GetActiveCurrenciesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 currencies = result.Data;
@@ -592,7 +591,7 @@
             //     queryParams.EndDateTo = DateTime.Now.AddDays(daysAhead);
             // }
 
-            var policiesResult = await PolicyService.GetPoliciesAsync(queryParams);
+            var policiesResult = await PoliciesApi.GetPoliciesAsync(queryParams);
 
             if (policiesResult.IsSuccess && policiesResult.Data != null)
             {

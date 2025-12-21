@@ -25,18 +25,18 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
             {
                 // Simple, straightforward query: For each customer with active policies,
                 // calculate total debt (policy premiums) minus total paid (policy payments)
-                var query = _unitOfWork.Customers.AsQueryable()
-                    .Select(c => new
+                var baseQuery = _unitOfWork.Customers.AsQueryable()
+                    .Select(c => new CustomerOutstandingBalanceDto
                     {
                         CustomerId = c.Id,
                         CustomerName = c.FirstName + " " + c.LastName,
                         CustomerEmail = c.Email ?? string.Empty,
                         // Total debt from active policies
-                        TotalDebt = c.Policies
+                        OutstandingBalance = c.Policies
                             .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
-                            .Sum(p => (decimal?)p.PremiumAmount) ?? 0,
-                        // Total paid on those policies
-                        TotalPaid = c.Policies
+                            .Sum(p => (decimal?)p.PremiumAmount) ?? 0
+                            -
+                            c.Policies
                             .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
                             .SelectMany(p => p.PolicyPayments)
                             .Where(pp => pp.Status == Domain.Enums.PaymentStatus.Completed)
@@ -50,29 +50,22 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
                             .SelectMany(p => p.PolicyPayments)
                             .Count(pp => pp.Status == Domain.Enums.PaymentStatus.Pending)
                     })
-                    .Where(x => x.TotalDebt > x.TotalPaid) // Only customers with outstanding debt
-                    .OrderByDescending(x => x.TotalDebt - x.TotalPaid);
+                    .Where(x => x.OutstandingBalance > 0) // Only customers with outstanding debt
+                    .OrderByDescending(x => x.OutstandingBalance);
 
-                // Apply limit if specified before final projection
-                IQueryable<dynamic> limitedQuery = query;
+                // Apply limit if specified
                 if (request.Limit.HasValue && request.Limit.Value > 0)
                 {
-                    limitedQuery = query.Take(request.Limit.Value);
+                    var result = await baseQuery
+                        .Take(request.Limit.Value)
+                        .ToListAsync(cancellationToken);
+                    return result;
                 }
-
-                var result = await limitedQuery
-                    .Select(x => new CustomerOutstandingBalanceDto
-                    {
-                        CustomerId = x.CustomerId,
-                        CustomerName = x.CustomerName,
-                        CustomerEmail = x.CustomerEmail,
-                        OutstandingBalance = x.TotalDebt - x.TotalPaid,
-                        ActivePoliciesCount = x.ActivePoliciesCount,
-                        PendingPaymentsCount = x.PendingPaymentsCount
-                    })
-                    .ToListAsync(cancellationToken);
-
-                return result;
+                else
+                {
+                    var result = await baseQuery.ToListAsync(cancellationToken);
+                    return result;
+                }
             }
             catch (Exception ex)
             {

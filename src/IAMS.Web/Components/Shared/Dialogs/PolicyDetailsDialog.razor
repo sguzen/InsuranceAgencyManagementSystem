@@ -1,7 +1,6 @@
 @using IAMS.Shared.DTOs.Policy
 @using IAMS.Domain.Enums
 @using IAMS.Web.Services.ApiClient
-@using MudBlazor
 @inject IPoliciesApiClient PoliciesApi
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -198,7 +197,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance? MudDialog { get; set; }
     [Parameter] public int PolicyId { get; set; }
 
     private PolicyDto? policy;

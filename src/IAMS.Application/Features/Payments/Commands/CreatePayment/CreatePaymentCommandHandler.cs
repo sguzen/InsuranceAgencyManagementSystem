@@ -36,15 +36,37 @@ namespace IAMS.Application.Features.Payments.Commands.CreatePayment
                     return Result<PolicyPaymentDto>.NotFound($"Policy with ID {request.PaymentDto.PolicyId} not found");
                 }
 
-                var payment = _mapper.Map<PolicyPayment>(request.PaymentDto);
-                payment.CreatedOn = DateTime.UtcNow;
+                // Create PolicyPayment (detailed tracking)
+                var policyPayment = _mapper.Map<PolicyPayment>(request.PaymentDto);
+                policyPayment.CreatedOn = DateTime.UtcNow;
 
-                await _unitOfWork.PolicyPayments.AddAsync(payment);
+                await _unitOfWork.PolicyPayments.AddAsync(policyPayment);
+
+                // Create corresponding CustomerPayment (ledger entry)
+                // This keeps the customer balance in sync
+                var customerPayment = new CustomerPayment
+                {
+                    CustomerId = policy.CustomerId,
+                    Amount = policyPayment.Amount,
+                    PaymentDate = policyPayment.PaymentDate,
+                    PaymentMethod = policyPayment.PaymentMethod,
+                    Status = policyPayment.Status,
+                    CurrencyId = policyPayment.CurrencyId,
+                    Reference = policyPayment.Reference,
+                    Notes = $"Payment for Policy {policy.PolicyNumber}" +
+                            (string.IsNullOrEmpty(policyPayment.Notes) ? "" : $" - {policyPayment.Notes}"),
+                    CreatedOn = DateTime.UtcNow
+                };
+
+                await _unitOfWork.CustomerPayments.AddAsync(customerPayment);
+
+                // Save both in one transaction (both succeed or both fail)
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Payment created successfully with ID: {PaymentId}", payment.Id);
+                _logger.LogInformation("Payment created successfully - PolicyPayment ID: {PolicyPaymentId}, CustomerPayment ID: {CustomerPaymentId}",
+                    policyPayment.Id, customerPayment.Id);
 
-                var paymentDto = _mapper.Map<PolicyPaymentDto>(payment);
+                var paymentDto = _mapper.Map<PolicyPaymentDto>(policyPayment);
                 return Result<PolicyPaymentDto>.Success(paymentDto, "Payment created successfully");
             }
             catch (Exception ex)

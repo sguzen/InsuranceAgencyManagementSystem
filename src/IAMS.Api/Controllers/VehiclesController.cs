@@ -1,5 +1,9 @@
 using IAMS.Shared.DTOs.Vehicle;
+using IAMS.Application.Features.Vehicles.Commands.CreateVehicle;
 using IAMS.Application.Features.Vehicles.Commands.SyncVehicleData;
+using IAMS.Application.Features.Vehicles.Queries.GetActiveBrands;
+using IAMS.Application.Features.Vehicles.Queries.GetActiveModelsByBrandId;
+using IAMS.Application.Features.Vehicles.Queries.GetVehiclesByCustomerId;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Models;
 using IAMS.Shared.DTOs.Vehicle;
@@ -89,6 +93,66 @@ namespace IAMS.Api.Controllers
                 return BadRequest(Result<List<ExternalVehicleDataDto>>.Failure(
                     $"Failed to fetch vehicle data: {ex.Message}", (List<string>?)null));
             }
+        }
+
+        /// <summary>
+        /// Get active vehicle brands
+        /// </summary>
+        [HttpGet("brands/active")]
+        public async Task<ActionResult<Result<List<VehicleBrandDto>>>> GetActiveBrands()
+        {
+            var query = new GetActiveBrandsQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get active vehicle models by brand ID
+        /// </summary>
+        [HttpGet("brands/{brandId}/models/active")]
+        public async Task<ActionResult<Result<List<VehicleModelDto>>>> GetActiveModelsByBrandId(int brandId)
+        {
+            var query = new GetActiveModelsByBrandIdQuery(brandId);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get vehicles by customer ID
+        /// </summary>
+        [HttpGet("customer/{customerId}")]
+        public async Task<ActionResult<Result<List<VehicleDto>>>> GetVehiclesByCustomerId(int customerId)
+        {
+            var query = new GetVehiclesByCustomerIdQuery(customerId);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Create a new vehicle
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<Result<VehicleDto>>> CreateVehicle([FromBody] CreateVehicleDto vehicleDto)
+        {
+            var command = new CreateVehicleCommand(vehicleDto);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return CreatedAtAction(nameof(GetVehiclesByCustomerId), new { customerId = result.Data?.CustomerId }, result);
         }
     }
 }

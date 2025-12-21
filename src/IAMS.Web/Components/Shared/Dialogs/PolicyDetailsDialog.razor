@@ -26,7 +26,7 @@
                                         @(policy.PolicyType?.Name ?? "N/A")
                                     </MudText>
                                 </div>
-                                <MudChip Color="GetStatusColor(policy.Status)" Size="Size.Small">
+                                <MudChip T="String" Color="GetStatusColor(policy.Status)" Size="Size.Small">
                                     @GetStatusText(policy.Status)
                                 </MudChip>
                             </MudStack>
@@ -153,11 +153,11 @@
                                         <MudText Typo="Typo.body2" Color="Color.Secondary">Plaka:</MudText>
                                         <MudText Typo="Typo.body2">@policy.Vehicle.PlateNumber</MudText>
                                     </MudStack>
-                                    @if (!string.IsNullOrEmpty(policy.Vehicle.Brand))
+                                    @if (!string.IsNullOrEmpty(policy.Vehicle.BrandName))
                                     {
                                         <MudStack Row="true" Justify="Justify.SpaceBetween">
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">Marka/Model:</MudText>
-                                            <MudText Typo="Typo.body2">@policy.Vehicle.Brand @policy.Vehicle.Model</MudText>
+                                            <MudText Typo="Typo.body2">@policy.Vehicle.BrandName @policy.Vehicle.ModelName</MudText>
                                         </MudStack>
                                     }
                                 </MudStack>
@@ -213,19 +213,19 @@
         isLoading = true;
         try
         {
-            var result = await PoliciesApi.GetByIdAsync(PolicyId);
+            var result = await PoliciesApi.GetPolicyByIdAsync(PolicyId);
             if (result.IsSuccess && result.Data != null)
             {
                 policy = result.Data;
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Poliçe bilgileri yüklenemedi", Severity.Error);
+                Snackbar.Add(result.Message ?? "Poliçe bilgileri yüklenemedi", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -250,7 +250,7 @@
         PolicyStatus.Active => "Aktif",
         PolicyStatus.Expired => "Süresi Dolmuş",
         PolicyStatus.Cancelled => "İptal Edildi",
-        PolicyStatus.Renewed => "Yenilendi",
+        PolicyStatus.PendingRenewal => "Yenileniyor",
         _ => status.ToString()
     };
 
@@ -260,7 +260,7 @@
         PolicyStatus.Active => Color.Success,
         PolicyStatus.Expired => Color.Error,
         PolicyStatus.Cancelled => Color.Warning,
-        PolicyStatus.Renewed => Color.Info,
+        PolicyStatus.PendingRenewal => Color.Warning,
         _ => Color.Default
     };
 }

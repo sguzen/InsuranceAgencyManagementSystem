@@ -7,7 +7,6 @@ namespace IAMS.Web.Services.ApiClient
     public interface IPolicyTypesApiClient
     {
         Task<Result<List<PolicyTypeDto>>> GetAllAsync();
-        Task<Result<List<PolicyTypeDto>>> GetActiveAsync();
         Task<Result<List<PolicyTypeDto>>> GetActiveTypesAsync();
         Task<Result<PolicyTypeDto>> GetByIdAsync(int id);
         Task<Result<PolicyTypeDto>> CreateAsync(CreatePolicyTypeDto policyTypeDto);
@@ -24,11 +23,6 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result<List<PolicyTypeDto>>> GetAllAsync()
         {
             return await GetAsync<List<PolicyTypeDto>>("api/policytypes");
-        }
-
-        public async Task<Result<List<PolicyTypeDto>>> GetActiveAsync()
-        {
-            return await GetAsync<List<PolicyTypeDto>>("api/policytypes/active");
         }
 
         public async Task<Result<List<PolicyTypeDto>>> GetActiveTypesAsync()

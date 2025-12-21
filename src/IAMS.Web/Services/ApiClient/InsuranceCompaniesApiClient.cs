@@ -10,6 +10,8 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<PagedResult<InsuranceCompanyDto>>> GetInsuranceCompaniesAsync(InsuranceCompanyQueryParams queryParams);
         Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByIdAsync(int id);
         Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByNameAsync(string name);
+        Task<Result<List<InsuranceCompanyDto>>> GetActiveInsuranceCompaniesAsync();
+        Task<Result<List<InsuranceCompanyDto>>> GetActiveAsync();
         Task<Result<InsuranceCompanyDto>> CreateInsuranceCompanyAsync(CreateInsuranceCompanyDto companyDto);
         Task<Result<InsuranceCompanyDto>> UpdateInsuranceCompanyAsync(int id, UpdateInsuranceCompanyDto companyDto);
         Task<Result> DeleteInsuranceCompanyAsync(int id);
@@ -40,6 +42,16 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result<InsuranceCompanyDto>> GetInsuranceCompanyByNameAsync(string name)
         {
             return await GetAsync<InsuranceCompanyDto>($"api/insurancecompanies/by-name/{Uri.EscapeDataString(name)}");
+        }
+
+        public async Task<Result<List<InsuranceCompanyDto>>> GetActiveInsuranceCompaniesAsync()
+        {
+            return await GetAsync<List<InsuranceCompanyDto>>("api/insurancecompanies/active");
+        }
+
+        public async Task<Result<List<InsuranceCompanyDto>>> GetActiveAsync()
+        {
+            return await GetAsync<List<InsuranceCompanyDto>>("api/insurancecompanies/active");
         }
 
         public async Task<Result<InsuranceCompanyDto>> CreateInsuranceCompanyAsync(CreateInsuranceCompanyDto companyDto)

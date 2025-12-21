@@ -9,6 +9,10 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<VehicleDataSyncResult>> SyncVehicleDataAsync(bool updateExisting = true, bool deactivateMissing = false);
         Task<Result> TestConnectionAsync();
         Task<Result<List<ExternalVehicleDataDto>>> FetchExternalDataAsync();
+        Task<Result<List<VehicleBrandDto>>> GetActiveBrandsAsync();
+        Task<Result<List<VehicleModelDto>>> GetActiveModelsByBrandIdAsync(int brandId);
+        Task<Result<List<VehicleDto>>> GetByCustomerIdAsync(int customerId);
+        Task<Result<VehicleDto>> CreateAsync(CreateVehicleDto vehicleDto);
     }
 
     public class VehiclesApiClient : BaseApiClient, IVehiclesApiClient
@@ -33,6 +37,26 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result<List<ExternalVehicleDataDto>>> FetchExternalDataAsync()
         {
             return await GetAsync<List<ExternalVehicleDataDto>>("api/vehicles/fetch-external-data");
+        }
+
+        public async Task<Result<List<VehicleBrandDto>>> GetActiveBrandsAsync()
+        {
+            return await GetAsync<List<VehicleBrandDto>>("api/vehicles/brands/active");
+        }
+
+        public async Task<Result<List<VehicleModelDto>>> GetActiveModelsByBrandIdAsync(int brandId)
+        {
+            return await GetAsync<List<VehicleModelDto>>($"api/vehicles/brands/{brandId}/models/active");
+        }
+
+        public async Task<Result<List<VehicleDto>>> GetByCustomerIdAsync(int customerId)
+        {
+            return await GetAsync<List<VehicleDto>>($"api/vehicles/customer/{customerId}");
+        }
+
+        public async Task<Result<VehicleDto>> CreateAsync(CreateVehicleDto vehicleDto)
+        {
+            return await PostAsync<VehicleDto>("api/vehicles", vehicleDto);
         }
     }
 }

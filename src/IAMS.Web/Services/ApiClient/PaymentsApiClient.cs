@@ -8,13 +8,21 @@ namespace IAMS.Web.Services.ApiClient
     public interface IPaymentsApiClient
     {
         Task<PagedResult<PolicyPaymentDto>> GetPaymentsAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
+        Task<Result<PagedResult<PolicyPaymentDto>>> GetPaymentsPagedAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
         Task<PolicyPaymentDto?> GetPaymentByIdAsync(int id);
         Task<List<PolicyPaymentDto>> GetPaymentsByPolicyAsync(int policyId);
+        Task<Result<List<PolicyPaymentDto>>> GetPaymentsByPolicyIdAsync(int policyId);
         Task<decimal> GetTotalPaymentsByPolicyAsync(int policyId);
+        Task<Result<decimal>> GetTotalPaymentsByPolicyIdAsync(int policyId);
         Task<List<PolicyPaymentDto>> GetOverduePaymentsAsync();
         Task<Result<PolicyPaymentDto>> CreatePaymentAsync(CreatePolicyPaymentDto paymentDto);
+        Task<Result<PolicyPaymentDto>> CreateAsync(CreatePolicyPaymentDto paymentDto);
+        Task<Result> UpdateAsync(int id, UpdatePolicyPaymentDto paymentDto);
         Task<Result> UpdatePaymentStatusAsync(int id, PaymentStatus status);
         Task<Result> DeletePaymentAsync(int id);
+        Task<Result> DeleteAsync(int id);
+        Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync();
+        Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync();
     }
 
     public class PaymentsApiClient : BaseApiClient, IPaymentsApiClient
@@ -111,7 +119,53 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result> DeletePaymentAsync(int id)
         {
-            return await DeleteAsync($"api/payments/{id}");
+            return await base.DeleteAsync($"api/payments/{id}");
+        }
+
+        public async Task<Result> DeleteAsync(int id)
+        {
+            return await base.DeleteAsync($"api/payments/{id}");
+        }
+
+        public async Task<Result<PagedResult<PolicyPaymentDto>>> GetPaymentsPagedAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null)
+        {
+            var queryString = $"?pageNumber={pageNumber}&pageSize={pageSize}";
+            if (!string.IsNullOrEmpty(searchTerm))
+                queryString += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+
+            return await GetAsync<PagedResult<PolicyPaymentDto>>($"api/payments{queryString}");
+        }
+
+        public async Task<Result<List<PolicyPaymentDto>>> GetPaymentsByPolicyIdAsync(int policyId)
+        {
+            return await GetAsync<List<PolicyPaymentDto>>($"api/payments/policy/{policyId}");
+        }
+
+        public async Task<Result<decimal>> GetTotalPaymentsByPolicyIdAsync(int policyId)
+        {
+            return await GetAsync<decimal>($"api/payments/policy/{policyId}/total");
+        }
+
+        public async Task<Result<PolicyPaymentDto>> CreateAsync(CreatePolicyPaymentDto paymentDto)
+        {
+            return await PostAsync<PolicyPaymentDto>("api/payments", paymentDto);
+        }
+
+        public async Task<Result> UpdateAsync(int id, UpdatePolicyPaymentDto paymentDto)
+        {
+            return await PutAsync($"api/payments/{id}", paymentDto);
+        }
+
+        public async Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync()
+        {
+            var result = await GetAsync<List<CustomerOutstandingBalanceDto>>("api/payments/outstanding-balances");
+            return result.Data ?? new List<CustomerOutstandingBalanceDto>();
+        }
+
+        public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync()
+        {
+            var result = await GetAsync<List<PolicyPaymentDto>>("api/payments/due-this-month");
+            return result.Data ?? new List<PolicyPaymentDto>();
         }
     }
 }

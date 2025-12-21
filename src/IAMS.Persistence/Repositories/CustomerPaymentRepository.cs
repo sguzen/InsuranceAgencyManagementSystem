@@ -74,12 +74,22 @@ namespace IAMS.Persistence.Repositories
         public async Task<decimal> CalculateCustomerTotalPaidAsync(int customerId, int currencyId)
         {
             // Sum of all completed customer payments in the specified currency
-            return await _dbSet
+            var customerPaymentsTotal = await _dbSet
                 .Where(cp => cp.CustomerId == customerId &&
                             cp.CurrencyId == currencyId &&
                             cp.Status == PaymentStatus.Completed &&
                             !cp.IsDeleted)
-                .SumAsync(cp => cp.Amount);
+                .SumAsync(cp => (decimal?)cp.Amount) ?? 0;
+
+            // Sum of all completed policy payments for this customer's policies in the specified currency
+            var policyPaymentsTotal = await _context.PolicyPayments
+                .Where(pp => pp.Policy.CustomerId == customerId &&
+                            pp.CurrencyId == currencyId &&
+                            pp.Status == PaymentStatus.Completed &&
+                            !pp.IsDeleted)
+                .SumAsync(pp => (decimal?)pp.Amount) ?? 0;
+
+            return customerPaymentsTotal + policyPaymentsTotal;
         }
 
         public async Task<Dictionary<int, (decimal TotalDebt, decimal TotalPaid, decimal Balance)>> GetCustomerBalanceAsync(int customerId)
@@ -91,13 +101,23 @@ namespace IAMS.Persistence.Repositories
                 .Distinct()
                 .ToListAsync();
 
-            var paymentCurrencies = await _dbSet
+            var customerPaymentCurrencies = await _dbSet
                 .Where(cp => cp.CustomerId == customerId && !cp.IsDeleted && cp.Status == PaymentStatus.Completed)
                 .Select(cp => cp.CurrencyId)
                 .Distinct()
                 .ToListAsync();
 
-            var allCurrencies = policyCurrencies.Union(paymentCurrencies).Distinct().ToList();
+            var policyPaymentCurrencies = await _context.PolicyPayments
+                .Where(pp => pp.Policy.CustomerId == customerId && !pp.IsDeleted && pp.Status == PaymentStatus.Completed)
+                .Select(pp => pp.CurrencyId)
+                .Distinct()
+                .ToListAsync();
+
+            var allCurrencies = policyCurrencies
+                .Union(customerPaymentCurrencies)
+                .Union(policyPaymentCurrencies)
+                .Distinct()
+                .ToList();
 
             var balances = new Dictionary<int, (decimal TotalDebt, decimal TotalPaid, decimal Balance)>();
 

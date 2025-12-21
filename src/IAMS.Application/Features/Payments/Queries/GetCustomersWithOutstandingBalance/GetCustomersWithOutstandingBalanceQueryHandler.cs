@@ -23,38 +23,45 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
         {
             try
             {
-                // OPTIMIZED: Calculate outstanding balance per customer using CustomerPayments
-                // Outstanding Balance = Total Policy Premiums - Total Customer Payments
-                // Using explicit join to avoid EF Core navigation property issues
-                var result = await (
-                    from c in _unitOfWork.Customers.AsQueryable().Where(c => !c.IsDeleted)
-                    let totalDebt = c.Policies
-                        .Where(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)
-                        .Sum(p => (decimal?)p.PremiumAmount) ?? 0
-                    let totalPaid = _unitOfWork.CustomerPayments.AsQueryable()
-                        .Where(cp => cp.CustomerId == c.Id &&
-                                    !cp.IsDeleted &&
-                                    cp.Status == Domain.Enums.PaymentStatus.Completed)
-                        .Sum(cp => (decimal?)cp.Amount) ?? 0
-                    let activePoliciesCount = c.Policies
-                        .Count(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)
-                    let pendingPaymentsCount = _unitOfWork.CustomerPayments.AsQueryable()
-                        .Count(cp => cp.CustomerId == c.Id &&
-                                    !cp.IsDeleted &&
-                                    cp.Status == Domain.Enums.PaymentStatus.Pending)
-                    let outstandingBalance = totalDebt - totalPaid
-                    where outstandingBalance > 0
-                    orderby outstandingBalance descending
-                    select new CustomerOutstandingBalanceDto
+                // Simple, straightforward query: For each customer with active policies,
+                // calculate total debt (policy premiums) minus total paid (policy payments)
+                var result = await _unitOfWork.Customers.AsQueryable()
+                    .Select(c => new
                     {
                         CustomerId = c.Id,
                         CustomerName = c.FirstName + " " + c.LastName,
                         CustomerEmail = c.Email ?? string.Empty,
-                        OutstandingBalance = outstandingBalance,
-                        ActivePoliciesCount = activePoliciesCount,
-                        PendingPaymentsCount = pendingPaymentsCount
-                    }
-                ).ToListAsync(cancellationToken);
+                        // Total debt from active policies
+                        TotalDebt = c.Policies
+                            .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
+                            .Sum(p => (decimal?)p.PremiumAmount) ?? 0,
+                        // Total paid on those policies
+                        TotalPaid = c.Policies
+                            .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
+                            .SelectMany(p => p.PolicyPayments)
+                            .Where(pp => pp.Status == Domain.Enums.PaymentStatus.Completed)
+                            .Sum(pp => (decimal?)pp.Amount) ?? 0,
+                        // Count of active policies
+                        ActivePoliciesCount = c.Policies
+                            .Count(p => p.Status == Domain.Enums.PolicyStatus.Active),
+                        // Count of pending payments
+                        PendingPaymentsCount = c.Policies
+                            .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
+                            .SelectMany(p => p.PolicyPayments)
+                            .Count(pp => pp.Status == Domain.Enums.PaymentStatus.Pending)
+                    })
+                    .Where(x => x.TotalDebt > x.TotalPaid) // Only customers with outstanding debt
+                    .OrderByDescending(x => x.TotalDebt - x.TotalPaid)
+                    .Select(x => new CustomerOutstandingBalanceDto
+                    {
+                        CustomerId = x.CustomerId,
+                        CustomerName = x.CustomerName,
+                        CustomerEmail = x.CustomerEmail,
+                        OutstandingBalance = x.TotalDebt - x.TotalPaid,
+                        ActivePoliciesCount = x.ActivePoliciesCount,
+                        PendingPaymentsCount = x.PendingPaymentsCount
+                    })
+                    .ToListAsync(cancellationToken);
 
                 return result;
             }

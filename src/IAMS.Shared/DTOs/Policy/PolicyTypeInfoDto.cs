@@ -1,6 +1,6 @@
 ﻿namespace IAMS.Shared.DTOs.Policy
 {
-    public class PolicyTypeDto
+    public class PolicyTypeInfoDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

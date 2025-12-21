@@ -10,6 +10,7 @@
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Services.ApiClient
 @inject ICustomersApiClient CustomersApi
+@inject IPaymentsApiClient PaymentsApi
 @inject ITenantContextAccessor TenantContext
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -241,6 +242,7 @@
     private string searchTerm = string.Empty;
     private CustomerStatus selectedStatus;
     private DateTime? fromDate;
+    private string? filterType = null;
 
     // Statistics
     private int totalCustomers = 0;
@@ -250,6 +252,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Read filter query parameter from URL
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        filterType = query["filter"];
+
         await LoadCustomers();
         await LoadBalances();
         await LoadStatistics();
@@ -265,26 +272,50 @@
         loading = true;
         try
         {
-            var queryParams = new CustomerQueryParams
+            // If filtering for outstanding balance, use the payments endpoint
+            if (filterType == "outstanding")
             {
-                SearchTerm = searchTerm,
-                Status = selectedStatus,
-                CreatedFrom = fromDate,
-                PageSize = 1000,
-                PageNumber = 1
-            };
+                var outstandingCustomers = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync();
+                if (outstandingCustomers != null && outstandingCustomers.Any())
+                {
+                    // Get full customer details for each customer with outstanding balance
+                    var customerTasks = outstandingCustomers.Select(async c =>
+                    {
+                        var customerResult = await CustomersApi.GetCustomerByIdAsync(c.CustomerId);
+                        return customerResult.IsSuccess ? customerResult.Data : null;
+                    });
 
-            var result = await CustomersApi.GetCustomersAsync(queryParams);
-            if (result.IsSuccess && result.Data != null)
-            {
-                customers = result.Data.Items.ToList();
+                    var customerResults = await Task.WhenAll(customerTasks);
+                    customers = customerResults.Where(c => c != null).ToList()!;
+                }
+                else
+                {
+                    customers = new List<CustomerDto>();
+                }
             }
             else
             {
-                customers = new List<CustomerDto>();
-                if (!string.IsNullOrEmpty(result.Message))
+                var queryParams = new CustomerQueryParams
                 {
-                    Snackbar.Add(result.Message, MudBlazor.Severity.Warning);
+                    SearchTerm = searchTerm,
+                    Status = selectedStatus,
+                    CreatedFrom = fromDate,
+                    PageSize = 1000,
+                    PageNumber = 1
+                };
+
+                var result = await CustomersApi.GetCustomersAsync(queryParams);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    customers = result.Data.Items.ToList();
+                }
+                else
+                {
+                    customers = new List<CustomerDto>();
+                    if (!string.IsNullOrEmpty(result.Message))
+                    {
+                        Snackbar.Add(result.Message, MudBlazor.Severity.Warning);
+                    }
                 }
             }
         }

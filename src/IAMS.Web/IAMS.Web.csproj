@@ -11,17 +11,20 @@
     <None Remove="src\components\auth\requireModule.tsx" />
     <None Remove="src\components\auth\requirePermission.tsx" />
     <None Remove="src\services\authService.ts" />
-  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <TypeScriptCompile Include="wwwroot\ts\**\*.ts" />
-    <TypeScriptCompile Include="wwwroot\ts\**\*.ts" />
-  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
+    <TypeScriptCompile Include="src\components\auth\protectedRoute.tsx" />
+    <TypeScriptCompile Include="src\components\auth\requireModule.tsx" />
+    <TypeScriptCompile Include="src\components\auth\requirePermission.tsx" />
+    <TypeScriptCompile Include="src\services\authService.ts" />
   </ItemGroup>
 
   <Target Name="CompileTypeScript" BeforeTargets="Build">
     <Exec Command="tsc wwwroot/ts/blazor-interop.ts --outDir wwwroot/js/compiled --target es2015" ContinueOnError="false" />
   </Target>
+
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
@@ -43,36 +46,25 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <!-- Blazor UI Libraries -->
     <PackageReference Include="MudBlazor" Version="8.9.0" />
-    
+
     <!-- Development tools -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.1" />
-  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    
     <ProjectReference Include="..\IAMS.Identity\IAMS.Identity.csproj" />
     <ProjectReference Include="..\IAMS.Infrastructure\IAMS.Infrastructure.csproj" />
     <ProjectReference Include="..\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
     <ProjectReference Include="..\IAMS.Persistence\IAMS.Persistence.csproj" />
-  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="src\components\auth\protectedRoute.tsx" />
-    <TypeScriptCompile Include="src\components\auth\requireModule.tsx" />
-    <TypeScriptCompile Include="src\components\auth\requirePermission.tsx" />
-    <TypeScriptCompile Include="src\services\authService.ts" />
-  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
+    <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Components\Dialogs\" />
     <Folder Include="wwwroot\js\compiled\" />
-  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
 </Project>

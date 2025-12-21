@@ -2,13 +2,14 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using IAMS.Shared.DTOs.Payment;
 using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId
 {
-    public class GetPaymentsByPolicyIdQueryHandler : IRequestHandler<GetPaymentsByPolicyIdQuery, List<PolicyPaymentDto>>
+    public class GetPaymentsByPolicyIdQueryHandler : IRequestHandler<GetPaymentsByPolicyIdQuery, Result<List<PolicyPaymentDto>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -24,7 +25,7 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId
             _logger = logger;
         }
 
-        public async Task<List<PolicyPaymentDto>> Handle(GetPaymentsByPolicyIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<PolicyPaymentDto>>> Handle(GetPaymentsByPolicyIdQuery request, CancellationToken cancellationToken)
         {
             try
             {
@@ -34,12 +35,13 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId
                     .ProjectTo<PolicyPaymentListDto>(_mapper.ConfigurationProvider)
                     .ToListAsync(cancellationToken);
 
-                return _mapper.Map<List<PolicyPaymentDto>>(payments);
+                var result = _mapper.Map<List<PolicyPaymentDto>>(payments);
+                return Result<List<PolicyPaymentDto>>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving payments for policy ID: {PolicyId}", request.PolicyId);
-                throw;
+                return Result<List<PolicyPaymentDto>>.InternalError("Error retrieving payments", new List<string> { ex.Message });
             }
         }
     }

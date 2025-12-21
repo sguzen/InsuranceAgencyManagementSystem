@@ -778,8 +778,12 @@ else
     {
         try
         {
-            payments = await PaymentsApi.GetPaymentsByPolicyIdAsync(PolicyId);
-            totalPaid = await PaymentsApi.GetTotalPaymentsByPolicyIdAsync(PolicyId);
+            var paymentsResult = await PaymentsApi.GetPaymentsByPolicyIdAsync(PolicyId);
+            payments = paymentsResult.Data ?? new List<PolicyPaymentDto>();
+
+            var totalPaidResult = await PaymentsApi.GetTotalPaymentsByPolicyIdAsync(PolicyId);
+            totalPaid = totalPaidResult.Data;
+
             outstandingBalance = (policy?.PremiumAmount ?? 0) - totalPaid;
         }
         catch (Exception ex)

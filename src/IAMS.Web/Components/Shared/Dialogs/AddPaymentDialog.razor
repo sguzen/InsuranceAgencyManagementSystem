@@ -250,7 +250,7 @@
                     Reference = model.Reference
                 };
 
-                await PaymentsApi.UpdateAsync(updateDto);
+                await PaymentsApi.UpdateAsync(Payment.Id, updateDto);
                 Snackbar.Add("Ödeme başarıyla güncellendi", MudBlazor.Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }

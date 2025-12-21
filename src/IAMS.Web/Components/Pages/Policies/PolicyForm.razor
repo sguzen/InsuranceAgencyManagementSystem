@@ -553,7 +553,8 @@
     {
         try
         {
-            policyTypes = await PolicyTypesApi.GetActiveTypesAsync();
+            var result = await PolicyTypesApi.GetActiveTypesAsync();
+            policyTypes = result.Data ?? new List<PolicyTypeDto>();
         }
         catch (Exception ex)
         {

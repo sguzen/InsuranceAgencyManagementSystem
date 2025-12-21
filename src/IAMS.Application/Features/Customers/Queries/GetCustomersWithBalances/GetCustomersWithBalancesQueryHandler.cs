@@ -43,7 +43,7 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomersWithBalances
                         customer.MobilePhoneNumber,
                         customer.Status,
                         customer.CreatedOn,
-                        Currency = policy != null ? policy.Currency : "TRY"
+                        Currency = policy != null ? policy.Currency.Code : "TRY"
                     } into customerCurrencyGroup
                     let activePolicies = customerCurrencyGroup.Where(x => x.policy != null && x.policy.Status == PolicyStatus.Active)
                     let totalPremium = customerCurrencyGroup.Where(x => x.policy != null).Sum(x => x.policy.PremiumAmount)

@@ -1,5 +1,5 @@
 using AutoMapper;
-using IAMS.Application.DTOs.Commission;
+using IAMS.Shared.DTOs.Commission;
 using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Mappings

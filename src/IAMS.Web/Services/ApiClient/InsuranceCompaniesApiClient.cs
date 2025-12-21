@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Shared.DTOs.InsuranceCompany;
 using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;

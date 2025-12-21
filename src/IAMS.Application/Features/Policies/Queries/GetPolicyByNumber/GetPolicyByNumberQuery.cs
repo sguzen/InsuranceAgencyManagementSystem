@@ -2,7 +2,7 @@
 using IAMS.Shared.Models;
 using MediatR;
 using IAMS.Application.Models;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPolicyByNumber
 {

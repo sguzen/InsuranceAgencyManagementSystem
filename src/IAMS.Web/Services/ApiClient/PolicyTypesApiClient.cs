@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.PolicyType;
+using IAMS.Shared.DTOs.PolicyType;
 using IAMS.Application.Models;
 using IAMS.Shared.Models;
 

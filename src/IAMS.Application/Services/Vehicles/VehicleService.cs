@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Vehicle;
+using IAMS.Shared.DTOs.Vehicle;
 using IAMS.Application.Features.Vehicles.Commands.CreateVehicle;
 using IAMS.Application.Features.Vehicles.Commands.DeleteVehicle;
 using IAMS.Application.Features.Vehicles.Commands.UpdateInspectionDates;

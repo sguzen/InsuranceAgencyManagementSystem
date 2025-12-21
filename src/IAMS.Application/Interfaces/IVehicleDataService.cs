@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Vehicle;
+using IAMS.Shared.DTOs.Vehicle;
 
 namespace IAMS.Application.Interfaces
 {

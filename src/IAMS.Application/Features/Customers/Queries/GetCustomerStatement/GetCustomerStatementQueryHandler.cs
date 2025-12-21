@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.Domain.Enums;
 using IAMS.Shared.Interfaces;
 using IAMS.Shared.Interfaces.Repositories;

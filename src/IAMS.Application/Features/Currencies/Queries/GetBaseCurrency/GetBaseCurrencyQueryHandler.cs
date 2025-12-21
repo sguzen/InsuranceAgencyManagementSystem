@@ -1,5 +1,5 @@
 using AutoMapper;
-using IAMS.Application.DTOs.Currency;
+using IAMS.Shared.DTOs.Currency;
 using IAMS.Application.Models;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;

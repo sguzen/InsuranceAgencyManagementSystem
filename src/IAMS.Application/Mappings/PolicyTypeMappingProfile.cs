@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.PolicyType;
+using IAMS.Shared.DTOs.PolicyType;
 using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Mappings

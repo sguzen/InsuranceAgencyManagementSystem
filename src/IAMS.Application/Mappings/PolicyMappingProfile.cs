@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 
 namespace IAMS.Application.Mappings
 {

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.CustomerMapping;
+using IAMS.Shared.DTOs.CustomerMapping;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;

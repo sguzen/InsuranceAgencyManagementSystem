@@ -1,5 +1,5 @@
 using AutoMapper;
-using IAMS.Application.DTOs.Currency;
+using IAMS.Shared.DTOs.Currency;
 using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Mappings

@@ -12,7 +12,7 @@ using IAMS.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using IAMS.Application.Models;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Commands.UpdatePolicy
 {

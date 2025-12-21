@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Claim;
+using IAMS.Shared.DTOs.Claim;
 using IAMS.Domain.Enums;
 using MediatR;
 

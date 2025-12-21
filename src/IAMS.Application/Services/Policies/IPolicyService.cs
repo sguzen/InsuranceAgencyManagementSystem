@@ -2,7 +2,7 @@
 using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 using IAMS.Application.Models;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 
 public interface IPolicyService
 {

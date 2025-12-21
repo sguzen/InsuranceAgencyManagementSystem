@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Parametric;
+using IAMS.Shared.DTOs.Parametric;
 
 namespace IAMS.Application.Interfaces
 {

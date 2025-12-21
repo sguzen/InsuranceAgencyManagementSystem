@@ -7,7 +7,7 @@ using IAMS.Application.Services;
 using IAMS.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.Application.Models;
 using IAMS.Shared.Interfaces;
 

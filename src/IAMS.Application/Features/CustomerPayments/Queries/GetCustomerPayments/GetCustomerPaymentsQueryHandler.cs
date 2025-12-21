@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Payment;
+using IAMS.Shared.DTOs.Payment;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using MediatR;

@@ -1,5 +1,5 @@
 using AutoMapper;
-using IAMS.Application.DTOs.Claim;
+using IAMS.Shared.DTOs.Claim;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using IAMS.Application.Services.Calculations;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.Identity;
+using IAMS.Shared.DTOs.Identity;
 
 namespace IAMS.Application.Mappings
 {

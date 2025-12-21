@@ -3,7 +3,7 @@ using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using IAMS.Application.Models;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
 {

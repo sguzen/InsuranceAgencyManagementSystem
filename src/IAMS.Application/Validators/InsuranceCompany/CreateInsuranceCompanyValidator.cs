@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Shared.DTOs.InsuranceCompany;
 using IAMS.Shared.QueryParams;
 
 namespace IAMS.Application.Validators.InsuranceCompany

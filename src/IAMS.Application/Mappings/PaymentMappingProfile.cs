@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.Payment;
+using IAMS.Shared.DTOs.Payment;
 using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Mappings

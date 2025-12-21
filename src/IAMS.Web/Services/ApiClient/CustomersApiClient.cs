@@ -1,6 +1,6 @@
-using IAMS.Application.DTOs.Customer;
-using IAMS.Application.DTOs.Payment;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Customer;
+using IAMS.Shared.DTOs.Payment;
+using IAMS.Shared.DTOs.Policy;
 using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;

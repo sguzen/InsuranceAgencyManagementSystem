@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.PolicyType;
+﻿using IAMS.Shared.DTOs.PolicyType;
 
 namespace IAMS.Application.Services.PolicyTypes
 {

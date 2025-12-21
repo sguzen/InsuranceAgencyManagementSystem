@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.CustomerMapping;
+﻿using IAMS.Shared.DTOs.CustomerMapping;
 
 namespace IAMS.Application.Services.CustomerMappings
 {

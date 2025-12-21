@@ -75,10 +75,28 @@ namespace IAMS.Application.Services.Payments
                     CreatedOn = DateTime.UtcNow
                 };
 
+                // Also create corresponding PolicyPayment record for dual-write pattern
+                var policyPayment = new PolicyPayment
+                {
+                    PolicyId = policy.Id,
+                    Amount = allocationAmount,
+                    PaymentDate = payment.PaymentDate,
+                    PaymentMethod = payment.PaymentMethod,
+                    CurrencyId = payment.CurrencyId,
+                    Reference = payment.Reference,
+                    Notes = $"Auto-allocated from customer payment #{customerPaymentId}",
+                    Status = PaymentStatus.Completed,
+                    CreatedBy = allocatedBy,
+                    CreatedOn = DateTime.UtcNow
+                };
+
                 allocations.Add(allocation);
                 payment.PaymentAllocations.Add(allocation); // Add to navigation property
                 payment.AddAllocation(allocationAmount);
                 remainingAmount -= allocationAmount;
+
+                // Add the policy payment to the database
+                await _unitOfWork.PolicyPayments.AddAsync(policyPayment);
 
                 _logger.LogInformation(
                     "Allocated {Amount} from payment {PaymentId} to policy {PolicyId}. Remaining: {Remaining}",
@@ -104,17 +122,19 @@ namespace IAMS.Application.Services.Payments
         }
 
         /// <summary>
-        /// Calculate total amount allocated to a specific policy from customer payments
+        /// Calculate total amount paid for a specific policy (both allocations and direct payments)
         /// </summary>
         private async Task<decimal> GetPolicyAllocatedAmountAsync(int policyId)
         {
-            // Query through customer payments to get all allocations for this policy
-            var customerPayments = await _unitOfWork.CustomerPayments.AsQueryable()
-                .SelectMany(cp => cp.PaymentAllocations)
-                .Where(pa => pa.PolicyId == policyId && !pa.IsDeleted)
-                .ToListAsync();
+            // Get all PolicyPayments for this policy (includes both direct payments and allocated payments)
+            var totalPolicyPayments = await _unitOfWork.PolicyPayments
+                .AsQueryable()
+                .Where(pp => pp.PolicyId == policyId &&
+                            pp.Status == PaymentStatus.Completed &&
+                            !pp.IsDeleted)
+                .SumAsync(pp => (decimal?)pp.Amount) ?? 0;
 
-            return customerPayments.Sum(pa => pa.AllocatedAmount);
+            return totalPolicyPayments;
         }
     }
 }

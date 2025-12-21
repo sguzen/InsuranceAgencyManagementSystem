@@ -16,9 +16,6 @@ using IAMS.Application.Features.Customers.Queries.GetCustomerStatement;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
-using IAMS.Shared.DTOs.Customer;
-using IAMS.Shared.DTOs.Payment;
-using IAMS.Shared.DTOs.Policy;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using MediatR;
@@ -59,6 +56,21 @@ namespace IAMS.Api.Controllers
 
             var query = new GetCustomersQuery(queryParams);
             var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get all customers with their balances per currency
+        /// </summary>
+        [HttpGet("with-balances")]
+        public async Task<ActionResult<Result<List<CustomerWithBalanceDto>>>> GetCustomersWithBalances()
+        {
+            var query = new GetCustomersWithBalancesQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
 
@@ -232,21 +244,6 @@ namespace IAMS.Api.Controllers
 
             if (!result.IsSuccess)
                 return NotFound(result);
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Get all customers with their balances per currency
-        /// </summary>
-        [HttpGet("with-balances")]
-        public async Task<ActionResult<Result<List<CustomerWithBalanceDto>>>> GetCustomersWithBalances()
-        {
-            var query = new GetCustomersWithBalancesQuery();
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return BadRequest(result);
 
             return Ok(result);
         }

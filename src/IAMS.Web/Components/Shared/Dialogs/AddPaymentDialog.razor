@@ -250,22 +250,29 @@
                     Reference = model.Reference
                 };
 
-                await PaymentsApi.UpdateAsync(Payment.Id, updateDto);
-                Snackbar.Add("Ödeme başarıyla güncellendi", MudBlazor.Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
+                var result = await PaymentsApi.UpdateAsync(Payment.Id, updateDto);
+                if (result.IsSuccess)
+                {
+                    Snackbar.Add("Ödeme başarıyla güncellendi", MudBlazor.Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Ödeme güncellenirken hata oluştu", MudBlazor.Severity.Error);
+                }
             }
             else
             {
                 // Create new payment
                 var result = await PaymentsApi.CreateAsync(model);
-                if (result != null)
+                if (result.IsSuccess && result.Data != null)
                 {
                     Snackbar.Add("Ödeme başarıyla oluşturuldu", MudBlazor.Severity.Success);
-                    MudDialog.Close(DialogResult.Ok(result));
+                    MudDialog.Close(DialogResult.Ok(result.Data));
                 }
                 else
                 {
-                    Snackbar.Add("Ödeme oluşturulurken hata oluştu", MudBlazor.Severity.Error);
+                    Snackbar.Add(result.Message ?? "Ödeme oluşturulurken hata oluştu", MudBlazor.Severity.Error);
                 }
             }
         }

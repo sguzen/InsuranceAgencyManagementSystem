@@ -52,6 +52,7 @@ namespace IAMS.Domain.Entities
         public virtual ICollection<Policy> Policies { get; set; } = new List<Policy>();
         public virtual ICollection<CustomerInsuranceCompany> CustomerInsuranceCompanies { get; set; } = new List<CustomerInsuranceCompany>();
         public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+        public virtual ICollection<CustomerPayment> CustomerPayments { get; set; } = new List<CustomerPayment>();
 
 
         // Computed properties

@@ -9,8 +9,8 @@ namespace IAMS.Application.Mappings
     {
         public PolicyMappingProfile()
         {
-            // Map PolicyType entity to the Policy.PolicyTypeDto (simple version)
-            CreateMap<PolicyType, PolicyTypeDto>()
+            // Map PolicyType entity to the Policy.PolicyTypeInfoDto (simple version)
+            CreateMap<PolicyType, PolicyTypeInfoDto>()
                 .ForMember(dest => dest.DefaultCommissionRate, opt => opt.MapFrom(src => 0)); // Default value if not available
 
             CreateMap<Policy, PolicyDto>()

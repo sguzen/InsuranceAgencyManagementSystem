@@ -53,7 +53,7 @@ namespace IAMS.Shared.DTOs.Policy
         // Navigation properties
         public CustomerDto? Customer { get; set; }
         public InsuranceCompanyDto? InsuranceCompany { get; set; }
-        public PolicyTypeDto? PolicyType { get; set; }
+        public PolicyTypeInfoDto? PolicyType { get; set; }
         public VehicleDto? Vehicle { get; set; }
 
         // Calculated properties

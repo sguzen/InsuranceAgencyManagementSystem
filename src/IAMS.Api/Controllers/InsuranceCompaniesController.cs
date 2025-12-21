@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Shared.DTOs.InsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany;

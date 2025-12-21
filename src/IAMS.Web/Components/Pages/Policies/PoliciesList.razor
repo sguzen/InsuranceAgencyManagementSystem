@@ -489,7 +489,7 @@
     private List<PolicyDto> mainPolicies = new(); // Stores only main policies for display
     private Dictionary<int, List<PolicyDto>> endorsementsByPolicy = new(); // Endorsements grouped by main policy ID
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
-    private List<IAMS.Application.DTOs.PolicyType.PolicyTypeDto> policyTypes;
+    private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
     private bool loading = true;
 
     // Search and filter parameters

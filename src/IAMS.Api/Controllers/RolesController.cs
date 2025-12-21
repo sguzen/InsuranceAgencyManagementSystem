@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.Identity;
+﻿using IAMS.Shared.DTOs.Identity;
 using IAMS.Domain.Entities;
 using IAMS.Identity.Services;
 using Microsoft.AspNetCore.Authorization;

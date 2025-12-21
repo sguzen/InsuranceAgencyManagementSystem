@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Currency;
+using IAMS.Shared.DTOs.Currency;
 using IAMS.Application.Features.Currencies.Commands.UpdateExchangeRatesFromTCMB;
 using IAMS.Application.Features.Currencies.Queries.GetCurrencies;
 using IAMS.Application.Models;

@@ -53,7 +53,7 @@ namespace IAMS.Persistence.Configurations
 
             // Relationships
             builder.HasOne(cp => cp.Customer)
-                .WithMany(c => c.CustomerPayments)
+                .WithMany()
                 .HasForeignKey(cp => cp.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 

@@ -1,6 +1,7 @@
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.Shared.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Services.Payments

@@ -134,7 +134,7 @@ namespace IAMS.Web.Services.ApiClient
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<PolicyImportResultDto>>(_jsonOptions);
-                return result ?? Result<PolicyImportResultDto>.Failure("Empty response from API");
+                return result ?? Result<PolicyImportResultDto>.Failure("Empty response from API", new List<string>());
             }
             catch (Exception ex)
             {

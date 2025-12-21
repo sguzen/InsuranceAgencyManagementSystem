@@ -25,7 +25,7 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
             {
                 // Simple, straightforward query: For each customer with active policies,
                 // calculate total debt (policy premiums) minus total paid (policy payments)
-                var result = await _unitOfWork.Customers.AsQueryable()
+                var query = _unitOfWork.Customers.AsQueryable()
                     .Select(c => new
                     {
                         CustomerId = c.Id,

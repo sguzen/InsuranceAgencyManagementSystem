@@ -149,7 +149,7 @@ namespace IAMS.Api.Controllers
         {
             // Ensure the ID in the route matches the ID in the DTO
             if (paymentDto.Id != id)
-                return BadRequest(Result.Failure("Payment ID mismatch"));
+                return BadRequest(Result.Failure("Payment ID mismatch", (List<string>?)null));
 
             var command = new UpdatePaymentCommand(paymentDto);
             var result = await _mediator.Send(command);

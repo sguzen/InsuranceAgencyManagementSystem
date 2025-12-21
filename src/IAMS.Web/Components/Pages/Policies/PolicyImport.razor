@@ -151,7 +151,7 @@
     {
         try
         {
-            var result = await InsuranceCompaniesApi.GetActiveAsync();
+            var result = await InsuranceCompaniesApi.GetActiveInsuranceCompaniesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 insuranceCompanies = result.Data;

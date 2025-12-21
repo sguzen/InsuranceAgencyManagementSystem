@@ -53,13 +53,14 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
                     .Where(x => x.TotalDebt > x.TotalPaid) // Only customers with outstanding debt
                     .OrderByDescending(x => x.TotalDebt - x.TotalPaid);
 
-                // Apply limit if specified
+                // Apply limit if specified before final projection
+                IQueryable<dynamic> limitedQuery = query;
                 if (request.Limit.HasValue && request.Limit.Value > 0)
                 {
-                    query = query.Take(request.Limit.Value);
+                    limitedQuery = query.Take(request.Limit.Value);
                 }
 
-                var result = await query
+                var result = await limitedQuery
                     .Select(x => new CustomerOutstandingBalanceDto
                     {
                         CustomerId = x.CustomerId,

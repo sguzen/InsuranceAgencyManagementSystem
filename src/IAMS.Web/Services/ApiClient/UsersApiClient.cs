@@ -6,6 +6,7 @@ namespace IAMS.Web.Services.ApiClient
     public interface IUsersApiClient
     {
         Task<Result<PagedResult<UserDto>>> GetUsersAsync(int page = 1, int pageSize = 10, string? search = null);
+        Task<Result<List<UserDto>>> GetAllUsersAsync();
         Task<Result<UserDto>> GetUserByIdAsync(string userId);
         Task<Result<UserDto>> CreateUserAsync(CreateUserDto createUserDto);
         Task<Result> UpdateUserAsync(string userId, UpdateUserDto updateUserDto);
@@ -14,6 +15,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<List<string>>> GetAllRolesAsync();
         Task<Result> UpdateUserRolesAsync(string userId, List<string> roles);
         Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto);
+        Task<Result> ToggleUserStatusAsync(string userId, bool isActive);
     }
 
     public class UsersApiClient : BaseApiClient, IUsersApiClient
@@ -29,6 +31,11 @@ namespace IAMS.Web.Services.ApiClient
                 queryString += $"&search={Uri.EscapeDataString(search)}";
 
             return await GetAsync<PagedResult<UserDto>>($"api/users{queryString}");
+        }
+
+        public async Task<Result<List<UserDto>>> GetAllUsersAsync()
+        {
+            return await GetAsync<List<UserDto>>("api/users/all");
         }
 
         public async Task<Result<UserDto>> GetUserByIdAsync(string userId)
@@ -69,6 +76,11 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto)
         {
             return await PostAsync($"api/users/{userId}/change-password", changePasswordDto);
+        }
+
+        public async Task<Result> ToggleUserStatusAsync(string userId, bool isActive)
+        {
+            return await PutAsync($"api/users/{userId}/status", new { IsActive = isActive });
         }
     }
 }

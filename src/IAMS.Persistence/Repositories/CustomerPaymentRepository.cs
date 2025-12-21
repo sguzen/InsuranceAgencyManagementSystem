@@ -74,48 +74,34 @@ namespace IAMS.Persistence.Repositories
         public async Task<decimal> CalculateCustomerTotalPaidAsync(int customerId, int currencyId)
         {
             // Sum of all completed customer payments in the specified currency
-            var customerPaymentsTotal = await _dbSet
+            // Note: With Option B dual-write pattern, PolicyPayments are automatically
+            // mirrored to CustomerPayments, so we only need to query CustomerPayments
+            // for fast balance calculation (single table query instead of joining both)
+            return await _dbSet
                 .Where(cp => cp.CustomerId == customerId &&
                             cp.CurrencyId == currencyId &&
                             cp.Status == PaymentStatus.Completed &&
                             !cp.IsDeleted)
                 .SumAsync(cp => (decimal?)cp.Amount) ?? 0;
-
-            // Sum of all completed policy payments for this customer's policies in the specified currency
-            var policyPaymentsTotal = await _context.PolicyPayments
-                .Where(pp => pp.Policy.CustomerId == customerId &&
-                            pp.CurrencyId == currencyId &&
-                            pp.Status == PaymentStatus.Completed &&
-                            !pp.IsDeleted)
-                .SumAsync(pp => (decimal?)pp.Amount) ?? 0;
-
-            return customerPaymentsTotal + policyPaymentsTotal;
         }
 
         public async Task<Dictionary<int, (decimal TotalDebt, decimal TotalPaid, decimal Balance)>> GetCustomerBalanceAsync(int customerId)
         {
-            // Get all currencies used by this customer
+            // Get all currencies used by this customer (from policies and payments)
             var policyCurrencies = await _context.Policies
                 .Where(p => p.CustomerId == customerId && !p.IsDeleted)
                 .Select(p => p.CurrencyId)
                 .Distinct()
                 .ToListAsync();
 
-            var customerPaymentCurrencies = await _dbSet
+            var paymentCurrencies = await _dbSet
                 .Where(cp => cp.CustomerId == customerId && !cp.IsDeleted && cp.Status == PaymentStatus.Completed)
                 .Select(cp => cp.CurrencyId)
                 .Distinct()
                 .ToListAsync();
 
-            var policyPaymentCurrencies = await _context.PolicyPayments
-                .Where(pp => pp.Policy.CustomerId == customerId && !pp.IsDeleted && pp.Status == PaymentStatus.Completed)
-                .Select(pp => pp.CurrencyId)
-                .Distinct()
-                .ToListAsync();
-
             var allCurrencies = policyCurrencies
-                .Union(customerPaymentCurrencies)
-                .Union(policyPaymentCurrencies)
+                .Union(paymentCurrencies)
                 .Distinct()
                 .ToList();
 

@@ -1,7 +1,9 @@
 using IAMS.Shared.DTOs.Payment;
 using IAMS.Application.Features.Payments.Commands.CreatePayment;
 using IAMS.Application.Features.Payments.Commands.DeletePayment;
+using IAMS.Application.Features.Payments.Commands.UpdatePayment;
 using IAMS.Application.Features.Payments.Commands.UpdatePaymentStatus;
+using IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth;
 using IAMS.Application.Features.Payments.Queries.GetOverduePayments;
 using IAMS.Application.Features.Payments.Queries.GetPaymentById;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId;
@@ -112,6 +114,17 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
+        /// Get payments due this month
+        /// </summary>
+        [HttpGet("due-this-month")]
+        public async Task<ActionResult<List<PolicyPaymentDto>>> GetPaymentsDueThisMonth()
+        {
+            var query = new GetPaymentsDueThisMonthQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Create a new payment
         /// </summary>
         [HttpPost]
@@ -124,6 +137,27 @@ namespace IAMS.Api.Controllers
                 return BadRequest(result);
 
             return CreatedAtAction(nameof(GetPayment), new { id = result.Data?.Id }, result);
+        }
+
+        /// <summary>
+        /// Update payment
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Result>> UpdatePayment(
+            int id,
+            [FromBody] UpdatePolicyPaymentDto paymentDto)
+        {
+            // Ensure the ID in the route matches the ID in the DTO
+            if (paymentDto.Id != id)
+                return BadRequest(Result.Failure("Payment ID mismatch"));
+
+            var command = new UpdatePaymentCommand(paymentDto);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
         /// <summary>

@@ -298,13 +298,22 @@
         isLoading = true;
         try
         {
-            pagedPayments = await PaymentsApi.GetPaymentsAsync(
+            var result = await PaymentsApi.GetPaymentsPagedAsync(
                 currentPage,
                 pageSize,
                 null);
 
-            allPayments = pagedPayments.Items.ToList();
-            CalculateStatistics();
+            if (result.IsSuccess && result.Data != null)
+            {
+                pagedPayments = result.Data;
+                allPayments = pagedPayments.Items.ToList();
+                CalculateStatistics();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Ödemeler yüklenirken hata oluştu", MudBlazor.Severity.Error);
+                pagedPayments = new IAMS.Shared.Models.PagedResult<PolicyPaymentDto>();
+            }
         }
         catch (Exception ex)
         {

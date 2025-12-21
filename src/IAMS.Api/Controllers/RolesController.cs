@@ -1,7 +1,6 @@
 ﻿using IAMS.Shared.DTOs.Identity;
 using IAMS.Domain.Entities;
 using IAMS.Identity.Services;
-using IAMS.Shared.DTOs.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -352,15 +351,6 @@ namespace IAMS.Api.Controllers
             public bool IsDefault { get; set; }
 
             public List<int> PermissionIds { get; set; } = new();
-        }
-        public class PermissionDto
-        {
-            public int Id { get; set; }
-            public string Name { get; set; } = string.Empty;
-            public string DisplayName { get; set; } = string.Empty;
-            public string? Description { get; set; }
-            public string? Module { get; set; }
-            public bool IsSystem { get; set; }
         }
     }
 }

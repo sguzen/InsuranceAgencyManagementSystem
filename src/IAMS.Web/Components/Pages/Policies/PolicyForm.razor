@@ -5,7 +5,7 @@
 @using IAMS.Shared.DTOs.Policy
 @using IAMS.Shared.DTOs.Customer
 @using IAMS.Shared.DTOs.InsuranceCompany
-@using IAMS.Shared.DTOs.PolicyType
+@using PolicyTypeDto = IAMS.Shared.DTOs.PolicyType.PolicyTypeDto
 @using IAMS.Shared.DTOs.Vehicle
 @using IAMS.Domain.Enums
 @using IAMS.Web.Services.ApiClient
@@ -480,7 +480,7 @@
     }
 
     private VehicleDto? selectedVehicle;
-    private IAMS.Shared.DTOs.PolicyType.PolicyTypeDto? selectedPolicyType;
+    private PolicyTypeDto? selectedPolicyType;
 
     private bool IsEdit => PolicyId.HasValue && PolicyId.Value > 0;
 

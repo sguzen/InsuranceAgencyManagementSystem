@@ -1,5 +1,5 @@
-﻿using IAMS.Identity.Services;
-using IAMS.Shared.DTOs.Identity;
+﻿using IAMS.Shared.DTOs.Identity;
+using IAMS.Identity.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

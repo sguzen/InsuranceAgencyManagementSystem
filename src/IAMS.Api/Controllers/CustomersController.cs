@@ -1,4 +1,6 @@
-﻿
+﻿using IAMS.Shared.DTOs.Customer;
+using IAMS.Shared.DTOs.Payment;
+using IAMS.Shared.DTOs.Policy;
 using IAMS.Application.Features.CustomerPayments.Commands.CreateCustomerPayment;
 using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerBalance;
 using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerPayments;

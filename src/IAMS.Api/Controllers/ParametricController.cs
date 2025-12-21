@@ -1,4 +1,4 @@
-
+using IAMS.Shared.DTOs.Parametric;
 using IAMS.Application.Features.Parametric.Commands.SyncCountryData;
 using IAMS.Application.Features.Parametric.Queries.GetCountries;
 using IAMS.Application.Features.Parametric.Queries.GetCities;

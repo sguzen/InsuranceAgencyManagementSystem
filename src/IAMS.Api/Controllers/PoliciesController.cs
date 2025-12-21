@@ -1,4 +1,5 @@
-﻿using IAMS.Application.Features.Policies.Commands.ActivatePolicy;
+﻿using IAMS.Shared.DTOs.Policy;
+using IAMS.Application.Features.Policies.Commands.ActivatePolicy;
 using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;

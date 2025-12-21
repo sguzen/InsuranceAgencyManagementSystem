@@ -724,8 +724,8 @@
     private decimal paymentTotalCollected = 0;
     private decimal paymentTotalPending = 0;
     private decimal paymentTotalOverdue = 0;
-    private List<CustomerOutstandingBalanceDto>? customersWithOutstanding;
-    private List<PolicyPaymentDto>? paymentsDueThisMonth;
+    private List<IAMS.Shared.DTOs.Payment.CustomerOutstandingBalanceDto>? customersWithOutstanding;
+    private List<IAMS.Shared.DTOs.Payment.PolicyPaymentDto>? paymentsDueThisMonth;
 
     protected override async Task OnInitializedAsync()
     {
@@ -1126,8 +1126,8 @@
                 paymentTotalCollected = 0;
                 paymentTotalPending = 0;
                 paymentTotalOverdue = 0;
-                customersWithOutstanding = new List<CustomerOutstandingBalanceDto>();
-                paymentsDueThisMonth = new List<PolicyPaymentDto>();
+                customersWithOutstanding = new List<IAMS.Shared.DTOs.Payment.CustomerOutstandingBalanceDto>();
+                paymentsDueThisMonth = new List<IAMS.Shared.DTOs.Payment.PolicyPaymentDto>();
 
                 Snackbar.Add("Ödeme kaydı bulunamadı", MudBlazor.Severity.Info);
             }

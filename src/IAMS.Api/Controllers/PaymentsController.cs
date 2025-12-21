@@ -1,4 +1,4 @@
-
+using IAMS.Shared.DTOs.Payment;
 using IAMS.Application.Features.Payments.Commands.CreatePayment;
 using IAMS.Application.Features.Payments.Commands.DeletePayment;
 using IAMS.Application.Features.Payments.Commands.UpdatePaymentStatus;

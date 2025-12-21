@@ -1,4 +1,4 @@
-
+using IAMS.Shared.DTOs.Vehicle;
 using IAMS.Application.Features.Vehicles.Commands.SyncVehicleData;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Models;

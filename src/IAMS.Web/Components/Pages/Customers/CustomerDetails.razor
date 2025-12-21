@@ -10,7 +10,7 @@
 @using IAMS.Web.Services.ApiClient
 @inject ICustomersApiClient CustomersApi
 @inject ICurrenciesApiClient CurrenciesApi
-@inject IPolicyService PolicyService
+@inject IPoliciesApiClient PoliciesApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -641,7 +641,7 @@ else
         loadingPolicies = true;
         try
         {
-            var result = await PolicyService.GetPoliciesByCustomerAsync(CustomerId);
+            var result = await PoliciesApi.GetPoliciesByCustomerAsync(CustomerId);
             if (result.IsSuccess && result.Data != null)
             {
                 allPolicies = result.Data;

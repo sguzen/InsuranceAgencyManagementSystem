@@ -7,7 +7,7 @@
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Components.Shared.Dialogs
 @inject IPaymentsApiClient PaymentsApi
-@inject IPolicyService PolicyService
+@inject IPoliciesApiClient PoliciesApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -371,7 +371,7 @@
             }
 
             // Load policy to get currency information
-            var policyResult = await PolicyService.GetPolicyByIdAsync(payment.PolicyId);
+            var policyResult = await PoliciesApi.GetPolicyByIdAsync(payment.PolicyId);
             string? currencySymbol = null;
             int? currencyId = null;
 

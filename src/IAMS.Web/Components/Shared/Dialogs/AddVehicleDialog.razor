@@ -1,7 +1,7 @@
 @using IAMS.Application.DTOs.Vehicle
-@using IAMS.Application.Services.Vehicles
 @using IAMS.Domain.Enums
-@inject IVehicleService VehicleService
+@using IAMS.Web.Services.ApiClient
+@inject IVehiclesApiClient VehiclesApi
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -266,7 +266,7 @@
     {
         try
         {
-            var result = await VehicleService.GetActiveBrandsAsync();
+            var result = await VehiclesApi.GetActiveBrandsAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 brands = result.Data;
@@ -318,7 +318,7 @@
     {
         try
         {
-            var result = await VehicleService.GetActiveModelsByBrandIdAsync(brandId);
+            var result = await VehiclesApi.GetActiveModelsByBrandIdAsync(brandId);
             if (result.IsSuccess && result.Data != null)
             {
                 models = result.Data;
@@ -393,8 +393,8 @@
 
         try
         {
-            Console.WriteLine("Calling VehicleService.CreateAsync");
-            var result = await VehicleService.CreateAsync(model);
+            Console.WriteLine("Calling VehiclesApi.CreateAsync");
+            var result = await VehiclesApi.CreateAsync(model);
             Console.WriteLine($"CreateAsync result - IsSuccess: {result.IsSuccess}, Message: {result.Message}");
 
             if (result.IsSuccess)

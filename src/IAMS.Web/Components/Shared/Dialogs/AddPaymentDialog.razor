@@ -5,7 +5,7 @@
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
 @inject IPaymentsApiClient PaymentsApi
-@inject IPolicyService PolicyService
+@inject IPoliciesApiClient PoliciesApi
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -194,8 +194,8 @@
                 Status = PolicyStatus.Active
             };
 
-            //var result = await PolicyService.GetPoliciesAsync(1, 10, searchText);
-            var result = await PolicyService.GetPoliciesAsync(queryParams);
+            //var result = await PoliciesApi.GetPoliciesAsync(1, 10, searchText);
+            var result = await PoliciesApi.GetPoliciesAsync(queryParams);
             if (result.IsSuccess && result.Data != null)
             {
                 return result.Data.Items;

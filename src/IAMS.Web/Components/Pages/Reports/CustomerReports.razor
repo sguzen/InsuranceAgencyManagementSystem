@@ -4,12 +4,12 @@
 
 @attribute [Authorize]
 @using IAMS.Application.DTOs.Customer
-@using IAMS.Application.Services.Customers
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Infrastructure.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 @using IAMS.Web.Services.ApiClient
 
-@inject ICustomerService CustomerService
+@inject ICustomersApiClient CustomersApi
 @inject IReportingApiClient ReportingApi
 @inject ITenantContextAccessor TenantContext
 @inject ISnackbar Snackbar
@@ -365,7 +365,7 @@
 
         try
         {
-            var result = await CustomerService.GetCustomerStatisticsAsync();
+            var result = await CustomersApi.GetCustomerStatisticsAsync();
 
             if (result.IsSuccess)
             {

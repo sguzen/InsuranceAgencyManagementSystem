@@ -3,13 +3,13 @@
 @using IAMS.Application.DTOs.Policy
 @using IAMS.Application.DTOs.Payment
 @using IAMS.Application.Interfaces
-@using IAMS.Application.Services.Payments
+@using IAMS.Web.Services.ApiClient
 @using IAMS.Domain.Enums
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Components.Shared.Dialogs
 @using IAMS.Web.Services.ApiClient
 @inject IPoliciesApiClient PoliciesApi
-@inject IPaymentService PaymentService
+@inject IPaymentsApiClient PaymentsApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -778,8 +778,8 @@ else
     {
         try
         {
-            payments = await PaymentService.GetPaymentsByPolicyIdAsync(PolicyId);
-            totalPaid = await PaymentService.GetTotalPaymentsByPolicyIdAsync(PolicyId);
+            payments = await PaymentsApi.GetPaymentsByPolicyIdAsync(PolicyId);
+            totalPaid = await PaymentsApi.GetTotalPaymentsByPolicyIdAsync(PolicyId);
             outstandingBalance = (policy?.PremiumAmount ?? 0) - totalPaid;
         }
         catch (Exception ex)
@@ -860,7 +860,7 @@ else
         {
             try
             {
-                await PaymentService.UpdatePaymentStatusAsync(paymentId, PaymentStatus.Completed);
+                await PaymentsApi.UpdatePaymentStatusAsync(paymentId, PaymentStatus.Completed);
                 Snackbar.Add("Ödeme başarıyla tamamlandı olarak işaretlendi", MudBlazor.Severity.Success);
                 await LoadPayments();
             }
@@ -887,7 +887,7 @@ else
         {
             try
             {
-                await PaymentService.DeleteAsync(paymentId);
+                await PaymentsApi.DeleteAsync(paymentId);
                 Snackbar.Add("Ödeme kaydı başarıyla silindi", MudBlazor.Severity.Success);
                 await LoadPayments();
             }

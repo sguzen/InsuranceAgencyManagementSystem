@@ -218,7 +218,7 @@
         try
         {
             // Update user information
-            var result = await UsersApi.UpdateUserAsync(model);
+            var result = await UsersApi.UpdateUserAsync(model.Id, model);
             if (!result.IsSuccess)
             {
                 if (result.Errors?.Any() == true)
@@ -239,7 +239,8 @@
             // Change password only if provided
             if (!string.IsNullOrEmpty(newPassword))
             {
-                var passwordResult = await UsersApi.ChangePasswordAsync(model.Id, newPassword);
+                var changePasswordDto = new ChangePasswordDto { NewPassword = newPassword };
+                var passwordResult = await UsersApi.ChangePasswordAsync(model.Id, changePasswordDto);
                 if (!passwordResult.IsSuccess)
                 {
                     Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", MudBlazor.Severity.Warning);

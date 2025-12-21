@@ -1080,7 +1080,8 @@
         try
         {
             // Get all payments in date range
-            var allPayments = await PaymentsApi.GetPaymentsPagedAsync(1, 10000, null);
+            var result = await PaymentsApi.GetPaymentsPagedAsync(1, 10000, null);
+            var allPayments = result.Data;
 
             if (allPayments != null && allPayments.Items != null)
             {

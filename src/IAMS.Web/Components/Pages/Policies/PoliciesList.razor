@@ -609,7 +609,7 @@
     {
         try
         {
-            var result = await PolicyTypesApi.GetActiveAsync();
+            var result = await PolicyTypesApi.GetActiveTypesAsync();
             if (result.IsSuccess && result.Data != null)
             {
                 policyTypes = result.Data;

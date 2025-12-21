@@ -1,0 +1,266 @@
+@using IAMS.Shared.DTOs.Policy
+@using IAMS.Domain.Enums
+@using IAMS.Web.Services.ApiClient
+@inject IPoliciesApiClient PoliciesApi
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+            <MudText Align="Align.Center" Class="my-4">Poliçe bilgileri yükleniyor...</MudText>
+        }
+        else if (policy != null)
+        {
+            <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+                <MudGrid>
+                    <!-- Policy Header -->
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-4 mb-4" Elevation="0" Outlined="true">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <div>
+                                    <MudText Typo="Typo.h6">@policy.PolicyNumber</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        @(policy.PolicyType?.Name ?? "N/A")
+                                    </MudText>
+                                </div>
+                                <MudChip Color="GetStatusColor(policy.Status)" Size="Size.Small">
+                                    @GetStatusText(policy.Status)
+                                </MudChip>
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Customer Information -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                            Müşteri Bilgileri
+                        </MudText>
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Ad Soyad:</MudText>
+                                    <MudText Typo="Typo.body2">@(policy.Customer?.FirstName ?? "") @(policy.Customer?.LastName ?? "")</MudText>
+                                </MudStack>
+                                @if (!string.IsNullOrEmpty(policy.Customer?.Email))
+                                {
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">E-posta:</MudText>
+                                        <MudText Typo="Typo.body2">@policy.Customer.Email</MudText>
+                                    </MudStack>
+                                }
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Insurance Company -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                            Sigorta Şirketi
+                        </MudText>
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.body2">@(policy.InsuranceCompany?.Name ?? "N/A")</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Policy Dates -->
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.DateRange" Class="mr-2" />
+                            Başlangıç Tarihi
+                        </MudText>
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.body2">@policy.StartDate.ToString("dd.MM.yyyy")</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-2" />
+                            Bitiş Tarihi
+                        </MudText>
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.body2">@policy.EndDate.ToString("dd.MM.yyyy")</MudText>
+                            @if (!policy.IsExpired)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    (@policy.DaysUntilExpiry gün kaldı)
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Error">
+                                    (Süresi dolmuş)
+                                </MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Financial Information -->
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
+                            Prim Tutarı
+                        </MudText>
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.body2">@policy.PremiumAmount.ToString("N2") @policy.CurrencySymbol</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Percent" Class="mr-2" />
+                            Komisyon
+                        </MudText>
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.body2">
+                                @policy.CommissionAmount.ToString("N2") @policy.CurrencySymbol
+                                (@policy.CommissionRate.ToString("N2")%)
+                            </MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    @if (policy.OutstandingAmount > 0)
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mr-2" />
+                                Kalan Borç
+                            </MudText>
+                            <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                                <MudText Typo="Typo.body2" Color="Color.Warning">
+                                    @policy.OutstandingAmount.ToString("N2") @policy.CurrencySymbol
+                                </MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+
+                    <!-- Vehicle Information (if applicable) -->
+                    @if (policy.Vehicle != null)
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Class="mr-2" />
+                                Araç Bilgileri
+                            </MudText>
+                            <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                                <MudStack Spacing="2">
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Plaka:</MudText>
+                                        <MudText Typo="Typo.body2">@policy.Vehicle.PlateNumber</MudText>
+                                    </MudStack>
+                                    @if (!string.IsNullOrEmpty(policy.Vehicle.Brand))
+                                    {
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Marka/Model:</MudText>
+                                            <MudText Typo="Typo.body2">@policy.Vehicle.Brand @policy.Vehicle.Model</MudText>
+                                        </MudStack>
+                                    }
+                                </MudStack>
+                            </MudPaper>
+                        </MudItem>
+                    }
+
+                    <!-- Notes -->
+                    @if (!string.IsNullOrEmpty(policy.Notes))
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2" />
+                                Notlar
+                            </MudText>
+                            <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                                <MudText Typo="Typo.body2">@policy.Notes</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudContainer>
+        }
+        else
+        {
+            <MudText Align="Align.Center" Class="my-4" Color="Color.Error">
+                Poliçe bilgileri yüklenemedi
+            </MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OpenFullPage" Color="Color.Primary" Variant="Variant.Filled">
+            Detaylı Görünüm
+        </MudButton>
+        <MudButton OnClick="Close" Color="Color.Default">Kapat</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [Parameter] public int PolicyId { get; set; }
+
+    private PolicyDto? policy;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPolicy();
+    }
+
+    private async Task LoadPolicy()
+    {
+        isLoading = true;
+        try
+        {
+            var result = await PoliciesApi.GetByIdAsync(PolicyId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                policy = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Poliçe bilgileri yüklenemedi", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void Close()
+    {
+        MudDialog?.Close();
+    }
+
+    private void OpenFullPage()
+    {
+        MudDialog?.Close();
+        Navigation.NavigateTo($"/policies/{PolicyId}");
+    }
+
+    private string GetStatusText(PolicyStatus status) => status switch
+    {
+        PolicyStatus.Draft => "Taslak",
+        PolicyStatus.Active => "Aktif",
+        PolicyStatus.Expired => "Süresi Dolmuş",
+        PolicyStatus.Cancelled => "İptal Edildi",
+        PolicyStatus.Renewed => "Yenilendi",
+        _ => status.ToString()
+    };
+
+    private Color GetStatusColor(PolicyStatus status) => status switch
+    {
+        PolicyStatus.Draft => Color.Default,
+        PolicyStatus.Active => Color.Success,
+        PolicyStatus.Expired => Color.Error,
+        PolicyStatus.Cancelled => Color.Warning,
+        PolicyStatus.Renewed => Color.Info,
+        _ => Color.Default
+    };
+}

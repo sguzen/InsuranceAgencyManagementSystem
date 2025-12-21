@@ -703,9 +703,22 @@ else
         Navigation.NavigateTo("/customers");
     }
 
-    private void ViewPolicy(int policyId)
+    private async Task ViewPolicy(int policyId)
     {
-        Navigation.NavigateTo($"/policies/{policyId}");
+        var parameters = new DialogParameters
+        {
+            { "PolicyId", policyId }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            DisableBackdropClick = false
+        };
+
+        await DialogService.ShowAsync<PolicyDetailsDialog>("Poliçe Detayları", parameters, options);
     }
 
     private void CreatePolicyForCustomer()

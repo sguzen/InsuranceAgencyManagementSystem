@@ -13,6 +13,9 @@ using IAMS.Application.Features.Customers.Queries.GetCustomersWithBalances;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByPhone;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
 using IAMS.Application.Features.Customers.Queries.GetCustomerStatement;
+using IAMS.Application.Features.Customers.Queries.GetCustomerStatistics;
+using IAMS.Application.Features.Customers.Queries.GetRecentCustomers;
+using IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
@@ -66,6 +69,51 @@ namespace IAMS.Api.Controllers
         public async Task<ActionResult<Result<List<CustomerWithBalanceDto>>>> GetCustomersWithBalances()
         {
             var query = new GetCustomersWithBalancesQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get customer statistics
+        /// </summary>
+        [HttpGet("statistics")]
+        public async Task<ActionResult<Result<CustomerStatisticsDto>>> GetCustomerStatistics()
+        {
+            var query = new GetCustomerStatisticsQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get total customers count
+        /// </summary>
+        [HttpGet("count")]
+        public async Task<ActionResult<Result<int>>> GetTotalCustomersCount()
+        {
+            var query = new GetTotalCustomersCountQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get recent customers
+        /// </summary>
+        [HttpGet("recent")]
+        public async Task<ActionResult<Result<List<CustomerDto>>>> GetRecentCustomers([FromQuery] int count = 5)
+        {
+            var query = new GetRecentCustomersQuery(count);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

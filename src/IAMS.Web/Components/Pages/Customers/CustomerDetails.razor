@@ -882,6 +882,7 @@ else
         };
         paymentDate = DateTime.Today;
         showPaymentDialog = true;
+        StateHasChanged(); // Force UI update to show dialog
     }
 
     private void ClosePaymentDialog()

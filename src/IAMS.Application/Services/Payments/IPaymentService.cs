@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.Payment;
+﻿using IAMS.Shared.DTOs.Payment;
 using IAMS.Shared.Models;
 using IAMS.Domain.Enums;
 

@@ -11,10 +11,12 @@
     <None Remove="src\components\auth\requireModule.tsx" />
     <None Remove="src\components\auth\requirePermission.tsx" />
     <None Remove="src\services\authService.ts" />
+  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="wwwroot\ts\**\*.ts" />
     <TypeScriptCompile Include="wwwroot\ts\**\*.ts" />
+  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
   <Target Name="CompileTypeScript" BeforeTargets="Build">
@@ -47,14 +49,16 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.1" />
+  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IAMS.Application\IAMS.Application.csproj" />
+    
     <ProjectReference Include="..\IAMS.Identity\IAMS.Identity.csproj" />
     <ProjectReference Include="..\IAMS.Infrastructure\IAMS.Infrastructure.csproj" />
     <ProjectReference Include="..\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
     <ProjectReference Include="..\IAMS.Persistence\IAMS.Persistence.csproj" />
+  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,11 +66,13 @@
     <TypeScriptCompile Include="src\components\auth\requireModule.tsx" />
     <TypeScriptCompile Include="src\components\auth\requirePermission.tsx" />
     <TypeScriptCompile Include="src\services\authService.ts" />
+  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Components\Dialogs\" />
     <Folder Include="wwwroot\js\compiled\" />
+  <ProjectReference Include="..\IAMS.Shared\IAMS.Shared.csproj" />
   </ItemGroup>
 
 </Project>

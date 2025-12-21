@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 using IAMS.Application.Models;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;

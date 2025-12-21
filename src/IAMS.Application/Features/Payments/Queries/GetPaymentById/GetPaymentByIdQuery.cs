@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Payment;
+using IAMS.Shared.DTOs.Payment;
 using MediatR;
 
 namespace IAMS.Application.Features.Payments.Queries.GetPaymentById

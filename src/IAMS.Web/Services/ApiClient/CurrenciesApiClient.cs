@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Currency;
+using IAMS.Shared.DTOs.Currency;
 using IAMS.Shared.Models;
 
 namespace IAMS.Web.Services.ApiClient

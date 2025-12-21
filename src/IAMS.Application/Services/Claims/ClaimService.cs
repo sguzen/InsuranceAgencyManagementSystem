@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Claim;
+using IAMS.Shared.DTOs.Claim;
 using IAMS.Application.Features.Claims.Commands.CreateClaim;
 using IAMS.Application.Features.Claims.Commands.DeleteClaim;
 using IAMS.Application.Features.Claims.Commands.UpdateClaimStatus;

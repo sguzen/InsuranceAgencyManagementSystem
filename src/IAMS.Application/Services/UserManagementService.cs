@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Identity;
+using IAMS.Shared.DTOs.Identity;
 using IAMS.Application.Interfaces;
 using IAMS.Shared.Models;
 using IAMS.Domain.Entities;

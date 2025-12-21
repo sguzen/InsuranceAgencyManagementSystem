@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IAMS.Application.Models;
-using IAMS.Application.DTOs.Policy;
+using IAMS.Shared.DTOs.Policy;
 
 namespace IAMS.Application.Features.Policies.Queries.GetPolicyStatistics
 {

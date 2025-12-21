@@ -1,4 +1,4 @@
-﻿using IAMS.Application.DTOs.Claim;
+﻿using IAMS.Shared.DTOs.Claim;
 using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;

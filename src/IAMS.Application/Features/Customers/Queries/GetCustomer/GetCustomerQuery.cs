@@ -2,7 +2,7 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Shared.Models;
 using IAMS.Application.Models;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.DTOs.Customer;
 
 namespace IAMS.Application.Features.Customers.Queries.GetCustomer
 {

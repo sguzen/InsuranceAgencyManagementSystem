@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Payment;
+using IAMS.Shared.DTOs.Payment;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Services.Payments;
 using IAMS.Domain.Entities;

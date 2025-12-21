@@ -1,5 +1,5 @@
 using AutoMapper;
-using IAMS.Application.DTOs.Invoice;
+using IAMS.Shared.DTOs.Invoice;
 using IAMS.Domain.Entities;
 
 namespace IAMS.Application.Mappings

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using IAMS.Application.DTOs.Currency;
+using IAMS.Shared.DTOs.Currency;
 using IAMS.Shared.QueryParams;
-using IAMS.Application.DTOs.Parametric;
+using IAMS.Shared.DTOs.Parametric;
 using IAMS.Domain.Entities;
-using IAMS.Application.DTOs.Customer;
+using IAMS.Shared.DTOs.Customer;
 
 namespace IAMS.Application.Mappings
 {

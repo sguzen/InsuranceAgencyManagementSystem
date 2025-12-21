@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Vehicle;
+using IAMS.Shared.DTOs.Vehicle;
 using IAMS.Application.Interfaces;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;

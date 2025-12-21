@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Parametric;
+using IAMS.Shared.DTOs.Parametric;
 using IAMS.Application.Interfaces;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;

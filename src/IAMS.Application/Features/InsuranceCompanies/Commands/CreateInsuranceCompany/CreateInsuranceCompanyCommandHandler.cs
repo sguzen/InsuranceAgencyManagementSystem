@@ -6,7 +6,7 @@ using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using IAMS.Application.DTOs.InsuranceCompany;
+using IAMS.Shared.DTOs.InsuranceCompany;
 using IAMS.Application.Models;
 
 namespace IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany

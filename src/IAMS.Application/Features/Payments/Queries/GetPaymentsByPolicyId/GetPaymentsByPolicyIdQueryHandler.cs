@@ -1,6 +1,6 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using IAMS.Application.DTOs.Payment;
+using IAMS.Shared.DTOs.Payment;
 using IAMS.Shared.Interfaces.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

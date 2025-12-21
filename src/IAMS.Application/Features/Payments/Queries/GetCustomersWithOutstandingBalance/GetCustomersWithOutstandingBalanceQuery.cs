@@ -5,5 +5,11 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
 {
     public class GetCustomersWithOutstandingBalanceQuery : IRequest<List<CustomerOutstandingBalanceDto>>
     {
+        public int? Limit { get; set; }
+
+        public GetCustomersWithOutstandingBalanceQuery(int? limit = null)
+        {
+            Limit = limit;
+        }
     }
 }

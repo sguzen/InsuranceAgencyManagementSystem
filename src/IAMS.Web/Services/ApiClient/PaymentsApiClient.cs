@@ -21,7 +21,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result> UpdatePaymentStatusAsync(int id, PaymentStatus status);
         Task<Result> DeletePaymentAsync(int id);
         Task<Result> DeleteAsync(int id);
-        Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync();
+        Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync(int? limit = null);
         Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync();
     }
 
@@ -156,9 +156,14 @@ namespace IAMS.Web.Services.ApiClient
             return await PutAsync($"api/payments/{id}", paymentDto);
         }
 
-        public async Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync()
+        public async Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync(int? limit = null)
         {
-            var result = await GetAsync<List<CustomerOutstandingBalanceDto>>("api/payments/outstanding-balances");
+            var url = "api/payments/outstanding-balances";
+            if (limit.HasValue)
+            {
+                url += $"?limit={limit.Value}";
+            }
+            var result = await GetAsync<List<CustomerOutstandingBalanceDto>>(url);
             return result.Data ?? new List<CustomerOutstandingBalanceDto>();
         }
 

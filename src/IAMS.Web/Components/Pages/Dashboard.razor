@@ -112,7 +112,7 @@
                     <CardHeaderActions>
                         <MudButton Color="Color.Primary"
                                    Variant="Variant.Text"
-                                   OnClick="@(() => Navigation.NavigateTo("/accounting/payments"))">
+                                   OnClick="@(() => Navigation.NavigateTo("/customers?filter=outstanding"))">
                             Tümünü Gör
                         </MudButton>
                     </CardHeaderActions>
@@ -248,8 +248,8 @@
             // Load recent customers
            // _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
 
-            // Load payment information
-            _customersWithOutstanding = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync();
+            // Load payment information (limit to 5 for dashboard)
+            _customersWithOutstanding = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync(limit: 5);
             _paymentsDueThisMonth = await PaymentsApi.GetPaymentsDueThisMonthAsync();
         }
         catch (Exception ex)

@@ -34,14 +34,14 @@ namespace IAMS.Api.Controllers
         /// Get all payments with pagination and filtering
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<PagedResult<PolicyPaymentDto>>> GetPayments(
+        public async Task<ActionResult<Result<PagedResult<PolicyPaymentDto>>>> GetPayments(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null)
         {
             var query = new GetPaymentsPagedQuery(pageNumber, pageSize, searchTerm);
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return Ok(Result<PagedResult<PolicyPaymentDto>>.Success(result));
         }
 
         /// <summary>
@@ -104,9 +104,9 @@ namespace IAMS.Api.Controllers
         /// Get customers with outstanding balances
         /// </summary>
         [HttpGet("outstanding-balances")]
-        public async Task<ActionResult<Result<List<CustomerOutstandingBalanceDto>>>> GetCustomersWithOutstandingBalance()
+        public async Task<ActionResult<Result<List<CustomerOutstandingBalanceDto>>>> GetCustomersWithOutstandingBalance([FromQuery] int? limit = null)
         {
-            var query = new GetCustomersWithOutstandingBalanceQuery();
+            var query = new GetCustomersWithOutstandingBalanceQuery(limit);
             var result = await _mediator.Send(query);
             return Ok(Result<List<CustomerOutstandingBalanceDto>>.Success(result));
         }

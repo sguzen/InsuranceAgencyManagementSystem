@@ -166,6 +166,7 @@
                     <MudTable Items="@pagedPayments.Items" Hover="true" Striped="true" Dense="true">
                         <HeaderContent>
                             <MudTh>Poliçe No</MudTh>
+                            <MudTh>Müşteri</MudTh>
                             <MudTh>Ödeme Tarihi</MudTh>
                             <MudTh>Vade Tarihi</MudTh>
                             <MudTh Style="text-align: right;">Tutar</MudTh>
@@ -179,6 +180,9 @@
                                 <MudLink Href="@($"/policies/{context.PolicyId}")">
                                     @context.PolicyNumber
                                 </MudLink>
+                            </MudTd>
+                            <MudTd DataLabel="Müşteri">
+                                @context.CustomerName
                             </MudTd>
                             <MudTd DataLabel="Ödeme Tarihi">
                                 @context.PaymentDate.ToString("dd.MM.yyyy")

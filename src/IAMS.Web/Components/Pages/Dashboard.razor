@@ -128,9 +128,9 @@
                                 <MudTh Style="text-align:right">Kalan Bakiye</MudTh>
                             </HeaderContent>
                             <RowTemplate>
-                                <MudTd DataLabel="Müşteri">
+                                <MudTd DataLabel="Müşteri" Style="cursor: pointer" @onclick="@(() => Navigation.NavigateTo($"/customers/{context.CustomerId}"))">
                                     <div>
-                                        <MudText Typo="Typo.body2">@context.CustomerName</MudText>
+                                        <MudLink Href="@($"/customers/{context.CustomerId}")" Typo="Typo.body2" Color="Color.Primary">@context.CustomerName</MudLink>
                                         <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerEmail</MudText>
                                     </div>
                                 </MudTd>

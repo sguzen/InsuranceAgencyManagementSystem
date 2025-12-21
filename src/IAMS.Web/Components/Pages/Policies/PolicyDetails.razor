@@ -10,6 +10,7 @@
 @using IAMS.Web.Services.ApiClient
 @inject IPoliciesApiClient PoliciesApi
 @inject IPaymentsApiClient PaymentsApi
+@inject ICustomersApiClient CustomersApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -164,6 +165,18 @@ else
                             </MudCard>
                         </MudItem>
                     </MudGrid>
+
+                    @if (customerBalanceByCurrency.Any())
+                    {
+                        <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
+                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">
+                                    <strong>Müşteri Toplam Bakiyesi:</strong> @string.Join(" | ", customerBalanceByCurrency.Select(b => $"{b.Value:N2} {b.Key}"))
+                                </MudText>
+                            </MudStack>
+                        </MudAlert>
+                    }
 
                     @if (payments.Any())
                     {
@@ -719,12 +732,14 @@ else
     private List<PolicyPaymentDto> payments = new();
     private decimal totalPaid = 0;
     private decimal outstandingBalance = 0;
+    private Dictionary<string, decimal> customerBalanceByCurrency = new();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPolicy();
         await LoadEndorsements();
         await LoadPayments();
+        await LoadCustomerBalance();
     }
 
     private async Task LoadPolicy()
@@ -795,6 +810,29 @@ else
         }
     }
 
+    private async Task LoadCustomerBalance()
+    {
+        try
+        {
+            if (policy?.CustomerId == null) return;
+
+            var balancesResult = await CustomersApi.GetCustomersWithBalancesAsync();
+            if (balancesResult.IsSuccess && balancesResult.Data != null)
+            {
+                customerBalanceByCurrency.Clear();
+                var customerBalances = balancesResult.Data.Where(b => b.Id == policy.CustomerId);
+                foreach (var balance in customerBalances)
+                {
+                    customerBalanceByCurrency[balance.Currency] = balance.Balance;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Müşteri bakiyesi yüklenirken hata: {ex.Message}");
+        }
+    }
+
     private async Task AddPayment()
     {
         var parameters = new DialogParameters
@@ -811,6 +849,7 @@ else
         if (result != null && !result.Canceled)
         {
             await LoadPayments();
+            await LoadCustomerBalance();
         }
     }
 

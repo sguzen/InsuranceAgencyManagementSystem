@@ -4,6 +4,7 @@ using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using static IAMS.Api.Controllers.RolesController;
 
 namespace IAMS.Api.Controllers
 {

@@ -6,6 +6,7 @@ using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompanies
 using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Queries.GetInsuranceCompanyByName;
 using IAMS.Application.Models;
+using IAMS.Shared.DTOs.InsuranceCompany;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using MediatR;

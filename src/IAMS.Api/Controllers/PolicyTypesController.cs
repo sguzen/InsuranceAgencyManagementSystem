@@ -1,5 +1,7 @@
 using IAMS.Shared.DTOs.PolicyType;
 using IAMS.Application.Services.PolicyTypes;
+using IAMS.Shared.DTOs.Policy;
+using IAMS.Shared.DTOs.PolicyType;
 using IAMS.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

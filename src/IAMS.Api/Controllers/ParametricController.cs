@@ -12,6 +12,7 @@ using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using IAMS.Shared.DTOs.Parametric;
 
 namespace IAMS.Api.Controllers
 {

@@ -9,6 +9,7 @@ using IAMS.Application.Features.Payments.Queries.GetPaymentsPaged;
 using IAMS.Application.Features.Payments.Queries.GetTotalPaymentsByPolicyId;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
+using IAMS.Shared.DTOs.Payment;
 using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

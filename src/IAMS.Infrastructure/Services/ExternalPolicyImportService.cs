@@ -1,6 +1,6 @@
-using IAMS.Application.DTOs.Policy;
 using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Entities;
+using IAMS.Shared.DTOs.Policy;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;

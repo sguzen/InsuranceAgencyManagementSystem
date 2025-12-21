@@ -1,12 +1,12 @@
 using AutoMapper;
 using FluentAssertions;
-using IAMS.Application.DTOs.Customer;
 using IAMS.Application.Features.Customers.Commands.CreateCustomer;
 using IAMS.Application.Interfaces;
 using IAMS.Application.Services;
 using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.MultiTenancy.Interfaces;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.Shared.Interfaces;
 using IAMS.Shared.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;

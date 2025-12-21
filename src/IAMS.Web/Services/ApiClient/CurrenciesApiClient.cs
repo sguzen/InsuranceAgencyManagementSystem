@@ -22,7 +22,8 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result<List<CurrencyDto>>> GetActiveCurrenciesAsync()
         {
-            return await GetAsync<List<CurrencyDto>>("api/currencies/active");
+            // Note: api/currencies returns only active currencies by default
+            return await GetAsync<List<CurrencyDto>>("api/currencies");
         }
     }
 }

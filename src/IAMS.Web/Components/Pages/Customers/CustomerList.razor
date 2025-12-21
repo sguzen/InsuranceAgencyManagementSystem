@@ -171,6 +171,11 @@
                     <PropertyColumn Property="x => x.MobilePhoneNumber" Title="Telefon" />
                     <PropertyColumn Property="x => GetStatusText(x.Status)" Title="Durum" />
                     <PropertyColumn Property="x => x.ActivePolicyCount" Title="Poliçe Sayısı" />
+                    <TemplateColumn Title="Bakiye" Sortable="false">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2">@GetCustomerBalance(context.Item.Id)</MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
                     <PropertyColumn Property="x => x.CreatedOn" Title="Kayıt Tarihi" />
 
                     <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
@@ -233,6 +238,7 @@
 
 @code {
     private List<CustomerDto> customers = new();
+    private Dictionary<int, Dictionary<string, decimal>> customerBalances = new();
     private bool loading = true;
 
     // Search and filter parameters
@@ -249,6 +255,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadCustomers();
+        await LoadBalances();
         await LoadStatistics();
     }
 
@@ -317,9 +324,34 @@
         }
     }
 
+    private async Task LoadBalances()
+    {
+        try
+        {
+            var balancesResult = await CustomersApi.GetCustomersWithBalancesAsync();
+            if (balancesResult.IsSuccess && balancesResult.Data != null)
+            {
+                customerBalances.Clear();
+                foreach (var item in balancesResult.Data)
+                {
+                    if (!customerBalances.ContainsKey(item.Id))
+                    {
+                        customerBalances[item.Id] = new Dictionary<string, decimal>();
+                    }
+                    customerBalances[item.Id][item.Currency] = item.Balance;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Balances loading error: {ex.Message}");
+        }
+    }
+
     private async Task OnSearch()
     {
         await LoadCustomers();
+        await LoadBalances();
     }
 
     private async Task ClearFilters()
@@ -328,6 +360,7 @@
         selectedStatus = CustomerStatus.Active;
         fromDate = null;
         await LoadCustomers();
+        await LoadBalances();
     }
 
     private void NavigateToCreate()
@@ -402,5 +435,20 @@
             CustomerStatus.Former => "Eski",
             _ => "Bilinmiyor"
         };
+    }
+
+    private string GetCustomerBalance(int customerId)
+    {
+        if (!customerBalances.ContainsKey(customerId) || !customerBalances[customerId].Any())
+        {
+            return "-";
+        }
+
+        var balances = customerBalances[customerId]
+            .Where(b => b.Value != 0)
+            .Select(b => $"{b.Value:N2} {b.Key}")
+            .ToList();
+
+        return balances.Any() ? string.Join(" | ", balances) : "-";
     }
 }

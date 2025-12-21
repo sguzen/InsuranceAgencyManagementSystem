@@ -188,18 +188,35 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             await _unitOfWork.Policies.AddAsync(policy);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Create initial payment if provided
-            if (dto.PaidAmount.HasValue && dto.PaidAmount.Value > 0)
+            // Determine payment amount
+            // For traffic policies, automatically mark as fully paid (bakiye = 0)
+            bool isTrafficPolicy = policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
+
+            decimal paymentAmount = 0;
+            if (isTrafficPolicy)
+            {
+                // Traffic policies must be fully paid
+                paymentAmount = dto.PremiumAmount;
+            }
+            else if (dto.PaidAmount.HasValue && dto.PaidAmount.Value > 0)
+            {
+                // Other policies use the provided paid amount
+                paymentAmount = dto.PaidAmount.Value;
+            }
+
+            // Create payment if there's an amount to record
+            if (paymentAmount > 0)
             {
                 var payment = new PolicyPayment
                 {
                     PolicyId = policy.Id,
-                    Amount = dto.PaidAmount.Value,
+                    Amount = paymentAmount,
                     PaymentDate = dto.PaymentDate ?? DateTime.Today,
                     PaymentMethod = ParsePaymentMethod(dto.PaymentMethod),
                     Status = PaymentStatus.Completed,
                     CurrencyId = currency.Id,
-                    Notes = "Initial payment from import",
+                    Notes = isTrafficPolicy ? "Auto-payment for traffic policy (bakiye = 0)" : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
                     ModifiedBy = userId,

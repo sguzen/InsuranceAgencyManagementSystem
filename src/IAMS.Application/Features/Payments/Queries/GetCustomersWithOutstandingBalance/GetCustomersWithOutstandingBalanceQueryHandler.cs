@@ -51,7 +51,15 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
                             .Count(pp => pp.Status == Domain.Enums.PaymentStatus.Pending)
                     })
                     .Where(x => x.TotalDebt > x.TotalPaid) // Only customers with outstanding debt
-                    .OrderByDescending(x => x.TotalDebt - x.TotalPaid)
+                    .OrderByDescending(x => x.TotalDebt - x.TotalPaid);
+
+                // Apply limit if specified
+                if (request.Limit.HasValue && request.Limit.Value > 0)
+                {
+                    query = query.Take(request.Limit.Value);
+                }
+
+                var result = await query
                     .Select(x => new CustomerOutstandingBalanceDto
                     {
                         CustomerId = x.CustomerId,

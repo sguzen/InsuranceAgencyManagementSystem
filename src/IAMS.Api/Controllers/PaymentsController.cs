@@ -104,9 +104,9 @@ namespace IAMS.Api.Controllers
         /// Get customers with outstanding balances
         /// </summary>
         [HttpGet("outstanding-balances")]
-        public async Task<ActionResult<Result<List<CustomerOutstandingBalanceDto>>>> GetCustomersWithOutstandingBalance()
+        public async Task<ActionResult<Result<List<CustomerOutstandingBalanceDto>>>> GetCustomersWithOutstandingBalance([FromQuery] int? limit = null)
         {
-            var query = new GetCustomersWithOutstandingBalanceQuery();
+            var query = new GetCustomersWithOutstandingBalanceQuery(limit);
             var result = await _mediator.Send(query);
             return Ok(Result<List<CustomerOutstandingBalanceDto>>.Success(result));
         }

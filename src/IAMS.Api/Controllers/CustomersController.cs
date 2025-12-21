@@ -9,6 +9,7 @@ using IAMS.Application.Features.Customers.Commands.DeleteCustomer;
 using IAMS.Application.Features.Customers.Commands.UpdateCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomer;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByIdentificationNo;
+using IAMS.Application.Features.Customers.Queries.GetCustomersWithBalances;
 using IAMS.Application.Features.Customers.Queries.GetCustomerByPhone;
 using IAMS.Application.Features.Customers.Queries.GetCustomers;
 using IAMS.Application.Features.Customers.Queries.GetCustomerStatement;
@@ -231,6 +232,21 @@ namespace IAMS.Api.Controllers
 
             if (!result.IsSuccess)
                 return NotFound(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get all customers with their balances per currency
+        /// </summary>
+        [HttpGet("with-balances")]
+        public async Task<ActionResult<Result<List<CustomerWithBalanceDto>>>> GetCustomersWithBalances()
+        {
+            var query = new GetCustomersWithBalancesQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
             return Ok(result);
         }

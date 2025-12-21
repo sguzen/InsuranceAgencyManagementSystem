@@ -21,6 +21,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<List<CustomerPaymentDto>>> GetCustomerPaymentsAsync(int id);
         Task<Result<CustomerPaymentDto>> CreateCustomerPaymentAsync(int id, CreateCustomerPaymentDto paymentDto);
         Task<Result<CustomerMultiCurrencyStatementDto>> GetCustomerStatementAsync(int id, DateTime? startDate, DateTime? endDate, int? currencyId);
+        Task<Result<List<CustomerWithBalanceDto>>> GetCustomersWithBalancesAsync();
     }
 
     public class CustomersApiClient : BaseApiClient, ICustomersApiClient
@@ -104,6 +105,11 @@ namespace IAMS.Web.Services.ApiClient
                 query += $"{(query.Length > 0 ? "&" : "?")}currencyId={currencyId}";
 
             return await GetAsync<CustomerMultiCurrencyStatementDto>($"api/customers/{id}/statement{query}");
+        }
+
+        public async Task<Result<List<CustomerWithBalanceDto>>> GetCustomersWithBalancesAsync()
+        {
+            return await GetAsync<List<CustomerWithBalanceDto>>("api/customers/with-balances");
         }
     }
 }

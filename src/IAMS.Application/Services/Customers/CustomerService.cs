@@ -11,6 +11,7 @@ using IAMS.Application.Features.Customers.Queries.GetCustomersByStatus;
 using IAMS.Application.Features.Customers.Queries.GetCustomersCreatedByMonth;
 using IAMS.Application.Features.Customers.Queries.GetCustomerStatistics;
 using IAMS.Application.Features.Customers.Queries.GetCustomersWithActivePolicies;
+using IAMS.Application.Features.Customers.Queries.GetCustomersWithBalances;
 using IAMS.Application.Features.Customers.Queries.GetRecentCustomers;
 using IAMS.Application.Features.Customers.Queries.GetTopCustomersByPolicyCount;
 using IAMS.Application.Features.Customers.Queries.GetTotalCustomersCount;
@@ -131,6 +132,11 @@ namespace IAMS.Application.Services.Customers
         public async Task<Result<Dictionary<string, int>>> GetCustomersCreatedByMonthAsync(int months = 12)
         {
             return await _mediator.Send(new GetCustomersCreatedByMonthQuery(months));
+        }
+
+        public async Task<Result<List<CustomerWithBalanceDto>>> GetCustomersWithBalancesAsync()
+        {
+            return await _mediator.Send(new GetCustomersWithBalancesQuery());
         }
     }
 }

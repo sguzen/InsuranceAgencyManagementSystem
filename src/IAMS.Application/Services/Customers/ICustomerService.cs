@@ -29,5 +29,6 @@ namespace IAMS.Application.Services.Customers
         Task<Result<List<CustomerDto>>> GetTopCustomersByPolicyCountAsync(int count = 10);
         Task<Result<Dictionary<CustomerStatus, int>>> GetCustomersByStatusAsync();
         Task<Result<Dictionary<string, int>>> GetCustomersCreatedByMonthAsync(int months = 12);
+        Task<Result<List<CustomerWithBalanceDto>>> GetCustomersWithBalancesAsync();
     }
 }

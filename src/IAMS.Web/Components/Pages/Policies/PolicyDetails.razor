@@ -794,10 +794,26 @@ else
         try
         {
             var paymentsResult = await PaymentsApi.GetPaymentsByPolicyIdAsync(PolicyId);
-            payments = paymentsResult.Data ?? new List<PolicyPaymentDto>();
+            if (paymentsResult.IsSuccess && paymentsResult.Data != null)
+            {
+                payments = paymentsResult.Data;
+            }
+            else
+            {
+                payments = new List<PolicyPaymentDto>();
+                Console.WriteLine($"Failed to load payments: {paymentsResult.Message}");
+            }
 
             var totalPaidResult = await PaymentsApi.GetTotalPaymentsByPolicyIdAsync(PolicyId);
-            totalPaid = totalPaidResult.Data;
+            if (totalPaidResult.IsSuccess)
+            {
+                totalPaid = totalPaidResult.Data;
+            }
+            else
+            {
+                totalPaid = 0;
+                Console.WriteLine($"Failed to load total paid: {totalPaidResult.Message}");
+            }
 
             outstandingBalance = (policy?.PremiumAmount ?? 0) - totalPaid;
         }

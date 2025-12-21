@@ -248,13 +248,13 @@
                 else
                 {
                     Snackbar.Add("Kullanıcı ve şifre başarıyla güncellendi", MudBlazor.Severity.Success);
-                    MudDialog.Close(DialogResult.Ok(result.Data));
+                    MudDialog.Close(DialogResult.Ok(true));
                     return;
                 }
             }
 
             Snackbar.Add("Kullanıcı başarıyla güncellendi", MudBlazor.Severity.Success);
-            MudDialog.Close(DialogResult.Ok(result.Data));
+            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {

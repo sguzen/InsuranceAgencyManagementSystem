@@ -23,25 +23,24 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
         {
             try
             {
-                // OPTIMIZED: Calculate outstanding balance per customer using CustomerPayments
-                // Outstanding Balance = Total Policy Premiums - Total Customer Payments
-                // Using explicit join to avoid EF Core navigation property issues
+                // Calculate outstanding balance per customer based on policy premiums vs policy payments
+                // Outstanding Balance = Total Policy Premiums - Total Policy Payments
                 var result = await (
                     from c in _unitOfWork.Customers.AsQueryable().Where(c => !c.IsDeleted)
                     let totalDebt = c.Policies
                         .Where(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)
                         .Sum(p => (decimal?)p.PremiumAmount) ?? 0
-                    let totalPaid = _unitOfWork.CustomerPayments.AsQueryable()
-                        .Where(cp => cp.CustomerId == c.Id &&
-                                    !cp.IsDeleted &&
-                                    cp.Status == Domain.Enums.PaymentStatus.Completed)
-                        .Sum(cp => (decimal?)cp.Amount) ?? 0
+                    let totalPaid = c.Policies
+                        .Where(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)
+                        .SelectMany(p => p.PolicyPayments)
+                        .Where(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Completed)
+                        .Sum(pp => (decimal?)pp.Amount) ?? 0
                     let activePoliciesCount = c.Policies
                         .Count(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)
-                    let pendingPaymentsCount = _unitOfWork.CustomerPayments.AsQueryable()
-                        .Count(cp => cp.CustomerId == c.Id &&
-                                    !cp.IsDeleted &&
-                                    cp.Status == Domain.Enums.PaymentStatus.Pending)
+                    let pendingPaymentsCount = c.Policies
+                        .Where(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)
+                        .SelectMany(p => p.PolicyPayments)
+                        .Count(pp => !pp.IsDeleted && pp.Status == Domain.Enums.PaymentStatus.Pending)
                     let outstandingBalance = totalDebt - totalPaid
                     where outstandingBalance > 0
                     orderby outstandingBalance descending

@@ -3,6 +3,7 @@ using IAMS.Shared.DTOs.Payment;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using IAMS.Application.Models;
@@ -55,6 +56,7 @@ namespace IAMS.Application.Features.Payments.Commands.CreatePayment
                     Reference = policyPayment.Reference,
                     Notes = $"Payment for Policy {policy.PolicyNumber}" +
                             (string.IsNullOrEmpty(policyPayment.Notes) ? "" : $" - {policyPayment.Notes}"),
+                    AllocationStatus = AllocationStatus.FullyAllocated, // This payment is allocated to a specific policy
                     CreatedOn = DateTime.UtcNow
                 };
 

@@ -8,12 +8,17 @@ using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
 using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
+using IAMS.Application.Features.Policies.Queries.GetEndorsementsByPolicyId;
 using IAMS.Application.Features.Policies.Queries.GetExpiringPolicies;
+using IAMS.Application.Features.Policies.Queries.GetExpiringPoliciesCount;
+using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenue;
+using IAMS.Application.Features.Policies.Queries.GetMonthlyRevenueByCurrency;
 using IAMS.Application.Features.Policies.Queries.GetPolicies;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Features.Policies.Queries.GetPolicy;
 using IAMS.Application.Features.Policies.Queries.GetPolicyByNumber;
 using IAMS.Application.Features.Policies.Queries.GetPolicyStatistics;
+using IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
 using IAMS.Shared.DTOs.Policy;
@@ -247,6 +252,81 @@ namespace IAMS.Api.Controllers
         {
             var query = new GetPolicyStatisticsQuery();
             var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get total policies count
+        /// </summary>
+        [HttpGet("count")]
+        public async Task<ActionResult<Result<int>>> GetTotalPoliciesCount()
+        {
+            var query = new GetTotalPoliciesCountQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get expiring policies count
+        /// </summary>
+        [HttpGet("expiring/count")]
+        public async Task<ActionResult<Result<int>>> GetExpiringPoliciesCount([FromQuery] int daysAhead = 30)
+        {
+            var query = new GetExpiringPoliciesCountQuery(daysAhead);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get endorsements by policy ID
+        /// </summary>
+        [HttpGet("{policyId}/endorsements")]
+        public async Task<ActionResult<Result<List<PolicyDto>>>> GetEndorsementsByPolicyId(int policyId)
+        {
+            var query = new GetEndorsementsByPolicyIdQuery(policyId);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get monthly revenue
+        /// </summary>
+        [HttpGet("revenue/monthly")]
+        public async Task<ActionResult<Result<decimal>>> GetMonthlyRevenue()
+        {
+            var query = new GetMonthlyRevenueQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get monthly revenue by currency
+        /// </summary>
+        [HttpGet("revenue/monthly-by-currency")]
+        public async Task<ActionResult<Result<Dictionary<string, decimal>>>> GetMonthlyRevenueByCurrency()
+        {
+            var query = new GetMonthlyRevenueByCurrencyQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
 

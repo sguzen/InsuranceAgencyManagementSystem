@@ -81,6 +81,29 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
+        /// Get active insurance companies
+        /// </summary>
+        [HttpGet("active")]
+        public async Task<ActionResult<Result<List<InsuranceCompanyDto>>>> GetActiveInsuranceCompanies()
+        {
+            var queryParams = new InsuranceCompanyQueryParams
+            {
+                PageNumber = 1,
+                PageSize = int.MaxValue,
+                IsActive = true
+            };
+            var query = new GetInsuranceCompaniesQuery(queryParams);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            // Extract items from paged result
+            var companies = result.Data?.Items ?? new List<InsuranceCompanyDto>();
+            return Ok(Result<List<InsuranceCompanyDto>>.Success(companies));
+        }
+
+        /// <summary>
         /// Create a new insurance company
         /// </summary>
         [HttpPost]

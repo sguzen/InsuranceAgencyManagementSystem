@@ -15,9 +15,8 @@ namespace IAMS.Application.Mappings
 
             // Lightweight list DTO mapping - optimized for ProjectTo
             // AutoMapper will automatically only select required fields when using ProjectTo
+            // Only essential fields for list view - excludes Email, Phone, Status, CreatedOn for optimization
             CreateMap<Customer, CustomerListDto>()
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src =>
-                    src.MobilePhoneNumber ?? src.HomePhone))
                 .ForMember(dest => dest.ActivePoliciesCount, opt => opt.MapFrom(src =>
                     src.Policies.Count(p => !p.IsDeleted && p.Status == Domain.Enums.PolicyStatus.Active)))
                 .ForMember(dest => dest.TotalPoliciesCount, opt => opt.MapFrom(src =>
@@ -34,8 +33,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.PolicyCount, opt => opt.MapFrom(src => src.TotalPoliciesCount))
                 .ForMember(dest => dest.ActivePolicyCount, opt => opt.MapFrom(src => src.ActivePoliciesCount))
                 .ForMember(dest => dest.TotalPolicyCount, opt => opt.MapFrom(src => src.TotalPoliciesCount))
-                .ForMember(dest => dest.HasActivePolicies, opt => opt.MapFrom(src => src.ActivePoliciesCount > 0))
-                .ForMember(dest => dest.MobilePhoneNumber, opt => opt.MapFrom(src => src.Phone));
+                .ForMember(dest => dest.HasActivePolicies, opt => opt.MapFrom(src => src.ActivePoliciesCount > 0));
 
             CreateMap<CreateOrUpdateCustomerDto, Customer>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

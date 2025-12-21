@@ -167,16 +167,12 @@
                     <PropertyColumn Property="x => x.CustomerCode" Title="Müşteri Kodu" />
                     <PropertyColumn Property="x => x.FirstName" Title="Ad" />
                     <PropertyColumn Property="x => x.LastName" Title="Soyad" />
-                    <PropertyColumn Property="x => x.Email" Title="E-posta" />
-                    <PropertyColumn Property="x => x.MobilePhoneNumber" Title="Telefon" />
-                    <PropertyColumn Property="x => GetStatusText(x.Status)" Title="Durum" />
                     <PropertyColumn Property="x => x.ActivePolicyCount" Title="Poliçe Sayısı" />
                     <TemplateColumn Title="Bakiye" Sortable="false">
                         <CellTemplate>
                             <MudText Typo="Typo.body2">@GetCustomerBalance(context.Item.Id)</MudText>
                         </CellTemplate>
                     </TemplateColumn>
-                    <PropertyColumn Property="x => x.CreatedOn" Title="Kayıt Tarihi" />
 
                     <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
                         <CellTemplate>

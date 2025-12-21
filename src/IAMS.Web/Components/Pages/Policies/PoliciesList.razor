@@ -3,6 +3,7 @@
 @layout Layout.MainLayout
 
 @using IAMS.Domain.Enums
+@using IAMS.Shared.DTOs.Policy
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Services.ApiClient
@@ -489,7 +490,7 @@
     private List<PolicyDto> mainPolicies = new(); // Stores only main policies for display
     private Dictionary<int, List<PolicyDto>> endorsementsByPolicy = new(); // Endorsements grouped by main policy ID
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
-    private List<IAMS.Application.DTOs.PolicyType.PolicyTypeDto> policyTypes;
+    private List<PolicyTypeDto> policyTypes;
     private bool loading = true;
 
     // Search and filter parameters

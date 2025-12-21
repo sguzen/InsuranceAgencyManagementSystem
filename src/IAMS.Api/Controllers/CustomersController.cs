@@ -1,6 +1,4 @@
-﻿using IAMS.Application.DTOs.Customer;
-using IAMS.Application.DTOs.Payment;
-using IAMS.Application.DTOs.Policy;
+﻿
 using IAMS.Application.Features.CustomerPayments.Commands.CreateCustomerPayment;
 using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerBalance;
 using IAMS.Application.Features.CustomerPayments.Queries.GetCustomerPayments;
@@ -15,6 +13,9 @@ using IAMS.Application.Features.Customers.Queries.GetCustomerStatement;
 using IAMS.Application.Features.Policies.Queries.GetPoliciesByCustomer;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
+using IAMS.Shared.DTOs.Customer;
+using IAMS.Shared.DTOs.Payment;
+using IAMS.Shared.DTOs.Policy;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using MediatR;

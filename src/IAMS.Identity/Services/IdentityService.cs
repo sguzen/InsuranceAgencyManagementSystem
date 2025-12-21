@@ -5,11 +5,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using IAMS.Application.DTOs.Identity;
 using IAMS.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using IAMS.Domain.Entities;
+using IAMS.Shared.DTOs.Identity;
 
 namespace IAMS.Identity.Services
 {

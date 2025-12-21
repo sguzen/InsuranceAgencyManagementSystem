@@ -1,5 +1,5 @@
-using IAMS.Application.DTOs.Parametric;
 using IAMS.Application.Interfaces;
+using IAMS.Shared.DTOs.Parametric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@using IAMS.Shared.DTOs.Payment
 @using IAMS.Web.Services
 @using IAMS.Web.Services.ApiClient
 @using MudBlazor
@@ -217,8 +218,8 @@
     private int _expiringPolicies = 0;
     private Dictionary<string, decimal>? _monthlyRevenueByCurrency = null;
   //  private List<IAMS.Application.DTOs.Customer.CustomerDto>? _recentCustomers;
-    private List<IAMS.Application.DTOs.Payment.CustomerOutstandingBalanceDto>? _customersWithOutstanding;
-    private List<IAMS.Application.DTOs.Payment.PolicyPaymentDto>? _paymentsDueThisMonth;
+    private List<CustomerOutstandingBalanceDto>? _customersWithOutstanding;
+    private List<PolicyPaymentDto>? _paymentsDueThisMonth;
 
     protected override async Task OnInitializedAsync()
     {

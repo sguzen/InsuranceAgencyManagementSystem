@@ -1,4 +1,5 @@
-﻿using IAMS.Application.DTOs.Identity;
+﻿
+using IAMS.Shared.DTOs.Identity;
 
 namespace IAMS.Identity.Services
 {

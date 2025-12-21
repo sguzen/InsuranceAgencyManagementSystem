@@ -1,7 +1,7 @@
 ﻿// IAMS.Identity/Services/PermissionService.cs
-using IAMS.Application.DTOs.Identity;
 using IAMS.Domain.Entities;
 using IAMS.Persistence.Contexts;
+using IAMS.Shared.DTOs.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

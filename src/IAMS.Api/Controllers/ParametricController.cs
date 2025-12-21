@@ -1,4 +1,4 @@
-using IAMS.Application.DTOs.Parametric;
+
 using IAMS.Application.Features.Parametric.Commands.SyncCountryData;
 using IAMS.Application.Features.Parametric.Queries.GetCountries;
 using IAMS.Application.Features.Parametric.Queries.GetCities;
@@ -12,6 +12,7 @@ using IAMS.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using IAMS.Shared.DTOs.Parametric;
 
 namespace IAMS.Api.Controllers
 {

@@ -1,6 +1,5 @@
 using AutoMapper;
 using FluentAssertions;
-using IAMS.Application.DTOs.InsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.CreateInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.UpdateInsuranceCompany;
 using IAMS.Application.Features.InsuranceCompanies.Commands.DeleteInsuranceCompany;
@@ -9,6 +8,7 @@ using IAMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
 using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.DTOs.InsuranceCompany;
 
 namespace IAMS.UnitTests.Application.Features.InsuranceCompanies
 {

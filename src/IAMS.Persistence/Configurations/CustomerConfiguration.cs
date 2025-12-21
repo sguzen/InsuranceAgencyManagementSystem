@@ -114,6 +114,9 @@ namespace IAMS.Persistence.Configurations
                 .HasForeignKey(cic => cic.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Ignore CustomerPayments navigation property to avoid shadow foreign key
+            builder.Ignore(c => c.CustomerPayments);
+
             // Global query filter for soft delete
             builder.HasQueryFilter(c => !c.IsDeleted);
         }

@@ -11,7 +11,9 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result> UpdateUserAsync(string userId, UpdateUserDto updateUserDto);
         Task<Result> DeleteUserAsync(string userId);
         Task<Result<List<string>>> GetUserRolesAsync(string userId);
+        Task<Result<List<string>>> GetAllRolesAsync();
         Task<Result> UpdateUserRolesAsync(string userId, List<string> roles);
+        Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto);
     }
 
     public class UsersApiClient : BaseApiClient, IUsersApiClient
@@ -54,9 +56,19 @@ namespace IAMS.Web.Services.ApiClient
             return await GetAsync<List<string>>($"api/users/{userId}/roles");
         }
 
+        public async Task<Result<List<string>>> GetAllRolesAsync()
+        {
+            return await GetAsync<List<string>>("api/users/roles");
+        }
+
         public async Task<Result> UpdateUserRolesAsync(string userId, List<string> roles)
         {
             return await PutAsync($"api/users/{userId}/roles", new { Roles = roles });
+        }
+
+        public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto)
+        {
+            return await PostAsync($"api/users/{userId}/change-password", changePasswordDto);
         }
     }
 }

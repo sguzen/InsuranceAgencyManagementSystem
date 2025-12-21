@@ -20,7 +20,12 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<PolicyDto>> RenewPolicyAsync(int id, DateTime startDate, DateTime endDate, decimal premiumAmount);
         Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30);
         Task<Result<List<PolicyDto>>> GetPoliciesByCustomerAsync(int customerId);
+        Task<Result<List<PolicyEndorsementDto>>> GetEndorsementsByPolicyIdAsync(int policyId);
         Task<Result<PolicyStatisticsDto>> GetStatisticsAsync();
+        Task<Result<int>> GetTotalPoliciesCountAsync();
+        Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30);
+        Task<Result<Dictionary<string, decimal>>> GetMonthlyRevenueByCurrencyAsync();
+        Task<Result<decimal>> GetMonthlyRevenueAsync();
         Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId);
     }
 
@@ -111,9 +116,34 @@ namespace IAMS.Web.Services.ApiClient
             return await GetAsync<List<PolicyDto>>($"api/policies/customer/{customerId}");
         }
 
+        public async Task<Result<List<PolicyEndorsementDto>>> GetEndorsementsByPolicyIdAsync(int policyId)
+        {
+            return await GetAsync<List<PolicyEndorsementDto>>($"api/policies/{policyId}/endorsements");
+        }
+
         public async Task<Result<PolicyStatisticsDto>> GetStatisticsAsync()
         {
             return await GetAsync<PolicyStatisticsDto>("api/policies/statistics");
+        }
+
+        public async Task<Result<int>> GetTotalPoliciesCountAsync()
+        {
+            return await GetAsync<int>("api/policies/count");
+        }
+
+        public async Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30)
+        {
+            return await GetAsync<int>($"api/policies/expiring/count?daysAhead={daysAhead}");
+        }
+
+        public async Task<Result<Dictionary<string, decimal>>> GetMonthlyRevenueByCurrencyAsync()
+        {
+            return await GetAsync<Dictionary<string, decimal>>("api/policies/revenue/monthly-by-currency");
+        }
+
+        public async Task<Result<decimal>> GetMonthlyRevenueAsync()
+        {
+            return await GetAsync<decimal>("api/policies/revenue/monthly");
         }
 
         public async Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId)

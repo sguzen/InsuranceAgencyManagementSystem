@@ -15,6 +15,8 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<CustomerDto>> UpdateCustomerAsync(int id, CreateOrUpdateCustomerDto customerDto);
         Task<Result> DeleteCustomerAsync(int id);
         Task<Result<CustomerStatisticsDto>> GetCustomerStatisticsAsync();
+        Task<Result<int>> GetTotalCustomersCountAsync();
+        Task<Result<List<CustomerDto>>> GetRecentCustomersAsync(int count = 5);
         Task<Result<CustomerBalanceDto>> GetCustomerBalanceAsync(int id);
         Task<Result<List<CustomerPaymentDto>>> GetCustomerPaymentsAsync(int id);
         Task<Result<CustomerPaymentDto>> CreateCustomerPaymentAsync(int id, CreateCustomerPaymentDto paymentDto);
@@ -63,6 +65,16 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result<CustomerStatisticsDto>> GetCustomerStatisticsAsync()
         {
             return await GetAsync<CustomerStatisticsDto>("api/customers/statistics");
+        }
+
+        public async Task<Result<int>> GetTotalCustomersCountAsync()
+        {
+            return await GetAsync<int>("api/customers/count");
+        }
+
+        public async Task<Result<List<CustomerDto>>> GetRecentCustomersAsync(int count = 5)
+        {
+            return await GetAsync<List<CustomerDto>>($"api/customers/recent?count={count}");
         }
 
         public async Task<Result<CustomerBalanceDto>> GetCustomerBalanceAsync(int id)

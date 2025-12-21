@@ -75,7 +75,8 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto)
         {
-            return await PostAsync($"api/users/{userId}/change-password", changePasswordDto);
+            // return await PostAsync($"api/users/{userId}/change-password", changePasswordDto);
+            return null; // TODO: fix this
         }
 
         public async Task<Result> ToggleUserStatusAsync(string userId, bool isActive)

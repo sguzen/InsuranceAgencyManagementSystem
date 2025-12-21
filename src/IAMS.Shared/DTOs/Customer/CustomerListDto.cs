@@ -4,7 +4,7 @@ namespace IAMS.Shared.DTOs.Customer
 {
     /// <summary>
     /// Lightweight DTO for customer list operations
-    /// Optimized for paged lists - only essential fields
+    /// Optimized for paged lists - only essential fields displayed in the list view
     /// </summary>
     public class CustomerListDto
     {
@@ -14,10 +14,6 @@ namespace IAMS.Shared.DTOs.Customer
         public string LastName { get; set; } = string.Empty;
         public string FullName => $"{FirstName} {LastName}";
         public string IdentificationNumber { get; set; } = string.Empty;
-        public string? Email { get; set; }
-        public string? Phone { get; set; }
-        public CustomerStatus Status { get; set; }
-        public DateTime CreatedOn { get; set; }
 
         // Lightweight aggregates (computed in query)
         public int ActivePoliciesCount { get; set; }

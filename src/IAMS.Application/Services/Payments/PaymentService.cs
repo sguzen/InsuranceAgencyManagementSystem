@@ -28,7 +28,12 @@ namespace IAMS.Application.Services.Payments
 
         public async Task<List<PolicyPaymentDto>> GetPaymentsByPolicyIdAsync(int policyId)
         {
-            return await _mediator.Send(new GetPaymentsByPolicyIdQuery(policyId));
+            var result = await _mediator.Send(new GetPaymentsByPolicyIdQuery(policyId));
+            if (!result.IsSuccess || result.Data == null)
+            {
+                throw new InvalidOperationException(result.Message ?? "Failed to retrieve payments");
+            }
+            return result.Data;
         }
 
         public async Task<PolicyPaymentDto?> GetByIdAsync(int id)
@@ -85,7 +90,12 @@ namespace IAMS.Application.Services.Payments
 
         public async Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId)
         {
-            return await _mediator.Send(new GetTotalPaymentsByPolicyIdQuery(policyId));
+            var result = await _mediator.Send(new GetTotalPaymentsByPolicyIdQuery(policyId));
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException(result.Message ?? "Failed to calculate total payments");
+            }
+            return result.Data;
         }
 
         public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync()

@@ -13,9 +13,9 @@ namespace IAMS.Domain.Entities
         // Policy Owner - The Cari Kart customer who pays for the policy
         public int CustomerId { get; set; }
 
-        // Sigortalı (Insured Customer) - The customer who is insured
-        // This may be the same as CustomerId or a different customer
-        public int InsuredCustomerId { get; set; }
+        // Sigortalı (Insured Person) - Stored as string: "Name - Kimlik/Pasaport"
+        // The person who is insured (may or may not be the same as CustomerId)
+        public string? EnsuredEntity { get; set; }
 
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }
@@ -82,8 +82,7 @@ namespace IAMS.Domain.Entities
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;
-        public virtual Customer InsuredCustomer { get; set; } = null!;
-        public virtual InsuranceCompany InsuranceCompany { get; set; } = null!;
+        public virtual InsuranceCompany InsuranceCompany { get; set; } = null!
         public virtual PolicyType PolicyType { get; set; } = null!;
         public virtual ICollection<PolicyPayment> PolicyPayments { get; set; } = new List<PolicyPayment>();
         public virtual ICollection<PolicyClaim> PolicyClaims { get; set; } = new List<PolicyClaim>();

@@ -283,7 +283,6 @@
                 // Ensure all policies have default values set
                 foreach (var policy in previewPolicies)
                 {
-                    Console.WriteLine($"Policy {policy.PolicyNumber}: PolicyOwnerSameAsInsured = {policy.PolicyOwnerSameAsInsured}");
                     if (!policy.PolicyOwnerSameAsInsured &&
                         !policy.PolicyOwnerCustomerId.HasValue &&
                         !policy.CreateNewPolicyOwner)
@@ -465,7 +464,6 @@
 
     private void OnCreateNewPolicyOwnerChanged(PolicyImportPreviewDto policy, bool value)
     {
-        Console.WriteLine($"OnCreateNewPolicyOwnerChanged called: {value}");
         policy.CreateNewPolicyOwner = value;
 
         // Clear existing customer selection when creating new

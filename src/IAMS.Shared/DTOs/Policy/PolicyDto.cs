@@ -12,10 +12,12 @@ namespace IAMS.Shared.DTOs.Policy
         public int Id { get; set; }
         
         public string PolicyNumber { get; set; } = string.Empty;
+
+        // Policy Owner - Customer who pays
         public int CustomerId { get; set; }
 
-        // Sigortalı (Insured Person) - The person/entity that is insured
-        public string? InsuredPersonName { get; set; }
+        // Sigortalı (Insured Customer) - Customer who is insured
+        public int InsuredCustomerId { get; set; }
 
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }

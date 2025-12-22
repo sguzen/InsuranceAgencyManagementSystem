@@ -82,7 +82,7 @@ namespace IAMS.Domain.Entities
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;
-        public virtual InsuranceCompany InsuranceCompany { get; set; } = null!
+        public virtual InsuranceCompany InsuranceCompany { get; set; } = null!;
         public virtual PolicyType PolicyType { get; set; } = null!;
         public virtual ICollection<PolicyPayment> PolicyPayments { get; set; } = new List<PolicyPayment>();
         public virtual ICollection<PolicyClaim> PolicyClaims { get; set; } = new List<PolicyClaim>();

@@ -157,7 +157,7 @@
 
                                 <!-- Policy Owner Mapping Column -->
                                 <MudItem xs="12" md="4">
-                                    <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Poliçe Sahibi (Kim Ödeyecek?)</MudText>
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Cari Kart</MudText>
 
                                     <MudStack Row Class="mb-2">
                                         <MudCheckBox T="bool"
@@ -166,7 +166,7 @@
                                                      Label="Sigortalı ile aynı"
                                                      Dense="true"
                                                      Color="Color.Success" />
-                                        <MudChip Size="Size.Small" Color="@(policy.PolicyOwnerSameAsInsured ? Color.Success : Color.Default)">
+                                        <MudChip T="String" Size="Size.Small" Color="@(policy.PolicyOwnerSameAsInsured ? Color.Success : Color.Default)">
                                             @(policy.PolicyOwnerSameAsInsured ? "✓ Aynı" : "✗ Farklı")
                                         </MudChip>
                                     </MudStack>
@@ -289,7 +289,6 @@
                         !policy.CreateNewPolicyOwner)
                     {
                         policy.PolicyOwnerSameAsInsured = true; // Force default
-                        Console.WriteLine($"  -> Forced to true");
                     }
                 }
 
@@ -450,7 +449,6 @@
 
     private void OnPolicyOwnerSameAsInsuredChanged(PolicyImportPreviewDto policy, bool value)
     {
-        Console.WriteLine($"OnPolicyOwnerSameAsInsuredChanged called: {value}");
         policy.PolicyOwnerSameAsInsured = value;
 
         // Reset other options when checkbox is checked

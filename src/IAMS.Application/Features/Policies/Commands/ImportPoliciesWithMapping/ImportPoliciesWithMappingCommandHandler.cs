@@ -152,18 +152,14 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             }
 
             // Policy Owner (Cari) - determined by operator's selection
-            int policyOwnerCustomerId;
+            Customer policyOwnerCustomer;
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
                 // Customer from Excel data becomes the policy owner
-                var customer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, userId, cancellationToken);
-                policyOwnerCustomerId = customer.Id;
+                policyOwnerCustomer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, userId, cancellationToken);
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
             {
-                // Create new policy owner customer (check cache first to avoid duplicates)
-                Customer ownerCustomer;
-
                 // Check if we've already created this customer in this batch
                 if (!string.IsNullOrEmpty(mappedPolicy.PolicyOwnerIdentifier) &&
                     customerCache.TryGetValue(mappedPolicy.PolicyOwnerIdentifier, out var cachedCustomer))
@@ -172,12 +168,12 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                         "Using cached customer for policy owner: {CustomerCode} - {Name}",
                         cachedCustomer.CustomerCode,
                         cachedCustomer.FirstName + " " + cachedCustomer.LastName);
-                    ownerCustomer = cachedCustomer;
+                    policyOwnerCustomer = cachedCustomer;
                 }
                 else
                 {
                     // Not in cache, create new customer
-                    ownerCustomer = await CreateCustomerAsync(
+                    policyOwnerCustomer = await CreateCustomerAsync(
                         mappedPolicy.PolicyOwnerName,
                         mappedPolicy.PolicyOwnerIdentifier,
                         mappedPolicy.PolicyOwnerPhone,
@@ -189,13 +185,12 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                         userId,
                         cancellationToken);
                 }
-
-                policyOwnerCustomerId = ownerCustomer.Id;
             }
             else if (mappedPolicy.PolicyOwnerCustomerId.HasValue)
             {
-                // Use selected existing customer
-                policyOwnerCustomerId = mappedPolicy.PolicyOwnerCustomerId.Value;
+                // Use selected existing customer (fetch from database to get object reference)
+                policyOwnerCustomer = await _unitOfWork.Customers.GetByIdAsync(mappedPolicy.PolicyOwnerCustomerId.Value)
+                    ?? throw new InvalidOperationException($"Selected customer not found: {mappedPolicy.PolicyOwnerCustomerId.Value}");
             }
             else
             {
@@ -206,7 +201,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // Get other required entities using lookups (no DB calls)
             var policyType = GetPolicyTypeFromLookup(dto.PolicyTypeCode, policyTypeLookup);
             var currency = GetCurrencyFromLookup(dto.CurrencyCode ?? "TRY", currencyLookup);
-            var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomerId, vehicleCache, userId);
+            var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomer, vehicleCache, userId);
 
             // Check for endorsements
             Policy? originalPolicy = null;
@@ -224,11 +219,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             var policy = new Policy
             {
                 PolicyNumber = dto.PolicyNumber ?? GeneratePolicyNumber(),
-                CustomerId = policyOwnerCustomerId,  // Policy owner (Cari - who pays)
+                Customer = policyOwnerCustomer,  // Use navigation property for batch processing
                 EnsuredEntity = ensuredEntity, // Sigortalı (insured person - stored as string)
                 InsuranceCompanyId = insuranceCompanyId,
                 PolicyTypeId = policyType.Id,
-                VehicleId = vehicle?.Id,
+                Vehicle = vehicle, // Use navigation property for batch processing
                 StartDate = dto.StartDate ?? DateTime.Today,
                 EndDate = dto.EndDate ?? DateTime.Today.AddYears(1),
                 PremiumAmount = dto.PremiumAmount,
@@ -434,7 +429,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 
         private async Task<Vehicle?> GetOrCreateVehicleAsync(
             ImportPolicyDto dto,
-            int customerId,
+            Customer customer,
             Dictionary<string, Vehicle> vehicleCache,
             string userId)
         {
@@ -462,7 +457,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // Create new vehicle
             vehicle = new Vehicle
             {
-                CustomerId = customerId,
+                Customer = customer, // Use navigation property for batch processing
                 PlateNumber = dto.PlateNumber,
                 BrandName = dto.VehicleBrand,
                 ModelName = dto.VehicleModel,

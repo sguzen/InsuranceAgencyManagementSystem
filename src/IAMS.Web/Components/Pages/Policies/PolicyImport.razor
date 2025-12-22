@@ -143,15 +143,15 @@
                                     <MudText Typo="Typo.body2"><b>Prim:</b> @policy.PremiumAmount.ToString("N2") @policy.CurrencyCode</MudText>
                                 </MudItem>
 
-                                <!-- Sigortalı (Insured Customer) - Auto-created from Excel -->
+                                <!-- Sigortalı (Insured Person) - Stored as string -->
                                 <MudItem xs="12" md="4">
                                     <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Sigortalı</MudText>
                                     <MudText Typo="Typo.body2"><b>İsim:</b> @policy.InsuredCustomerName</MudText>
                                     <MudText Typo="Typo.body2" Class="text-xs text-gray-500">
-                                        TC/Vergi No: @policy.InsuredCustomerIdentifier
+                                        Kimlik/Pasaport: @policy.InsuredCustomerIdentifier
                                     </MudText>
                                     <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
-                                        Bu müşteri otomatik oluşturulacak/eşleştirilecek
+                                        Bu bilgi poliçede metin olarak saklanacak
                                     </MudAlert>
                                 </MudItem>
 
@@ -191,7 +191,7 @@
                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                           Required="true" />
                                             <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
-                                                          Label="TC/Vergi No" Variant="Variant.Outlined"
+                                                          Label="Kimlik/Pasaport" Variant="Variant.Outlined"
                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                           Required="true" />
                                         }

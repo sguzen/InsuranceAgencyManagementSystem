@@ -16,8 +16,8 @@ namespace IAMS.Shared.DTOs.Policy
         // Policy Owner - Customer who pays
         public int CustomerId { get; set; }
 
-        // Sigortalı (Insured Customer) - Customer who is insured
-        public int InsuredCustomerId { get; set; }
+        // Sigortalı (Insured Person) - Stored as string: "Name - Kimlik/Pasaport"
+        public string? EnsuredEntity { get; set; }
 
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }

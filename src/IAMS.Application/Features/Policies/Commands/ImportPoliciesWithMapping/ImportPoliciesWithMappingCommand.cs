@@ -1,5 +1,6 @@
 using IAMS.Application.Models;
 using IAMS.Shared.DTOs.Policy;
+using IAMS.Shared.Models;
 using MediatR;
 
 namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping

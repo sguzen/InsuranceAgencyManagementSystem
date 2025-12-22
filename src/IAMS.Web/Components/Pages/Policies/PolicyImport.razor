@@ -61,7 +61,7 @@
 
                         @if (selectedFile != null)
                         {
-                            <MudChip Icon="@Icons.Material.Filled.AttachFile" Color="Color.Info">
+                            <MudChip T="String" Icon="@Icons.Material.Filled.AttachFile" Color="Color.Info">
                                 @selectedFile.Name (@FormatBytes(selectedFile.Size))
                             </MudChip>
                         }
@@ -92,7 +92,7 @@
         <MudStack Spacing="4">
             <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <MudText Typo="Typo.h4">
-                    <MudIcon Icon="@Icons.Material.Filled.PreviewOutlined" Class="mr-3" />
+                    <MudIcon Icon="@Icons.Material.Filled.Preview" Class="mr-3" />
                     Adım 2: Müşteri Eşleştirme (@previewPolicies.Count Poliçe)
                 </MudText>
                 <MudStack Row Spacing="2">

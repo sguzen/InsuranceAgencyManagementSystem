@@ -4,6 +4,7 @@ using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
 using IAMS.Application.Features.Policies.Commands.ImportPolicies;
+using IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping;
 using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
 using IAMS.Application.Features.Policies.Queries.ParsePolicyImport;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
@@ -353,7 +354,38 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Import policies from Excel file
+        /// Import policies with customer mappings
+        /// Used after ParsePolicyImport to save mapped policies
+        /// </summary>
+        [HttpPost("import/with-mapping")]
+        public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPoliciesWithMapping(
+            [FromBody] ImportPoliciesWithMappingRequest request)
+        {
+            if (request.InsuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
+            if (request.MappedPolicies == null || !request.MappedPolicies.Any())
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("No policies to import", (List<string>?)null));
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var command = new ImportPoliciesWithMappingCommand(
+                request.MappedPolicies,
+                userId,
+                request.InsuranceCompanyId);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Import policies from Excel file (legacy - direct import)
         /// </summary>
         [HttpPost("import")]
         public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file, [FromForm] int insuranceCompanyId)
@@ -375,6 +407,12 @@ namespace IAMS.Api.Controllers
     }
 
     // Request models
+    public class ImportPoliciesWithMappingRequest
+    {
+        public List<PolicyImportPreviewDto> MappedPolicies { get; set; } = new();
+        public int InsuranceCompanyId { get; set; }
+    }
+
     public class CancelPolicyRequest
     {
         public string? Reason { get; set; }

@@ -27,6 +27,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<Dictionary<string, decimal>>> GetMonthlyRevenueByCurrencyAsync();
         Task<Result<decimal>> GetMonthlyRevenueAsync();
         Task<Result<List<PolicyImportPreviewDto>>> ParsePolicyImportAsync(Stream fileStream, string fileName, int insuranceCompanyId);
+        Task<Result<PolicyImportResultDto>> ImportPoliciesWithMappingAsync(List<PolicyImportPreviewDto> mappedPolicies, int insuranceCompanyId);
         Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId);
     }
 
@@ -171,6 +172,17 @@ namespace IAMS.Web.Services.ApiClient
             {
                 return Result<List<PolicyImportPreviewDto>>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
+        }
+
+        public async Task<Result<PolicyImportResultDto>> ImportPoliciesWithMappingAsync(List<PolicyImportPreviewDto> mappedPolicies, int insuranceCompanyId)
+        {
+            var request = new
+            {
+                MappedPolicies = mappedPolicies,
+                InsuranceCompanyId = insuranceCompanyId
+            };
+
+            return await PostAsync<PolicyImportResultDto>("api/policies/import/with-mapping", request);
         }
 
         public async Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId)

@@ -318,12 +318,43 @@
         isSaving = true;
         try
         {
-            // TODO: Create and call ImportPoliciesWithMappingCommand
-            // For now, just show a message
-            Snackbar.Add("Kaydetme fonksiyonu henüz tamamlanmadı - Import command gerekli", MudBlazor.Severity.Info);
+            var result = await PoliciesApi.ImportPoliciesWithMappingAsync(previewPolicies, selectedInsuranceCompanyId);
 
-            // After successful import:
-            // Navigation.NavigateTo("/policies");
+            if (result.IsSuccess && result.Data != null)
+            {
+                var importResult = result.Data;
+                if (importResult.SuccessCount > 0)
+                {
+                    Snackbar.Add(
+                        $"{importResult.SuccessCount} poliçe başarıyla içe aktarıldı! " +
+                        (importResult.FailureCount > 0 ? $"{importResult.FailureCount} poliçe başarısız oldu." : ""),
+                        importResult.FailureCount > 0 ? MudBlazor.Severity.Warning : MudBlazor.Severity.Success);
+
+                    // Show errors if any
+                    if (importResult.Errors.Any())
+                    {
+                        foreach (var error in importResult.Errors.Take(5))
+                        {
+                            Snackbar.Add($"Satır {error.RowNumber}: {error.ErrorMessage}", MudBlazor.Severity.Error);
+                        }
+                    }
+
+                    // Navigate to policies list after successful import
+                    if (importResult.FailureCount == 0)
+                    {
+                        await Task.Delay(1500); // Give user time to see the message
+                        Navigation.NavigateTo("/policies");
+                    }
+                }
+                else
+                {
+                    Snackbar.Add("Hiçbir poliçe içe aktarılamadı", MudBlazor.Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"İçe aktarma başarısız: {result.Message}", MudBlazor.Severity.Error);
+            }
         }
         catch (Exception ex)
         {

@@ -13,6 +13,10 @@ namespace IAMS.Shared.DTOs.Policy
         [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
         public int CustomerId { get; set; }
 
+        // Sigortalı (Insured Person) - The person/entity that is insured
+        [StringLength(200, ErrorMessage = "Sigortalı adı en fazla 200 karakter olabilir")]
+        public string? InsuredPersonName { get; set; }
+
         [Required(ErrorMessage = "Sigorta şirketi seçimi zorunludur")]
         public int InsuranceCompanyId { get; set; }
 

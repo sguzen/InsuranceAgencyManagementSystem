@@ -10,6 +10,11 @@ namespace IAMS.Domain.Entities
     {
         public string PolicyNumber { get; set; } = string.Empty;
         public int CustomerId { get; set; }
+
+        // Sigortalı (Insured Person) - The person/entity that is insured
+        // This may be different from the Customer (Cari Kart owner who pays)
+        public string? InsuredPersonName { get; set; }
+
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }
         public DateTime StartDate { get; set; }

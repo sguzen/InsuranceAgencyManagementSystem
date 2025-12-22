@@ -48,12 +48,12 @@
                         </MudSelect>
 
                         <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept=".xlsx,.xls">
-                            <ButtonTemplate Context="buttonContext">
+                            <ButtonTemplate>
                                 <MudButton HtmlTag="label"
                                            Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.CloudUpload"
-                                           for="@buttonContext.Id">
+                                           for="@context.Id">
                                     Dosya Seç
                                 </MudButton>
                             </ButtonTemplate>

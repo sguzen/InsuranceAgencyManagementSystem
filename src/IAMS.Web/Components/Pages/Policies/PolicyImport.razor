@@ -159,7 +159,8 @@
                                 <MudItem xs="12" md="4">
                                     <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Poliçe Sahibi (Kim Ödeyecek?)</MudText>
 
-                                    <MudCheckBox @bind-Checked="policy.PolicyOwnerSameAsInsured"
+                                    <MudCheckBox Checked="@policy.PolicyOwnerSameAsInsured"
+                                                 CheckedChanged="@((bool value) => OnPolicyOwnerSameAsInsuredChanged(policy, value))"
                                                  Label="Sigortalı ile aynı" Dense="true" Class="mb-2"
                                                  T="bool" Color="Color.Success" />
 
@@ -180,7 +181,8 @@
 
                                         <MudText Typo="Typo.body2" Class="my-2 text-center">veya</MudText>
 
-                                        <MudCheckBox @bind-Checked="policy.CreateNewPolicyOwner"
+                                        <MudCheckBox Checked="@policy.CreateNewPolicyOwner"
+                                                     CheckedChanged="@((bool value) => OnCreateNewPolicyOwnerChanged(policy, value))"
                                                      Label="Yeni poliçe sahibi müşteri oluştur" Dense="true"
                                                      T="bool" Color="Color.Warning" />
 
@@ -268,7 +270,20 @@
             if (result.IsSuccess && result.Data != null)
             {
                 previewPolicies = result.Data;
+
+                // Ensure all policies have default values set
+                foreach (var policy in previewPolicies)
+                {
+                    if (!policy.PolicyOwnerSameAsInsured &&
+                        !policy.PolicyOwnerCustomerId.HasValue &&
+                        !policy.CreateNewPolicyOwner)
+                    {
+                        policy.PolicyOwnerSameAsInsured = true; // Force default
+                    }
+                }
+
                 currentStep = ImportStep.ReviewAndMap;
+                StateHasChanged(); // Force UI update
                 Snackbar.Add($"{previewPolicies.Count} poliçe başarıyla okundu. Lütfen müşteri eşleştirmesi yapın.", MudBlazor.Severity.Success);
             }
             else
@@ -419,5 +434,40 @@
         {
             policy.PolicyOwnerCustomerId = null;
         }
+        StateHasChanged();
+    }
+
+    private void OnPolicyOwnerSameAsInsuredChanged(PolicyImportPreviewDto policy, bool value)
+    {
+        policy.PolicyOwnerSameAsInsured = value;
+
+        // Reset other options when checkbox is checked
+        if (value)
+        {
+            policy.PolicyOwnerCustomerId = null;
+            policy.CreateNewPolicyOwner = false;
+            policy.PolicyOwnerName = null;
+            policy.PolicyOwnerIdentifier = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnCreateNewPolicyOwnerChanged(PolicyImportPreviewDto policy, bool value)
+    {
+        policy.CreateNewPolicyOwner = value;
+
+        // Clear existing customer selection when creating new
+        if (value)
+        {
+            policy.PolicyOwnerCustomerId = null;
+        }
+        else
+        {
+            policy.PolicyOwnerName = null;
+            policy.PolicyOwnerIdentifier = null;
+        }
+
+        StateHasChanged();
     }
 }

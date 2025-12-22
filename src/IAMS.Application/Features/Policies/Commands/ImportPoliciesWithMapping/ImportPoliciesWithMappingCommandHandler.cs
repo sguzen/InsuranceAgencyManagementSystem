@@ -53,7 +53,19 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     request.MappedPolicies.Count,
                     request.InsuranceCompanyId);
 
-                // Import each policy
+                // Pre-load lookup data to avoid N+1 queries
+                var allPolicyTypes = await _unitOfWork.PolicyTypes.GetAllAsync();
+                var allCurrencies = await _unitOfWork.Currencies.GetAllAsync();
+                var allCountries = await _unitOfWork.Countries.GetAllAsync();
+
+                var policyTypeLookup = allPolicyTypes.ToDictionary(pt => pt.Code, StringComparer.OrdinalIgnoreCase);
+                var currencyLookup = allCurrencies.ToDictionary(c => c.Code, StringComparer.OrdinalIgnoreCase);
+                var countryLookup = allCountries.ToDictionary(c => c.Code, StringComparer.OrdinalIgnoreCase);
+
+                // Customer cache to avoid duplicate lookups
+                var customerCache = new Dictionary<string, Customer>(StringComparer.OrdinalIgnoreCase);
+
+                // Import each policy (without SaveChanges per policy)
                 foreach (var mappedPolicy in request.MappedPolicies)
                 {
                     try
@@ -62,6 +74,10 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             mappedPolicy,
                             request.UserId,
                             request.InsuranceCompanyId,
+                            policyTypeLookup,
+                            currencyLookup,
+                            countryLookup,
+                            customerCache,
                             cancellationToken);
 
                         result.SuccessCount++;
@@ -84,6 +100,14 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     }
                 }
 
+                // Batch commit ALL changes at once (huge performance improvement)
+                if (result.SuccessCount > 0)
+                {
+                    _logger.LogInformation("Committing {Count} policies to database...", result.SuccessCount);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    _logger.LogInformation("Successfully committed {Count} policies", result.SuccessCount);
+                }
+
                 _logger.LogInformation(
                     "Import completed. Success: {Success}, Failure: {Failure}",
                     result.SuccessCount,
@@ -104,6 +128,10 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             PolicyImportPreviewDto mappedPolicy,
             string userId,
             int insuranceCompanyId,
+            Dictionary<string, PolicyType> policyTypeLookup,
+            Dictionary<string, Currency> currencyLookup,
+            Dictionary<string, Country> countryLookup,
+            Dictionary<string, Customer> customerCache,
             CancellationToken cancellationToken)
         {
             var dto = mappedPolicy.OriginalImportData;
@@ -120,7 +148,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
                 // Customer from Excel data becomes the policy owner
-                var customer = await GetOrCreateCustomerAsync(dto, userId, cancellationToken);
+                var customer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, userId, cancellationToken);
                 policyOwnerCustomerId = customer.Id;
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
@@ -129,8 +157,10 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 var ownerCustomer = await CreateCustomerAsync(
                     mappedPolicy.PolicyOwnerName,
                     mappedPolicy.PolicyOwnerIdentifier,
+                    mappedPolicy.PolicyOwnerPhone,
                     dto.CustomerCountryCode,
                     dto.CustomerIdType,
+                    countryLookup,
                     userId,
                     cancellationToken);
                 policyOwnerCustomerId = ownerCustomer.Id;
@@ -146,9 +176,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     "Policy owner customer must be specified");
             }
 
-            // Get other required entities
-            var policyType = await GetPolicyTypeAsync(dto.PolicyTypeCode);
-            var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
+            // Get other required entities using lookups (no DB calls)
+            var policyType = GetPolicyTypeFromLookup(dto.PolicyTypeCode, policyTypeLookup);
+            var currency = GetCurrencyFromLookup(dto.CurrencyCode ?? "TRY", currencyLookup);
             var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomerId, userId);
 
             // Check for endorsements
@@ -194,7 +224,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             };
 
             await _unitOfWork.Policies.AddAsync(policy);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
 
             // Create initial payment if applicable
             await CreateInitialPaymentIfNeeded(policy, policyType, dto, currency.Id, userId, cancellationToken);
@@ -204,34 +234,55 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 
         private async Task<Customer> GetOrCreateCustomerAsync(
             ImportPolicyDto dto,
+            Dictionary<string, Country> countryLookup,
+            Dictionary<string, Customer> customerCache,
             string userId,
             CancellationToken cancellationToken)
         {
+            // Try cache first
+            if (!string.IsNullOrEmpty(dto.CustomerIdentifier) && customerCache.ContainsKey(dto.CustomerIdentifier))
+            {
+                return customerCache[dto.CustomerIdentifier];
+            }
+
             // Try to find existing customer by identifier (exact match)
             if (!string.IsNullOrEmpty(dto.CustomerIdentifier))
             {
                 var customer = await _unitOfWork.Customers.GetByIdentificationNoAsync(dto.CustomerIdentifier);
                 if (customer != null)
                 {
+                    customerCache[dto.CustomerIdentifier] = customer; // Cache it
                     return customer;
                 }
             }
 
             // Customer not found - create new customer using existing logic
-            return await CreateCustomerAsync(
+            var newCustomer = await CreateCustomerAsync(
                 dto.CustomerName,
                 dto.CustomerIdentifier,
+                null, // No phone number from Excel import
                 dto.CustomerCountryCode,
                 dto.CustomerIdType,
+                countryLookup,
                 userId,
                 cancellationToken);
+
+            // Cache the new customer
+            if (!string.IsNullOrEmpty(dto.CustomerIdentifier))
+            {
+                customerCache[dto.CustomerIdentifier] = newCustomer;
+            }
+
+            return newCustomer;
         }
 
         private async Task<Customer> CreateCustomerAsync(
             string? customerName,
             string? customerIdentifier,
+            string? phoneNumber,
             string? countryCode,
             string? idType,
+            Dictionary<string, Country> countryLookup,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -253,18 +304,14 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             IdentificationType identificationType = IdentificationType.Passport;
             int? nationalityCountryId = null;
 
-            if (!string.IsNullOrEmpty(countryCode))
+            if (!string.IsNullOrEmpty(countryCode) && countryLookup.TryGetValue(countryCode, out var country))
             {
-                var country = await _unitOfWork.Countries.GetByCodeAsync(countryCode);
-                if (country != null)
+                nationalityCountryId = country.Id;
+                if (countryCode == "601" ||
+                    country.NameTr.ToUpperInvariant().Contains("KKTC") ||
+                    country.NameEn.ToUpperInvariant().Contains("KKTC"))
                 {
-                    nationalityCountryId = country.Id;
-                    if (countryCode == "601" ||
-                        country.NameTr.ToUpperInvariant().Contains("KKTC") ||
-                        country.NameEn.ToUpperInvariant().Contains("KKTC"))
-                    {
-                        identificationType = IdentificationType.IdCard;
-                    }
+                    identificationType = IdentificationType.IdCard;
                 }
             }
 
@@ -276,7 +323,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 Type = customerType,
                 IdentificationNumber = customerIdentifier,
                 Email = $"noemail_{customerIdentifier}@temp.com",
-                Phone = "0000000000",
+                Phone = !string.IsNullOrEmpty(phoneNumber) ? phoneNumber : "0000000000",
                 Status = CustomerStatus.Active,
                 IdentificationType = identificationType,
                 NationalityCountryId = nationalityCountryId,
@@ -285,22 +332,21 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             };
 
             await _unitOfWork.Customers.AddAsync(customer);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
 
             _logger.LogInformation("Created new customer: {CustomerCode} - {Name}", customerCode, customerName);
 
             return customer;
         }
 
-        private async Task<PolicyType> GetPolicyTypeAsync(string? policyTypeCode)
+        private PolicyType GetPolicyTypeFromLookup(string? policyTypeCode, Dictionary<string, PolicyType> policyTypeLookup)
         {
             if (string.IsNullOrEmpty(policyTypeCode))
             {
                 throw new InvalidOperationException("Policy type code is required");
             }
 
-            var policyType = await _unitOfWork.PolicyTypes.GetByCodeAsync(policyTypeCode);
-            if (policyType == null)
+            if (!policyTypeLookup.TryGetValue(policyTypeCode, out var policyType))
             {
                 throw new InvalidOperationException($"Policy type not found: {policyTypeCode}");
             }
@@ -308,10 +354,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             return policyType;
         }
 
-        private async Task<Currency> GetCurrencyAsync(string currencyCode)
+        private Currency GetCurrencyFromLookup(string currencyCode, Dictionary<string, Currency> currencyLookup)
         {
-            var currency = await _unitOfWork.Currencies.GetByCodeAsync(currencyCode);
-            if (currency == null)
+            if (!currencyLookup.TryGetValue(currencyCode, out var currency))
             {
                 throw new InvalidOperationException($"Currency not found: {currencyCode}");
             }
@@ -349,7 +394,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             };
 
             await _unitOfWork.Vehicles.AddAsync(vehicle);
-            await _unitOfWork.SaveChangesAsync();
+            // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
 
             return vehicle;
         }
@@ -362,16 +407,30 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string userId,
             CancellationToken cancellationToken)
         {
-            bool isTrafficPolicy = policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
+            // IMPORTANT: Traffic policies MUST be fully paid by law (no outstanding amount allowed)
+            bool isTrafficPolicy = policyType.Code?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Code?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Code?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
                                    policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
 
             decimal paymentAmount = 0;
             if (isTrafficPolicy)
             {
-                paymentAmount = dto.PremiumAmount;
+                // Traffic policies: ALWAYS create full payment for premium amount
+                // This ensures zero outstanding balance as required by law
+                paymentAmount = policy.PremiumAmount; // Use actual policy premium, not DTO
+
+                _logger.LogInformation(
+                    "Creating full payment for traffic policy {PolicyNumber}: {Amount}",
+                    policy.PolicyNumber,
+                    paymentAmount);
             }
             else if (dto.PaidAmount.HasValue && dto.PaidAmount.Value > 0)
             {
+                // Non-traffic policies: use paid amount from import if provided
                 paymentAmount = dto.PaidAmount.Value;
             }
 
@@ -381,11 +440,13 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 {
                     PolicyId = policy.Id,
                     Amount = paymentAmount,
-                    PaymentDate = dto.PaymentDate ?? DateTime.Today,
+                    PaymentDate = dto.PaymentDate ?? policy.StartDate, // Use start date if no payment date
                     PaymentMethod = ParsePaymentMethod(dto.PaymentMethod),
                     Status = PaymentStatus.Completed,
                     CurrencyId = currencyId,
-                    Notes = isTrafficPolicy ? "Auto-payment for traffic policy" : "Initial payment from import",
+                    Notes = isTrafficPolicy
+                        ? "Trafik poliçesi - Tam ödeme (Yasal gereklilik)"
+                        : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
                     ModifiedBy = userId,
@@ -393,7 +454,20 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 };
 
                 await _unitOfWork.PolicyPayments.AddAsync(payment);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
+
+                _logger.LogDebug(
+                    "Created payment of {Amount} for policy {PolicyNumber} (Traffic: {IsTraffic})",
+                    paymentAmount,
+                    policy.PolicyNumber,
+                    isTrafficPolicy);
+            }
+            else if (isTrafficPolicy)
+            {
+                // This should never happen, but log as warning if it does
+                _logger.LogWarning(
+                    "Traffic policy {PolicyNumber} has zero premium amount - no payment created!",
+                    policy.PolicyNumber);
             }
         }
 

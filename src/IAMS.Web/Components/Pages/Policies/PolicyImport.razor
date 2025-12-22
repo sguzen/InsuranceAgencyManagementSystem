@@ -205,6 +205,10 @@
                                                           Label="Kimlik/Pasaport" Variant="Variant.Outlined"
                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                           Required="true" />
+                                            <MudTextField @bind-Value="policy.PolicyOwnerPhone"
+                                                          Label="Telefon" Variant="Variant.Outlined"
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Placeholder="0542XXXXXXX" />
                                         }
                                     }
                                 </MudItem>
@@ -458,6 +462,7 @@
             policy.CreateNewPolicyOwner = false;
             policy.PolicyOwnerName = null;
             policy.PolicyOwnerIdentifier = null;
+            policy.PolicyOwnerPhone = null;
         }
 
         InvokeAsync(StateHasChanged);
@@ -477,6 +482,7 @@
         {
             policy.PolicyOwnerName = null;
             policy.PolicyOwnerIdentifier = null;
+            policy.PolicyOwnerPhone = null;
         }
 
         InvokeAsync(StateHasChanged);

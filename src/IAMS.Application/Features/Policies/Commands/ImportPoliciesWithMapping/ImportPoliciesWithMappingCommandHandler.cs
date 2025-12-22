@@ -220,6 +220,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             return await CreateCustomerAsync(
                 dto.CustomerName,
                 dto.CustomerIdentifier,
+                null, // No phone number from Excel import
                 dto.CustomerCountryCode,
                 dto.CustomerIdType,
                 userId,

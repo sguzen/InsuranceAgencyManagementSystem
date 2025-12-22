@@ -405,7 +405,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string userId,
             CancellationToken cancellationToken)
         {
-            // IMPORTANT: Traffic policies MUST be fully paid by law (no outstanding amount allowed)
+            // IMPORTANT: Traffic and KASKO policies MUST be fully paid by law (no outstanding amount allowed)
             bool isTrafficPolicy = policyType.Code?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
                                    policyType.Code?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
                                    policyType.Code?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
@@ -414,15 +414,22 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                                    policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
                                    policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
 
+            bool isKaskoPolicy = policyType.Code?.Contains("KASKO", StringComparison.OrdinalIgnoreCase) == true ||
+                                 policyType.Name?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true ||
+                                 policyType.Category?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true;
+
+            bool requiresFullPayment = isTrafficPolicy || isKaskoPolicy;
+
             decimal paymentAmount = 0;
-            if (isTrafficPolicy)
+            if (requiresFullPayment)
             {
-                // Traffic policies: ALWAYS create full payment for premium amount
+                // Traffic/KASKO policies: ALWAYS create full payment for premium amount
                 // This ensures zero outstanding balance as required by law
                 paymentAmount = policy.PremiumAmount; // Use actual policy premium, not DTO
 
                 _logger.LogInformation(
-                    "Creating full payment for traffic policy {PolicyNumber}: {Amount}",
+                    "Creating full payment for {PolicyType} policy {PolicyNumber}: {Amount}",
+                    isTrafficPolicy ? "TRAFFIC" : "KASKO",
                     policy.PolicyNumber,
                     paymentAmount);
             }
@@ -442,8 +449,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     PaymentMethod = ParsePaymentMethod(dto.PaymentMethod),
                     Status = PaymentStatus.Completed,
                     CurrencyId = currencyId,
-                    Notes = isTrafficPolicy
-                        ? "Trafik poliçesi - Tam ödeme (Yasal gereklilik)"
+                    Notes = requiresFullPayment
+                        ? (isTrafficPolicy ? "Trafik poliçesi - Tam ödeme (Yasal gereklilik)" : "Kasko poliçesi - Tam ödeme (Yasal gereklilik)")
                         : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
@@ -455,16 +462,17 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
 
                 _logger.LogDebug(
-                    "Created payment of {Amount} for policy {PolicyNumber} (Traffic: {IsTraffic})",
+                    "Created payment of {Amount} for policy {PolicyNumber} (Type: {PolicyType})",
                     paymentAmount,
                     policy.PolicyNumber,
-                    isTrafficPolicy);
+                    requiresFullPayment ? (isTrafficPolicy ? "Traffic" : "KASKO") : "Other");
             }
-            else if (isTrafficPolicy)
+            else if (requiresFullPayment)
             {
                 // This should never happen, but log as warning if it does
                 _logger.LogWarning(
-                    "Traffic policy {PolicyNumber} has zero premium amount - no payment created!",
+                    "{PolicyType} policy {PolicyNumber} has zero premium amount - no payment created!",
+                    isTrafficPolicy ? "Traffic" : "KASKO",
                     policy.PolicyNumber);
             }
         }

@@ -47,15 +47,14 @@
                             }
                         </MudSelect>
 
-                        <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept=".xlsx,.xls">
-                            <ButtonTemplate>
-                                <MudButton HtmlTag="label"
-                                           Variant="Variant.Filled"
+                        <MudFileUpload T="IBrowserFile" OnFilesChanged="OnFileSelected" Accept=".xlsx,.xls">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.CloudUpload">
                                     Dosya Seç
                                 </MudButton>
-                            </ButtonTemplate>
+                            </ActivatorContent>
                         </MudFileUpload>
 
                         @if (selectedFile != null)
@@ -247,9 +246,9 @@
         }
     }
 
-    private void OnFileSelected(IBrowserFile file)
+    private void OnFileSelected(InputFileChangeEventArgs e)
     {
-        selectedFile = file;
+        selectedFile = e.File;
     }
 
     private async Task ParseFile()

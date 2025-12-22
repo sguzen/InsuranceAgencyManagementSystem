@@ -127,6 +127,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 var ownerCustomer = await CreateCustomerAsync(
                     mappedPolicy.PolicyOwnerName,
                     mappedPolicy.PolicyOwnerIdentifier,
+                    mappedPolicy.PolicyOwnerPhone,
                     dto.CustomerCountryCode,
                     dto.CustomerIdType,
                     userId,
@@ -228,6 +229,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
         private async Task<Customer> CreateCustomerAsync(
             string? customerName,
             string? customerIdentifier,
+            string? phoneNumber,
             string? countryCode,
             string? idType,
             string userId,
@@ -274,7 +276,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 Type = customerType,
                 IdentificationNumber = customerIdentifier,
                 Email = $"noemail_{customerIdentifier}@temp.com",
-                Phone = "0000000000",
+                Phone = !string.IsNullOrEmpty(phoneNumber) ? phoneNumber : "0000000000",
                 Status = CustomerStatus.Active,
                 IdentificationType = identificationType,
                 NationalityCountryId = nationalityCountryId,

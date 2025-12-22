@@ -4,7 +4,9 @@ using IAMS.Application.Features.Policies.Commands.CancelPolicy;
 using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
 using IAMS.Application.Features.Policies.Commands.ImportPolicies;
+using IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping;
 using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
+using IAMS.Application.Features.Policies.Queries.ParsePolicyImport;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
 using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
@@ -331,7 +333,59 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Import policies from Excel file
+        /// Parse and preview policies from Excel file WITHOUT saving
+        /// Returns preview data for customer mapping before import
+        /// </summary>
+        [HttpPost("import/parse")]
+        public async Task<ActionResult<Result<List<PolicyImportPreviewDto>>>> ParsePolicyImport(IFormFile file, [FromForm] int insuranceCompanyId)
+        {
+            if (insuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<List<PolicyImportPreviewDto>>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
+            var query = new ParsePolicyImportQuery(file, insuranceCompanyId);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Import policies with customer mappings
+        /// Used after ParsePolicyImport to save mapped policies
+        /// </summary>
+        [HttpPost("import/with-mapping")]
+        public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPoliciesWithMapping(
+            [FromBody] ImportPoliciesWithMappingRequest request)
+        {
+            if (request.InsuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
+            if (request.MappedPolicies == null || !request.MappedPolicies.Any())
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("No policies to import", (List<string>?)null));
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var command = new ImportPoliciesWithMappingCommand(
+                request.MappedPolicies,
+                userId,
+                request.InsuranceCompanyId);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Import policies from Excel file (legacy - direct import)
         /// </summary>
         [HttpPost("import")]
         public async Task<ActionResult<Result<PolicyImportResultDto>>> ImportPolicies(IFormFile file, [FromForm] int insuranceCompanyId)
@@ -353,6 +407,12 @@ namespace IAMS.Api.Controllers
     }
 
     // Request models
+    public class ImportPoliciesWithMappingRequest
+    {
+        public List<PolicyImportPreviewDto> MappedPolicies { get; set; } = new();
+        public int InsuranceCompanyId { get; set; }
+    }
+
     public class CancelPolicyRequest
     {
         public string? Reason { get; set; }

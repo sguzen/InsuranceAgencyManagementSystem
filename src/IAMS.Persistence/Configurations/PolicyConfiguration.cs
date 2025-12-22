@@ -33,12 +33,18 @@ namespace IAMS.Persistence.Configurations
                 .HasFilter("[IsDeleted] = 0");
 
             builder.HasIndex(p => new { p.CustomerId});
+            builder.HasIndex(p => new { p.InsuredCustomerId});
             builder.HasIndex(p => new { p.InsuranceCompanyId });
 
             // Configure relationships
             builder.HasOne(p => p.Customer)
                 .WithMany(c => c.Policies)
                 .HasForeignKey(p => p.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(p => p.InsuredCustomer)
+                .WithMany()
+                .HasForeignKey(p => p.InsuredCustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.InsuranceCompany)
@@ -49,6 +55,16 @@ namespace IAMS.Persistence.Configurations
             builder.HasOne(p => p.PolicyType)
                 .WithMany(pt => pt.Policies)
                 .HasForeignKey(p => p.PolicyTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(p => p.Currency)
+                .WithMany()
+                .HasForeignKey(p => p.CurrencyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(p => p.Vehicle)
+                .WithMany()
+                .HasForeignKey(p => p.VehicleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(p => p.PolicyPayments)

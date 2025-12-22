@@ -2,6 +2,7 @@
 @layout Layout.MainLayout
 
 @using IAMS.Shared.DTOs.Policy
+@using IAMS.Shared.DTOs.Customer
 @using IAMS.Shared.DTOs.InsuranceCompany
 @using IAMS.Application.Models
 @using Microsoft.AspNetCore.WebUtilities
@@ -10,70 +11,34 @@
 @inject ISnackbar Snackbar
 @inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
 @inject IPoliciesApiClient PoliciesApi
+@inject ICustomersApiClient CustomersApi
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
-    <MudStack Spacing="4">
-        <!-- Header -->
-        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h4" GutterBottom="false">
-                <MudIcon Icon="@Icons.Material.Filled.Upload" Class="mr-3" />
-                Poliçe İçe Aktar
-            </MudText>
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Default"
-                       StartIcon="@Icons.Material.Filled.ArrowBack"
-                       Href="/policies">
-                Geri Dön
-            </MudButton>
-        </MudStack>
-
-        <!-- Instructions Card -->
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">
-                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
-                        Kullanım Talimatları
-                    </MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.body2" Class="mb-2">
-                    Excel dosyanızdan poliçeleri toplu olarak içe aktarabilirsiniz. Lütfen aşağıdaki adımları takip edin:
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+    @if (currentStep == ImportStep.FileSelection)
+    {
+        <!-- Step 1: File Selection -->
+        <MudStack Spacing="4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h4">
+                    <MudIcon Icon="@Icons.Material.Filled.Upload" Class="mr-3" />
+                    Poliçe İçe Aktar
                 </MudText>
-                <MudList Dense="true" T="String">
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
-                        Excel dosyanızın (.xlsx veya .xls) formatında olduğundan emin olun
-                    </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
-                        Dosya boyutu 10 MB'dan küçük olmalıdır
-                    </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
-                        İlk satır başlık satırı olmalıdır
-                    </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
-                        Müşteriler sisteme önceden eklenmiş olmalıdır
-                    </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
-                        Sigorta şirketleri ve poliçe tipleri tanımlı olmalıdır
-                    </MudListItem>
-                </MudList>
-            </MudCardContent>
-        </MudCard>
+                <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                           StartIcon="@Icons.Material.Filled.ArrowBack" Href="/policies">
+                    Geri Dön
+                </MudButton>
+            </MudStack>
 
-        <!-- File Upload Card -->
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Excel Dosyası Seçin ve Yükleyin</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <form method="post" action="/api/fileupload/policies/import" enctype="multipart/form-data" data-enhance="false" id="uploadForm">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Adım 1: Excel Dosyası Seçin</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
                     <MudStack Spacing="3">
-                        <!-- Insurance Company Selection -->
                         <MudSelect T="int" Label="Sigorta Şirketi" @bind-Value="selectedInsuranceCompanyId"
                                    Required="true" Variant="Variant.Outlined">
                             @foreach (var company in insuranceCompanies)
@@ -82,69 +47,188 @@
                             }
                         </MudSelect>
 
-                        <input type="hidden" name="insuranceCompanyId" value="@selectedInsuranceCompanyId" />
+                        <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept=".xlsx,.xls">
+                            <ButtonTemplate>
+                                <MudButton HtmlTag="label"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                                           for="@context">
+                                    Dosya Seç
+                                </MudButton>
+                            </ButtonTemplate>
+                        </MudFileUpload>
 
-                        <MudText Typo="Typo.body2">
-                            Dosya seçin (.xlsx veya .xls):
-                        </MudText>
+                        @if (selectedFile != null)
+                        {
+                            <MudChip Icon="@Icons.Material.Filled.AttachFile" Color="Color.Info">
+                                @selectedFile.Name (@FormatBytes(selectedFile.Size))
+                            </MudChip>
+                        }
 
-                        <input type="file"
-                               name="file"
-                               accept=".xlsx,.xls"
-                               required
-                               class="mud-input-root mud-input-root-outlined mud-input-root-adorned-start"
-                               style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%;" />
-
-                        <button type="submit"
-                                class="mud-button-root mud-button mud-button-filled mud-button-filled-success mud-ripple"
-                                style="width: fit-content;">
-                            <span class="mud-button-label">
-                                <span class="mud-button-icon-start">
-                                    <svg class="mud-icon-root mud-svg-icon mud-icon-size-medium" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"></path>
-                                    </svg>
-                                </span>
-                                İçe Aktar
-                            </span>
-                        </button>
-
-                        <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
-                            Not: Dosya yüklendiğinde sayfa yenilenecektir.
-                        </MudAlert>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   StartIcon="@Icons.Material.Filled.Preview"
+                                   Disabled="@(selectedFile == null || isProcessing)"
+                                   OnClick="ParseFile">
+                            @if (isProcessing)
+                            {
+                                <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+                                <span>Dosya işleniyor...</span>
+                            }
+                            else
+                            {
+                                <span>Önizleme</span>
+                            }
+                        </MudButton>
                     </MudStack>
-                </form>
-            </MudCardContent>
-        </MudCard>
-    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudStack>
+    }
+    else if (currentStep == ImportStep.ReviewAndMap)
+    {
+        <!-- Step 2: Review and Map Customers -->
+        <MudStack Spacing="4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h4">
+                    <MudIcon Icon="@Icons.Material.Filled.PreviewOutlined" Class="mr-3" />
+                    Adım 2: Müşteri Eşleştirme (@previewPolicies.Count Poliçe)
+                </MudText>
+                <MudStack Row Spacing="2">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="BackToFileSelection">
+                        Geri Dön
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="@(!AllPoliciesMapped() || isSaving)"
+                               OnClick="SaveImport">
+                        @if (isSaving)
+                        {
+                            <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+                            <span>Kaydediliyor...</span>
+                        }
+                        else
+                        {
+                            <span>Kaydet (@GetMappedCount() / @previewPolicies.Count)</span>
+                        }
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            @if (!AllPoliciesMapped())
+            {
+                <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">
+                    Lütfen tüm poliçeler için müşteri eşleştirmesi yapın (@GetUnmappedCount() poliçe kaldı)
+                </MudAlert>
+            }
+
+            <!-- Policy List with Mapping -->
+            <MudPaper Elevation="0" Class="pa-4">
+                @foreach (var policy in previewPolicies)
+                {
+                    var rowClass = policy.IsValid ? "" : "border-l-4 border-warning";
+                    <MudCard Class="mb-3 @rowClass">
+                        <MudCardContent>
+                            <MudGrid>
+                                <!-- Policy Info Column -->
+                                <MudItem xs="12" md="4">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Poliçe Bilgileri</MudText>
+                                    <MudText Typo="Typo.body2"><b>Poliçe No:</b> @policy.PolicyNumber</MudText>
+                                    <MudText Typo="Typo.body2"><b>Tarih:</b> @policy.StartDate?.ToString("dd.MM.yyyy") - @policy.EndDate?.ToString("dd.MM.yyyy")</MudText>
+                                    <MudText Typo="Typo.body2"><b>Tip:</b> @policy.PolicyTypeName</MudText>
+                                    @if (!string.IsNullOrEmpty(policy.PlateNumber))
+                                    {
+                                        <MudText Typo="Typo.body2"><b>Plaka:</b> @policy.PlateNumber</MudText>
+                                    }
+                                    <MudText Typo="Typo.body2"><b>Prim:</b> @policy.PremiumAmount.ToString("N2") @policy.CurrencyCode</MudText>
+                                </MudItem>
+
+                                <!-- Sigortalı (Insured Customer) - Auto-created from Excel -->
+                                <MudItem xs="12" md="4">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Sigortalı</MudText>
+                                    <MudText Typo="Typo.body2"><b>İsim:</b> @policy.InsuredCustomerName</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-xs text-gray-500">
+                                        TC/Vergi No: @policy.InsuredCustomerIdentifier
+                                    </MudText>
+                                    <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
+                                        Bu müşteri otomatik oluşturulacak/eşleştirilecek
+                                    </MudAlert>
+                                </MudItem>
+
+                                <!-- Policy Owner Mapping Column -->
+                                <MudItem xs="12" md="4">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Poliçe Sahibi (Kim Ödeyecek?)</MudText>
+
+                                    <MudCheckBox @bind-Checked="policy.PolicyOwnerSameAsInsured"
+                                                 Label="Sigortalı ile aynı" Dense="true" Class="mb-2"
+                                                 T="bool" Color="Color.Success" />
+
+                                    @if (!policy.PolicyOwnerSameAsInsured)
+                                    {
+                                        <MudAutocomplete T="CustomerDto"
+                                                         Label="Mevcut Müşteri Ara"
+                                                         @bind-Value="selectedOwnerCustomer"
+                                                         SearchFunc="@SearchCustomersAsync"
+                                                         ToStringFunc="@(c => c == null ? "" : $"{c.FullName} ({c.CustomerCode})")"
+                                                         Dense="true"
+                                                         Variant="Variant.Outlined"
+                                                         Margin="Margin.Dense"
+                                                         ResetValueOnEmptyText="true"
+                                                         CoerceText="true"
+                                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                                         AdornmentColor="Color.Primary"
+                                                         ValueChanged="@(async (CustomerDto c) => await OnOwnerCustomerSelected(policy, c))" />
+
+                                        <MudText Typo="Typo.body2" Class="my-2 text-center">veya</MudText>
+
+                                        <MudCheckBox @bind-Checked="policy.CreateNewPolicyOwner"
+                                                     Label="Yeni poliçe sahibi müşteri oluştur" Dense="true"
+                                                     T="bool" Color="Color.Warning" />
+
+                                        @if (policy.CreateNewPolicyOwner)
+                                        {
+                                            <MudTextField @bind-Value="policy.PolicyOwnerName"
+                                                          Label="Müşteri Adı" Variant="Variant.Outlined"
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Required="true" />
+                                            <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
+                                                          Label="TC/Vergi No" Variant="Variant.Outlined"
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Required="true" />
+                                        }
+                                    }
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                }
+            </MudPaper>
+        </MudStack>
+    }
 </MudContainer>
 
 @code {
+    private enum ImportStep
+    {
+        FileSelection,
+        ReviewAndMap
+    }
+
+    private ImportStep currentStep = ImportStep.FileSelection;
     private List<InsuranceCompanyDto> insuranceCompanies = new();
     private int selectedInsuranceCompanyId;
+    private IBrowserFile? selectedFile;
+    private List<PolicyImportPreviewDto> previewPolicies = new();
+    private bool isProcessing = false;
+    private bool isSaving = false;
+    private CustomerDto? selectedOwnerCustomer;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadInsuranceCompaniesAsync();
-        CheckImportStatus();
-    }
-
-    private void CheckImportStatus()
-    {
-        var uri = new Uri(Navigation.Uri);
-        var queryParams = QueryHelpers.ParseQuery(uri.Query);
-
-        if (queryParams.TryGetValue("success", out var successValue) && successValue == "1")
-        {
-            Snackbar.Add("Poliçeler başarıyla içe aktarıldı!", MudBlazor.Severity.Success);
-            // Clean up the URL by navigating to the same page without query parameters
-            Navigation.NavigateTo("/policies/import", replace: true);
-        }
-        else if (queryParams.TryGetValue("error", out var errorValue) && errorValue == "1")
-        {
-            Snackbar.Add("Poliçe içe aktarma işlemi sırasında bir hata oluştu. Lütfen dosyanızı kontrol edip tekrar deneyin.", MudBlazor.Severity.Error);
-            // Clean up the URL by navigating to the same page without query parameters
-            Navigation.NavigateTo("/policies/import", replace: true);
-        }
     }
 
     private async Task LoadInsuranceCompaniesAsync()
@@ -160,16 +244,188 @@
                     selectedInsuranceCompanyId = insuranceCompanies.First().Id;
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Sigorta şirketleri yüklenirken hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private void OnFileSelected(IBrowserFile file)
+    {
+        selectedFile = file;
+    }
+
+    private async Task ParseFile()
+    {
+        if (selectedFile == null || selectedInsuranceCompanyId <= 0)
+        {
+            Snackbar.Add("Lütfen dosya ve sigorta şirketi seçin", MudBlazor.Severity.Warning);
+            return;
+        }
+
+        isProcessing = true;
+        try
+        {
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB
+            var result = await PoliciesApi.ParsePolicyImportAsync(stream, selectedFile.Name, selectedInsuranceCompanyId);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                previewPolicies = result.Data;
+                currentStep = ImportStep.ReviewAndMap;
+                Snackbar.Add($"{previewPolicies.Count} poliçe başarıyla okundu. Lütfen müşteri eşleştirmesi yapın.", MudBlazor.Severity.Success);
+            }
             else
             {
-                insuranceCompanies = new List<InsuranceCompanyDto>();
-                Snackbar.Add("Sigorta şirketleri yüklenemedi", MudBlazor.Severity.Warning);
+                Snackbar.Add($"Dosya okunamadı: {result.Message}", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            insuranceCompanies = new List<InsuranceCompanyDto>();
-            Snackbar.Add($"Sigorta şirketleri yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
+            Snackbar.Add($"Dosya işlenirken hata: {ex.Message}", MudBlazor.Severity.Error);
         }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void BackToFileSelection()
+    {
+        currentStep = ImportStep.FileSelection;
+        previewPolicies.Clear();
+        selectedFile = null;
+    }
+
+    private async Task SaveImport()
+    {
+        if (!AllPoliciesMapped())
+        {
+            Snackbar.Add("Lütfen tüm poliçeler için müşteri eşleştirmesi yapın", MudBlazor.Severity.Warning);
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var result = await PoliciesApi.ImportPoliciesWithMappingAsync(previewPolicies, selectedInsuranceCompanyId);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                var importResult = result.Data;
+                if (importResult.SuccessCount > 0)
+                {
+                    Snackbar.Add(
+                        $"{importResult.SuccessCount} poliçe başarıyla içe aktarıldı! " +
+                        (importResult.FailureCount > 0 ? $"{importResult.FailureCount} poliçe başarısız oldu." : ""),
+                        importResult.FailureCount > 0 ? MudBlazor.Severity.Warning : MudBlazor.Severity.Success);
+
+                    // Show errors if any
+                    if (importResult.Errors.Any())
+                    {
+                        foreach (var error in importResult.Errors.Take(5))
+                        {
+                            Snackbar.Add($"Satır {error.RowNumber}: {error.ErrorMessage}", MudBlazor.Severity.Error);
+                        }
+                    }
+
+                    // Navigate to policies list after successful import
+                    if (importResult.FailureCount == 0)
+                    {
+                        await Task.Delay(1500); // Give user time to see the message
+                        Navigation.NavigateTo("/policies");
+                    }
+                }
+                else
+                {
+                    Snackbar.Add("Hiçbir poliçe içe aktarılamadı", MudBlazor.Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"İçe aktarma başarısız: {result.Message}", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kayıt sırasında hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private bool AllPoliciesMapped()
+    {
+        return previewPolicies.All(p => p.IsValid);
+    }
+
+    private int GetMappedCount()
+    {
+        return previewPolicies.Count(p => p.IsValid);
+    }
+
+    private int GetUnmappedCount()
+    {
+        return previewPolicies.Count(p => !p.IsValid);
+    }
+
+    private string FormatBytes(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomersAsync(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 2)
+            return Enumerable.Empty<CustomerDto>();
+
+        try
+        {
+            var queryParams = new IAMS.Shared.QueryParams.CustomerQueryParams
+            {
+                PageNumber = 1,
+                PageSize = 10,
+                SearchTerm = searchTerm
+            };
+
+            var result = await CustomersApi.GetCustomersAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items;
+            }
+
+            return Enumerable.Empty<CustomerDto>();
+        }
+        catch
+        {
+            return Enumerable.Empty<CustomerDto>();
+        }
+    }
+
+    private async Task OnOwnerCustomerSelected(PolicyImportPreviewDto policy, CustomerDto? customer)
+    {
+        if (customer != null)
+        {
+            policy.PolicyOwnerCustomerId = customer.Id;
+            policy.CreateNewPolicyOwner = false;
+            selectedOwnerCustomer = customer;
+        }
+        else
+        {
+            policy.PolicyOwnerCustomerId = null;
+        }
+
+        await Task.CompletedTask;
     }
 }

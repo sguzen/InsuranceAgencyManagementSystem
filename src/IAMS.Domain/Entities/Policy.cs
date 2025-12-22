@@ -9,7 +9,14 @@ namespace IAMS.Domain.Entities
     public class Policy : BaseEntity
     {
         public string PolicyNumber { get; set; } = string.Empty;
+
+        // Policy Owner - The Cari Kart customer who pays for the policy
         public int CustomerId { get; set; }
+
+        // Sigortalı (Insured Customer) - The customer who is insured
+        // This may be the same as CustomerId or a different customer
+        public int InsuredCustomerId { get; set; }
+
         public int InsuranceCompanyId { get; set; }
         public int PolicyTypeId { get; set; }
         public DateTime StartDate { get; set; }
@@ -75,6 +82,7 @@ namespace IAMS.Domain.Entities
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;
+        public virtual Customer InsuredCustomer { get; set; } = null!;
         public virtual InsuranceCompany InsuranceCompany { get; set; } = null!;
         public virtual PolicyType PolicyType { get; set; } = null!;
         public virtual ICollection<PolicyPayment> PolicyPayments { get; set; } = new List<PolicyPayment>();

@@ -33,11 +33,11 @@
                         </MudPaper>
                     </MudItem>
 
-                    <!-- Customer Information -->
+                    <!-- Customer Information (Policy Owner) -->
                     <MudItem xs="12">
                         <MudText Typo="Typo.h6" Class="mb-2">
                             <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
-                            Müşteri Bilgileri
+                            Poliçe Sahibi (Cari Kart)
                         </MudText>
                         <MudPaper Class="pa-3" Elevation="0" Outlined="true">
                             <MudStack Spacing="2">
@@ -55,6 +55,23 @@
                             </MudStack>
                         </MudPaper>
                     </MudItem>
+
+                    <!-- Ensured Entity (Sigortalı) -->
+                    @if (!string.IsNullOrEmpty(policy.EnsuredEntity))
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Class="mr-2" />
+                                Sigortalı
+                            </MudText>
+                            <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                                <MudStack Spacing="2">
+                                    <MudText Typo="Typo.body2">@policy.EnsuredEntity</MudText>
+                                    <MudChip Size="Size.Small" Color="Color.Info">Poliçe Üzerinde Kayıtlı</MudChip>
+                                </MudStack>
+                            </MudPaper>
+                        </MudItem>
+                    }
 
                     <!-- Insurance Company -->
                     <MudItem xs="12">

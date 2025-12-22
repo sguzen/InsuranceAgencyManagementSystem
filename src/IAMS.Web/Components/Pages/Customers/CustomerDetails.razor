@@ -16,7 +16,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Müşteri Detayları</PageTitle>
+<PageTitle>Cari Kart - @(customer?.FullName ?? "Müşteri")</PageTitle>
 
 @if (customer == null)
 {

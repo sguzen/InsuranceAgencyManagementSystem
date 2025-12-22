@@ -26,6 +26,8 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<int>> GetExpiringPoliciesCountAsync(int daysAhead = 30);
         Task<Result<Dictionary<string, decimal>>> GetMonthlyRevenueByCurrencyAsync();
         Task<Result<decimal>> GetMonthlyRevenueAsync();
+        Task<Result<List<PolicyImportPreviewDto>>> ParsePolicyImportAsync(Stream fileStream, string fileName, int insuranceCompanyId);
+        Task<Result<PolicyImportResultDto>> ImportPoliciesWithMappingAsync(List<PolicyImportPreviewDto> mappedPolicies, int insuranceCompanyId);
         Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId);
     }
 
@@ -144,6 +146,43 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result<decimal>> GetMonthlyRevenueAsync()
         {
             return await GetAsync<decimal>("api/policies/revenue/monthly");
+        }
+
+        public async Task<Result<List<PolicyImportPreviewDto>>> ParsePolicyImportAsync(Stream fileStream, string fileName, int insuranceCompanyId)
+        {
+            using var content = new MultipartFormDataContent();
+            var streamContent = new StreamContent(fileStream);
+            content.Add(streamContent, "file", fileName);
+            content.Add(new StringContent(insuranceCompanyId.ToString()), "insuranceCompanyId");
+
+            try
+            {
+                var response = await _httpClient.PostAsync("api/policies/import/parse", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return Result<List<PolicyImportPreviewDto>>.Failure($"API request failed: {response.StatusCode}", errorContent);
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<Result<List<PolicyImportPreviewDto>>>(_jsonOptions);
+                return result ?? Result<List<PolicyImportPreviewDto>>.Failure("Empty response from API", new List<string>());
+            }
+            catch (Exception ex)
+            {
+                return Result<List<PolicyImportPreviewDto>>.Failure($"API call failed: {ex.Message}", ex.ToString());
+            }
+        }
+
+        public async Task<Result<PolicyImportResultDto>> ImportPoliciesWithMappingAsync(List<PolicyImportPreviewDto> mappedPolicies, int insuranceCompanyId)
+        {
+            var request = new
+            {
+                MappedPolicies = mappedPolicies,
+                InsuranceCompanyId = insuranceCompanyId
+            };
+
+            return await PostAsync<PolicyImportResultDto>("api/policies/import/with-mapping", request);
         }
 
         public async Task<Result<PolicyImportResultDto>> ImportPoliciesAsync(Stream fileStream, string fileName, int insuranceCompanyId)

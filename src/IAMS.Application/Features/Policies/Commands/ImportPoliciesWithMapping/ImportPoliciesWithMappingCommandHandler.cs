@@ -151,16 +151,34 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
             {
-                // Create new policy owner customer
-                var ownerCustomer = await CreateCustomerAsync(
-                    mappedPolicy.PolicyOwnerName,
-                    mappedPolicy.PolicyOwnerIdentifier,
-                    mappedPolicy.PolicyOwnerPhone,
-                    dto.CustomerCountryCode,
-                    dto.CustomerIdType,
-                    countryLookup,
-                    userId,
-                    cancellationToken);
+                // Create new policy owner customer (check cache first to avoid duplicates)
+                Customer ownerCustomer;
+
+                // Check if we've already created this customer in this batch
+                if (!string.IsNullOrEmpty(mappedPolicy.PolicyOwnerIdentifier) &&
+                    customerCache.TryGetValue(mappedPolicy.PolicyOwnerIdentifier, out var cachedCustomer))
+                {
+                    _logger.LogInformation(
+                        "Using cached customer for policy owner: {CustomerCode} - {Name}",
+                        cachedCustomer.CustomerCode,
+                        cachedCustomer.FirstName + " " + cachedCustomer.LastName);
+                    ownerCustomer = cachedCustomer;
+                }
+                else
+                {
+                    // Not in cache, create new customer
+                    ownerCustomer = await CreateCustomerAsync(
+                        mappedPolicy.PolicyOwnerName,
+                        mappedPolicy.PolicyOwnerIdentifier,
+                        mappedPolicy.PolicyOwnerPhone,
+                        dto.CustomerCountryCode,
+                        dto.CustomerIdType,
+                        countryLookup,
+                        customerCache,
+                        userId,
+                        cancellationToken);
+                }
+
                 policyOwnerCustomerId = ownerCustomer.Id;
             }
             else if (mappedPolicy.PolicyOwnerCustomerId.HasValue)
@@ -262,14 +280,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 dto.CustomerCountryCode,
                 dto.CustomerIdType,
                 countryLookup,
+                customerCache,
                 userId,
                 cancellationToken);
-
-            // Cache the new customer
-            if (!string.IsNullOrEmpty(dto.CustomerIdentifier))
-            {
-                customerCache[dto.CustomerIdentifier] = newCustomer;
-            }
 
             return newCustomer;
         }
@@ -281,6 +294,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string? countryCode,
             string? idType,
             Dictionary<string, Country> countryLookup,
+            Dictionary<string, Customer> customerCache,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -331,6 +345,12 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 
             await _unitOfWork.Customers.AddAsync(customer);
             // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
+
+            // Cache the new customer to prevent duplicates in the same batch
+            if (!string.IsNullOrEmpty(customerIdentifier))
+            {
+                customerCache[customerIdentifier] = customer;
+            }
 
             _logger.LogInformation("Created new customer: {CustomerCode} - {Name}", customerCode, customerName);
 

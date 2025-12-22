@@ -65,6 +65,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Customer cache to avoid duplicate lookups
                 var customerCache = new Dictionary<string, Customer>(StringComparer.OrdinalIgnoreCase);
 
+                // Track generated customer codes in this batch to prevent duplicates
+                var generatedCustomerCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 // Import each policy (without SaveChanges per policy)
                 foreach (var mappedPolicy in request.MappedPolicies)
                 {
@@ -78,6 +81,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             currencyLookup,
                             countryLookup,
                             customerCache,
+                            generatedCustomerCodes,
                             cancellationToken);
 
                         result.SuccessCount++;
@@ -132,6 +136,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Currency> currencyLookup,
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
+            HashSet<string> generatedCustomerCodes,
             CancellationToken cancellationToken)
         {
             var dto = mappedPolicy.OriginalImportData;
@@ -148,7 +153,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
                 // Customer from Excel data becomes the policy owner
-                var customer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, userId, cancellationToken);
+                var customer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, userId, cancellationToken);
                 policyOwnerCustomerId = customer.Id;
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
@@ -177,6 +182,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                         dto.CustomerIdType,
                         countryLookup,
                         customerCache,
+                        generatedCustomerCodes,
                         userId,
                         cancellationToken);
                 }
@@ -254,6 +260,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             ImportPolicyDto dto,
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
+            HashSet<string> generatedCustomerCodes,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -283,6 +290,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 dto.CustomerIdType,
                 countryLookup,
                 customerCache,
+                generatedCustomerCodes,
                 userId,
                 cancellationToken);
 
@@ -297,6 +305,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string? idType,
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
+            HashSet<string> generatedCustomerCodes,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -313,7 +322,43 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             var firstName = nameParts[0];
             var lastName = nameParts.Length > 1 ? nameParts[1] : (customerType == CustomerType.Corporate ? "" : firstName);
 
-            var customerCode = await _customerCodeGenerator.GenerateAsync();
+            // Generate unique customer code (ensure it's not a duplicate in this batch)
+            string customerCode;
+            int retryCount = 0;
+            const int maxRetries = 10;
+
+            do
+            {
+                customerCode = await _customerCodeGenerator.GenerateAsync();
+                retryCount++;
+
+                if (retryCount > maxRetries)
+                {
+                    // If we've retried too many times, something is wrong
+                    throw new InvalidOperationException(
+                        $"Failed to generate unique customer code after {maxRetries} attempts. " +
+                        $"Last generated code: {customerCode}");
+                }
+
+                if (!generatedCustomerCodes.Contains(customerCode))
+                {
+                    // Found a unique code, add it to the set and break
+                    generatedCustomerCodes.Add(customerCode);
+                    _logger.LogDebug("Generated unique customer code: {CustomerCode}", customerCode);
+                    break;
+                }
+
+                // Code already exists in this batch, log warning and retry
+                _logger.LogWarning(
+                    "Customer code {CustomerCode} already generated in this batch (attempt {Attempt}/{MaxAttempts}), retrying...",
+                    customerCode,
+                    retryCount,
+                    maxRetries);
+
+                // Small delay before retry to allow time for potential concurrent operations
+                await Task.Delay(10, cancellationToken);
+
+            } while (true);
 
             IdentificationType identificationType = IdentificationType.Passport;
             int? nationalityCountryId = null;

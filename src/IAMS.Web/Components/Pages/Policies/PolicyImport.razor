@@ -159,10 +159,17 @@
                                 <MudItem xs="12" md="4">
                                     <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Poliçe Sahibi (Kim Ödeyecek?)</MudText>
 
-                                    <MudCheckBox Checked="@policy.PolicyOwnerSameAsInsured"
-                                                 CheckedChanged="@((bool value) => OnPolicyOwnerSameAsInsuredChanged(policy, value))"
-                                                 Label="Sigortalı ile aynı" Dense="true" Class="mb-2"
-                                                 T="bool" Color="Color.Success" />
+                                    <MudStack Row Class="mb-2">
+                                        <MudCheckBox T="bool"
+                                                     Value="@policy.PolicyOwnerSameAsInsured"
+                                                     ValueChanged="@((bool value) => OnPolicyOwnerSameAsInsuredChanged(policy, value))"
+                                                     Label="Sigortalı ile aynı"
+                                                     Dense="true"
+                                                     Color="Color.Success" />
+                                        <MudChip Size="Size.Small" Color="@(policy.PolicyOwnerSameAsInsured ? Color.Success : Color.Default)">
+                                            @(policy.PolicyOwnerSameAsInsured ? "✓ Aynı" : "✗ Farklı")
+                                        </MudChip>
+                                    </MudStack>
 
                                     @if (!policy.PolicyOwnerSameAsInsured)
                                     {
@@ -181,10 +188,12 @@
 
                                         <MudText Typo="Typo.body2" Class="my-2 text-center">veya</MudText>
 
-                                        <MudCheckBox Checked="@policy.CreateNewPolicyOwner"
-                                                     CheckedChanged="@((bool value) => OnCreateNewPolicyOwnerChanged(policy, value))"
-                                                     Label="Yeni poliçe sahibi müşteri oluştur" Dense="true"
-                                                     T="bool" Color="Color.Warning" />
+                                        <MudCheckBox T="bool"
+                                                     Value="@policy.CreateNewPolicyOwner"
+                                                     ValueChanged="@((bool value) => OnCreateNewPolicyOwnerChanged(policy, value))"
+                                                     Label="Yeni poliçe sahibi müşteri oluştur"
+                                                     Dense="true"
+                                                     Color="Color.Warning" />
 
                                         @if (policy.CreateNewPolicyOwner)
                                         {
@@ -274,16 +283,18 @@
                 // Ensure all policies have default values set
                 foreach (var policy in previewPolicies)
                 {
+                    Console.WriteLine($"Policy {policy.PolicyNumber}: PolicyOwnerSameAsInsured = {policy.PolicyOwnerSameAsInsured}");
                     if (!policy.PolicyOwnerSameAsInsured &&
                         !policy.PolicyOwnerCustomerId.HasValue &&
                         !policy.CreateNewPolicyOwner)
                     {
                         policy.PolicyOwnerSameAsInsured = true; // Force default
+                        Console.WriteLine($"  -> Forced to true");
                     }
                 }
 
                 currentStep = ImportStep.ReviewAndMap;
-                StateHasChanged(); // Force UI update
+                await InvokeAsync(StateHasChanged); // Force UI update
                 Snackbar.Add($"{previewPolicies.Count} poliçe başarıyla okundu. Lütfen müşteri eşleştirmesi yapın.", MudBlazor.Severity.Success);
             }
             else
@@ -439,6 +450,7 @@
 
     private void OnPolicyOwnerSameAsInsuredChanged(PolicyImportPreviewDto policy, bool value)
     {
+        Console.WriteLine($"OnPolicyOwnerSameAsInsuredChanged called: {value}");
         policy.PolicyOwnerSameAsInsured = value;
 
         // Reset other options when checkbox is checked
@@ -450,11 +462,12 @@
             policy.PolicyOwnerIdentifier = null;
         }
 
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private void OnCreateNewPolicyOwnerChanged(PolicyImportPreviewDto policy, bool value)
     {
+        Console.WriteLine($"OnCreateNewPolicyOwnerChanged called: {value}");
         policy.CreateNewPolicyOwner = value;
 
         // Clear existing customer selection when creating new
@@ -468,6 +481,6 @@
             policy.PolicyOwnerIdentifier = null;
         }
 
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 }

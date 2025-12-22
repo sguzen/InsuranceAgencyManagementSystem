@@ -68,6 +68,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Track generated customer codes in this batch to prevent duplicates
                 var generatedCustomerCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+                // Vehicle cache to avoid duplicate lookups and FK constraint violations
+                var vehicleCache = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
+
                 // Import each policy (without SaveChanges per policy)
                 foreach (var mappedPolicy in request.MappedPolicies)
                 {
@@ -82,6 +85,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             countryLookup,
                             customerCache,
                             generatedCustomerCodes,
+                            vehicleCache,
                             cancellationToken);
 
                         result.SuccessCount++;
@@ -137,6 +141,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
+            Dictionary<string, Vehicle> vehicleCache,
             CancellationToken cancellationToken)
         {
             var dto = mappedPolicy.OriginalImportData;
@@ -203,7 +208,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // Get other required entities using lookups (no DB calls)
             var policyType = GetPolicyTypeFromLookup(dto.PolicyTypeCode, policyTypeLookup);
             var currency = GetCurrencyFromLookup(dto.CurrencyCode ?? "TRY", currencyLookup);
-            var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomerId, userId);
+            var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomerId, vehicleCache, userId);
 
             // Check for endorsements
             Policy? originalPolicy = null;
@@ -432,6 +437,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
         private async Task<Vehicle?> GetOrCreateVehicleAsync(
             ImportPolicyDto dto,
             int customerId,
+            Dictionary<string, Vehicle> vehicleCache,
             string userId)
         {
             if (string.IsNullOrEmpty(dto.PlateNumber))
@@ -439,12 +445,23 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 return null;
             }
 
+            // Try cache first (plate number is the key)
+            if (vehicleCache.TryGetValue(dto.PlateNumber, out var cachedVehicle))
+            {
+                _logger.LogDebug("Using cached vehicle: {PlateNumber}", dto.PlateNumber);
+                return cachedVehicle;
+            }
+
+            // Try to find existing vehicle in database
             var vehicle = await _unitOfWork.Vehicles.GetByPlateNumberAsync(dto.PlateNumber);
             if (vehicle != null)
             {
+                // Cache it for subsequent policies in this batch
+                vehicleCache[dto.PlateNumber] = vehicle;
                 return vehicle;
             }
 
+            // Create new vehicle
             vehicle = new Vehicle
             {
                 CustomerId = customerId,
@@ -460,6 +477,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 
             await _unitOfWork.Vehicles.AddAsync(vehicle);
             // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
+
+            // Cache the new vehicle to prevent duplicates in the same batch
+            vehicleCache[dto.PlateNumber] = vehicle;
+
+            _logger.LogInformation("Created new vehicle: {PlateNumber}", dto.PlateNumber);
 
             return vehicle;
         }

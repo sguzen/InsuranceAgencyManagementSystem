@@ -26,6 +26,9 @@ namespace IAMS.Persistence.Configurations
             builder.Property(p => p.Notes)
                 .HasMaxLength(1000);
 
+            builder.Property(p => p.EnsuredEntity)
+                .HasMaxLength(500);
+
             // Composite unique index on PolicyNumber and InnerCode
             // This allows endorsements to share the same PolicyNumber but have different InnerCodes
             builder.HasIndex(p => new { p.PolicyNumber, p.InnerCode })
@@ -33,18 +36,12 @@ namespace IAMS.Persistence.Configurations
                 .HasFilter("[IsDeleted] = 0");
 
             builder.HasIndex(p => new { p.CustomerId});
-            builder.HasIndex(p => new { p.InsuredCustomerId});
             builder.HasIndex(p => new { p.InsuranceCompanyId });
 
             // Configure relationships
             builder.HasOne(p => p.Customer)
                 .WithMany(c => c.Policies)
                 .HasForeignKey(p => p.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(p => p.InsuredCustomer)
-                .WithMany()
-                .HasForeignKey(p => p.InsuredCustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.InsuranceCompany)

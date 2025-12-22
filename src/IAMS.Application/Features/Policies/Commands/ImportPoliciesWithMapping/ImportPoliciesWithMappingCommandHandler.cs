@@ -106,17 +106,20 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
         {
             var dto = mappedPolicy.OriginalImportData;
 
-            // Sigortalı (Insured Customer) - ALWAYS auto-created/matched from Excel data
-            // Uses existing GetOrCreateCustomerAsync logic (lookup by ID, create if not exists)
-            var insuredCustomer = await GetOrCreateCustomerAsync(dto, userId, cancellationToken);
-            int insuredCustomerId = insuredCustomer.Id;
+            // Sigortalı (Insured Person) - Store as string in EnsuredEntity
+            string? ensuredEntity = null;
+            if (!string.IsNullOrEmpty(mappedPolicy.InsuredCustomerName))
+            {
+                ensuredEntity = $"{mappedPolicy.InsuredCustomerName} - {mappedPolicy.InsuredCustomerIdentifier}";
+            }
 
-            // Policy Owner - determined by operator's selection
+            // Policy Owner (Cari) - determined by operator's selection
             int policyOwnerCustomerId;
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
-                // Same customer pays and is insured
-                policyOwnerCustomerId = insuredCustomerId;
+                // Customer from Excel data becomes the policy owner
+                var customer = await GetOrCreateCustomerAsync(dto, userId, cancellationToken);
+                policyOwnerCustomerId = customer.Id;
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
             {
@@ -144,7 +147,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // Get other required entities
             var policyType = await GetPolicyTypeAsync(dto.PolicyTypeCode);
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
-            var vehicle = await GetOrCreateVehicleAsync(dto, insuredCustomerId, userId);
+            var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomerId, userId);
 
             // Check for endorsements
             Policy? originalPolicy = null;
@@ -162,8 +165,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             var policy = new Policy
             {
                 PolicyNumber = dto.PolicyNumber ?? GeneratePolicyNumber(),
-                CustomerId = policyOwnerCustomerId,  // Policy owner (who pays)
-                InsuredCustomerId = insuredCustomerId, // Insured customer (who is insured)
+                CustomerId = policyOwnerCustomerId,  // Policy owner (Cari - who pays)
+                EnsuredEntity = ensuredEntity, // Sigortalı (insured person - stored as string)
                 InsuranceCompanyId = insuranceCompanyId,
                 PolicyTypeId = policyType.Id,
                 VehicleId = vehicle?.Id,

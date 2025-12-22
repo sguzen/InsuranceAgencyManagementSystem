@@ -4,7 +4,8 @@ namespace IAMS.Shared.DTOs.Policy
 {
     /// <summary>
     /// DTO for previewing imported policies before saving
-    /// Allows operator to map customers before import
+    /// Sigortalı (insured customer) is always taken from Excel data and auto-created/matched
+    /// Operator only needs to specify the Policy Owner (who pays)
     /// </summary>
     public class PolicyImportPreviewDto
     {
@@ -30,45 +31,30 @@ namespace IAMS.Shared.DTOs.Policy
         public string? VehicleModel { get; set; }
         public int? VehicleYear { get; set; }
 
-        // Customer Information from Import (Sigortalı - Insured Person)
+        // Sigortalı (Insured Customer) - from Excel, will be auto-created/matched during import
         public string? InsuredCustomerName { get; set; }
         public string? InsuredCustomerIdentifier { get; set; }
 
-        // Mapping Fields (to be filled by operator)
-        // Sigortalı (Insured Customer) mapping
-        public int? InsuredCustomerId { get; set; } // Selected existing customer ID
-        public bool CreateNewInsuredCustomer { get; set; } // If true, create new customer
+        // Policy Owner (Cari Kart) - operator must specify
+        public bool PolicyOwnerSameAsInsured { get; set; } = true; // Default: same as sigortalı
 
-        // Policy Owner (Cari Kart) mapping
-        public int? PolicyOwnerCustomerId { get; set; } // Selected existing customer ID
-        public bool PolicyOwnerSameAsInsured { get; set; } // If true, use same as InsuredCustomerId
-        public bool CreateNewPolicyOwner { get; set; } // If true, create new customer
-        public string? PolicyOwnerName { get; set; } // Name for new customer if creating
-        public string? PolicyOwnerIdentifier { get; set; } // Identifier for new customer if creating
+        // If PolicyOwnerSameAsInsured = false, operator must either:
+        // 1. Select existing customer (set PolicyOwnerCustomerId)
+        public int? PolicyOwnerCustomerId { get; set; }
 
-        // Suggested matches (populated by search)
-        public List<CustomerMatchDto> SuggestedInsuredMatches { get; set; } = new();
-        public List<CustomerMatchDto> SuggestedOwnerMatches { get; set; } = new();
+        // 2. Create new customer (set CreateNewPolicyOwner = true and provide name/ID)
+        public bool CreateNewPolicyOwner { get; set; }
+        public string? PolicyOwnerName { get; set; }
+        public string? PolicyOwnerIdentifier { get; set; }
 
-        // Validation
-        public bool IsValid => (InsuredCustomerId.HasValue || CreateNewInsuredCustomer) &&
-                              (PolicyOwnerCustomerId.HasValue || PolicyOwnerSameAsInsured || CreateNewPolicyOwner);
+        // Validation: Policy owner must be specified
+        public bool IsValid => PolicyOwnerSameAsInsured ||
+                              PolicyOwnerCustomerId.HasValue ||
+                              (CreateNewPolicyOwner &&
+                               !string.IsNullOrEmpty(PolicyOwnerName) &&
+                               !string.IsNullOrEmpty(PolicyOwnerIdentifier));
 
         // All original import data for saving
         public ImportPolicyDto OriginalImportData { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// DTO for suggested customer matches during import mapping
-    /// </summary>
-    public class CustomerMatchDto
-    {
-        public int CustomerId { get; set; }
-        public string CustomerCode { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string? IdentificationNumber { get; set; }
-        public string? Phone { get; set; }
-        public string? Email { get; set; }
-        public int MatchScore { get; set; } // 0-100, based on name/ID similarity
     }
 }

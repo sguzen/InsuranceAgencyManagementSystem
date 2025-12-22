@@ -146,30 +146,16 @@
                                     <MudText Typo="Typo.body2"><b>Prim:</b> @policy.PremiumAmount.ToString("N2") @policy.CurrencyCode</MudText>
                                 </MudItem>
 
-                                <!-- Insured Customer Mapping Column -->
+                                <!-- Sigortalı (Insured Customer) - Auto-created from Excel -->
                                 <MudItem xs="12" md="4">
-                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Sigortalı (Kim Sigortalı?)</MudText>
-                                    <MudText Typo="Typo.body2" Class="mb-2">
-                                        <b>İsim:</b> @policy.InsuredCustomerName
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Sigortalı</MudText>
+                                    <MudText Typo="Typo.body2"><b>İsim:</b> @policy.InsuredCustomerName</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-xs text-gray-500">
+                                        TC/Vergi No: @policy.InsuredCustomerIdentifier
                                     </MudText>
-
-                                    @if (policy.SuggestedInsuredMatches.Any() && !policy.CreateNewInsuredCustomer)
-                                    {
-                                        <MudSelect T="int?" Label="Mevcut Müşteri Seç" @bind-Value="policy.InsuredCustomerId"
-                                                   Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
-                                            <MudSelectItem Value="@((int?)null)">-- Seçin --</MudSelectItem>
-                                            @foreach (var match in policy.SuggestedInsuredMatches)
-                                            {
-                                                <MudSelectItem Value="@((int?)match.CustomerId)">
-                                                    @match.FullName (@match.CustomerCode) - Eşleşme: @match.MatchScore%
-                                                </MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    }
-
-                                    <MudCheckBox @bind-Checked="policy.CreateNewInsuredCustomer"
-                                                 Label="Yeni müşteri oluştur" Dense="true" Class="mt-2"
-                                                 T="bool" />
+                                    <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
+                                        Bu müşteri otomatik oluşturulacak/eşleştirilecek
+                                    </MudAlert>
                                 </MudItem>
 
                                 <!-- Policy Owner Mapping Column -->
@@ -178,36 +164,40 @@
 
                                     <MudCheckBox @bind-Checked="policy.PolicyOwnerSameAsInsured"
                                                  Label="Sigortalı ile aynı" Dense="true" Class="mb-2"
-                                                 T="bool" />
+                                                 T="bool" Color="Color.Success" />
 
                                     @if (!policy.PolicyOwnerSameAsInsured)
                                     {
-                                        @if (policy.SuggestedOwnerMatches.Any() && !policy.CreateNewPolicyOwner)
-                                        {
-                                            <MudSelect T="int?" Label="Mevcut Müşteri Seç" @bind-Value="policy.PolicyOwnerCustomerId"
-                                                       Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
-                                                <MudSelectItem Value="@((int?)null)">-- Seçin --</MudSelectItem>
-                                                @foreach (var match in policy.SuggestedOwnerMatches)
-                                                {
-                                                    <MudSelectItem Value="@((int?)match.CustomerId)">
-                                                        @match.FullName (@match.CustomerCode)
-                                                    </MudSelectItem>
-                                                }
-                                            </MudSelect>
-                                        }
+                                        <MudAutocomplete T="CustomerDto"
+                                                         Label="Mevcut Müşteri Ara"
+                                                         @bind-Value="selectedOwnerCustomer"
+                                                         SearchFunc="@SearchCustomersAsync"
+                                                         ToStringFunc="@(c => c == null ? "" : $"{c.FullName} ({c.CustomerCode})")"
+                                                         Dense="true"
+                                                         Variant="Variant.Outlined"
+                                                         Margin="Margin.Dense"
+                                                         ResetValueOnEmptyText="true"
+                                                         CoerceText="true"
+                                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                                         AdornmentColor="Color.Primary"
+                                                         ValueChanged="@(async (CustomerDto c) => await OnOwnerCustomerSelected(policy, c))" />
+
+                                        <MudText Typo="Typo.body2" Class="my-2 text-center">veya</MudText>
 
                                         <MudCheckBox @bind-Checked="policy.CreateNewPolicyOwner"
-                                                     Label="Yeni müşteri oluştur" Dense="true" Class="mt-2"
-                                                     T="bool" />
+                                                     Label="Yeni poliçe sahibi müşteri oluştur" Dense="true"
+                                                     T="bool" Color="Color.Warning" />
 
                                         @if (policy.CreateNewPolicyOwner)
                                         {
                                             <MudTextField @bind-Value="policy.PolicyOwnerName"
                                                           Label="Müşteri Adı" Variant="Variant.Outlined"
-                                                          Dense="true" Margin="Margin.Dense" Class="mt-2" />
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Required="true" />
                                             <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
                                                           Label="TC/Vergi No" Variant="Variant.Outlined"
-                                                          Dense="true" Margin="Margin.Dense" Class="mt-2" />
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Required="true" />
                                         }
                                     }
                                 </MudItem>
@@ -234,6 +224,7 @@
     private List<PolicyImportPreviewDto> previewPolicies = new();
     private bool isProcessing = false;
     private bool isSaving = false;
+    private CustomerDto? selectedOwnerCustomer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -392,5 +383,49 @@
             len = len / 1024;
         }
         return $"{len:0.##} {sizes[order]}";
+    }
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomersAsync(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 2)
+            return Enumerable.Empty<CustomerDto>();
+
+        try
+        {
+            var queryParams = new IAMS.Shared.QueryParams.CustomerQueryParams
+            {
+                PageNumber = 1,
+                PageSize = 10,
+                SearchTerm = searchTerm
+            };
+
+            var result = await CustomersApi.GetCustomersAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items;
+            }
+
+            return Enumerable.Empty<CustomerDto>();
+        }
+        catch
+        {
+            return Enumerable.Empty<CustomerDto>();
+        }
+    }
+
+    private async Task OnOwnerCustomerSelected(PolicyImportPreviewDto policy, CustomerDto? customer)
+    {
+        if (customer != null)
+        {
+            policy.PolicyOwnerCustomerId = customer.Id;
+            policy.CreateNewPolicyOwner = false;
+            selectedOwnerCustomer = customer;
+        }
+        else
+        {
+            policy.PolicyOwnerCustomerId = null;
+        }
+
+        await Task.CompletedTask;
     }
 }

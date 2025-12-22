@@ -106,37 +106,21 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
         {
             var dto = mappedPolicy.OriginalImportData;
 
-            // Get or create insured customer
-            int insuredCustomerId;
-            if (mappedPolicy.CreateNewInsuredCustomer)
-            {
-                var insuredCustomer = await CreateCustomerAsync(
-                    dto.CustomerName,
-                    dto.CustomerIdentifier,
-                    dto.CustomerCountryCode,
-                    dto.CustomerIdType,
-                    userId,
-                    cancellationToken);
-                insuredCustomerId = insuredCustomer.Id;
-            }
-            else if (mappedPolicy.InsuredCustomerId.HasValue)
-            {
-                insuredCustomerId = mappedPolicy.InsuredCustomerId.Value;
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "Insured customer must be either selected or created");
-            }
+            // Sigortalı (Insured Customer) - ALWAYS auto-created/matched from Excel data
+            // Uses existing GetOrCreateCustomerAsync logic (lookup by ID, create if not exists)
+            var insuredCustomer = await GetOrCreateCustomerAsync(dto, userId, cancellationToken);
+            int insuredCustomerId = insuredCustomer.Id;
 
-            // Get or create policy owner customer
+            // Policy Owner - determined by operator's selection
             int policyOwnerCustomerId;
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
+                // Same customer pays and is insured
                 policyOwnerCustomerId = insuredCustomerId;
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
             {
+                // Create new policy owner customer
                 var ownerCustomer = await CreateCustomerAsync(
                     mappedPolicy.PolicyOwnerName,
                     mappedPolicy.PolicyOwnerIdentifier,
@@ -148,12 +132,13 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             }
             else if (mappedPolicy.PolicyOwnerCustomerId.HasValue)
             {
+                // Use selected existing customer
                 policyOwnerCustomerId = mappedPolicy.PolicyOwnerCustomerId.Value;
             }
             else
             {
                 throw new InvalidOperationException(
-                    "Policy owner customer must be either selected or created");
+                    "Policy owner customer must be specified");
             }
 
             // Get other required entities
@@ -210,6 +195,31 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             await CreateInitialPaymentIfNeeded(policy, policyType, dto, currency.Id, userId, cancellationToken);
 
             return policy;
+        }
+
+        private async Task<Customer> GetOrCreateCustomerAsync(
+            ImportPolicyDto dto,
+            string userId,
+            CancellationToken cancellationToken)
+        {
+            // Try to find existing customer by identifier (exact match)
+            if (!string.IsNullOrEmpty(dto.CustomerIdentifier))
+            {
+                var customer = await _unitOfWork.Customers.GetByIdentificationNoAsync(dto.CustomerIdentifier);
+                if (customer != null)
+                {
+                    return customer;
+                }
+            }
+
+            // Customer not found - create new customer using existing logic
+            return await CreateCustomerAsync(
+                dto.CustomerName,
+                dto.CustomerIdentifier,
+                dto.CustomerCountryCode,
+                dto.CustomerIdType,
+                userId,
+                cancellationToken);
         }
 
         private async Task<Customer> CreateCustomerAsync(

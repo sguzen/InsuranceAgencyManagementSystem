@@ -48,12 +48,12 @@
                         </MudSelect>
 
                         <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept=".xlsx,.xls">
-                            <ButtonTemplate>
+                            <ButtonTemplate Context="buttonContext">
                                 <MudButton HtmlTag="label"
                                            Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.CloudUpload"
-                                           for="@context">
+                                           for="@buttonContext.Id">
                                     Dosya Seç
                                 </MudButton>
                             </ButtonTemplate>
@@ -129,8 +129,7 @@
             <MudPaper Elevation="0" Class="pa-4">
                 @foreach (var policy in previewPolicies)
                 {
-                    var rowClass = policy.IsValid ? "" : "border-l-4 border-warning";
-                    <MudCard Class="mb-3 @rowClass">
+                    <MudCard Class="@(policy.IsValid ? "mb-3" : "mb-3 border-l-4 border-warning")">
                         <MudCardContent>
                             <MudGrid>
                                 <!-- Policy Info Column -->
@@ -170,7 +169,6 @@
                                     {
                                         <MudAutocomplete T="CustomerDto"
                                                          Label="Mevcut Müşteri Ara"
-                                                         @bind-Value="selectedOwnerCustomer"
                                                          SearchFunc="@SearchCustomersAsync"
                                                          ToStringFunc="@(c => c == null ? "" : $"{c.FullName} ({c.CustomerCode})")"
                                                          Dense="true"
@@ -180,7 +178,7 @@
                                                          CoerceText="true"
                                                          AdornmentIcon="@Icons.Material.Filled.Search"
                                                          AdornmentColor="Color.Primary"
-                                                         ValueChanged="@(async (CustomerDto c) => await OnOwnerCustomerSelected(policy, c))" />
+                                                         ValueChanged="@((CustomerDto c) => OnOwnerCustomerSelected(policy, c))" />
 
                                         <MudText Typo="Typo.body2" Class="my-2 text-center">veya</MudText>
 
@@ -224,7 +222,6 @@
     private List<PolicyImportPreviewDto> previewPolicies = new();
     private bool isProcessing = false;
     private bool isSaving = false;
-    private CustomerDto? selectedOwnerCustomer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -385,7 +382,7 @@
         return $"{len:0.##} {sizes[order]}";
     }
 
-    private async Task<IEnumerable<CustomerDto>> SearchCustomersAsync(string searchTerm)
+    private async Task<IEnumerable<CustomerDto>> SearchCustomersAsync(string searchTerm, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 2)
             return Enumerable.Empty<CustomerDto>();
@@ -413,19 +410,16 @@
         }
     }
 
-    private async Task OnOwnerCustomerSelected(PolicyImportPreviewDto policy, CustomerDto? customer)
+    private void OnOwnerCustomerSelected(PolicyImportPreviewDto policy, CustomerDto? customer)
     {
         if (customer != null)
         {
             policy.PolicyOwnerCustomerId = customer.Id;
             policy.CreateNewPolicyOwner = false;
-            selectedOwnerCustomer = customer;
         }
         else
         {
             policy.PolicyOwnerCustomerId = null;
         }
-
-        await Task.CompletedTask;
     }
 }

@@ -5,6 +5,7 @@ using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
 using IAMS.Application.Features.Policies.Commands.ImportPolicies;
 using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
+using IAMS.Application.Features.Policies.Queries.ParsePolicyImport;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
 using IAMS.Application.Features.Policies.Commands.UpdatePolicy;
@@ -322,6 +323,27 @@ namespace IAMS.Api.Controllers
         public async Task<ActionResult<Result<Dictionary<string, decimal>>>> GetMonthlyRevenueByCurrency()
         {
             var query = new GetMonthlyRevenueByCurrencyQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Parse and preview policies from Excel file WITHOUT saving
+        /// Returns preview data for customer mapping before import
+        /// </summary>
+        [HttpPost("import/parse")]
+        public async Task<ActionResult<Result<List<PolicyImportPreviewDto>>>> ParsePolicyImport(IFormFile file, [FromForm] int insuranceCompanyId)
+        {
+            if (insuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<List<PolicyImportPreviewDto>>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
+            var query = new ParsePolicyImportQuery(file, insuranceCompanyId);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

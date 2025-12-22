@@ -42,10 +42,11 @@ namespace IAMS.Shared.DTOs.Policy
         // 1. Select existing customer (set PolicyOwnerCustomerId)
         public int? PolicyOwnerCustomerId { get; set; }
 
-        // 2. Create new customer (set CreateNewPolicyOwner = true and provide name/ID)
+        // 2. Create new customer (set CreateNewPolicyOwner = true and provide name/ID/phone)
         public bool CreateNewPolicyOwner { get; set; }
         public string? PolicyOwnerName { get; set; }
         public string? PolicyOwnerIdentifier { get; set; }
+        public string? PolicyOwnerPhone { get; set; }
 
         // Validation: Policy owner must be specified
         public bool IsValid => PolicyOwnerSameAsInsured ||

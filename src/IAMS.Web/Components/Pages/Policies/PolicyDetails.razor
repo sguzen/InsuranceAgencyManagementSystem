@@ -334,7 +334,7 @@ else
                     <MudCard>
                         <MudCardHeader>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Müşteri Bilgileri</MudText>
+                                <MudText Typo="Typo.h6">Poliçe Sahibi (Cari Kart)</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
                                 <MudIconButton Icon="@Icons.Material.Filled.Visibility"
@@ -377,6 +377,37 @@ else
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
+
+                <!-- Ensured Entity (Sigortalı) Information -->
+                @if (!string.IsNullOrEmpty(policy.EnsuredEntity))
+                {
+                    <MudItem xs="12" md="6">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Sigortalı</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Spacing="3">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
+                                        <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                        </MudAvatar>
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.h6">@policy.EnsuredEntity</MudText>
+                                            <MudChip Size="Size.Small" Color="Color.Info">Poliçe Üzerinde Kayıtlı</MudChip>
+                                        </MudStack>
+                                    </MudStack>
+                                    <MudDivider />
+                                    <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
+                                        Bu bilgi poliçe üzerinde metin olarak saklanmaktadır.
+                                    </MudAlert>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
             </MudGrid>
 
             <!-- Vehicle Information (if applicable) -->

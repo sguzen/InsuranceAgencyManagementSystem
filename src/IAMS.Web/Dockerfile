@@ -1,4 +1,4 @@
-# IAMS.Api Production Dockerfile
+# IAMS.Web Production Dockerfile
 # Multi-stage build for optimized production image
 
 ###################
@@ -9,7 +9,7 @@ WORKDIR /src
 
 # Copy solution file and project files
 COPY ["InsuranceAgencyManagementSystem.sln", "./"]
-COPY ["src/IAMS.Api/IAMS.Api.csproj", "src/IAMS.Api/"]
+COPY ["src/IAMS.Web/IAMS.Web.csproj", "src/IAMS.Web/"]
 COPY ["src/IAMS.Application/IAMS.Application.csproj", "src/IAMS.Application/"]
 COPY ["src/IAMS.Domain/IAMS.Domain.csproj", "src/IAMS.Domain/"]
 COPY ["src/IAMS.Infrastructure/IAMS.Infrastructure.csproj", "src/IAMS.Infrastructure/"]
@@ -20,20 +20,20 @@ COPY ["src/IAMS.Shared/IAMS.Shared.csproj", "src/IAMS.Shared/"]
 COPY ["src/IAMS.KnowledgeBase/IAMS.KnowledgeBase.csproj", "src/IAMS.KnowledgeBase/"]
 
 # Restore dependencies (cached layer if csproj files haven't changed)
-RUN dotnet restore "src/IAMS.Api/IAMS.Api.csproj"
+RUN dotnet restore "src/IAMS.Web/IAMS.Web.csproj"
 
 # Copy all source code
 COPY . .
 
 # Build the application
-WORKDIR "/src/src/IAMS.Api"
-RUN dotnet build "IAMS.Api.csproj" -c Release -o /app/build --no-restore
+WORKDIR "/src/src/IAMS.Web"
+RUN dotnet build "IAMS.Web.csproj" -c Release -o /app/build --no-restore
 
 ###################
 # Publish Stage
 ###################
 FROM build AS publish
-RUN dotnet publish "IAMS.Api.csproj" \
+RUN dotnet publish "IAMS.Web.csproj" \
     -c Release \
     -o /app/publish \
     --no-restore \
@@ -62,7 +62,7 @@ RUN apt-get update \
 COPY --from=publish /app/publish .
 
 # Create directories for logs and data
-RUN mkdir -p /app/logs /app/data \
+RUN mkdir -p /app/logs /app/data /app/wwwroot \
     && chown -R iamsuser:iams /app
 
 # Switch to non-root user
@@ -83,4 +83,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # Set entrypoint
-ENTRYPOINT ["dotnet", "IAMS.Api.dll"]
+ENTRYPOINT ["dotnet", "IAMS.Web.dll"]

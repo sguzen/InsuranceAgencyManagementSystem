@@ -1,0 +1,247 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iams-web
+  namespace: iams-production
+  labels:
+    app: iams
+    component: web
+    environment: production
+spec:
+  replicas: 2  # Minimum replicas, will be managed by HPA
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero-downtime deployments
+  selector:
+    matchLabels:
+      app: iams
+      component: web
+  template:
+    metadata:
+      labels:
+        app: iams
+        component: web
+        environment: production
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      # Use node affinity to spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values:
+                        - web
+                topologyKey: kubernetes.io/hostname
+
+      serviceAccountName: iams-web-sa
+
+      containers:
+        - name: iams-web
+          image: acriamsprod.azurecr.io/iams-web:latest  # Replace with your registry
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          # Environment variables from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: iams-config
+
+          # Environment variables from Secrets
+          env:
+            - name: ConnectionStrings__MasterConnection
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: ConnectionStrings__MasterConnection
+            - name: ConnectionStrings__RedisConnection
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: ConnectionStrings__RedisConnection
+            - name: JwtSettings__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: JwtSettings__Secret
+            - name: ApplicationInsights__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: ApplicationInsights__ConnectionString
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          # Resource limits and requests
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+
+          # Liveness probe
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 30
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+
+      # Volumes
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+
+      # Image pull secrets
+      imagePullSecrets:
+        - name: acr-secret
+
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iams-web-service
+  namespace: iams-production
+  labels:
+    app: iams
+    component: web
+spec:
+  type: ClusterIP
+  selector:
+    app: iams
+    component: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  sessionAffinity: ClientIP  # Session affinity for web app
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: iams-web-hpa
+  namespace: iams-production
+  labels:
+    app: iams
+    component: web
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: iams-web
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 15
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: iams-web-sa
+  namespace: iams-production
+  labels:
+    app: iams
+    component: web
+  annotations:
+    azure.workload.identity/client-id: "<your-azure-ad-app-client-id>"
+    azure.workload.identity/tenant-id: "<your-azure-ad-tenant-id>"

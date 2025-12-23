@@ -29,9 +29,10 @@ namespace IAMS.Persistence.Configurations
             builder.Property(p => p.EnsuredEntity)
                 .HasMaxLength(500);
 
-            // Composite unique index on PolicyNumber and InnerCode
-            // This allows endorsements to share the same PolicyNumber but have different InnerCodes
-            builder.HasIndex(p => new { p.PolicyNumber, p.InnerCode })
+            // Composite unique index on PolicyNumber, InnerCode, InsuranceCompanyId, and PolicyTypeId
+            // The same policy number can exist for different insurance companies and policy types
+            // Example: Policy 0000038 can be both Konut (home) and Trafik (traffic) for the same company
+            builder.HasIndex(p => new { p.InsuranceCompanyId, p.PolicyTypeId, p.PolicyNumber, p.InnerCode })
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 

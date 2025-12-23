@@ -300,7 +300,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     if (originalPolicy == null)
                     {
                         throw new InvalidOperationException(
-                            $"Original policy not found for endorsement: {policyNumber}. The original policy (InnerCode=000) must be imported before endorsements.");
+                            $"Original policy not found for endorsement: PolicyNumber={policyNumber}, InnerCode={innerCode}. " +
+                            $"The original policy (InnerCode=000) must be in the import file or database.");
                     }
                 }
             }

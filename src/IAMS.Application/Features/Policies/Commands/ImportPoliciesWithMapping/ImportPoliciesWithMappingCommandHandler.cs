@@ -155,7 +155,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
             Dictionary<string, Vehicle> vehicleCache,
-            HashSet<string> policyCache,
+            Dictionary<string, Policy> policyCache,
             CustomerCodeState codeState,
             CancellationToken cancellationToken)
         {

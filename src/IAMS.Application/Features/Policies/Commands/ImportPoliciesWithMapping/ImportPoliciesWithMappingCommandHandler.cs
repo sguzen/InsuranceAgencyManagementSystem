@@ -297,23 +297,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(policyNumber);
                     if (originalPolicy == null)
                     {
-                        // Log what's actually in the cache for debugging
-                        var cachedOriginals = policyCache.Values
-                            .Where(p => p.InnerCode == "000" && p.InsuranceCompanyId == insuranceCompanyId)
-                            .Select(p => $"{p.PolicyNumber} (Type:{p.PolicyTypeId})")
-                            .ToList();
-
-                        _logger.LogError(
-                            "Original policy NOT FOUND for endorsement: PolicyNumber={PolicyNumber}, InnerCode={InnerCode}, InsuranceCompanyId={CompanyId}. " +
-                            "Originals in cache for this company: [{Originals}]",
-                            policyNumber,
-                            innerCode,
-                            insuranceCompanyId,
-                            string.Join(", ", cachedOriginals));
-
                         throw new InvalidOperationException(
                             $"Original policy not found for endorsement: PolicyNumber={policyNumber}, InnerCode={innerCode}. " +
-                            $"The original policy (InnerCode=000) must exist. Check logs for cached policies.");
+                            $"The original policy (InnerCode=000) must be in the import file or database.");
                     }
                 }
             }

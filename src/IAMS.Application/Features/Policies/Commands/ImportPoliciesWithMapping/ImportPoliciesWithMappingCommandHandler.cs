@@ -277,13 +277,21 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             if (innerCode != "000" && !string.IsNullOrEmpty(policyNumber))
             {
                 // First check if original policy is in the current batch
-                // Endorsement must be for the same insurance company and policy type
-                string originalPolicyKey = $"{insuranceCompanyId}|{policyType.Id}|{policyNumber}|000";
-                if (policyCache.TryGetValue(originalPolicyKey, out originalPolicy))
+                // Search across ALL policy types for the same insurance company and policy number
+                // Endorsements can be for different policy types than the original
+                originalPolicy = policyCache.Values
+                    .FirstOrDefault(p =>
+                        p.InsuranceCompanyId == insuranceCompanyId &&
+                        p.PolicyNumber == policyNumber &&
+                        p.InnerCode == "000");
+
+                if (originalPolicy != null)
                 {
                     _logger.LogDebug(
-                        "Found original policy in batch cache for endorsement: PolicyNumber={PolicyNumber}",
-                        policyNumber);
+                        "Found original policy in batch cache for endorsement: PolicyNumber={PolicyNumber}, OriginalPolicyType={OriginalType}, EndorsementType={EndorsementType}",
+                        policyNumber,
+                        originalPolicy.PolicyTypeId,
+                        policyType.Id);
                 }
                 else
                 {

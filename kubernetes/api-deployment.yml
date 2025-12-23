@@ -1,0 +1,270 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iams-api
+  namespace: iams-production
+  labels:
+    app: iams
+    component: api
+    environment: production
+spec:
+  replicas: 3  # Minimum replicas, will be managed by HPA
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero-downtime deployments
+  selector:
+    matchLabels:
+      app: iams
+      component: api
+  template:
+    metadata:
+      labels:
+        app: iams
+        component: api
+        environment: production
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Use node affinity to spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values:
+                        - api
+                topologyKey: kubernetes.io/hostname
+
+      # Service account for Azure Workload Identity (if using Azure)
+      serviceAccountName: iams-api-sa
+
+      containers:
+        - name: iams-api
+          image: acriamsprod.azurecr.io/iams-api:latest  # Replace with your registry
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          # Environment variables from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: iams-config
+
+          # Environment variables from Secrets
+          env:
+            - name: ConnectionStrings__MasterConnection
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: ConnectionStrings__MasterConnection
+            - name: ConnectionStrings__RedisConnection
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: ConnectionStrings__RedisConnection
+            - name: JwtSettings__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: JwtSettings__Secret
+            - name: JwtSettings__Issuer
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: JwtSettings__Issuer
+            - name: JwtSettings__Audience
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: JwtSettings__Audience
+            - name: ApplicationInsights__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: iams-secrets
+                  key: ApplicationInsights__ConnectionString
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+          # Resource limits and requests
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+
+          # Liveness probe - restart if unhealthy
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Readiness probe - remove from load balancer if not ready
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe - for slow-starting applications
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 30  # 30 * 5 = 150 seconds max startup time
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts for logs
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+
+      # Volumes
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+
+      # Image pull secrets (if using private registry)
+      imagePullSecrets:
+        - name: acr-secret
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iams-api-service
+  namespace: iams-production
+  labels:
+    app: iams
+    component: api
+spec:
+  type: ClusterIP
+  selector:
+    app: iams
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  sessionAffinity: None
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: iams-api-hpa
+  namespace: iams-production
+  labels:
+    app: iams
+    component: api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: iams-api
+  minReplicas: 3
+  maxReplicas: 30
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
+      policies:
+        - type: Percent
+          value: 10  # Scale down max 10% of pods at a time
+          periodSeconds: 60
+        - type: Pods
+          value: 2  # Or max 2 pods at a time
+          periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0  # Scale up immediately
+      policies:
+        - type: Percent
+          value: 50  # Scale up max 50% of pods at a time
+          periodSeconds: 15
+        - type: Pods
+          value: 4  # Or max 4 pods at a time
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: iams-api-sa
+  namespace: iams-production
+  labels:
+    app: iams
+    component: api
+  annotations:
+    # For Azure Workload Identity
+    azure.workload.identity/client-id: "<your-azure-ad-app-client-id>"
+    azure.workload.identity/tenant-id: "<your-azure-ad-tenant-id>"

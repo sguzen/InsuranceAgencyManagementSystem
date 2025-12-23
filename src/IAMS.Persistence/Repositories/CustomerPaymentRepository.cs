@@ -73,16 +73,18 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<decimal> CalculateCustomerTotalPaidAsync(int customerId, int currencyId)
         {
-            // Sum of all completed customer payments in the specified currency
-            // Note: With Option B dual-write pattern, PolicyPayments are automatically
-            // mirrored to CustomerPayments, so we only need to query CustomerPayments
-            // for fast balance calculation (single table query instead of joining both)
-            return await _dbSet
-                .Where(cp => cp.CustomerId == customerId &&
-                            cp.CurrencyId == currencyId &&
-                            cp.Status == PaymentStatus.Completed &&
-                            !cp.IsDeleted)
-                .SumAsync(cp => (decimal?)cp.Amount) ?? 0;
+            // Sum of all completed payments applied to this customer's policies
+            // This includes:
+            // 1. PolicyPayments created from CustomerPayment allocations
+            // 2. PolicyPayments created directly during import (e.g., Traffic/KASKO auto-payment)
+            // We query PolicyPayments (not CustomerPayments) because they represent money
+            // actually applied to policies, which is what we need for balance calculation
+            return await _context.PolicyPayments
+                .Where(pp => pp.Policy.CustomerId == customerId &&
+                            pp.CurrencyId == currencyId &&
+                            pp.Status == PaymentStatus.Completed &&
+                            !pp.IsDeleted)
+                .SumAsync(pp => (decimal?)pp.Amount) ?? 0;
         }
 
         public async Task<Dictionary<int, (decimal TotalDebt, decimal TotalPaid, decimal Balance)>> GetCustomerBalanceAsync(int customerId)

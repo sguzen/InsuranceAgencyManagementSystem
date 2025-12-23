@@ -139,12 +139,34 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
         {
             var transactions = new List<CustomerStatementTransactionDto>();
 
+            // Calculate total payments per policy to identify fully paid policies
+            var policyPaymentTotals = payments
+                .Where(p => p.Status == PaymentStatus.Completed)
+                .GroupBy(p => p.PolicyId)
+                .ToDictionary(g => g.Key, g => g.Sum(p => p.Amount));
+
             // Add policy transactions (debits - money owed by customer)
             foreach (var policy in policies)
             {
                 // Include policies that start before or during the period
                 if (policy.StartDate <= endDate)
                 {
+                    // Calculate outstanding balance for this policy
+                    var totalPaid = policyPaymentTotals.GetValueOrDefault(policy.Id, 0);
+                    var outstandingBalance = policy.PremiumAmount - totalPaid;
+
+                    // Skip fully paid policies (balance is 0 or negative)
+                    // This filters out Traffic/KASKO policies with automatic full payment
+                    if (outstandingBalance <= 0.01m) // Use small threshold to handle rounding
+                    {
+                        _logger.LogDebug(
+                            "Skipping fully paid policy {PolicyNumber} from statement: Premium={Premium}, Paid={Paid}",
+                            policy.PolicyNumber,
+                            policy.PremiumAmount,
+                            totalPaid);
+                        continue;
+                    }
+
                     var transactionDate = policy.StartDate;
 
                     // Determine transaction type based on StateType
@@ -179,8 +201,25 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomerStatement
             }
 
             // Add payment transactions (credits - money paid by customer)
+            // Only include payments for policies that have outstanding balances
+            var policiesWithBalance = policies
+                .Where(p =>
+                {
+                    var totalPaid = policyPaymentTotals.GetValueOrDefault(p.Id, 0);
+                    var outstanding = p.PremiumAmount - totalPaid;
+                    return outstanding > 0.01m;
+                })
+                .Select(p => p.Id)
+                .ToHashSet();
+
             foreach (var payment in payments.Where(p => p.Status == PaymentStatus.Completed))
             {
+                // Only show payments for policies with outstanding balances
+                if (!policiesWithBalance.Contains(payment.PolicyId))
+                {
+                    continue;
+                }
+
                 if (payment.PaymentDate >= startDate && payment.PaymentDate <= endDate)
                 {
                     var policy = policies.FirstOrDefault(p => p.Id == payment.PolicyId);

@@ -1,0 +1,33 @@
+# Pod Disruption Budget for API
+# Ensures minimum availability during voluntary disruptions (node maintenance, etc.)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: iams-api-pdb
+  namespace: iams-production
+  labels:
+    app: iams
+    component: api
+spec:
+  minAvailable: 2  # Always keep at least 2 API pods running
+  selector:
+    matchLabels:
+      app: iams
+      component: api
+
+---
+# Pod Disruption Budget for Web
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: iams-web-pdb
+  namespace: iams-production
+  labels:
+    app: iams
+    component: web
+spec:
+  minAvailable: 1  # Always keep at least 1 web pod running
+  selector:
+    matchLabels:
+      app: iams
+      component: web

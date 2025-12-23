@@ -1,0 +1,113 @@
+# Network Policy - Default deny all ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: iams-production
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# Network Policy - Allow API ingress from ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-ingress
+  namespace: iams-production
+  labels:
+    app: iams
+    component: api
+spec:
+  podSelector:
+    matchLabels:
+      app: iams
+      component: api
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow from web pods (for internal calls)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: iams
+              component: web
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Network Policy - Allow Web ingress from ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-ingress
+  namespace: iams-production
+  labels:
+    app: iams
+    component: web
+spec:
+  podSelector:
+    matchLabels:
+      app: iams
+      component: web
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Network Policy - Allow egress to DNS, API, and external services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress
+  namespace: iams-production
+  labels:
+    app: iams
+spec:
+  podSelector:
+    matchLabels:
+      app: iams
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow HTTPS to external services (database, Redis, etc.)
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 1433  # SQL Server
+        - protocol: TCP
+          port: 6379  # Redis
+        - protocol: TCP
+          port: 6380  # Redis SSL
+    # Allow all egress (less restrictive, can be tightened)
+    - to:
+        - podSelector: {}

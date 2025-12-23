@@ -81,8 +81,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Vehicle cache to avoid duplicate lookups and FK constraint violations
                 var vehicleCache = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
 
-                // Policy cache to prevent duplicate PolicyNumber+InnerCode combinations
-                var policyCache = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                // Policy cache to prevent duplicate PolicyNumber+InnerCode combinations AND to find original policies for endorsements
+                var policyCache = new Dictionary<string, Policy>(StringComparer.OrdinalIgnoreCase);
 
                 // Import each policy (without SaveChanges per policy)
                 foreach (var mappedPolicy in request.MappedPolicies)
@@ -231,7 +231,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string policyKey = $"{policyNumber}|{innerCode}";
 
             // Check if already in current batch
-            if (policyCache.Contains(policyKey))
+            if (policyCache.ContainsKey(policyKey))
             {
                 _logger.LogWarning(
                     "Skipping duplicate policy in batch: PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
@@ -253,18 +253,27 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     $"Duplicate policy: PolicyNumber={policyNumber}, InnerCode={innerCode} already exists in database.");
             }
 
-            // Add to cache to prevent duplicates in this batch
-            policyCache.Add(policyKey);
-
-            // Check for endorsements
+            // Check for endorsements - look in batch cache first, then database
             Policy? originalPolicy = null;
             if (innerCode != "000" && !string.IsNullOrEmpty(policyNumber))
             {
-                originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(policyNumber);
-                if (originalPolicy == null)
+                // First check if original policy is in the current batch
+                string originalPolicyKey = $"{policyNumber}|000";
+                if (policyCache.TryGetValue(originalPolicyKey, out originalPolicy))
                 {
-                    throw new InvalidOperationException(
-                        $"Original policy not found for endorsement: {policyNumber}");
+                    _logger.LogDebug(
+                        "Found original policy in batch cache for endorsement: PolicyNumber={PolicyNumber}",
+                        policyNumber);
+                }
+                else
+                {
+                    // Not in batch, check database
+                    originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(policyNumber);
+                    if (originalPolicy == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Original policy not found for endorsement: {policyNumber}. The original policy (InnerCode=000) must be imported before endorsements.");
+                    }
                 }
             }
 
@@ -300,6 +309,10 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 
             await _unitOfWork.Policies.AddAsync(policy);
             // NOTE: SaveChangesAsync removed - will be called once for all policies in batch
+
+            // Add to cache for endorsement lookups and duplicate prevention
+            policyCache[policyKey] = policy;
+            _logger.LogDebug("Added policy to cache: {PolicyNumber}|{InnerCode}", policyNumber, innerCode);
 
             // Create initial payment if applicable
             await CreateInitialPaymentIfNeeded(policy, policyType, dto, currency.Id, userId, cancellationToken);

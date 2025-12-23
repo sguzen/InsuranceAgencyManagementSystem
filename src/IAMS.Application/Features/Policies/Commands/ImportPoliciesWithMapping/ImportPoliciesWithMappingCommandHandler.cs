@@ -296,7 +296,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 Notes = dto.Notes,
                 InnerCode = innerCode,
                 StateType = dto.StateType,
-                OriginalPolicyId = originalPolicy?.Id,
+                OriginalPolicy = originalPolicy, // Use navigation property for batch processing
                 BranchCode = dto.BranchCode,
                 DriverAge = dto.DriverAge,
                 DriverType = ParseDriverType(dto.DriverTypeText),

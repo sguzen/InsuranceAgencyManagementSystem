@@ -11,6 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 {
+    // Helper class to track customer code generation state across the batch
+    internal class CustomerCodeState
+    {
+        public string? BaseCode { get; set; }
+        public int Counter { get; set; }
+    }
+
     public class ImportPoliciesWithMappingCommandHandler
         : IRequestHandler<ImportPoliciesWithMappingCommand, Result<PolicyImportResultDto>>
     {
@@ -68,10 +75,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Track generated customer codes in this batch to prevent duplicates
                 var generatedCustomerCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                // Get the next available customer code for this batch
-                // We'll increment from this base for each new customer
-                string? nextCustomerCode = null;
-                int customerCodeCounter = 0;
+                // Customer code generation state for batch processing
+                var codeState = new CustomerCodeState();
 
                 // Vehicle cache to avoid duplicate lookups and FK constraint violations
                 var vehicleCache = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
@@ -91,8 +96,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             customerCache,
                             generatedCustomerCodes,
                             vehicleCache,
-                            ref nextCustomerCode,
-                            ref customerCodeCounter,
+                            codeState,
                             cancellationToken);
 
                         result.SuccessCount++;
@@ -149,8 +153,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
             Dictionary<string, Vehicle> vehicleCache,
-            ref string? nextCustomerCode,
-            ref int customerCodeCounter,
+            CustomerCodeState codeState,
             CancellationToken cancellationToken)
         {
             var dto = mappedPolicy.OriginalImportData;
@@ -167,7 +170,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
                 // Customer from Excel data becomes the policy owner
-                policyOwnerCustomer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, ref nextCustomerCode, ref customerCodeCounter, userId, cancellationToken);
+                policyOwnerCustomer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, codeState, userId, cancellationToken);
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
             {
@@ -193,8 +196,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                         countryLookup,
                         customerCache,
                         generatedCustomerCodes,
-                        ref nextCustomerCode,
-                        ref customerCodeCounter,
+                        codeState,
                         userId,
                         cancellationToken);
                 }
@@ -272,8 +274,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
-            ref string? nextCustomerCode,
-            ref int customerCodeCounter,
+            CustomerCodeState codeState,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -304,8 +305,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 countryLookup,
                 customerCache,
                 generatedCustomerCodes,
-                ref nextCustomerCode,
-                ref customerCodeCounter,
+                codeState,
                 userId,
                 cancellationToken);
 
@@ -321,8 +321,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
-            ref string? nextCustomerCode,
-            ref int customerCodeCounter,
+            CustomerCodeState codeState,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -342,12 +341,12 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // Generate customer code using batch-aware logic
             string customerCode;
 
-            if (nextCustomerCode == null)
+            if (codeState.BaseCode == null)
             {
                 // First customer in batch - get the next available code from generator
                 customerCode = await _customerCodeGenerator.GenerateAsync();
-                nextCustomerCode = customerCode;
-                customerCodeCounter = 1;
+                codeState.BaseCode = customerCode;
+                codeState.Counter = 1;
 
                 _logger.LogInformation(
                     "Starting batch customer code generation from: {CustomerCode}",
@@ -356,12 +355,12 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             else
             {
                 // Subsequent customers - increment from the base code
-                customerCode = IncrementCustomerCode(nextCustomerCode, customerCodeCounter);
-                customerCodeCounter++;
+                customerCode = IncrementCustomerCode(codeState.BaseCode, codeState.Counter);
+                codeState.Counter++;
 
                 _logger.LogDebug(
                     "Generated batch customer code #{Counter}: {CustomerCode}",
-                    customerCodeCounter,
+                    codeState.Counter,
                     customerCode);
             }
 

@@ -66,6 +66,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Track generated customer codes in this batch to prevent duplicates
                 var generatedCustomerCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+                // Get the next available customer code for this batch
+                // We'll increment from this base for each new customer
+                string? nextCustomerCode = null;
+                int customerCodeCounter = 0;
+
                 // Vehicle cache to avoid duplicate lookups and FK constraint violations
                 var vehicleCache = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
 
@@ -84,6 +89,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             customerCache,
                             generatedCustomerCodes,
                             vehicleCache,
+                            ref nextCustomerCode,
+                            ref customerCodeCounter,
                             cancellationToken);
 
                         result.SuccessCount++;
@@ -140,6 +147,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
             Dictionary<string, Vehicle> vehicleCache,
+            ref string? nextCustomerCode,
+            ref int customerCodeCounter,
             CancellationToken cancellationToken)
         {
             var dto = mappedPolicy.OriginalImportData;
@@ -156,7 +165,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             if (mappedPolicy.PolicyOwnerSameAsInsured)
             {
                 // Customer from Excel data becomes the policy owner
-                policyOwnerCustomer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, userId, cancellationToken);
+                policyOwnerCustomer = await GetOrCreateCustomerAsync(dto, countryLookup, customerCache, generatedCustomerCodes, ref nextCustomerCode, ref customerCodeCounter, userId, cancellationToken);
             }
             else if (mappedPolicy.CreateNewPolicyOwner)
             {
@@ -182,6 +191,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                         countryLookup,
                         customerCache,
                         generatedCustomerCodes,
+                        ref nextCustomerCode,
+                        ref customerCodeCounter,
                         userId,
                         cancellationToken);
                 }
@@ -259,6 +270,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
+            ref string? nextCustomerCode,
+            ref int customerCodeCounter,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -289,6 +302,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 countryLookup,
                 customerCache,
                 generatedCustomerCodes,
+                ref nextCustomerCode,
+                ref customerCodeCounter,
                 userId,
                 cancellationToken);
 
@@ -304,6 +319,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Country> countryLookup,
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
+            ref string? nextCustomerCode,
+            ref int customerCodeCounter,
             string userId,
             CancellationToken cancellationToken)
         {
@@ -320,43 +337,34 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             var firstName = nameParts[0];
             var lastName = nameParts.Length > 1 ? nameParts[1] : (customerType == CustomerType.Corporate ? "" : firstName);
 
-            // Generate unique customer code (ensure it's not a duplicate in this batch)
+            // Generate customer code using batch-aware logic
             string customerCode;
-            int retryCount = 0;
-            const int maxRetries = 10;
 
-            do
+            if (nextCustomerCode == null)
             {
+                // First customer in batch - get the next available code from generator
                 customerCode = await _customerCodeGenerator.GenerateAsync();
-                retryCount++;
+                nextCustomerCode = customerCode;
+                customerCodeCounter = 1;
 
-                if (retryCount > maxRetries)
-                {
-                    // If we've retried too many times, something is wrong
-                    throw new InvalidOperationException(
-                        $"Failed to generate unique customer code after {maxRetries} attempts. " +
-                        $"Last generated code: {customerCode}");
-                }
+                _logger.LogInformation(
+                    "Starting batch customer code generation from: {CustomerCode}",
+                    customerCode);
+            }
+            else
+            {
+                // Subsequent customers - increment from the base code
+                customerCode = IncrementCustomerCode(nextCustomerCode, customerCodeCounter);
+                customerCodeCounter++;
 
-                if (!generatedCustomerCodes.Contains(customerCode))
-                {
-                    // Found a unique code, add it to the set and break
-                    generatedCustomerCodes.Add(customerCode);
-                    _logger.LogDebug("Generated unique customer code: {CustomerCode}", customerCode);
-                    break;
-                }
+                _logger.LogDebug(
+                    "Generated batch customer code #{Counter}: {CustomerCode}",
+                    customerCodeCounter,
+                    customerCode);
+            }
 
-                // Code already exists in this batch, log warning and retry
-                _logger.LogWarning(
-                    "Customer code {CustomerCode} already generated in this batch (attempt {Attempt}/{MaxAttempts}), retrying...",
-                    customerCode,
-                    retryCount,
-                    maxRetries);
-
-                // Small delay before retry to allow time for potential concurrent operations
-                await Task.Delay(10, cancellationToken);
-
-            } while (true);
+            // Track this code to prevent duplicates
+            generatedCustomerCodes.Add(customerCode);
 
             IdentificationType identificationType = IdentificationType.Passport;
             int? nationalityCountryId = null;
@@ -592,6 +600,45 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 return PaymentMethod.Cheque;
 
             return PaymentMethod.Cash;
+        }
+
+        private string IncrementCustomerCode(string baseCode, int increment)
+        {
+            // Customer codes typically have format: PREFIX + YEAR + NUMBER
+            // Example: MUS2025000001
+            // We need to extract the numeric portion and increment it
+
+            // Find where the numbers start (after the prefix)
+            int numberStartIndex = -1;
+            for (int i = baseCode.Length - 1; i >= 0; i--)
+            {
+                if (!char.IsDigit(baseCode[i]))
+                {
+                    numberStartIndex = i + 1;
+                    break;
+                }
+            }
+
+            if (numberStartIndex == -1 || numberStartIndex >= baseCode.Length)
+            {
+                // Entire string is digits or no digits found, unusual case
+                throw new InvalidOperationException($"Cannot parse customer code format: {baseCode}");
+            }
+
+            // Extract prefix and numeric portion
+            string prefix = baseCode.Substring(0, numberStartIndex);
+            string numericPart = baseCode.Substring(numberStartIndex);
+
+            // Parse the number, add increment, and format with leading zeros
+            if (!long.TryParse(numericPart, out long number))
+            {
+                throw new InvalidOperationException($"Cannot parse numeric portion of customer code: {baseCode}");
+            }
+
+            long newNumber = number + increment;
+            string newNumericPart = newNumber.ToString().PadLeft(numericPart.Length, '0');
+
+            return prefix + newNumericPart;
         }
 
         private string GeneratePolicyNumber()

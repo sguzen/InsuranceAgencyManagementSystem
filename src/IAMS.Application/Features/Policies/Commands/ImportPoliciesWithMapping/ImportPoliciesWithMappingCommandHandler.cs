@@ -79,6 +79,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Vehicle cache to avoid duplicate lookups and FK constraint violations
                 var vehicleCache = new Dictionary<string, Vehicle>(StringComparer.OrdinalIgnoreCase);
 
+                // Policy cache to prevent duplicate PolicyNumber+InnerCode combinations
+                var policyCache = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 // Import each policy (without SaveChanges per policy)
                 foreach (var mappedPolicy in request.MappedPolicies)
                 {
@@ -94,6 +97,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             customerCache,
                             generatedCustomerCodes,
                             vehicleCache,
+                            policyCache,
                             codeState,
                             cancellationToken);
 
@@ -151,6 +155,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Customer> customerCache,
             HashSet<string> generatedCustomerCodes,
             Dictionary<string, Vehicle> vehicleCache,
+            HashSet<string> policyCache,
             CustomerCodeState codeState,
             CancellationToken cancellationToken)
         {
@@ -216,22 +221,55 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             var currency = GetCurrencyFromLookup(dto.CurrencyCode ?? "TRY", currencyLookup);
             var vehicle = await GetOrCreateVehicleAsync(dto, policyOwnerCustomer, vehicleCache, userId);
 
+            // Determine PolicyNumber and InnerCode
+            string policyNumber = dto.PolicyNumber ?? GeneratePolicyNumber();
+            string innerCode = dto.InnerCode ?? "000";
+
+            // Check for duplicate PolicyNumber+InnerCode combination
+            string policyKey = $"{policyNumber}|{innerCode}";
+
+            // Check if already in current batch
+            if (policyCache.Contains(policyKey))
+            {
+                _logger.LogWarning(
+                    "Skipping duplicate policy in batch: PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
+                    policyNumber,
+                    innerCode);
+                throw new InvalidOperationException(
+                    $"Duplicate policy in import: PolicyNumber={policyNumber}, InnerCode={innerCode}. This policy already exists in the current batch.");
+            }
+
+            // Check if already exists in database
+            var existingPolicy = await _unitOfWork.Policies.GetByPolicyNumberAndInnerCodeAsync(policyNumber, innerCode);
+            if (existingPolicy != null)
+            {
+                _logger.LogWarning(
+                    "Skipping duplicate policy in database: PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
+                    policyNumber,
+                    innerCode);
+                throw new InvalidOperationException(
+                    $"Duplicate policy: PolicyNumber={policyNumber}, InnerCode={innerCode} already exists in database.");
+            }
+
+            // Add to cache to prevent duplicates in this batch
+            policyCache.Add(policyKey);
+
             // Check for endorsements
             Policy? originalPolicy = null;
-            if (dto.InnerCode != "000" && !string.IsNullOrEmpty(dto.PolicyNumber))
+            if (innerCode != "000" && !string.IsNullOrEmpty(policyNumber))
             {
-                originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(dto.PolicyNumber);
+                originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(policyNumber);
                 if (originalPolicy == null)
                 {
                     throw new InvalidOperationException(
-                        $"Original policy not found for endorsement: {dto.PolicyNumber}");
+                        $"Original policy not found for endorsement: {policyNumber}");
                 }
             }
 
             // Create policy
             var policy = new Policy
             {
-                PolicyNumber = dto.PolicyNumber ?? GeneratePolicyNumber(),
+                PolicyNumber = policyNumber,
                 Customer = policyOwnerCustomer,  // Use navigation property for batch processing
                 EnsuredEntity = ensuredEntity, // Sigortalı (insured person - stored as string)
                 InsuranceCompanyId = insuranceCompanyId,
@@ -245,7 +283,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 Status = dto.Status,
                 CurrencyId = currency.Id,
                 Notes = dto.Notes,
-                InnerCode = dto.InnerCode,
+                InnerCode = innerCode,
                 StateType = dto.StateType,
                 OriginalPolicyId = originalPolicy?.Id,
                 BranchCode = dto.BranchCode,

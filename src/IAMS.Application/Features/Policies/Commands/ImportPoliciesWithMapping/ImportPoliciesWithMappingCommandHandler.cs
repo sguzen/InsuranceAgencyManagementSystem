@@ -525,7 +525,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             {
                 var payment = new PolicyPayment
                 {
-                    PolicyId = policy.Id,
+                    Policy = policy, // Use navigation property for batch processing
                     Amount = paymentAmount,
                     PaymentDate = dto.PaymentDate ?? policy.StartDate, // Use start date if no payment date
                     PaymentMethod = ParsePaymentMethod(dto.PaymentMethod),

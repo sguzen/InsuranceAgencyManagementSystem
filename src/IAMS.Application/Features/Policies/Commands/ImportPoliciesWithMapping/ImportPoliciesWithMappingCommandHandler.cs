@@ -84,8 +84,21 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 // Policy cache to prevent duplicate PolicyNumber+InnerCode combinations AND to find original policies for endorsements
                 var policyCache = new Dictionary<string, Policy>(StringComparer.OrdinalIgnoreCase);
 
+                // Sort policies: Process InnerCode=000 (originals) first, then endorsements
+                // This ensures original policies are in cache before endorsements need them
+                var sortedPolicies = request.MappedPolicies
+                    .OrderBy(p => p.OriginalImportData.InnerCode != "000" && p.OriginalImportData.InnerCode != null ? 1 : 0)
+                    .ThenBy(p => p.RowNumber)
+                    .ToList();
+
+                _logger.LogInformation(
+                    "Processing {Total} policies: {Originals} originals, {Endorsements} endorsements",
+                    sortedPolicies.Count,
+                    sortedPolicies.Count(p => p.OriginalImportData.InnerCode == "000" || p.OriginalImportData.InnerCode == null),
+                    sortedPolicies.Count(p => p.OriginalImportData.InnerCode != "000" && p.OriginalImportData.InnerCode != null));
+
                 // Import each policy (without SaveChanges per policy)
-                foreach (var mappedPolicy in request.MappedPolicies)
+                foreach (var mappedPolicy in sortedPolicies)
                 {
                     try
                     {
@@ -227,30 +240,33 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string policyNumber = dto.PolicyNumber ?? GeneratePolicyNumber();
             string innerCode = dto.InnerCode ?? "000";
 
-            // Check for duplicate PolicyNumber+InnerCode combination
-            string policyKey = $"{policyNumber}|{innerCode}";
+            // Check for duplicate PolicyNumber+InnerCode+InsuranceCompanyId combination
+            // Same policy number can exist for different insurance companies
+            string policyKey = $"{insuranceCompanyId}|{policyNumber}|{innerCode}";
 
             // Check if already in current batch
             if (policyCache.ContainsKey(policyKey))
             {
                 _logger.LogWarning(
-                    "Skipping duplicate policy in batch: PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
+                    "Skipping duplicate policy in batch: InsuranceCompanyId={CompanyId}, PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
+                    insuranceCompanyId,
                     policyNumber,
                     innerCode);
                 throw new InvalidOperationException(
-                    $"Duplicate policy in import: PolicyNumber={policyNumber}, InnerCode={innerCode}. This policy already exists in the current batch.");
+                    $"Duplicate policy in import: PolicyNumber={policyNumber}, InnerCode={innerCode} for insurance company {insuranceCompanyId}. This policy already exists in the current batch.");
             }
 
-            // Check if already exists in database
+            // Check if already exists in database (for the same insurance company)
             var existingPolicy = await _unitOfWork.Policies.GetByPolicyNumberAndInnerCodeAsync(policyNumber, innerCode);
-            if (existingPolicy != null)
+            if (existingPolicy != null && existingPolicy.InsuranceCompanyId == insuranceCompanyId)
             {
                 _logger.LogWarning(
-                    "Skipping duplicate policy in database: PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
+                    "Skipping duplicate policy in database: InsuranceCompanyId={CompanyId}, PolicyNumber={PolicyNumber}, InnerCode={InnerCode}",
+                    insuranceCompanyId,
                     policyNumber,
                     innerCode);
                 throw new InvalidOperationException(
-                    $"Duplicate policy: PolicyNumber={policyNumber}, InnerCode={innerCode} already exists in database.");
+                    $"Duplicate policy: PolicyNumber={policyNumber}, InnerCode={innerCode} for insurance company {insuranceCompanyId} already exists in database.");
             }
 
             // Check for endorsements - look in batch cache first, then database
@@ -258,7 +274,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             if (innerCode != "000" && !string.IsNullOrEmpty(policyNumber))
             {
                 // First check if original policy is in the current batch
-                string originalPolicyKey = $"{policyNumber}|000";
+                string originalPolicyKey = $"{insuranceCompanyId}|{policyNumber}|000";
                 if (policyCache.TryGetValue(originalPolicyKey, out originalPolicy))
                 {
                     _logger.LogDebug(
@@ -312,7 +328,8 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
 
             // Add to cache for endorsement lookups and duplicate prevention
             policyCache[policyKey] = policy;
-            _logger.LogDebug("Added policy to cache: {PolicyNumber}|{InnerCode}", policyNumber, innerCode);
+            _logger.LogDebug("Added policy to cache: Company={CompanyId}, Policy={PolicyNumber}, InnerCode={InnerCode}",
+                insuranceCompanyId, policyNumber, innerCode);
 
             // Create initial payment if applicable
             await CreateInitialPaymentIfNeeded(policy, policyType, dto, currency.Id, userId, cancellationToken);

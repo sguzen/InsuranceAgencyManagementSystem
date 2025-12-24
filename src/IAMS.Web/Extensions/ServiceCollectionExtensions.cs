@@ -15,7 +15,7 @@ namespace IAMS.Web.Extensions
             services.AddScoped<IJSInteropService, JSInteropService>();
 
             // Register Web layer AutoMapper profiles (for infrastructure-dependent mappings)
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddAutoMapper(typeof(ServiceCollectionExtensions).Assembly);
 
             return services;
         }

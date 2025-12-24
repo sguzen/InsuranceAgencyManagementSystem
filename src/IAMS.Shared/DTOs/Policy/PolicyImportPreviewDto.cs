@@ -48,12 +48,17 @@ namespace IAMS.Shared.DTOs.Policy
         public string? PolicyOwnerIdentifier { get; set; }
         public string? PolicyOwnerPhone { get; set; }
 
+        // Additional fields for new customer creation
+        public CustomerType PolicyOwnerCustomerType { get; set; } = CustomerType.Individual;
+        public int? PolicyOwnerNationalityCountryId { get; set; } // Required for Individual type
+
         // Validation: Policy owner must be specified
         public bool IsValid => PolicyOwnerSameAsInsured ||
                               PolicyOwnerCustomerId.HasValue ||
                               (CreateNewPolicyOwner &&
                                !string.IsNullOrEmpty(PolicyOwnerName) &&
-                               !string.IsNullOrEmpty(PolicyOwnerIdentifier));
+                               !string.IsNullOrEmpty(PolicyOwnerIdentifier) &&
+                               (PolicyOwnerCustomerType == CustomerType.Corporate || PolicyOwnerNationalityCountryId.HasValue));
 
         // All original import data for saving
         public ImportPolicyDto OriginalImportData { get; set; } = null!;

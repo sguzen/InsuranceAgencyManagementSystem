@@ -220,16 +220,17 @@
 
                                             @if (policy.PolicyOwnerCustomerType == CustomerType.Individual)
                                             {
-                                                <MudSelect T="int?"
-                                                           @bind-Value="policy.PolicyOwnerNationalityCountryId"
-                                                           Label="Uyruk (Nationality)" Variant="Variant.Outlined"
-                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
-                                                           Required="true">
-                                                    @foreach (var country in countries)
-                                                    {
-                                                        <MudSelectItem Value="@((int?)country.Id)">@country.Name</MudSelectItem>
-                                                    }
-                                                </MudSelect>
+                                                <MudAutocomplete T="CountryDto"
+                                                                 SearchFunc="@SearchCountriesAsync"
+                                                                 ToStringFunc="@(c => c == null ? "" : c.NameTr)"
+                                                                 Label="Uyruk (Nationality)" Variant="Variant.Outlined"
+                                                                 Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                                 Required="true"
+                                                                 ResetValueOnEmptyText="true"
+                                                                 CoerceText="true"
+                                                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                                                 AdornmentColor="Color.Primary"
+                                                                 ValueChanged="@((CountryDto c) => OnNationalityCountrySelected(policy, c))" />
 
                                                 @{
                                                     var identifierLabel = GetIdentifierLabel(policy.PolicyOwnerNationalityCountryId);
@@ -327,6 +328,41 @@
         return nationalityCountryId.Value == KKTC_COUNTRY_ID
             ? "Kimlik No (ID Card)"
             : "Pasaport No (Passport)";
+    }
+
+    private async Task<IEnumerable<CountryDto>> SearchCountriesAsync(string searchTerm, CancellationToken cancellationToken)
+    {
+        // Return all countries if no search term or too short
+        if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 1)
+            return countries;
+
+        var searchLower = searchTerm.ToLowerInvariant();
+
+        // Search by Turkish name, English name, code, or special handling for KKTC
+        return countries.Where(c =>
+            c.NameTr.ToLowerInvariant().Contains(searchLower) ||
+            c.NameEn.ToLowerInvariant().Contains(searchLower) ||
+            // Allow "KKTC" to find "KUZEY KIBRIS TÜRK CUMHURİYETİ"
+            (c.Id == KKTC_COUNTRY_ID && searchLower.Contains("kktc")) ||
+            (c.Id == KKTC_COUNTRY_ID && "kuzey kibris türk cumhuriyeti".Contains(searchLower)) ||
+            (c.Id == KKTC_COUNTRY_ID && "kuzey".Contains(searchLower)) ||
+            (c.Id == KKTC_COUNTRY_ID && "kibris".Contains(searchLower)) ||
+            // Also search by code if available
+            (!string.IsNullOrEmpty(c.Code) && c.Code.ToLowerInvariant().Contains(searchLower))
+        ).ToList();
+    }
+
+    private void OnNationalityCountrySelected(PolicyImportPreviewDto policy, CountryDto? country)
+    {
+        if (country != null)
+        {
+            policy.PolicyOwnerNationalityCountryId = country.Id;
+        }
+        else
+        {
+            policy.PolicyOwnerNationalityCountryId = null;
+        }
+        StateHasChanged();
     }
 
     private void OnFileSelected(InputFileChangeEventArgs e)

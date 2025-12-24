@@ -13,211 +13,137 @@
 
 <PageTitle>Kontrol Paneli - IAMS</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False">
-    <div class="d-flex justify-space-between align-center mb-6">
-        <MudText Typo="Typo.h3">Kontrol Paneli</MudText>
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-2">
+    <MudStack Spacing="3">
+        <div class="d-flex justify-space-between align-center">
+            <MudText Typo="Typo.h4">Kontrol Paneli</MudText>
 
-        <AuthorizeView>
-            <Authorized>
-                <MudText Typo="Typo.h6">Hoş geldiniz, @context.User.Identity?.Name</MudText>
-            </Authorized>
-        </AuthorizeView>
-    </div>
+            <AuthorizeView>
+                <Authorized>
+                    <MudText Typo="Typo.h6">Hoş geldiniz, @context.User.Identity?.Name</MudText>
+                </Authorized>
+            </AuthorizeView>
+        </div>
 
-    @if (_isLoading)
-    {
-        <MudProgressLinear Indeterminate="true" Class="mb-4" />
-    }
+        @if (_isLoading)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
 
-    <MudGrid>
-        <MudItem xs="12" md="6" lg="3">
-            <MudCard Elevation="4">
-                <MudCardContent>
-                    <div class="d-flex justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.h6">Toplam Müşteri</MudText>
-                            <MudText Typo="Typo.h4">@_totalCustomers</MudText>
-                        </div>
-                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
+        <!-- Payment Information Section -->
+        <MudGrid>
+            <!-- Outstanding Payments by Customer -->
+            <MudItem xs="12" lg="6">
+                <MudCard Elevation="4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Müşteri Bazlı Kalan Bakiye</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Text"
+                                       OnClick="@(() => Navigation.NavigateTo("/customers?filter=outstanding"))">
+                                Tümünü Gör
+                            </MudButton>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_customersWithOutstanding?.Any() == true)
+                        {
+                            <MudTable Items="_customersWithOutstanding.Take(5)" Hover="true" Dense="true">
+                                <HeaderContent>
+                                    <MudTh>Müşteri</MudTh>
+                                    <MudTh>Poliçe Sayısı</MudTh>
+                                    <MudTh>Bekleyen Ödeme</MudTh>
+                                    <MudTh Style="text-align:right">Kalan Bakiye</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Müşteri" Style="cursor: pointer" @onclick="@(() => Navigation.NavigateTo($"/customers/{context.CustomerId}"))">
+                                        <div>
+                                            <MudLink Href="@($"/customers/{context.CustomerId}")" Typo="Typo.body2" Color="Color.Primary">@context.CustomerName</MudLink>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerEmail</MudText>
+                                        </div>
+                                    </MudTd>
+                                    <MudTd DataLabel="Poliçe Sayısı">@context.ActivePoliciesCount</MudTd>
+                                    <MudTd DataLabel="Bekleyen Ödeme">@context.PendingPaymentsCount</MudTd>
+                                    <MudTd DataLabel="Kalan Bakiye" Style="text-align:right">
+                                        <MudChip T="String" Size="Size.Small" Color="Color.Error">₺@context.OutstandingBalance.ToString("N2")</MudChip>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                        else
+                        {
+                            <MudText Color="Color.Secondary">Kalan bakiyesi olan müşteri bulunmuyor</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
 
-        <MudItem xs="12" md="6" lg="3">
-            <MudCard Elevation="4">
-                <MudCardContent>
-                    <div class="d-flex justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.h6">Aktif Poliçeler</MudText>
-                            <MudText Typo="Typo.h4">@_totalPolicies</MudText>
-                        </div>
-                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Success" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <MudItem xs="12" md="6" lg="3">
-            <MudCard Elevation="4">
-                <MudCardContent>
-                    <div class="d-flex justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.h6">Yakında Bitenler</MudText>
-                            <MudText Typo="Typo.h4">@_expiringPolicies</MudText>
-                        </div>
-                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <MudItem xs="12" md="6" lg="3">
-            <MudCard Elevation="4">
-                <MudCardContent>
-                    <div class="d-flex justify-space-between align-start">
-                        <div style="flex: 1;">
-                            <MudText Typo="Typo.h6">Aylık Gelir</MudText>
-                            @if (_monthlyRevenueByCurrency?.Any() == true)
-                            {
-                                @foreach (var currency in _monthlyRevenueByCurrency.OrderByDescending(x => x.Value))
-                                {
-                                    <MudText Typo="Typo.body1" Class="mt-1">
-                                        <strong>@currency.Key:</strong> @currency.Value.ToString("N2")
-                                    </MudText>
-                                }
-                            }
-                            else
-                            {
-                                <MudText Typo="Typo.h4">0</MudText>
-                            }
-                        </div>
-                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
-
-
-    <!-- Payment Information Section -->
-    <MudGrid Class="mt-8">
-        <!-- Outstanding Payments by Customer -->
-        <MudItem xs="12" lg="6">
-            <MudCard Elevation="4">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Müşteri Bazlı Kalan Bakiye</MudText>
-                    </CardHeaderContent>
-                    <CardHeaderActions>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Text"
-                                   OnClick="@(() => Navigation.NavigateTo("/customers?filter=outstanding"))">
-                            Tümünü Gör
-                        </MudButton>
-                    </CardHeaderActions>
-                </MudCardHeader>
-                <MudCardContent>
-                    @if (_customersWithOutstanding?.Any() == true)
-                    {
-                        <MudTable Items="_customersWithOutstanding.Take(5)" Hover="true" Dense="true">
-                            <HeaderContent>
-                                <MudTh>Müşteri</MudTh>
-                                <MudTh>Poliçe Sayısı</MudTh>
-                                <MudTh>Bekleyen Ödeme</MudTh>
-                                <MudTh Style="text-align:right">Kalan Bakiye</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Müşteri" Style="cursor: pointer" @onclick="@(() => Navigation.NavigateTo($"/customers/{context.CustomerId}"))">
-                                    <div>
-                                        <MudLink Href="@($"/customers/{context.CustomerId}")" Typo="Typo.body2" Color="Color.Primary">@context.CustomerName</MudLink>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerEmail</MudText>
-                                    </div>
-                                </MudTd>
-                                <MudTd DataLabel="Poliçe Sayısı">@context.ActivePoliciesCount</MudTd>
-                                <MudTd DataLabel="Bekleyen Ödeme">@context.PendingPaymentsCount</MudTd>
-                                <MudTd DataLabel="Kalan Bakiye" Style="text-align:right">
-                                    <MudChip T="String" Size="Size.Small" Color="Color.Error">₺@context.OutstandingBalance.ToString("N2")</MudChip>
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    }
-                    else
-                    {
-                        <MudText Color="Color.Secondary">Kalan bakiyesi olan müşteri bulunmuyor</MudText>
-                    }
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <!-- Payments Due This Month -->
-        <MudItem xs="12" lg="6">
-            <MudCard Elevation="4">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Bu Ay Ödenecekler</MudText>
-                    </CardHeaderContent>
-                    <CardHeaderActions>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Text"
-                                   OnClick="@(() => Navigation.NavigateTo("/accounting/payments"))">
-                            Tümünü Gör
-                        </MudButton>
-                    </CardHeaderActions>
-                </MudCardHeader>
-                <MudCardContent>
-                    @if (_paymentsDueThisMonth?.Any() == true)
-                    {
-                        <MudTable Items="_paymentsDueThisMonth.Take(5)" Hover="true" Dense="true">
-                            <HeaderContent>
-                                <MudTh>Müşteri</MudTh>
-                                <MudTh>Vade Tarihi</MudTh>
-                                <MudTh Style="text-align:right">Tutar</MudTh>
-                                <MudTh>Durum</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Müşteri">
-                                    <div>
-                                        <MudText Typo="Typo.body2">@context.CustomerName</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.PolicyNumber</MudText>
-                                    </div>
-                                </MudTd>
-                                <MudTd DataLabel="Vade Tarihi">
-                                    <MudText Typo="Typo.body2">@context.DueDate?.ToString("dd MMM yyyy")</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="Tutar" Style="text-align:right">
-                                    @context.CurrencySymbol@context.Amount.ToString("N2")
-                                </MudTd>
-                                <MudTd DataLabel="Durum">
-                                    @if (context.DueDate.HasValue && context.DueDate.Value < DateTime.Today)
-                                    {
-                                        <MudChip T="String" Size="Size.Small" Color="Color.Error">Gecikmiş</MudChip>
-                                    }
-                                    else
-                                    {
-                                        <MudChip T="String" Size="Size.Small" Color="Color.Warning">Bekliyor</MudChip>
-                                    }
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    }
-                    else
-                    {
-                        <MudText Color="Color.Secondary">Bu ay ödenecek ödeme bulunmuyor</MudText>
-                    }
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
+            <!-- Payments Due This Month -->
+            <MudItem xs="12" lg="6">
+                <MudCard Elevation="4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Bu Ay Ödenecekler</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Text"
+                                       OnClick="@(() => Navigation.NavigateTo("/accounting/payments"))">
+                                Tümünü Gör
+                            </MudButton>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_paymentsDueThisMonth?.Any() == true)
+                        {
+                            <MudTable Items="_paymentsDueThisMonth.Take(5)" Hover="true" Dense="true">
+                                <HeaderContent>
+                                    <MudTh>Müşteri</MudTh>
+                                    <MudTh>Vade Tarihi</MudTh>
+                                    <MudTh Style="text-align:right">Tutar</MudTh>
+                                    <MudTh>Durum</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Müşteri">
+                                        <div>
+                                            <MudText Typo="Typo.body2">@context.CustomerName</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.PolicyNumber</MudText>
+                                        </div>
+                                    </MudTd>
+                                    <MudTd DataLabel="Vade Tarihi">
+                                        <MudText Typo="Typo.body2">@context.DueDate?.ToString("dd MMM yyyy")</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Tutar" Style="text-align:right">
+                                        @context.CurrencySymbol@context.Amount.ToString("N2")
+                                    </MudTd>
+                                    <MudTd DataLabel="Durum">
+                                        @if (context.DueDate.HasValue && context.DueDate.Value < DateTime.Today)
+                                        {
+                                            <MudChip T="String" Size="Size.Small" Color="Color.Error">Gecikmiş</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="String" Size="Size.Small" Color="Color.Warning">Bekliyor</MudChip>
+                                        }
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                        else
+                        {
+                            <MudText Color="Color.Secondary">Bu ay ödenecek ödeme bulunmuyor</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudStack>
 </MudContainer>
 
 @code {
     private bool _isLoading = true;
-    private int _totalCustomers = 0;
-    private int _totalPolicies = 0;
-    private int _expiringPolicies = 0;
-    private Dictionary<string, decimal>? _monthlyRevenueByCurrency = null;
-  //  private List<IAMS.Shared.DTOs.Customer.CustomerDto>? _recentCustomers;
     private List<IAMS.Shared.DTOs.Payment.CustomerOutstandingBalanceDto>? _customersWithOutstanding;
     private List<IAMS.Shared.DTOs.Payment.PolicyPaymentDto>? _paymentsDueThisMonth;
 
@@ -232,25 +158,9 @@
 
         try
         {
-            // Load dashboard statistics using API clients
-            var totalCustomers = await CustomersApi.GetTotalCustomersCountAsync();
-            _totalCustomers = totalCustomers.Data;
-
-            var totalPolicies = await PoliciesApi.GetTotalPoliciesCountAsync();
-            _totalPolicies = totalPolicies.Data;
-
-            var expiringPolicies = await PoliciesApi.GetExpiringPoliciesCountAsync(30);
-            _expiringPolicies = expiringPolicies.Data;
-
-            var monthlyRevenueByCurrency = await PoliciesApi.GetMonthlyRevenueByCurrencyAsync();
-            _monthlyRevenueByCurrency = monthlyRevenueByCurrency.Data;
-
-            // Load recent customers
-           // _recentCustomers = (await CustomerService.GetRecentCustomersAsync(5)).Data;
-
             // Load payment information (limit to 5 for dashboard)
             _customersWithOutstanding = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync(limit: 5);
-            _paymentsDueThisMonth = await PaymentsApi.GetPaymentsDueThisMonthAsync();
+            _paymentsDueThisMonth = await PaymentsApi.GetPaymentsDueThisMonthAsync(limit: 5);
         }
         catch (Exception ex)
         {

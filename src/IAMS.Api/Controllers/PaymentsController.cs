@@ -117,9 +117,9 @@ namespace IAMS.Api.Controllers
         /// Get payments due this month
         /// </summary>
         [HttpGet("due-this-month")]
-        public async Task<ActionResult<List<PolicyPaymentDto>>> GetPaymentsDueThisMonth()
+        public async Task<ActionResult<List<PolicyPaymentDto>>> GetPaymentsDueThisMonth([FromQuery] int? limit = null)
         {
-            var query = new GetPaymentsDueThisMonthQuery();
+            var query = new GetPaymentsDueThisMonthQuery { Limit = limit };
             var result = await _mediator.Send(query);
             return Ok(result);
         }

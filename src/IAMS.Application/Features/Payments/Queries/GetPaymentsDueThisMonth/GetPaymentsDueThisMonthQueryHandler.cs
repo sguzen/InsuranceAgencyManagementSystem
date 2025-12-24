@@ -30,6 +30,13 @@ namespace IAMS.Application.Features.Payments.Queries.GetPaymentsDueThisMonth
             {
                 // Use IQueryable + ProjectTo for optimized database projection
                 var query = _unitOfWork.PolicyPayments.GetPaymentsDueThisMonthQuery();
+
+                // Apply limit if specified (for dashboard use)
+                if (request.Limit.HasValue && request.Limit.Value > 0)
+                {
+                    query = query.Take(request.Limit.Value);
+                }
+
                 var payments = await query
                     .ProjectTo<PolicyPaymentListDto>(_mapper.ConfigurationProvider)
                     .ToListAsync(cancellationToken);

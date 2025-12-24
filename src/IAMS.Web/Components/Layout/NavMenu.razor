@@ -14,14 +14,9 @@
     <MudDivider Class="my-2" />
 
     <!-- Customers Section -->
-    <MudNavGroup Icon="@Icons.Material.Filled.People" Expanded="true" Title="Müşteriler" >
-        <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.List" IconColor="Color.Primary">
-            Müşteri Listesi
-        </MudNavLink>
-        <MudNavLink Href="/customers/create" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Success">
-            Yeni Müşteri
-        </MudNavLink>
-    </MudNavGroup>
+    <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.People" Match="NavLinkMatch.Prefix">
+        Cari Kart
+    </MudNavLink>
 
     <!-- Policies Section -->
     <MudNavGroup Title="Poliçeler" Icon="@Icons.Material.Filled.Assignment" Expanded="true">
@@ -33,16 +28,6 @@
         </MudNavLink>
         <MudNavLink Href="/policies/expiring" Icon="@Icons.Material.Filled.Schedule" IconColor="Color.Warning">
             Süresi Dolacaklar
-        </MudNavLink>
-    </MudNavGroup>
-
-    <!-- Insurance Companies Section -->
-    <MudNavGroup Title="Sigorta Şirketleri" Icon="@Icons.Material.Filled.Business">
-        <MudNavLink Href="/insurance-companies" Icon="@Icons.Material.Filled.List" IconColor="Color.Primary">
-            Şirket Listesi
-        </MudNavLink>
-        <MudNavLink Href="/insurance-companies/create" Icon="@Icons.Material.Filled.Add" IconColor="Color.Success">
-            Yeni Şirket
         </MudNavLink>
     </MudNavGroup>
 
@@ -88,6 +73,9 @@
         <MudNavLink Href="/settings/general" Icon="@Icons.Material.Filled.Tune">
             Genel Ayarlar
         </MudNavLink>
+        <MudNavLink Href="/insurance-companies" Icon="@Icons.Material.Filled.Business">
+            Sigorta Şirketleri
+        </MudNavLink>
         <MudNavLink Href="/settings/users" Icon="@Icons.Material.Filled.ManageAccounts">
             Kullanıcı Yönetimi
         </MudNavLink>
@@ -129,7 +117,13 @@
 
     private bool CheckModuleEnabled(string moduleName)
     {
-        // For now, return true. In production, check actual module status
+        // Hide Reporting and Accounting modules as per user request
+        if (moduleName == "Reporting" || moduleName == "Accounting")
+        {
+            return false;
+        }
+
+        // For other modules, return true. In production, check actual module status
         // This would be implemented by calling a module service
         return true;
 

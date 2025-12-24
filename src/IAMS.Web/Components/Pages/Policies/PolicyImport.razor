@@ -221,9 +221,9 @@
 
                                             @if (policy.PolicyOwnerCustomerType == CustomerType.Individual)
                                             {
-                                                @{
+                                                
                                                     var selectedCountry = countries.FirstOrDefault(c => c.Id == policy.PolicyOwnerNationalityCountryId);
-                                                }
+                                                
                                                 <MudAutocomplete T="CountryDto"
                                                                  SearchFunc="@SearchCountriesAsync"
                                                                  ToStringFunc="@(c => c == null ? "" : c.NameTr)"
@@ -237,9 +237,9 @@
                                                                  AdornmentColor="Color.Primary"
                                                                  ValueChanged="@((CountryDto c) => OnNationalityCountrySelected(policy, c))" />
 
-                                                @{
+                                                
                                                     var identifierLabel = GetIdentifierLabel(policy.PolicyOwnerNationalityCountryId);
-                                                }
+                                                
                                                 <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
                                                               Label="@identifierLabel" Variant="Variant.Outlined"
                                                               Dense="true" Margin="Margin.Dense" Class="mt-2"

@@ -18,6 +18,9 @@ namespace IAMS.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(50);
 
+            builder.Property(t => t.ExternalId)
+                .HasMaxLength(20); // Agency number for policy display
+
             builder.Property(t => t.ConnectionString)
                 .HasMaxLength(1000);
 

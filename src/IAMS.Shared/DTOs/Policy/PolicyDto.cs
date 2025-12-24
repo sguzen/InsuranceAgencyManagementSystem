@@ -10,8 +10,13 @@ namespace IAMS.Shared.DTOs.Policy
     public class PolicyDto
     {
         public int Id { get; set; }
-        
+
         public string PolicyNumber { get; set; } = string.Empty;
+        public string? TecditNumber { get; set; } // Tecdit/endorsement number from Tec column
+
+        // Formatted display: {AgencyNumber}-{PolicyNumber}/{TecditNumber}
+        // This property should be populated by the service layer with tenant's ExternalId
+        public string? FormattedPolicyNumber { get; set; }
 
         // Policy Owner - Customer who pays
         public int CustomerId { get; set; }

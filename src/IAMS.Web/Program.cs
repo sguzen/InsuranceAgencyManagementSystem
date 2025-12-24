@@ -44,6 +44,7 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration); // Register ASP.NET Identity services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddWebServices(); // Register Web layer services including AutoMapper profiles
 
 // Add HTTP Client for API calls
 builder.Services.AddHttpClient<IAuthService, AuthService>();

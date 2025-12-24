@@ -98,9 +98,9 @@ namespace IAMS.Application.Services.Payments
             return result.Data;
         }
 
-        public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync()
+        public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync(int? limit = null)
         {
-            return await _mediator.Send(new GetPaymentsDueThisMonthQuery());
+            return await _mediator.Send(new GetPaymentsDueThisMonthQuery { Limit = limit });
         }
 
         public async Task<List<CustomerOutstandingBalanceDto>> GetCustomersWithOutstandingBalanceAsync()

@@ -11,7 +11,7 @@ namespace IAMS.Shared.Interfaces.Repositories
         Task<IEnumerable<PolicyPayment>> GetPaymentsByDateRangeAsync(DateTime fromDate, DateTime toDate);
         Task<decimal> GetTotalPaymentsByPolicyIdAsync(int policyId);
         Task<DateTime?> GetLastPaymentDateAsync(int customerId);
-        Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync();
+        Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync(int? limit = null);
 
         // Query methods that return IQueryable for ProjectTo optimization
         IQueryable<PolicyPayment> GetOverduePaymentsQuery();

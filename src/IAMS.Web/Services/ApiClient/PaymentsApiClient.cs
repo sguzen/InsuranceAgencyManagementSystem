@@ -12,7 +12,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<List<PolicyPaymentDto>>> GetPaymentsByPolicyIdAsync(int policyId);
         Task<Result<decimal>> GetTotalPaymentsByPolicyIdAsync(int policyId);
         Task<List<PolicyPaymentDto>> GetOverduePaymentsAsync();
-        Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync();
+        Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync(int? limit = null);
         Task<Result<PolicyPaymentDto>> CreateAsync(CreatePolicyPaymentDto paymentDto);
         Task<Result> UpdateAsync(int id, UpdatePolicyPaymentDto paymentDto);
         Task<Result> UpdatePaymentStatusAsync(int id, PaymentStatus status);
@@ -88,11 +88,17 @@ namespace IAMS.Web.Services.ApiClient
             return await GetAsync<decimal>($"api/payments/policy/{policyId}/total");
         }
 
-        public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync()
+        public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync(int? limit = null)
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/payments/due-this-month");
+                var url = "api/payments/due-this-month";
+                if (limit.HasValue && limit.Value > 0)
+                {
+                    url += $"?limit={limit.Value}";
+                }
+
+                var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                     return new List<PolicyPaymentDto>();
 

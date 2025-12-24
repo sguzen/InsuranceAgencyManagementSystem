@@ -18,20 +18,14 @@
 
 <PageTitle>Müşteriler</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
-    <MudStack Spacing="4">
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-2">
+    <MudStack Spacing="3">
         <!-- Header -->
         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudText Typo="Typo.h4" GutterBottom="false">
                 <MudIcon Icon="Icons.Material.Filled.People" Class="mr-3" />
-                Müşteriler
+                Cari Kart
             </MudText>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="NavigateToCreate">
-                Yeni Müşteri
-            </MudButton>
         </MudStack>
 
         <!-- Search and Filters -->
@@ -84,62 +78,6 @@
             </MudCardContent>
         </MudCard>
 
-        <!-- Statistics Cards -->
-        <MudGrid>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Müşteri</MudText>
-                                <MudText Typo="Typo.h4">@totalCustomers</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Müşteri</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Success">@activeCustomers</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bu Ay Yeni</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Info">@newCustomersThisMonth</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Info" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Poliçeli Müşteri</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Warning">@customersWithPolicies</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Warning" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-
         <!-- Customer Data Grid -->
         <MudCard>
             <MudDataGrid T="CustomerDto"
@@ -150,7 +88,7 @@
                          Virtualize="true"
                          FixedHeader="true"
                          Height="600px"
-                         RowsPerPage="25">
+                         RowsPerPage="10">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Müşteri Listesi</MudText>
                     <MudSpacer />
@@ -166,8 +104,16 @@
                 </ToolBarContent>
                 <Columns>
                     <PropertyColumn Property="x => x.CustomerCode" Title="Müşteri Kodu" />
-                    <PropertyColumn Property="x => x.FirstName" Title="Ad" />
-                    <PropertyColumn Property="x => x.LastName" Title="Soyad" />
+                    <TemplateColumn Title="Ad" Sortable="true" SortBy="x => x.FirstName">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2"><b>@context.Item.FirstName</b></MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Soyad" Sortable="true" SortBy="x => x.LastName">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2"><b>@context.Item.LastName</b></MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
                     <PropertyColumn Property="x => x.ActivePolicyCount" Title="Poliçe Sayısı" />
                     <TemplateColumn Title="Bakiye" Sortable="false">
                         <CellTemplate>
@@ -230,6 +176,62 @@
                 </NoRecordsContent>
             </MudDataGrid>
         </MudCard>
+
+        <!-- Statistics Cards -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Müşteri</MudText>
+                                <MudText Typo="Typo.h4">@totalCustomers</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Müşteri</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Success">@activeCustomers</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bu Ay Yeni</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Info">@newCustomersThisMonth</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Info" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Poliçeli Müşteri</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Warning">@customersWithPolicies</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Warning" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     </MudStack>
 </MudContainer>
 

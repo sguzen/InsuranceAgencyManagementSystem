@@ -14,6 +14,7 @@ namespace IAMS.Shared.DTOs.Policy
         // Policy/Endorsement identification
         public string? PolicyNumber { get; set; }
         public string InnerCode { get; set; } = "000"; // 3-digit code: 000 for main, 001+ for endorsements
+        public string? TecditNumber { get; set; } // Tec column - endorsement/renewal number
         public StateType StateType { get; set; } = StateType.YeniPolice; // TIP column (P, T, V, R, X, Y)
 
         [Obsolete("Use InnerCode instead")]

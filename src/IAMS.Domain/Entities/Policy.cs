@@ -9,6 +9,7 @@ namespace IAMS.Domain.Entities
     public class Policy : BaseEntity
     {
         public string PolicyNumber { get; set; } = string.Empty;
+        public string? TecditNumber { get; set; } // Tecdit/endorsement number from Tec column
 
         // Policy Owner - The Cari Kart customer who pays for the policy
         public int CustomerId { get; set; }

@@ -202,7 +202,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 }
                 else
                 {
-                    // Not in cache, create new customer
+                    // Not in cache, create new customer with UI-selected customer type and nationality
                     policyOwnerCustomer = await CreateCustomerAsync(
                         mappedPolicy.PolicyOwnerName,
                         mappedPolicy.PolicyOwnerIdentifier,
@@ -214,7 +214,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                         generatedCustomerCodes,
                         codeState,
                         userId,
-                        cancellationToken);
+                        cancellationToken,
+                        customerType: mappedPolicy.PolicyOwnerCustomerType,
+                        nationalityCountryIdOverride: mappedPolicy.PolicyOwnerNationalityCountryId);
                 }
             }
             else if (mappedPolicy.PolicyOwnerCustomerId.HasValue)
@@ -402,20 +404,23 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             HashSet<string> generatedCustomerCodes,
             CustomerCodeState codeState,
             string userId,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            CustomerType? customerType = null,
+            int? nationalityCountryIdOverride = null)
         {
             if (string.IsNullOrEmpty(customerName) || string.IsNullOrEmpty(customerIdentifier))
             {
                 throw new InvalidOperationException("Customer name and identifier are required");
             }
 
-            var customerType = idType?.ToUpperInvariant() == "MŞ" || idType?.ToUpperInvariant() == "MS"
+            // Use provided customer type or determine from idType
+            var effectiveCustomerType = customerType ?? (idType?.ToUpperInvariant() == "MŞ" || idType?.ToUpperInvariant() == "MS"
                 ? CustomerType.Corporate
-                : CustomerType.Individual;
+                : CustomerType.Individual);
 
             var nameParts = customerName.Split(new[] { ' ' }, 2);
             var firstName = nameParts[0];
-            var lastName = nameParts.Length > 1 ? nameParts[1] : (customerType == CustomerType.Corporate ? "" : firstName);
+            var lastName = nameParts.Length > 1 ? nameParts[1] : (effectiveCustomerType == CustomerType.Corporate ? "" : firstName);
 
             // Generate customer code using batch-aware logic
             string customerCode;
@@ -446,11 +451,38 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // Track this code to prevent duplicates
             generatedCustomerCodes.Add(customerCode);
 
-            IdentificationType identificationType = IdentificationType.Passport;
-            int? nationalityCountryId = null;
+            // Determine identification type and nationality
+            IdentificationType identificationType;
+            int? nationalityCountryId;
 
-            if (!string.IsNullOrEmpty(countryCode) && countryLookup.TryGetValue(countryCode, out var country))
+            if (effectiveCustomerType == CustomerType.Corporate)
             {
+                // Corporate customers use TradeLicense
+                identificationType = IdentificationType.TradeLicense;
+                nationalityCountryId = null; // Corporate entities typically don't have nationality
+            }
+            else if (nationalityCountryIdOverride.HasValue)
+            {
+                // Use the operator-selected nationality
+                nationalityCountryId = nationalityCountryIdOverride.Value;
+
+                // Determine ID type based on nationality
+                // KKTC (ID 601) uses IdCard, others use Passport
+                var country = await _unitOfWork.Countries.GetByIdAsync(nationalityCountryId.Value);
+                if (country != null && (country.Id == 601 ||
+                    country.NameTr.ToUpperInvariant().Contains("KKTC") ||
+                    country.NameEn.ToUpperInvariant().Contains("KKTC")))
+                {
+                    identificationType = IdentificationType.IdCard;
+                }
+                else
+                {
+                    identificationType = IdentificationType.Passport;
+                }
+            }
+            else if (!string.IsNullOrEmpty(countryCode) && countryLookup.TryGetValue(countryCode, out var country))
+            {
+                // Fallback to Excel data for backward compatibility
                 nationalityCountryId = country.Id;
                 if (countryCode == "601" ||
                     country.NameTr.ToUpperInvariant().Contains("KKTC") ||
@@ -458,6 +490,16 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 {
                     identificationType = IdentificationType.IdCard;
                 }
+                else
+                {
+                    identificationType = IdentificationType.Passport;
+                }
+            }
+            else
+            {
+                // Default fallback
+                identificationType = IdentificationType.Passport;
+                nationalityCountryId = null;
             }
 
             var customer = new Customer
@@ -465,7 +507,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 CustomerCode = customerCode,
                 FirstName = firstName,
                 LastName = lastName,
-                Type = customerType,
+                Type = effectiveCustomerType,
                 IdentificationNumber = customerIdentifier,
                 Email = $"noemail_{customerIdentifier}@temp.com",
                 Phone = !string.IsNullOrEmpty(phoneNumber) ? phoneNumber : "0000000000",

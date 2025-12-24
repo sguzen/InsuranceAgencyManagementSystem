@@ -274,13 +274,14 @@
     private ImportStep currentStep = ImportStep.FileSelection;
     private List<InsuranceCompanyDto> insuranceCompanies = new();
     private List<CountryDto> countries = new();
+    private CountryDto? kktcCountry = null;
     private int selectedInsuranceCompanyId;
     private IBrowserFile? selectedFile;
     private List<PolicyImportPreviewDto> previewPolicies = new();
     private bool isProcessing = false;
     private bool isSaving = false;
 
-    // KKTC country ID constant
+    // KKTC country ID constant (fallback)
     private const int KKTC_COUNTRY_ID = 601;
 
     protected override async Task OnInitializedAsync()
@@ -317,6 +318,23 @@
             if (result.IsSuccess && result.Data != null)
             {
                 countries = result.Data;
+
+                // Find KKTC country dynamically
+                kktcCountry = countries.FirstOrDefault(c =>
+                    c.Id == KKTC_COUNTRY_ID ||
+                    c.Code == "601" ||
+                    c.NameTr.Contains("KUZEY") ||
+                    c.NameTr.Contains("KIBRIS") ||
+                    c.NameTr.ToUpperInvariant().Contains("KKTC"));
+
+                if (kktcCountry != null)
+                {
+                    Console.WriteLine($"KKTC Country found: ID={kktcCountry.Id}, Name={kktcCountry.NameTr}");
+                }
+                else
+                {
+                    Console.WriteLine("KKTC Country NOT found in countries list!");
+                }
             }
         }
         catch (Exception ex)
@@ -330,9 +348,13 @@
         if (!nationalityCountryId.HasValue)
             return "Kimlik/Pasaport";
 
-        return nationalityCountryId.Value == KKTC_COUNTRY_ID
-            ? "Kimlik No (ID Card)"
-            : "Pasaport No (Passport)";
+        // Check if the selected country is KKTC
+        if (kktcCountry != null && nationalityCountryId.Value == kktcCountry.Id)
+        {
+            return "Kimlik No (ID Card)";
+        }
+
+        return "Pasaport No (Passport)";
     }
 
     private async Task<IEnumerable<CountryDto>> SearchCountriesAsync(string searchTerm, CancellationToken cancellationToken)
@@ -347,14 +369,22 @@
         return countries.Where(c =>
         {
             // Special handling for KKTC - match if search contains "kktc" or any part of the name
-            if (c.Id == KKTC_COUNTRY_ID)
+            if (kktcCountry != null && c.Id == kktcCountry.Id)
             {
                 // If typing "kktc", match KKTC
-                if (searchLower.Contains("kktc")) return true;
+                if (searchLower.Contains("kktc"))
+                {
+                    Console.WriteLine($"KKTC matched by 'kktc' search: {c.NameTr}");
+                    return true;
+                }
 
-                // If typing any part of "KUZEY KIBRIS TÜRK CUMHURİYET", match KKTC
+                // If typing any part of the country name, match KKTC
                 var nameLower = c.NameTr.ToLowerInvariant();
-                if (nameLower.Contains(searchLower)) return true;
+                if (nameLower.Contains(searchLower))
+                {
+                    Console.WriteLine($"KKTC matched by name search '{searchTerm}': {c.NameTr}");
+                    return true;
+                }
             }
 
             // For all countries: search in Turkish name, English name, or code
@@ -369,12 +399,15 @@
         if (country != null)
         {
             policy.PolicyOwnerNationalityCountryId = country.Id;
+            Console.WriteLine($"Nationality selected: ID={country.Id}, Name={country.NameTr}");
+            Console.WriteLine($"Label should be: {GetIdentifierLabel(country.Id)}");
         }
         else
         {
             policy.PolicyOwnerNationalityCountryId = null;
+            Console.WriteLine("Nationality cleared");
         }
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private void OnCustomerTypeChanged(PolicyImportPreviewDto policy, CustomerType type)
@@ -382,9 +415,10 @@
         policy.PolicyOwnerCustomerType = type;
 
         // When changing to Individual, set KKTC as default nationality
-        if (type == CustomerType.Individual && !policy.PolicyOwnerNationalityCountryId.HasValue)
+        if (type == CustomerType.Individual && !policy.PolicyOwnerNationalityCountryId.HasValue && kktcCountry != null)
         {
-            policy.PolicyOwnerNationalityCountryId = KKTC_COUNTRY_ID;
+            policy.PolicyOwnerNationalityCountryId = kktcCountry.Id;
+            Console.WriteLine($"Setting KKTC as default: ID={kktcCountry.Id}, Name={kktcCountry.NameTr}");
         }
         // When changing to Corporate, clear nationality (not applicable for corporate)
         else if (type == CustomerType.Corporate)
@@ -392,7 +426,7 @@
             policy.PolicyOwnerNationalityCountryId = null;
         }
 
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private void OnFileSelected(InputFileChangeEventArgs e)
@@ -613,7 +647,15 @@
             policy.PolicyOwnerCustomerId = null;
             // Set KKTC as default nationality for Individual customers
             policy.PolicyOwnerCustomerType = CustomerType.Individual;
-            policy.PolicyOwnerNationalityCountryId = KKTC_COUNTRY_ID;
+            if (kktcCountry != null)
+            {
+                policy.PolicyOwnerNationalityCountryId = kktcCountry.Id;
+                Console.WriteLine($"Setting KKTC as default on create: ID={kktcCountry.Id}, Name={kktcCountry.NameTr}");
+            }
+            else
+            {
+                Console.WriteLine("Warning: kktcCountry is null, cannot set default");
+            }
         }
         else
         {

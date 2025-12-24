@@ -51,5 +51,8 @@ namespace IAMS.MultiTenancy.Entities
 
         [MaxLength(10)]
         public string Language { get; set; } = "en";
+
+        [MaxLength(50)]
+        public string? ExternalId { get; set; } // Agency number for display (e.g., "A001")
     }
 }

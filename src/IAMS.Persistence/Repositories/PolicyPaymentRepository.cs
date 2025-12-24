@@ -92,13 +92,14 @@ namespace IAMS.Persistence.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync()
+        public async Task<IEnumerable<PolicyPayment>> GetPaymentsDueThisMonthAsync(int? limit = null)
         {
             var today = DateTime.Today;
             var startOfMonth = new DateTime(today.Year, today.Month, 1);
             var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
-            return await _dbSet
+            var query = _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(pp => pp.Policy)
                     .ThenInclude(p => p.Customer)
                 .Include(pp => pp.Policy)
@@ -110,8 +111,15 @@ namespace IAMS.Persistence.Repositories
                             pp.DueDate.HasValue &&
                             pp.DueDate.Value >= startOfMonth &&
                             pp.DueDate.Value <= endOfMonth)
-                .OrderBy(pp => pp.DueDate)
-                .ToListAsync();
+                .OrderBy(pp => pp.DueDate);
+
+            // Apply limit if specified (for dashboard use)
+            if (limit.HasValue && limit.Value > 0)
+            {
+                query = (IOrderedQueryable<PolicyPayment>)query.Take(limit.Value);
+            }
+
+            return await query.ToListAsync();
         }
 
         // ========================================

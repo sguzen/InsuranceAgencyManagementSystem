@@ -23,34 +23,37 @@ namespace IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstanding
         {
             try
             {
-                // Simple, straightforward query: For each customer with active policies,
-                // calculate total debt (policy premiums) minus total paid (policy payments)
+                // For each customer, calculate total debt (policy premiums) minus total paid (policy payments)
+                // and filter to only those with positive balance
                 var baseQuery = _unitOfWork.Customers.AsQueryable()
-                    .Select(c => new CustomerOutstandingBalanceDto
+                    .Where(c => !c.IsDeleted) // Only active customers
+                    .Select(c => new
                     {
-                        CustomerId = c.Id,
-                        CustomerName = c.FirstName + " " + c.LastName,
-                        CustomerEmail = c.Email ?? string.Empty,
-                        // Total debt from active policies
-                        OutstandingBalance = c.Policies
-                            .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
-                            .Sum(p => (decimal?)p.PremiumAmount) ?? 0
-                            -
-                            c.Policies
-                            .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
+                        Customer = c,
+                        TotalDebt = c.Policies
+                            .Where(p => !p.IsDeleted)
+                            .Sum(p => (decimal?)p.PremiumAmount) ?? 0,
+                        TotalPaid = c.Policies
+                            .Where(p => !p.IsDeleted)
                             .SelectMany(p => p.PolicyPayments)
-                            .Where(pp => pp.Status == Domain.Enums.PaymentStatus.Completed)
+                            .Where(pp => pp.Status == Domain.Enums.PaymentStatus.Completed && !pp.IsDeleted)
                             .Sum(pp => (decimal?)pp.Amount) ?? 0,
-                        // Count of active policies
-                        ActivePoliciesCount = c.Policies
-                            .Count(p => p.Status == Domain.Enums.PolicyStatus.Active),
-                        // Count of pending payments
+                        ActivePoliciesCount = c.Policies.Count(p => p.Status == Domain.Enums.PolicyStatus.Active && !p.IsDeleted),
                         PendingPaymentsCount = c.Policies
-                            .Where(p => p.Status == Domain.Enums.PolicyStatus.Active)
+                            .Where(p => !p.IsDeleted)
                             .SelectMany(p => p.PolicyPayments)
-                            .Count(pp => pp.Status == Domain.Enums.PaymentStatus.Pending)
+                            .Count(pp => pp.Status == Domain.Enums.PaymentStatus.Pending && !pp.IsDeleted)
                     })
-                    .Where(x => x.OutstandingBalance > 0) // Only customers with outstanding debt
+                    .Where(x => x.TotalDebt > x.TotalPaid) // Only customers with outstanding debt
+                    .Select(x => new CustomerOutstandingBalanceDto
+                    {
+                        CustomerId = x.Customer.Id,
+                        CustomerName = x.Customer.FirstName + " " + x.Customer.LastName,
+                        CustomerEmail = x.Customer.Email ?? string.Empty,
+                        OutstandingBalance = x.TotalDebt - x.TotalPaid,
+                        ActivePoliciesCount = x.ActivePoliciesCount,
+                        PendingPaymentsCount = x.PendingPaymentsCount
+                    })
                     .OrderByDescending(x => x.OutstandingBalance);
 
                 // Apply limit if specified

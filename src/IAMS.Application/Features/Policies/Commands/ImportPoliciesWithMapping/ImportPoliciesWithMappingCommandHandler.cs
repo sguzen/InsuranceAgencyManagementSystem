@@ -312,6 +312,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             var policy = new Policy
             {
                 PolicyNumber = policyNumber,
+                TecditNumber = dto.TecditNumber, // Tecdit number from Tec column
                 Customer = policyOwnerCustomer,  // Use navigation property for batch processing
                 EnsuredEntity = ensuredEntity, // Sigortalı (insured person - stored as string)
                 InsuranceCompanyId = insuranceCompanyId,

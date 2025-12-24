@@ -170,8 +170,8 @@ namespace IAMS.Application.Services.PolicyImport
             // Policy number
             policy.PolicyNumber = GetCellValue(row, columnMap, "Pol.No", "PolNo", "polno", "policeno");
 
-            // Policy type code (Tec)
-           // policy.PolicyTypeCode = GetCellValue(row, columnMap, "Tec", "tec");
+            // Tecdit number from Tec column
+            policy.TecditNumber = GetCellValue(row, columnMap, "Tec", "tec", "tecdit");
 
             // Inner Code / Endorsement number (Z.No) - 000 for main policy, 001+ for endorsements
             var innerCode = GetCellValue(row, columnMap, "Z.No", "ZNo", "zno", "zeyilno", "innercode");

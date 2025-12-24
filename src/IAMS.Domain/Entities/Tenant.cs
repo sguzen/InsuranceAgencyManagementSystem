@@ -7,6 +7,7 @@ namespace IAMS.Domain.Entities
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Identifier { get; set; } = string.Empty; // Subdomain or unique identifier
+        public string? ExternalId { get; set; } // Agency number for policy display (e.g., "A001")
         public string? ConnectionString { get; set; }
         public TenantStatus Status { get; set; } = TenantStatus.Active;
         public SubscriptionType SubscriptionType { get; set; } = SubscriptionType.Basic;

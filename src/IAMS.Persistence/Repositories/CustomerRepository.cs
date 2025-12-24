@@ -72,7 +72,9 @@ namespace IAMS.Persistence.Repositories
 
         public async Task<(List<Customer> customers, int totalCount)> GetPagedAsync(CustomerQueryParams queryParams)
         {
-            var query = _dbSet.Where(c => !c.IsDeleted); //&& c.TenantId == queryParams.);
+            var query = _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
+                .Where(c => !c.IsDeleted); //&& c.TenantId == queryParams.);
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
@@ -266,8 +268,9 @@ namespace IAMS.Persistence.Repositories
         {
             try
             {
-                // OPTIMIZED: Move Include before OrderByDescending for better performance
+                // OPTIMIZED: AsNoTracking for read-only query, Include before OrderByDescending for better performance
                 return await _dbSet
+                    .AsNoTracking()
                     .Where(c => !c.IsDeleted)
                     .Include(c => c.Policies.Where(p => !p.IsDeleted))
                     .OrderByDescending(c => c.CreatedOn)
@@ -348,8 +351,9 @@ namespace IAMS.Persistence.Repositories
         {
             try
             {
-                // OPTIMIZED: Count in database, then load customers
+                // OPTIMIZED: AsNoTracking for read-only query, count in database, then load customers
                 return await _dbSet
+                    .AsNoTracking()
                     .Where(c => !c.IsDeleted)
                     .Select(c => new {
                         Customer = c,

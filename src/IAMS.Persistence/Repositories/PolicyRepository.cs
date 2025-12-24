@@ -105,6 +105,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<PagedResult<Policy>> GetPoliciesAsync(PolicyQueryParams queryParams)
         {
             var query = _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
@@ -219,6 +220,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<PagedResult<Policy>> GetPoliciesPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
         {
             var query = _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
@@ -261,6 +263,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<List<Policy>> GetActivePoliciesAsync()
         {
             return await _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
@@ -273,6 +276,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<List<Policy>> GetPoliciesByStatusAsync(PolicyStatus status)
         {
             return await _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
@@ -314,6 +318,7 @@ namespace IAMS.Persistence.Repositories
         public async Task<List<Policy>> GetRecentPoliciesAsync(int count)
         {
             return await _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
@@ -509,6 +514,7 @@ namespace IAMS.Persistence.Repositories
         {
             var search = searchTerm.ToLower();
             return await _dbSet
+                .AsNoTracking() // OPTIMIZED: Read-only query
                 .Include(p => p.Customer)
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)

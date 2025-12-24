@@ -15,8 +15,8 @@
 
 <PageTitle>Poliçeler</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False" Class="pa-6">
-    <MudStack Spacing="4">
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-2">
+    <MudStack Spacing="3">
         <!-- Header -->
         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudText Typo="Typo.h4" GutterBottom="false">
@@ -121,63 +121,6 @@
             </MudCardContent>
         </MudCard>
 
-        <!-- Statistics Cards -->
-        <MudGrid>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe</MudText>
-                                <MudText Typo="Typo.h4">@totalPolicies</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Primary" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Poliçe</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Success">@activePolicies</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Süresi Dolacak</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Warning">@expiringCount</MudText>
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">30 gün içinde</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="Color.Warning" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aylık Gelir</MudText>
-                                <MudText Typo="Typo.h5" Color="Color.Info">@monthlyRevenue.ToString("C")</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-
         <!-- Policies Data Grid -->
         <MudCard>
             <MudDataGrid T="PolicyDto"
@@ -188,7 +131,7 @@
                          Virtualize="true"
                          FixedHeader="true"
                          Height="600px"
-                         RowsPerPage="25">
+                         RowsPerPage="10">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Poliçe Listesi</MudText>
                     <MudSpacer />
@@ -481,6 +424,63 @@
                 </NoRecordsContent>
             </MudDataGrid>
         </MudCard>
+
+        <!-- Statistics Cards -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe</MudText>
+                                <MudText Typo="Typo.h4">@totalPolicies</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Primary" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Poliçe</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Success">@activePolicies</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Süresi Dolacak</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Warning">@expiringCount</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">30 gün içinde</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="Color.Warning" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="pb-2">
+                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aylık Gelir</MudText>
+                                <MudText Typo="Typo.h5" Color="Color.Info">@monthlyRevenue.ToString("C")</MudText>
+                            </MudStack>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     </MudStack>
 </MudContainer>
 

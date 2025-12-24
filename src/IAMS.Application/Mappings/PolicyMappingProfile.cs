@@ -2,7 +2,6 @@
 using IAMS.Shared.QueryParams;
 using IAMS.Domain.Entities;
 using IAMS.Shared.DTOs.Policy;
-using IAMS.MultiTenancy.Interfaces;
 
 namespace IAMS.Application.Mappings
 {
@@ -18,7 +17,7 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId))
                 .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency != null ? src.Currency.Code : "TRY"))
                 .ForMember(dest => dest.CurrencySymbol, opt => opt.MapFrom(src => src.Currency != null ? src.Currency.Symbol : "₺"))
-                .ForMember(dest => dest.FormattedPolicyNumber, opt => opt.MapFrom<FormattedPolicyNumberResolver>());
+                .ForMember(dest => dest.FormattedPolicyNumber, opt => opt.Ignore()); // Will be set by Web layer resolver
 
             CreateMap<CreatePolicyDto, Policy>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -52,37 +51,6 @@ namespace IAMS.Application.Mappings
                 .ForMember(dest => dest.Vehicle, opt => opt.Ignore()) // Navigation property, ignore during mapping
                 .ForMember(dest => dest.PolicyPayments, opt => opt.Ignore())
                 .ForMember(dest => dest.PolicyClaims, opt => opt.Ignore());
-        }
-    }
-
-    /// <summary>
-    /// Custom resolver to format policy number as: {TenantExternalId}-{PolicyNumber}/{TecditNumber}
-    /// Example: A001-0000038/001
-    /// </summary>
-    public class FormattedPolicyNumberResolver : IValueResolver<Policy, PolicyDto, string?>
-    {
-        private readonly ITenantContextAccessor _tenantContext;
-
-        public FormattedPolicyNumberResolver(ITenantContextAccessor tenantContext)
-        {
-            _tenantContext = tenantContext;
-        }
-
-        public string? Resolve(Policy source, PolicyDto destination, string? destMember, ResolutionContext context)
-        {
-            var tenant = _tenantContext.CurrentTenant;
-            var agencyNumber = tenant?.ExternalId ?? "N/A";
-            var policyNumber = source.PolicyNumber;
-            var tecditNumber = source.TecditNumber;
-
-            // Format: AgencyNumber-PolicyNumber/TecditNumber
-            // If no TecditNumber, just show AgencyNumber-PolicyNumber
-            if (!string.IsNullOrEmpty(tecditNumber))
-            {
-                return $"{agencyNumber}-{policyNumber}/{tecditNumber}";
-            }
-
-            return $"{agencyNumber}-{policyNumber}";
         }
     }
 }

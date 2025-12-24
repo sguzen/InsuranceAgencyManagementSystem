@@ -1,5 +1,6 @@
 ﻿using IAMS.Web.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace IAMS.Web.Extensions
 {
@@ -12,6 +13,9 @@ namespace IAMS.Web.Extensions
             //services.AddScoped<IPolicyComponentService, PolicyComponentService>();
             //services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IJSInteropService, JSInteropService>();
+
+            // Register Web layer AutoMapper profiles (for infrastructure-dependent mappings)
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             return services;
         }

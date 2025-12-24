@@ -4,7 +4,9 @@
 @using IAMS.Shared.DTOs.Policy
 @using IAMS.Shared.DTOs.Customer
 @using IAMS.Shared.DTOs.InsuranceCompany
+@using IAMS.Shared.DTOs.Parametric
 @using IAMS.Application.Models
+@using IAMS.Domain.Enums
 @using Microsoft.AspNetCore.WebUtilities
 @using IAMS.Web.Services.ApiClient
 @inject NavigationManager Navigation
@@ -12,6 +14,7 @@
 @inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
 @inject IPoliciesApiClient PoliciesApi
 @inject ICustomersApiClient CustomersApi
+@inject IParametricApiClient ParametricApi
 
 <PageTitle>Poliçe İçe Aktar</PageTitle>
 
@@ -201,14 +204,48 @@
                                                           Label="Müşteri Adı" Variant="Variant.Outlined"
                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                           Required="true" />
-                                            <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
-                                                          Label="Kimlik/Pasaport" Variant="Variant.Outlined"
-                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
-                                                          Required="true" />
                                             <MudTextField @bind-Value="policy.PolicyOwnerPhone"
                                                           Label="Telefon" Variant="Variant.Outlined"
                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                           Placeholder="0542XXXXXXX" />
+
+                                            <MudSelect T="CustomerType"
+                                                       @bind-Value="policy.PolicyOwnerCustomerType"
+                                                       Label="Müşteri Tipi" Variant="Variant.Outlined"
+                                                       Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                       Required="true">
+                                                <MudSelectItem Value="@CustomerType.Individual">Bireysel</MudSelectItem>
+                                                <MudSelectItem Value="@CustomerType.Corporate">Kurumsal</MudSelectItem>
+                                            </MudSelect>
+
+                                            @if (policy.PolicyOwnerCustomerType == CustomerType.Individual)
+                                            {
+                                                <MudSelect T="int?"
+                                                           @bind-Value="policy.PolicyOwnerNationalityCountryId"
+                                                           Label="Uyruk (Nationality)" Variant="Variant.Outlined"
+                                                           Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                           Required="true">
+                                                    @foreach (var country in countries)
+                                                    {
+                                                        <MudSelectItem Value="@((int?)country.Id)">@country.Name</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+
+                                                @{
+                                                    var identifierLabel = GetIdentifierLabel(policy.PolicyOwnerNationalityCountryId);
+                                                }
+                                                <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
+                                                              Label="@identifierLabel" Variant="Variant.Outlined"
+                                                              Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                              Required="true" />
+                                            }
+                                            else
+                                            {
+                                                <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
+                                                              Label="Ticaret Sicil No (Trade License)" Variant="Variant.Outlined"
+                                                              Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                              Required="true" />
+                                            }
                                         }
                                     }
                                 </MudItem>
@@ -230,15 +267,20 @@
 
     private ImportStep currentStep = ImportStep.FileSelection;
     private List<InsuranceCompanyDto> insuranceCompanies = new();
+    private List<CountryDto> countries = new();
     private int selectedInsuranceCompanyId;
     private IBrowserFile? selectedFile;
     private List<PolicyImportPreviewDto> previewPolicies = new();
     private bool isProcessing = false;
     private bool isSaving = false;
 
+    // KKTC country ID constant
+    private const int KKTC_COUNTRY_ID = 601;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadInsuranceCompaniesAsync();
+        await LoadCountriesAsync();
     }
 
     private async Task LoadInsuranceCompaniesAsync()
@@ -259,6 +301,32 @@
         {
             Snackbar.Add($"Sigorta şirketleri yüklenirken hata: {ex.Message}", MudBlazor.Severity.Error);
         }
+    }
+
+    private async Task LoadCountriesAsync()
+    {
+        try
+        {
+            var result = await ParametricApi.GetCountriesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                countries = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ülkeler yüklenirken hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private string GetIdentifierLabel(int? nationalityCountryId)
+    {
+        if (!nationalityCountryId.HasValue)
+            return "Kimlik/Pasaport";
+
+        return nationalityCountryId.Value == KKTC_COUNTRY_ID
+            ? "Kimlik No (ID Card)"
+            : "Pasaport No (Passport)";
     }
 
     private void OnFileSelected(InputFileChangeEventArgs e)
@@ -462,6 +530,8 @@
             policy.PolicyOwnerName = null;
             policy.PolicyOwnerIdentifier = null;
             policy.PolicyOwnerPhone = null;
+            policy.PolicyOwnerCustomerType = CustomerType.Individual;
+            policy.PolicyOwnerNationalityCountryId = null;
         }
 
         InvokeAsync(StateHasChanged);
@@ -481,6 +551,8 @@
             policy.PolicyOwnerName = null;
             policy.PolicyOwnerIdentifier = null;
             policy.PolicyOwnerPhone = null;
+            policy.PolicyOwnerCustomerType = CustomerType.Individual;
+            policy.PolicyOwnerNationalityCountryId = null;
         }
 
         InvokeAsync(StateHasChanged);

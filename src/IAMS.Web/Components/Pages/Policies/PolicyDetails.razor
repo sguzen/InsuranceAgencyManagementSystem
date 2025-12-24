@@ -35,7 +35,7 @@ else
                 <MudCardContent>
                     <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                         <MudStack Spacing="2">
-                            <MudText Typo="Typo.h4" Color="Color.Primary">@policy.PolicyNumber</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Primary">@(policy.FormattedPolicyNumber ?? policy.PolicyNumber)</MudText>
                             <MudText Typo="Typo.h6" Color="Color.Secondary">
                                 @policy.PolicyType?.Name - @policy.InsuranceCompany?.Name
                             </MudText>
@@ -272,7 +272,7 @@ else
                             <MudStack Spacing="3">
                                 <MudStack Row Justify="Justify.SpaceBetween">
                                     <MudText>Poliçe Numarası:</MudText>
-                                    <MudText><strong>@policy.PolicyNumber</strong></MudText>
+                                    <MudText><strong>@(policy.FormattedPolicyNumber ?? policy.PolicyNumber)</strong></MudText>
                                 </MudStack>
                                 <MudStack Row Justify="Justify.SpaceBetween">
                                     <MudText>İç Kod (Z.No):</MudText>

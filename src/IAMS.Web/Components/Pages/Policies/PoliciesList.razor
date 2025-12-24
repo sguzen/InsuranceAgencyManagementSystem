@@ -157,7 +157,11 @@
                             }
                         </CellTemplate>
                     </TemplateColumn>
-                    <PropertyColumn Property="x => x.PolicyNumber" Title="Poliçe No" />
+                    <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2">@(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)</MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
                     <TemplateColumn Title="Z.No">
                         <CellTemplate>
                             <div style="text-align: center;">

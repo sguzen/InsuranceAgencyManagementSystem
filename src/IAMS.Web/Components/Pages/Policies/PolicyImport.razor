@@ -210,7 +210,8 @@
                                                           Placeholder="0542XXXXXXX" />
 
                                             <MudSelect T="CustomerType"
-                                                       @bind-Value="policy.PolicyOwnerCustomerType"
+                                                       Value="@policy.PolicyOwnerCustomerType"
+                                                       ValueChanged="@((CustomerType type) => OnCustomerTypeChanged(policy, type))"
                                                        Label="Müşteri Tipi" Variant="Variant.Outlined"
                                                        Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                        Required="true">
@@ -220,9 +221,13 @@
 
                                             @if (policy.PolicyOwnerCustomerType == CustomerType.Individual)
                                             {
+                                                @{
+                                                    var selectedCountry = countries.FirstOrDefault(c => c.Id == policy.PolicyOwnerNationalityCountryId);
+                                                }
                                                 <MudAutocomplete T="CountryDto"
                                                                  SearchFunc="@SearchCountriesAsync"
                                                                  ToStringFunc="@(c => c == null ? "" : c.NameTr)"
+                                                                 Value="@selectedCountry"
                                                                  Label="Uyruk (Nationality)" Variant="Variant.Outlined"
                                                                  Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                                  Required="true"
@@ -340,16 +345,23 @@
 
         // Search by Turkish name, English name, code, or special handling for KKTC
         return countries.Where(c =>
-            c.NameTr.ToLowerInvariant().Contains(searchLower) ||
-            c.NameEn.ToLowerInvariant().Contains(searchLower) ||
-            // Allow "KKTC" to find "KUZEY KIBRIS TÜRK CUMHURİYETİ"
-            (c.Id == KKTC_COUNTRY_ID && searchLower.Contains("kktc")) ||
-            (c.Id == KKTC_COUNTRY_ID && "kuzey kibris türk cumhuriyeti".Contains(searchLower)) ||
-            (c.Id == KKTC_COUNTRY_ID && "kuzey".Contains(searchLower)) ||
-            (c.Id == KKTC_COUNTRY_ID && "kibris".Contains(searchLower)) ||
-            // Also search by code if available
-            (!string.IsNullOrEmpty(c.Code) && c.Code.ToLowerInvariant().Contains(searchLower))
-        ).ToList();
+        {
+            // Special handling for KKTC - match if search contains "kktc" or any part of the name
+            if (c.Id == KKTC_COUNTRY_ID)
+            {
+                // If typing "kktc", match KKTC
+                if (searchLower.Contains("kktc")) return true;
+
+                // If typing any part of "KUZEY KIBRIS TÜRK CUMHURİYET", match KKTC
+                var nameLower = c.NameTr.ToLowerInvariant();
+                if (nameLower.Contains(searchLower)) return true;
+            }
+
+            // For all countries: search in Turkish name, English name, or code
+            return c.NameTr.ToLowerInvariant().Contains(searchLower) ||
+                   c.NameEn.ToLowerInvariant().Contains(searchLower) ||
+                   (!string.IsNullOrEmpty(c.Code) && c.Code.ToLowerInvariant().Contains(searchLower));
+        }).ToList();
     }
 
     private void OnNationalityCountrySelected(PolicyImportPreviewDto policy, CountryDto? country)
@@ -362,6 +374,24 @@
         {
             policy.PolicyOwnerNationalityCountryId = null;
         }
+        StateHasChanged();
+    }
+
+    private void OnCustomerTypeChanged(PolicyImportPreviewDto policy, CustomerType type)
+    {
+        policy.PolicyOwnerCustomerType = type;
+
+        // When changing to Individual, set KKTC as default nationality
+        if (type == CustomerType.Individual && !policy.PolicyOwnerNationalityCountryId.HasValue)
+        {
+            policy.PolicyOwnerNationalityCountryId = KKTC_COUNTRY_ID;
+        }
+        // When changing to Corporate, clear nationality (not applicable for corporate)
+        else if (type == CustomerType.Corporate)
+        {
+            policy.PolicyOwnerNationalityCountryId = null;
+        }
+
         StateHasChanged();
     }
 
@@ -581,6 +611,9 @@
         if (value)
         {
             policy.PolicyOwnerCustomerId = null;
+            // Set KKTC as default nationality for Individual customers
+            policy.PolicyOwnerCustomerType = CustomerType.Individual;
+            policy.PolicyOwnerNationalityCountryId = KKTC_COUNTRY_ID;
         }
         else
         {

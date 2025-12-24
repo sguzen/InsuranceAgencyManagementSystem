@@ -16,6 +16,9 @@ namespace IAMS.MultiTenancy.Models
         public DateTime CreatedOn { get; set; }
         public DateTime? LastUpdated { get; set; }
 
+        // Agency/Tenant identification
+        public string? ExternalId { get; set; } // External agency number for display (e.g., "A001")
+
         // Module and feature management
         public Dictionary<string, bool> EnabledModules { get; set; } = new Dictionary<string, bool>();
         public Dictionary<string, object> Settings { get; set; } = new Dictionary<string, object>();

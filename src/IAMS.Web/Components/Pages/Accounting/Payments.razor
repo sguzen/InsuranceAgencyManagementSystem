@@ -1,5 +1,7 @@
 @page "/accounting/payments"
 @layout Layout.MainLayout
+@attribute [Authorize]
+
 @using IAMS.Shared.DTOs.Payment
 @using IAMS.Application.Interfaces
 @using IAMS.Web.Services.ApiClient

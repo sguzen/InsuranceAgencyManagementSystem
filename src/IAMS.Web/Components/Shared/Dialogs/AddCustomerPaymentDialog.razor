@@ -85,6 +85,7 @@
 
     [Parameter] public int CustomerId { get; set; }
     [Parameter] public List<CurrencyDto> Currencies { get; set; } = new();
+    [Parameter] public int? DefaultCurrencyId { get; set; }
 
     private CreateCustomerPaymentDto model = new();
     private DateTime? paymentDate = DateTime.Today;
@@ -97,7 +98,7 @@
             CustomerId = CustomerId,
             PaymentDate = DateTime.Today,
             PaymentMethod = PaymentMethod.Cash,
-            CurrencyId = Currencies.FirstOrDefault()?.Id ?? 0
+            CurrencyId = DefaultCurrencyId ?? Currencies.FirstOrDefault()?.Id ?? 0
         };
         paymentDate = DateTime.Today;
     }

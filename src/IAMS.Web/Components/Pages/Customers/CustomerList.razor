@@ -407,10 +407,32 @@
 
     private async Task OpenPaymentDialog(int customerId)
     {
+        // Determine default currency based on customer's largest outstanding balance
+        int? defaultCurrencyId = null;
+
+        if (customerBalances.ContainsKey(customerId) && customerBalances[customerId].Any())
+        {
+            // Find the currency with the largest outstanding balance
+            var largestBalanceCurrency = customerBalances[customerId]
+                .OrderByDescending(b => b.Value)
+                .FirstOrDefault();
+
+            if (largestBalanceCurrency.Value > 0)
+            {
+                // Find the currency ID by matching the currency code
+                var currency = currencies.FirstOrDefault(c => c.Code == largestBalanceCurrency.Key);
+                if (currency != null)
+                {
+                    defaultCurrencyId = currency.Id;
+                }
+            }
+        }
+
         var parameters = new DialogParameters
         {
             ["CustomerId"] = customerId,
-            ["Currencies"] = currencies
+            ["Currencies"] = currencies,
+            ["DefaultCurrencyId"] = defaultCurrencyId
         };
 
         var dialog = await DialogService.ShowAsync<AddCustomerPaymentDialog>("Yeni Ödeme Kaydet", parameters);

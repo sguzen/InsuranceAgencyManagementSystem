@@ -2,8 +2,10 @@
 @using IAMS.Shared.DTOs.Currency
 @using IAMS.Domain.Enums
 @using IAMS.Web.Services.ApiClient
+@using Microsoft.JSInterop
 @inject ICustomersApiClient CustomersApi
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <MudDialog>
     <DialogContent>
@@ -20,7 +22,9 @@
                              Variant="Variant.Outlined"
                              Format="N2"
                              Adornment="Adornment.Start"
-                             AdornmentText="@GetCurrencySymbol()" />
+                             AdornmentText="@GetCurrencySymbol()"
+                             @onfocus="SelectAmountText"
+                             id="paymentAmount" />
 
             <MudSelect @bind-Value="model.CurrencyId"
                        Label="Para Birimi"
@@ -151,5 +155,25 @@
     private void Cancel()
     {
         MudDialog.Cancel();
+    }
+
+    private async Task SelectAmountText()
+    {
+        try
+        {
+            // Use JavaScript to select all text in the input field
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                setTimeout(() => {
+                    const input = document.querySelector('#paymentAmount input');
+                    if (input) {
+                        input.select();
+                    }
+                }, 10);
+            ");
+        }
+        catch
+        {
+            // Ignore errors - this is a UX enhancement, not critical
+        }
     }
 }

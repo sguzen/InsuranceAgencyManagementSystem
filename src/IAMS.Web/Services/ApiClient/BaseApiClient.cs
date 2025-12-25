@@ -30,16 +30,30 @@ namespace IAMS.Web.Services.ApiClient
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<T>.Failure($"API request failed: {response.StatusCode}", errorContent);
+                    return Result<T>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
-                return result ?? Result<T>.Failure("Empty response from API", new List<string>());
+                return result ?? Result<T>.Failure("API'den boş yanıt alındı", new List<string>());
             }
             catch (Exception ex)
             {
-                return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
+                return Result<T>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
             }
         }
 
@@ -51,16 +65,30 @@ namespace IAMS.Web.Services.ApiClient
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<T>.Failure($"API request failed: {response.StatusCode}", errorContent);
+                    return Result<T>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
-                return result ?? Result<T>.Failure("Empty response from API", new List<string>());
+                return result ?? Result<T>.Failure("API'den boş yanıt alındı", new List<string>());
             }
             catch (Exception ex)
             {
-                return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
+                return Result<T>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
             }
         }
 
@@ -72,16 +100,30 @@ namespace IAMS.Web.Services.ApiClient
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<T>.Failure($"API request failed: {response.StatusCode}", errorContent);
+                    return Result<T>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result<T>>(_jsonOptions);
-                return result ?? Result<T>.Failure("Empty response from API", new List<string>());
+                return result ?? Result<T>.Failure("API'den boş yanıt alındı", new List<string>());
             }
             catch (Exception ex)
             {
-                return Result<T>.Failure($"API call failed: {ex.Message}", ex.ToString());
+                return Result<T>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
             }
         }
 
@@ -93,16 +135,30 @@ namespace IAMS.Web.Services.ApiClient
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
-                return result ?? Result.Failure("Empty response from API", new List<string>());
+                return result ?? Result.Failure("API'den boş yanıt alındı", new List<string>());
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
+                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
             }
         }
 
@@ -114,16 +170,30 @@ namespace IAMS.Web.Services.ApiClient
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
-                return result ?? Result.Failure("Empty response from API", new List<string>());
+                return result ?? Result.Failure("API'den boş yanıt alındı", new List<string>());
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
+                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
             }
         }
 
@@ -135,16 +205,30 @@ namespace IAMS.Web.Services.ApiClient
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
-                return result ?? Result.Failure("Empty response from API", new List<string>());
+                return result ?? Result.Failure("API'den boş yanıt alındı", new List<string>());
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
+                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
             }
         }
     }

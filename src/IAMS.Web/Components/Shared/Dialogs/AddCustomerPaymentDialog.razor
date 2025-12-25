@@ -15,6 +15,7 @@
             </MudAlert>
 
             <MudNumericField @bind-Value="model.Amount"
+                             @ref="amountField"
                              Label="Tutar"
                              Required="true"
                              RequiredError="Tutar zorunludur"
@@ -24,7 +25,8 @@
                              Adornment="Adornment.Start"
                              AdornmentText="@GetCurrencySymbol()"
                              @onfocus="SelectAmountText"
-                             id="paymentAmount" />
+                             Immediate="true"
+                             HideSpinButtons="true" />
 
             <MudSelect @bind-Value="model.CurrencyId"
                        Label="Para Birimi"
@@ -94,6 +96,7 @@
     private CreateCustomerPaymentDto model = new();
     private DateTime? paymentDate = DateTime.Today;
     private bool isSaving = false;
+    private MudNumericField<decimal> amountField = null!;
 
     protected override void OnParametersSet()
     {
@@ -162,13 +165,17 @@
         try
         {
             // Use JavaScript to select all text in the input field
+            // MudNumericField renders as mud-input-control, so we need to find the actual input element
             await JSRuntime.InvokeVoidAsync("eval", @"
                 setTimeout(() => {
-                    const input = document.querySelector('#paymentAmount input');
-                    if (input) {
-                        input.select();
+                    const inputs = document.querySelectorAll('.mud-input-control input[type=""text""]');
+                    for (let input of inputs) {
+                        if (input.value && input.offsetParent !== null) {
+                            input.select();
+                            break;
+                        }
                     }
-                }, 10);
+                }, 50);
             ");
         }
         catch

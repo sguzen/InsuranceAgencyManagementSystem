@@ -20,14 +20,6 @@
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pa-2">
     <MudStack Spacing="3">
-        <!-- Header -->
-        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudText Typo="Typo.h4" GutterBottom="false">
-                <MudIcon Icon="Icons.Material.Filled.People" Class="mr-3" />
-                Cari Kart
-            </MudText>
-        </MudStack>
-
         <!-- Search and Filters -->
         <MudCard Elevation="3">
             <MudCardContent>
@@ -40,24 +32,23 @@
                                       AdornmentIcon="@Icons.Material.Filled.Search"
                                       Immediate="true"
                                       OnDebounceIntervalElapsed="OnSearch"
-                                      DebounceInterval="300"
-                                      Style="font-size: 1.1rem;" />
+                                      DebounceInterval="300" />
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudCheckBox Value="filterByOutstandingBalance"
                                      Label="Sadece Bakiyesi Olanlar"
                                      Color="Color.Error"
                                      T="bool"
-                                     Size="Size.Large"
+                                     Size="Size.Medium"
                                      ValueChanged="@OnOutstandingBalanceFilterChanged"
-                                     Style="font-size: 1.1rem; font-weight: 500;" />
+                                     Style="font-weight: 500;" />
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Secondary"
                                    OnClick="ClearFilters"
                                    FullWidth="true"
-                                   Size="Size.Large">
+                                   Size="Size.Medium">
                             Temizle
                         </MudButton>
                     </MudItem>
@@ -78,25 +69,25 @@
                          RowsPerPage="10"
                          Dense="false">
                 <ToolBarContent>
-                    <MudText Typo="Typo.h5" Style="font-weight: 600;">Müşteri Listesi</MudText>
+                    <MudText Typo="Typo.h5" Style="font-weight: 600;">Cari Kart</MudText>
                     <MudSpacer />
                 </ToolBarContent>
                 <Columns>
                     <TemplateColumn Title="Müşteri Kodu" Sortable="true" SortBy="x => x.CustomerCode">
                         <CellTemplate>
-                            <MudText Typo="Typo.body1" Style="font-size: 1.1rem; font-weight: 500;">@context.Item.CustomerCode</MudText>
+                            <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">@context.Item.CustomerCode</MudText>
                         </CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn Title="Ad Soyad" Sortable="true" SortBy="x => x.FirstName">
                         <CellTemplate>
-                            <MudText Typo="Typo.body1" Style="font-size: 1.1rem; font-weight: 600;">
+                            <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 600;">
                                 @context.Item.FirstName @context.Item.LastName
                             </MudText>
                         </CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn Title="Poliçe Sayısı" Sortable="true" SortBy="x => x.ActivePolicyCount">
                         <CellTemplate>
-                            <MudText Typo="Typo.body1" Style="font-size: 1.1rem; text-align: center;">
+                            <MudText Typo="Typo.body1" Style="font-size: 0.95rem; text-align: center;">
                                 @context.Item.ActivePolicyCount
                             </MudText>
                         </CellTemplate>
@@ -108,7 +99,7 @@
                                 var hasBalance = balance != "-";
                             }
                             <MudText Typo="Typo.body1"
-                                     Style="@($"font-size: 1.2rem; font-weight: 600; {(hasBalance ? "color: #d32f2f;" : "")}")">
+                                     Style="@($"font-size: 1rem; font-weight: 600; {(hasBalance ? "color: #d32f2f;" : "")}")">
                                 @balance
                             </MudText>
                         </CellTemplate>

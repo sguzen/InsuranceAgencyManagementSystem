@@ -372,7 +372,7 @@
             if (kktcCountry != null && c.Id == kktcCountry.Id)
             {
                 // If typing "kktc", match KKTC
-                if (searchLower.Contains("kktc"))
+            if (searchLower.Contains("kktc") || searchLower.Contains("kk"))
                 {
                     Console.WriteLine($"KKTC matched by 'kktc' search: {c.NameTr}");
                     return true;

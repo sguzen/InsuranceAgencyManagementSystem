@@ -126,12 +126,15 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             mappedPolicy.RowNumber,
                             mappedPolicy.PolicyNumber);
 
+                        // Extract user-friendly error message
+                        var errorMessage = GetUserFriendlyErrorMessage(ex);
+
                         result.FailureCount++;
                         result.Errors.Add(new PolicyImportError
                         {
                             RowNumber = mappedPolicy.RowNumber,
                             PolicyNumber = mappedPolicy.PolicyNumber ?? "Unknown",
-                            ErrorMessage = ex.Message
+                            ErrorMessage = errorMessage
                         });
                     }
                 }
@@ -154,8 +157,12 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during policy import with mapping");
+
+                // Extract user-friendly error message
+                var errorMessage = GetUserFriendlyErrorMessage(ex);
+
                 return Result<PolicyImportResultDto>.Failure(
-                    $"Import failed: {ex.Message}",
+                    $"İçe aktarma başarısız: {errorMessage}",
                     (List<string>?)null);
             }
         }
@@ -512,7 +519,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 LastName = lastName,
                 Type = effectiveCustomerType,
                 IdentificationNumber = customerIdentifier,
-                Email = $"noemail_{customerIdentifier}@temp.com",
+                Email = $"noemail_{Guid.NewGuid():N}@temp.com", // Use GUID to ensure uniqueness
                 Phone = !string.IsNullOrEmpty(phoneNumber) ? phoneNumber : "0000000000",
                 Status = CustomerStatus.Active,
                 IdentificationType = identificationType,
@@ -769,6 +776,49 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
         private string GeneratePolicyNumber()
         {
             return $"POL-{DateTime.Now:yyyyMMdd-HHmmssfff}";
+        }
+
+        private string GetUserFriendlyErrorMessage(Exception ex)
+        {
+            var exceptionMessage = ex.InnerException?.Message ?? ex.Message;
+
+            // Check for duplicate key exceptions
+            if (exceptionMessage.Contains("duplicate key", StringComparison.OrdinalIgnoreCase))
+            {
+                if (exceptionMessage.Contains("IX_Customers_IdentificationNumber", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Bu T.C. Kimlik Numarası ile kayıtlı bir müşteri zaten mevcut";
+                }
+                if (exceptionMessage.Contains("IX_Customers_Email", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut";
+                }
+                if (exceptionMessage.Contains("IX_Customers_MobilePhoneNumber", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Bu telefon numarası zaten kullanılmaktadır";
+                }
+                if (exceptionMessage.Contains("IX_Policies", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Bu poliçe numarası zaten mevcut";
+                }
+                return "Tekrar eden kayıt hatası";
+            }
+
+            // Check for foreign key constraint violations
+            if (exceptionMessage.Contains("FOREIGN KEY constraint", StringComparison.OrdinalIgnoreCase) ||
+                exceptionMessage.Contains("FK_", StringComparison.OrdinalIgnoreCase))
+            {
+                return "İlişkili kayıt bulunamadı. Lütfen gerekli referans verilerinin mevcut olduğundan emin olun";
+            }
+
+            // Check for null constraint violations
+            if (exceptionMessage.Contains("Cannot insert the value NULL", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Zorunlu alan eksik. Lütfen tüm gerekli alanların doldurulduğundan emin olun";
+            }
+
+            // Return the original error message for other cases
+            return ex.Message;
         }
     }
 }

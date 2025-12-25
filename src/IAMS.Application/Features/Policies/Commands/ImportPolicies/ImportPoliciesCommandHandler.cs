@@ -303,7 +303,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 LastName = lastName,
                 Type = customerType,
                 IdentificationNumber = dto.CustomerIdentifier,
-                Email = $"noemail_{dto.CustomerIdentifier}@temp.com", // Temporary email to pass validation
+                Email = $"noemail_{Guid.NewGuid():N}@temp.com", // Use GUID to ensure uniqueness
                 Phone = "0000000000", // Temporary phone to pass validation
                 Status = CustomerStatus.Active,
                 IdentificationType = identificationType,

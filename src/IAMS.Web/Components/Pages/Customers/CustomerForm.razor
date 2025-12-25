@@ -1,6 +1,7 @@
 ﻿@page "/customers/create"
 @page "/customers/{CustomerId:int}/edit"
 @layout Layout.MainLayout
+@attribute [Authorize]
 
 @using IAMS.Shared.DTOs.Customer
 @using IAMS.Shared.DTOs.Parametric

@@ -100,6 +100,25 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                 _logger.LogError(ex, "Unexpected error occurred while creating customer with email: {Email} for tenant: {TenantId}",
                     request.CustomerDto.Email, _currentTenantService.TenantId);
 
+                // Check for duplicate key exceptions
+                var exceptionMessage = ex.InnerException?.Message ?? ex.Message;
+
+                if (exceptionMessage.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) ||
+                    exceptionMessage.Contains("IX_Customers_IdentificationNumber", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Result<CustomerDto>.ValidationFailure("Bu T.C. Kimlik Numarası ile kayıtlı bir müşteri zaten mevcut", new List<string>());
+                }
+
+                if (exceptionMessage.Contains("IX_Customers_Email", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Result<CustomerDto>.ValidationFailure("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut", new List<string>());
+                }
+
+                if (exceptionMessage.Contains("IX_Customers_MobilePhoneNumber", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Result<CustomerDto>.ValidationFailure("Bu telefon numarası zaten kullanılmaktadır", new List<string>());
+                }
+
                 var errorDetails = new List<string>
                 {
                     ex.Message

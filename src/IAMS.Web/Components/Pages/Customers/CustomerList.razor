@@ -3,14 +3,17 @@
 @layout Layout.MainLayout
 
 @using IAMS.Shared.DTOs.Customer
+@using IAMS.Shared.DTOs.Currency
 @using IAMS.Application.Interfaces
 @using IAMS.MultiTenancy.Interfaces
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
+@using IAMS.Web.Components.Shared.Dialogs
 @using IAMS.Web.Services.ApiClient
 @inject ICustomersApiClient CustomersApi
 @inject IPaymentsApiClient PaymentsApi
+@inject ICurrenciesApiClient CurrenciesApi
 @inject ITenantContextAccessor TenantContext
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -67,7 +70,9 @@
                          FixedHeader="true"
                          Height="650px"
                          RowsPerPage="10"
-                         Dense="false">
+                         Dense="false"
+                         RowStyle="cursor: pointer"
+                         RowClick="@OnRowClick">
                 <ToolBarContent>
                     <MudText Typo="Typo.h5" Style="font-weight: 600;">Cari Kart</MudText>
                     <MudSpacer />
@@ -107,16 +112,11 @@
 
                     <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
                         <CellTemplate>
-                            <MudStack Row Spacing="2">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                               Color="Color.Info"
-                                               Size="Size.Medium"
-                                               OnClick="@(() => ViewCustomer(context.Item.Id))"
-                                               Title="Detayları Görüntüle" />
+                            <MudStack Row Spacing="2" @onclick:stopPropagation="true">
                                 <MudIconButton Icon="@Icons.Material.Filled.Payment"
                                                Color="Color.Success"
                                                Size="Size.Medium"
-                                               OnClick="@(() => Navigation.NavigateTo($"/customers/{context.Item.Id}#payments"))"
+                                               OnClick="@(() => OpenPaymentDialog(context.Item.Id))"
                                                Title="Ödeme Kaydet" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Primary"
@@ -222,6 +222,7 @@
 @code {
     private List<CustomerDto> customers = new();
     private Dictionary<int, Dictionary<string, decimal>> customerBalances = new();
+    private List<CurrencyDto> currencies = new();
     private bool loading = true;
 
     // Search and filter parameters
@@ -248,9 +249,12 @@
             filterByOutstandingBalance = true;
         }
 
-        await LoadCustomers();
-        await LoadBalances();
-        await LoadStatistics();
+        await Task.WhenAll(
+            LoadCustomers(),
+            LoadBalances(),
+            LoadStatistics(),
+            LoadCurrencies()
+        );
     }
 
     private async Task LoadCustomers()
@@ -380,14 +384,47 @@
         await LoadBalances();
     }
 
+    private async Task LoadCurrencies()
+    {
+        try
+        {
+            var result = await CurrenciesApi.GetCurrenciesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                currencies = result.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Currencies loading error: {ex.Message}");
+        }
+    }
+
+    private void OnRowClick(DataGridRowClickEventArgs<CustomerDto> args)
+    {
+        Navigation.NavigateTo($"/customers/{args.Item.Id}");
+    }
+
+    private async Task OpenPaymentDialog(int customerId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["CustomerId"] = customerId,
+            ["Currencies"] = currencies
+        };
+
+        var dialog = await DialogService.ShowAsync<AddCustomerPaymentDialog>("Yeni Ödeme Kaydet", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await LoadBalances();
+        }
+    }
+
     private void NavigateToCreate()
     {
         Navigation.NavigateTo("/customers/create");
-    }
-
-    private void ViewCustomer(int customerId)
-    {
-        Navigation.NavigateTo($"/customers/{customerId}");
     }
 
     private void EditCustomer(int customerId)

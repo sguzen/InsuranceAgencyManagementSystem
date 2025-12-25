@@ -29,10 +29,10 @@
         </MudStack>
 
         <!-- Search and Filters -->
-        <MudCard>
+        <MudCard Elevation="3">
             <MudCardContent>
                 <MudGrid>
-                    <MudItem xs="12" md="10">
+                    <MudItem xs="12" md="7">
                         <MudTextField @bind-Value="searchTerm"
                                       Label="Ara..."
                                       Variant="Variant.Outlined"
@@ -40,24 +40,33 @@
                                       AdornmentIcon="@Icons.Material.Filled.Search"
                                       Immediate="true"
                                       OnDebounceIntervalElapsed="OnSearch"
-                                      DebounceInterval="300" />
+                                      DebounceInterval="300"
+                                      Style="font-size: 1.1rem;" />
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudCheckBox Value="filterByOutstandingBalance"
+                                     Label="Sadece Bakiyesi Olanlar"
+                                     Color="Color.Error"
+                                     T="bool"
+                                     Size="Size.Large"
+                                     ValueChanged="@OnOutstandingBalanceFilterChanged"
+                                     Style="font-size: 1.1rem; font-weight: 500;" />
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudStack Row Spacing="1">
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Secondary"
-                                       OnClick="ClearFilters"
-                                       FullWidth="true">
-                                Temizle
-                            </MudButton>
-                        </MudStack>
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Secondary"
+                                   OnClick="ClearFilters"
+                                   FullWidth="true"
+                                   Size="Size.Large">
+                            Temizle
+                        </MudButton>
                     </MudItem>
                 </MudGrid>
             </MudCardContent>
         </MudCard>
 
         <!-- Customer Data Grid -->
-        <MudCard>
+        <MudCard Elevation="3">
             <MudDataGrid T="CustomerDto"
                          Items="@customers"
                          Loading="@loading"
@@ -65,61 +74,67 @@
                          Striped="true"
                          Virtualize="true"
                          FixedHeader="true"
-                         Height="600px"
-                         RowsPerPage="10">
+                         Height="650px"
+                         RowsPerPage="10"
+                         Dense="false">
                 <ToolBarContent>
-                    <MudText Typo="Typo.h6">Müşteri Listesi</MudText>
+                    <MudText Typo="Typo.h5" Style="font-weight: 600;">Müşteri Listesi</MudText>
                     <MudSpacer />
-                    <MudTextField @bind-Value="searchTerm"
-                                  Placeholder="Hızlı arama..."
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Search"
-                                  IconSize="Size.Medium"
-                                  Class="mt-0"
-                                  Immediate="true"
-                                  OnDebounceIntervalElapsed="OnSearch"
-                                  DebounceInterval="300" />
                 </ToolBarContent>
                 <Columns>
-                    <PropertyColumn Property="x => x.CustomerCode" Title="Müşteri Kodu" />
-                    <TemplateColumn Title="Ad" Sortable="true" SortBy="x => x.FirstName">
+                    <TemplateColumn Title="Müşteri Kodu" Sortable="true" SortBy="x => x.CustomerCode">
                         <CellTemplate>
-                            <MudText Typo="Typo.body2"><b>@context.Item.FirstName</b></MudText>
+                            <MudText Typo="Typo.body1" Style="font-size: 1.1rem; font-weight: 500;">@context.Item.CustomerCode</MudText>
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Soyad" Sortable="true" SortBy="x => x.LastName">
+                    <TemplateColumn Title="Ad Soyad" Sortable="true" SortBy="x => x.FirstName">
                         <CellTemplate>
-                            <MudText Typo="Typo.body2"><b>@context.Item.LastName</b></MudText>
+                            <MudText Typo="Typo.body1" Style="font-size: 1.1rem; font-weight: 600;">
+                                @context.Item.FirstName @context.Item.LastName
+                            </MudText>
                         </CellTemplate>
                     </TemplateColumn>
-                    <PropertyColumn Property="x => x.ActivePolicyCount" Title="Poliçe Sayısı" />
+                    <TemplateColumn Title="Poliçe Sayısı" Sortable="true" SortBy="x => x.ActivePolicyCount">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body1" Style="font-size: 1.1rem; text-align: center;">
+                                @context.Item.ActivePolicyCount
+                            </MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
                     <TemplateColumn Title="Bakiye" Sortable="false">
                         <CellTemplate>
-                            <MudText Typo="Typo.body2">@GetCustomerBalance(context.Item.Id)</MudText>
+                            @{
+                                var balance = GetCustomerBalance(context.Item.Id);
+                                var hasBalance = balance != "-";
+                            }
+                            <MudText Typo="Typo.body1"
+                                     Style="@($"font-size: 1.2rem; font-weight: 600; {(hasBalance ? "color: #d32f2f;" : "")}")">
+                                @balance
+                            </MudText>
                         </CellTemplate>
                     </TemplateColumn>
 
                     <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
                         <CellTemplate>
-                            <MudStack Row Spacing="1">
+                            <MudStack Row Spacing="2">
                                 <MudIconButton Icon="@Icons.Material.Filled.Visibility"
                                                Color="Color.Info"
-                                               Size="Size.Small"
+                                               Size="Size.Medium"
                                                OnClick="@(() => ViewCustomer(context.Item.Id))"
                                                Title="Detayları Görüntüle" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Payment"
                                                Color="Color.Success"
-                                               Size="Size.Small"
+                                               Size="Size.Medium"
                                                OnClick="@(() => Navigation.NavigateTo($"/customers/{context.Item.Id}#payments"))"
                                                Title="Ödeme Kaydet" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Primary"
-                                               Size="Size.Small"
+                                               Size="Size.Medium"
                                                OnClick="@(() => EditCustomer(context.Item.Id))"
                                                Title="Düzenle" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
-                                               Size="Size.Small"
+                                               Size="Size.Medium"
                                                OnClick="@(() => DeleteCustomer(context.Item))"
                                                Title="Sil" />
                             </MudStack>
@@ -221,6 +236,7 @@
     // Search and filter parameters
     private string searchTerm = string.Empty;
     private string? filterType = null;
+    private bool filterByOutstandingBalance = false;
 
     // Statistics
     private int totalCustomers = 0;
@@ -235,6 +251,12 @@
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         filterType = query["filter"];
 
+        // Set filter from URL if present
+        if (filterType == "outstanding")
+        {
+            filterByOutstandingBalance = true;
+        }
+
         await LoadCustomers();
         await LoadBalances();
         await LoadStatistics();
@@ -246,7 +268,7 @@
         try
         {
             // If filtering for outstanding balance, use the payments endpoint
-            if (filterType == "outstanding")
+            if (filterByOutstandingBalance)
             {
                 var outstandingCustomers = await PaymentsApi.GetCustomersWithOutstandingBalanceAsync();
                 if (outstandingCustomers != null && outstandingCustomers.Any())
@@ -352,9 +374,17 @@
         await LoadBalances();
     }
 
+    private async Task OnOutstandingBalanceFilterChanged(bool value)
+    {
+        filterByOutstandingBalance = value;
+        await LoadCustomers();
+        await LoadBalances();
+    }
+
     private async Task ClearFilters()
     {
         searchTerm = string.Empty;
+        filterByOutstandingBalance = false;
         await LoadCustomers();
         await LoadBalances();
     }

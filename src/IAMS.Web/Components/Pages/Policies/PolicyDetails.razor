@@ -1,5 +1,7 @@
 ﻿@page "/policies/{PolicyId:int}"
 @layout Layout.MainLayout
+@attribute [Authorize]
+
 @using IAMS.Shared.DTOs.Policy
 @using IAMS.Shared.DTOs.Payment
 @using IAMS.Application.Interfaces

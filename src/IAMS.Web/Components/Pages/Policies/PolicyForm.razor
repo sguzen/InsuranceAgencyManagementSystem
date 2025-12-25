@@ -1,6 +1,7 @@
 ﻿@page "/policies/create"
 @page "/policies/{PolicyId:int}/edit"
 @layout Layout.MainLayout
+@attribute [Authorize]
 
 @using IAMS.Shared.DTOs.Policy
 @using IAMS.Shared.DTOs.Customer

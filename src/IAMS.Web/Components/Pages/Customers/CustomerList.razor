@@ -32,7 +32,7 @@
         <MudCard>
             <MudCardContent>
                 <MudGrid>
-                    <MudItem xs="12" md="4">
+                    <MudItem xs="12" md="10">
                         <MudTextField @bind-Value="searchTerm"
                                       Label="Ara..."
                                       Variant="Variant.Outlined"
@@ -41,28 +41,6 @@
                                       Immediate="true"
                                       OnDebounceIntervalElapsed="OnSearch"
                                       DebounceInterval="300" />
-                    </MudItem>
-                    <MudItem xs="12" md="3">
-                        <MudSelect Value="@selectedStatus"
-                                   ValueChanged="@((CustomerStatus value) => OnStatusChanged(value))"
-                                   Label="Durum"
-                                   Variant="Variant.Outlined"
-                                   T="CustomerStatus"
-                                   ToStringFunc="@(status => GetStatusText(status))"
-                                   Clearable="true">
-                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Active">Aktif</MudSelectItem>
-                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Inactive">Pasif</MudSelectItem>
-                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Prospect">Aday</MudSelectItem>
-                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Suspended">Iptal edilmiş</MudSelectItem>
-                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Blacklisted">Kara Listede</MudSelectItem>
-                            <MudSelectItem Value="@IAMS.Domain.Enums.CustomerStatus.Former">Eski</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12" md="3">
-                        <MudDatePicker @bind-Date="fromDate"
-                                       Label="Başlangıç Tarihi"
-                                       Variant="Variant.Outlined"
-                                       Clearable="true" />
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudStack Row Spacing="1">
@@ -242,8 +220,6 @@
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
-    private CustomerStatus selectedStatus;
-    private DateTime? fromDate;
     private string? filterType = null;
 
     // Statistics
@@ -264,11 +240,6 @@
         await LoadStatistics();
     }
 
-    private async Task OnStatusChanged(CustomerStatus status)
-    {
-        selectedStatus = status;
-        await OnSearch();
-    }
     private async Task LoadCustomers()
     {
         loading = true;
@@ -300,8 +271,6 @@
                 var queryParams = new CustomerQueryParams
                 {
                     SearchTerm = searchTerm,
-                    Status = selectedStatus,
-                    CreatedFrom = fromDate,
                     PageSize = 1000,
                     PageNumber = 1
                 };
@@ -386,8 +355,6 @@
     private async Task ClearFilters()
     {
         searchTerm = string.Empty;
-        selectedStatus = CustomerStatus.Active;
-        fromDate = null;
         await LoadCustomers();
         await LoadBalances();
     }
@@ -440,30 +407,6 @@
                 Snackbar.Add($"Müşteri silinirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
             }
         }
-    }
-
-    private Color GetStatusColor(CustomerStatus status)
-    {
-        return status switch
-        {
-            CustomerStatus.Active => Color.Success,
-            CustomerStatus.Inactive => Color.Warning,
-            CustomerStatus.Blacklisted => Color.Error,
-            _ => Color.Default
-        };
-    }
-
-    private string GetStatusText(CustomerStatus? status)
-    {
-        return status switch
-        {
-            CustomerStatus.Active => "Aktif",
-            CustomerStatus.Inactive => "Pasif",
-            CustomerStatus.Suspended => "Iptal edilmiş",
-            CustomerStatus.Blacklisted => "Kara listede",
-            CustomerStatus.Former => "Eski",
-            _ => "Bilinmiyor"
-        };
     }
 
     private string GetCustomerBalance(int customerId)

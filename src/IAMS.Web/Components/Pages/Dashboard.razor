@@ -50,7 +50,7 @@
                     <MudCardContent>
                         @if (_customersWithOutstanding?.Any() == true)
                         {
-                            <MudTable Items="_customersWithOutstanding.Take(5)" Hover="true" Dense="true">
+                            <MudTable Items="_customersWithOutstanding.Take(5)" Hover="true" Dense="true" RowStyle="cursor: pointer" OnRowClick="@((TableRowClickEventArgs<IAMS.Shared.DTOs.Payment.CustomerOutstandingBalanceDto> args) => Navigation.NavigateTo($"/customers/{args.Item.CustomerId}"))">
                                 <HeaderContent>
                                     <MudTh>Müşteri</MudTh>
                                     <MudTh>Poliçe Sayısı</MudTh>
@@ -58,9 +58,9 @@
                                     <MudTh Style="text-align:right">Kalan Bakiye</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
-                                    <MudTd DataLabel="Müşteri" Style="cursor: pointer" @onclick="@(() => Navigation.NavigateTo($"/customers/{context.CustomerId}"))">
+                                    <MudTd DataLabel="Müşteri">
                                         <div>
-                                            <MudLink Href="@($"/customers/{context.CustomerId}")" Typo="Typo.body2" Color="Color.Primary">@context.CustomerName</MudLink>
+                                            <MudText Typo="Typo.body2" Color="Color.Primary"><b>@context.CustomerName</b></MudText>
                                             <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerEmail</MudText>
                                         </div>
                                     </MudTd>

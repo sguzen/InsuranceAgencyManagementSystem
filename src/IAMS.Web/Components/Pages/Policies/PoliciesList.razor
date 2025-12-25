@@ -9,6 +9,7 @@
 @using IAMS.Web.Services.ApiClient
 @inject IPoliciesApiClient PoliciesApi
 @inject IPolicyTypesApiClient PolicyTypesApi
+@inject IPaymentsApiClient PaymentsApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -49,7 +50,7 @@
         <MudCard>
             <MudCardContent>
                 <MudGrid>
-                    <MudItem xs="12" md="3">
+                    <MudItem xs="12" md="4">
                         <MudTextField @bind-Value="searchTerm"
                                       Label="Ara..."
                                       Variant="Variant.Outlined"
@@ -60,22 +61,7 @@
                                       DebounceInterval="300"
                                       HelperText="Poliçe no, müşteri adı ile arayın" />
                     </MudItem>
-                    <MudItem xs="12" md="2">
-                        <MudSelect Value="selectedStatus"
-                                   ValueChanged="OnStatusChanged"
-                                   Label="Durum"
-                                   Variant="Variant.Outlined"
-                                   T="PolicyStatus?"
-                                   ToStringFunc="@(status => GetStatusText(status))"
-                                   Clearable="true">
-                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Active)">Aktif</MudSelectItem>
-                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Draft)">Taslak</MudSelectItem>
-                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Expired)">Süresi Dolmuş</MudSelectItem>
-                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Cancelled)">İptal</MudSelectItem>
-                            <MudSelectItem T="PolicyStatus?" Value="@((PolicyStatus?)PolicyStatus.Suspended)">Askıya Alınmış</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12" md="2">
+                    <MudItem xs="12" md="3">
                         <MudSelect Value="selectedPolicyTypeId"
                                    ValueChanged="OnPolicyTypeChanged"
                                    Label="Poliçe Tipi"
@@ -91,21 +77,14 @@
                             }
                         </MudSelect>
                     </MudItem>
-                    <MudItem xs="12" md="2">
-                        <MudDatePicker Date="startDateFrom"
-                                       DateChanged="OnStartDateFromChanged"
-                                       Label="Başlangıç (Den)"
-                                       Variant="Variant.Outlined"
-                                       Clearable="true" />
+                    <MudItem xs="12" md="3">
+                        <MudCheckBox @bind-Value="filterByOutstandingBalance"
+                                     Label="Sadece Bakiyesi Olanlar"
+                                     Color="Color.Primary"
+                                     T="bool"
+                                     ValueChanged="@((bool value) => OnOutstandingBalanceFilterChanged(value))" />
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudDatePicker Date="startDateTo"
-                                       DateChanged="OnStartDateToChanged"
-                                       Label="Başlangıç (E)"
-                                       Variant="Variant.Outlined"
-                                       Clearable="true" />
-                    </MudItem>
-                    <MudItem xs="12" md="1">
                         <MudStack Row Spacing="1">
                             <MudIconButton Icon="@Icons.Material.Filled.FilterList"
                                            Color="Color.Primary"
@@ -232,6 +211,23 @@
                         <CellTemplate>
                             <div style="text-align: right;">
                                 @context.Item.CurrencySymbol@context.Item.PremiumAmount.ToString("N2")
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Bakiye">
+                        <CellTemplate>
+                            <div style="text-align: right;">
+                                @{
+                                    var balance = GetPolicyBalance(context.Item.Id);
+                                    if (balance > 0)
+                                    {
+                                        <MudChip T="String" Size="Size.Small" Color="Color.Error">@context.Item.CurrencySymbol@balance.ToString("N2")</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                    }
+                                }
                             </div>
                         </CellTemplate>
                     </TemplateColumn>
@@ -495,14 +491,13 @@
     private Dictionary<int, List<PolicyDto>> endorsementsByPolicy = new(); // Endorsements grouped by main policy ID
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
+    private Dictionary<int, decimal> policyBalances = new(); // Policy outstanding balances
     private bool loading = true;
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
-    private PolicyStatus? selectedStatus;
     private int? selectedPolicyTypeId;
-    private DateTime? startDateFrom;
-    private DateTime? startDateTo;
+    private bool filterByOutstandingBalance = false;
 
     // Statistics
     private int totalPolicies = 0;
@@ -514,6 +509,7 @@
     {
         // Run sequentially to avoid DbContext concurrency issues
         await LoadPolicies();
+        await LoadPolicyBalances();
         await LoadStatistics();
         await LoadPolicyTypes();
     }
@@ -526,10 +522,7 @@
             var queryParams = new PolicyQueryParams
             {
                 SearchTerm = searchTerm,
-                Status = selectedStatus,
                 PolicyTypeId = selectedPolicyTypeId,
-                StartDateFrom = startDateFrom,
-                StartDateTo = startDateTo,
                 PageSize = 1000,
                 PageNumber = 1
             };
@@ -541,6 +534,12 @@
 
                 // Separate main policies from endorsements
                 mainPolicies = allPolicies.Where(p => p.InnerCode == "000").ToList();
+
+                // Filter by outstanding balance if enabled
+                if (filterByOutstandingBalance)
+                {
+                    mainPolicies = mainPolicies.Where(p => policyBalances.ContainsKey(p.Id) && policyBalances[p.Id] > 0).ToList();
+                }
 
                 // Group endorsements by their main policy ID
                 endorsementsByPolicy.Clear();
@@ -625,14 +624,34 @@
         }
     }
 
-    private async Task OnSearch()
+    private async Task LoadPolicyBalances()
     {
-        await LoadPolicies();
+        try
+        {
+            // Load balances for all policies
+            foreach (var policy in allPolicies.Where(p => p.InnerCode == "000"))
+            {
+                var totalPaymentsResult = await PaymentsApi.GetTotalPaymentsByPolicyIdAsync(policy.Id);
+                if (totalPaymentsResult.IsSuccess)
+                {
+                    var totalPaid = totalPaymentsResult.Data;
+                    var balance = policy.PremiumAmount - totalPaid;
+                    policyBalances[policy.Id] = balance > 0 ? balance : 0;
+                }
+                else
+                {
+                    policyBalances[policy.Id] = policy.PremiumAmount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Policy balances loading error: {ex.Message}");
+        }
     }
 
-    private async Task OnStatusChanged(PolicyStatus? value)
+    private async Task OnSearch()
     {
-        selectedStatus = value;
         await LoadPolicies();
     }
 
@@ -642,26 +661,23 @@
         await LoadPolicies();
     }
 
-    private async Task OnStartDateFromChanged(DateTime? value)
+    private async Task OnOutstandingBalanceFilterChanged(bool value)
     {
-        startDateFrom = value;
-        await LoadPolicies();
-    }
-
-    private async Task OnStartDateToChanged(DateTime? value)
-    {
-        startDateTo = value;
+        filterByOutstandingBalance = value;
         await LoadPolicies();
     }
 
     private async Task ClearFilters()
     {
         searchTerm = string.Empty;
-        selectedStatus = null;
         selectedPolicyTypeId = null;
-        startDateFrom = null;
-        startDateTo = null;
+        filterByOutstandingBalance = false;
         await LoadPolicies();
+    }
+
+    private decimal GetPolicyBalance(int policyId)
+    {
+        return policyBalances.ContainsKey(policyId) ? policyBalances[policyId] : 0;
     }
 
     private void NavigateToCreate()

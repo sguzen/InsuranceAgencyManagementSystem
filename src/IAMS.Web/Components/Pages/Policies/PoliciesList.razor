@@ -78,11 +78,11 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="3">
-                        <MudCheckBox @bind-Value="filterByOutstandingBalance"
+                        <MudCheckBox Value="filterByOutstandingBalance"
                                      Label="Sadece Bakiyesi Olanlar"
                                      Color="Color.Primary"
                                      T="bool"
-                                     ValueChanged="@((bool value) => OnOutstandingBalanceFilterChanged(value))" />
+                                     ValueChanged="@OnOutstandingBalanceFilterChanged" />
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudStack Row Spacing="1">

@@ -32,7 +32,7 @@
                            Color="Color.Warning"
                            StartIcon="@Icons.Material.Filled.Schedule"
                            Href="/policies/expiring">
-                    Süresi Dolacaklar (@expiringCount)
+                    Süresi Dolacaklar
                 </MudButton>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Info"
@@ -521,63 +521,6 @@
                 </NoRecordsContent>
             </MudDataGrid>
         </MudCard>
-
-        <!-- Statistics Cards -->
-        <MudGrid>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Poliçe</MudText>
-                                <MudText Typo="Typo.h4">@totalPolicies</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Primary" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aktif Poliçe</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Success">@activePolicies</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Süresi Dolacak</MudText>
-                                <MudText Typo="Typo.h4" Color="Color.Warning">@expiringCount</MudText>
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">30 gün içinde</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="Color.Warning" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent Class="pb-2">
-                        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Aylık Gelir</MudText>
-                                <MudText Typo="Typo.h5" Color="Color.Info">@monthlyRevenue.ToString("C")</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Info" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
     </MudStack>
 </MudContainer>
 
@@ -596,19 +539,12 @@
     private int? selectedPolicyTypeId;
     private bool filterByOutstandingBalance = false;
 
-    // Statistics
-    private int totalPolicies = 0;
-    private int activePolicies = 0;
-    private int expiringCount = 0;
-    private decimal monthlyRevenue = 0;
-
     protected override async Task OnInitializedAsync()
     {
         // Load user preferences for view mode
         viewMode = await PreferencesService.GetListViewModeAsync();
 
-        // Load initial data (statistics and policy types don't need grid reload)
-        await LoadStatistics();
+        // Load initial data
         await LoadPolicyTypes();
     }
 
@@ -686,26 +622,6 @@
         finally
         {
             loading = false;
-        }
-    }
-
-    private async Task LoadStatistics()
-    {
-        try
-        {
-            var statisticsResult = await PoliciesApi.GetStatisticsAsync();
-            if (statisticsResult.IsSuccess && statisticsResult.Data != null)
-            {
-                var stats = statisticsResult.Data;
-                totalPolicies = stats.TotalPolicies;
-                activePolicies = stats.ActivePolicies;
-                expiringCount = stats.ExpiringPolicies;
-                monthlyRevenue = stats.MonthlyRevenue;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Statistics loading error: {ex.Message}");
         }
     }
 
@@ -854,7 +770,6 @@
                 {
                     Snackbar.Add("Poliçe başarıyla aktifleştirildi", MudBlazor.Severity.Success);
                     await dataGrid.ReloadServerData();
-                    await LoadStatistics();
                 }
                 else
                 {
@@ -889,7 +804,6 @@
                 {
                     Snackbar.Add("Poliçe başarıyla askıya alındı", MudBlazor.Severity.Success);
                     await dataGrid.ReloadServerData();
-                    await LoadStatistics();
                 }
                 else
                 {
@@ -924,7 +838,6 @@
                 {
                     Snackbar.Add("Poliçe başarıyla iptal edildi", MudBlazor.Severity.Success);
                     await dataGrid.ReloadServerData();
-                    await LoadStatistics();
                 }
                 else
                 {
@@ -959,7 +872,6 @@
                 {
                     Snackbar.Add("Poliçe başarıyla silindi", MudBlazor.Severity.Success);
                     await dataGrid.ReloadServerData();
-                    await LoadStatistics();
                 }
                 else
                 {

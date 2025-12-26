@@ -11,6 +11,7 @@ namespace IAMS.Web.Extensions
             //services.AddScoped<IPolicyComponentService, PolicyComponentService>();
             //services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IJSInteropService, JSInteropService>();
+            services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 
             // Register Web layer AutoMapper profiles (for infrastructure-dependent mappings)
             // Use explicit array to avoid ambiguity between extension method overloads

@@ -8,12 +8,14 @@
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Services.ApiClient
+@using IAMS.Web.Services
 @inject IPoliciesApiClient PoliciesApi
 @inject IPolicyTypesApiClient PolicyTypesApi
 @inject IPaymentsApiClient PaymentsApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IUserPreferencesService PreferencesService
 
 <PageTitle>Poliçeler</PageTitle>
 
@@ -126,197 +128,291 @@
                                   DebounceInterval="300" />
                 </ToolBarContent>
                 <Columns>
-                    <TemplateColumn Title="" Sortable="false" Filterable="false" CellStyle="width: 60px;">
-                        <CellTemplate>
-                            @if (HasEndorsements(context.Item.Id))
-                            {
-                                <MudIconButton Icon="@(IsExpanded(context.Item.Id) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
-                                               Size="Size.Small"
-                                               OnClick="@(() => ToggleExpand(context.Item.Id))"
-                                               Title="@(IsExpanded(context.Item.Id) ? "Zeyilleri Gizle" : "Zeyilleri Göster")" />
-                            }
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body2">@(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)</MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Z.No">
-                        <CellTemplate>
-                            <div style="text-align: center;">
-                                <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Justify="Justify.Center">
-                                    <MudText Typo="Typo.body2">@context.Item.InnerCode</MudText>
-                                    @if (HasEndorsements(context.Item.Id))
-                                    {
-                                        <MudChip Size="Size.Small" Color="Color.Info" T="int">@GetEndorsementCount(context.Item.Id) Zeyil</MudChip>
-                                    }
-                                </MudStack>
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="TIP">
-                        <CellTemplate>
-                            <div style="text-align: center;">
-                                <MudText Typo="Typo.caption">@GetStateTypeShortText(context.Item.StateType)</MudText>
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Müşteri">
-                        <CellTemplate>
-                            <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                <MudAvatar Color="Color.Primary" Size="Size.Small">
+                    @if (viewMode == ListViewMode.Simple)
+                    {
+                        <!-- Simple View Columns -->
+                        <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">
+                                    @(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Müşteri" Sortable="true" SortBy="x => x.Customer!.FirstName">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem;">
                                     @if (context.Item.Customer != null)
                                     {
-                                        @context.Item.Customer.FirstName.FirstOrDefault()
-                                        @context.Item.Customer.LastName.FirstOrDefault()
+                                        @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
                                     }
-                                </MudAvatar>
-                                <MudStack Spacing="0">
-                                    <MudText Typo="Typo.body2">
-                                        @if (context.Item.Customer != null)
-                                        {
-                                            @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
-                                        }
-                                    </MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        @context.Item.Customer?.Email
-                                    </MudText>
-                                </MudStack>
-                            </MudStack>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />
-                    <PropertyColumn Property="x => x.PolicyType!.Name" Title="Poliçe Tipi" />
-                    <TemplateColumn Title="Araç">
-                        <CellTemplate>
-                            @if (context.Item.Vehicle != null)
-                            {
-                                <MudStack Spacing="0">
-                                    <MudText Typo="Typo.body2">
-                                        <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Small" Class="mr-1" />
-                                        @context.Item.Vehicle.PlateNumber
-                                    </MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        @context.Item.Vehicle.BrandName @context.Item.Vehicle.ModelName
-                                    </MudText>
-                                </MudStack>
-                            }
-                            else
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
-                            }
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Prim Tutarı">
-                        <CellTemplate>
-                            <div style="text-align: right;">
-                                @context.Item.CurrencySymbol@context.Item.PremiumAmount.ToString("N2")
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Bakiye">
-                        <CellTemplate>
-                            <div style="text-align: right;">
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Poliçe Tipi" Sortable="true" SortBy="x => x.PolicyType!.Name">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">@context.Item.PolicyType?.Name</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Prim Tutarı" Sortable="true" SortBy="x => x.PremiumAmount">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="text-align: right;">
+                                    @context.Item.CurrencySymbol@context.Item.PremiumAmount.ToString("N2")
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Bakiye" Sortable="false">
+                            <CellTemplate>
                                 @{
                                     var balance = GetPolicyBalance(context.Item.Id);
-                                    if (balance > 0)
+                                    var hasBalance = balance > 0;
+                                }
+                                <MudText Typo="Typo.body1"
+                                         Style="@($"text-align: right; font-weight: 600; {(hasBalance ? "color: #d32f2f;" : "")}")">
+                                    @if (hasBalance)
                                     {
-                                        <MudChip T="String" Size="Size.Small" Color="Color.Error">@context.Item.CurrencySymbol@balance.ToString("N2")</MudChip>
+                                        @($"{context.Item.CurrencySymbol}{balance:N2}")
                                     }
                                     else
                                     {
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                        <span>-</span>
                                     }
-                                }
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Başlangıç">
-                        <CellTemplate>
-                            <div style="text-align: center;">
-                                @context.Item.StartDate.ToString("dd.MM.yyyy")
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Bitiş">
-                        <CellTemplate>
-                            <div style="text-align: center;">
-                                <div>@context.Item.EndDate.ToString("dd.MM.yyyy")</div>
-                                @if (context.Item.DaysUntilExpiry <= 30 && context.Item.DaysUntilExpiry >= 0)
-                                {
-                                    <div style="font-size: 0.75rem; color: var(--mud-palette-warning);">
-                                        @context.Item.DaysUntilExpiry gün kaldı
-                                    </div>
-                                }
-                                else if (context.Item.IsExpired)
-                                {
-                                    <div style="font-size: 0.75rem; color: var(--mud-palette-error);">
-                                        @Math.Abs(context.Item.DaysUntilExpiry) gün geçti
-                                    </div>
-                                }
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Durum">
-                        <CellTemplate>
-                            <div style="text-align: center;">
-                                <MudChip T="string" Color="@GetStatusColor(context.Item.Status)" Size="Size.Small">
-                                    @GetStatusText(context.Item.Status)
-                                </MudChip>
-                            </div>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="İşlemler" Sortable="false">
-                        <CellTemplate>
-                            <MudStack Row Spacing="1">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                               Color="Color.Info"
-                                               Size="Size.Small"
-                                               OnClick="@(() => ViewPolicy(context.Item.Id))"
-                                               Title="Detayları Görüntüle" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               OnClick="@(() => EditPolicy(context.Item.Id))"
-                                               Title="Düzenle" />
-                                @if (context.Item.Status == PolicyStatus.Draft)
-                                {
-                                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                                   Color="Color.Success"
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Bitiş Tarihi" Sortable="true" SortBy="x => x.EndDate">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2" Style="text-align: center;">
+                                    @context.Item.EndDate.ToString("dd.MM.yyyy")
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Durum" Sortable="true" SortBy="x => x.Status">
+                            <CellTemplate>
+                                <div style="text-align: center;">
+                                    <MudText Typo="Typo.body2"
+                                             Style="@($"font-weight: 500; color: {GetStatusColorHex(context.Item.Status)};")">
+                                        @GetStatusText(context.Item.Status)
+                                    </MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="İşlemler" Sortable="false" CellClass="d-flex justify-end">
+                            <CellTemplate>
+                                <MudStack Row Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Info"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => ActivatePolicy(context.Item))"
-                                                   Title="Aktifleştir" />
-                                }
-                                @if (context.Item.Status == PolicyStatus.Active)
-                                {
-                                    <MudIconButton Icon="@Icons.Material.Filled.Pause"
-                                                   Color="Color.Warning"
+                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                                   Title="Görüntüle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Color="Color.Primary"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => SuspendPolicy(context.Item))"
-                                                   Title="Askıya Al" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Cancel"
+                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
+                                                   Title="Düzenle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => CancelPolicy(context.Item))"
-                                                   Title="İptal Et" />
-                                }
-                                @if (context.Item.CanRenew)
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    }
+                    else
+                    {
+                        <!-- Detailed View Columns -->
+                        <TemplateColumn Title="" Sortable="false" Filterable="false" CellStyle="width: 60px;">
+                            <CellTemplate>
+                                @if (HasEndorsements(context.Item.Id))
                                 {
-                                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                                                   Color="Color.Success"
+                                    <MudIconButton Icon="@(IsExpanded(context.Item.Id) ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => RenewPolicy(context.Item))"
-                                                   Title="Yenile" />
+                                                   OnClick="@(() => ToggleExpand(context.Item.Id))"
+                                                   Title="@(IsExpanded(context.Item.Id) ? "Zeyilleri Gizle" : "Zeyilleri Göster")" />
                                 }
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeletePolicy(context.Item))"
-                                               Title="Sil" />
-                            </MudStack>
-                        </CellTemplate>
-                    </TemplateColumn>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">@(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Z.No">
+                            <CellTemplate>
+                                <div style="text-align: center;">
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Justify="Justify.Center">
+                                        <MudText Typo="Typo.body2">@context.Item.InnerCode</MudText>
+                                        @if (HasEndorsements(context.Item.Id))
+                                        {
+                                            <MudChip Size="Size.Small" Color="Color.Info" T="int">@GetEndorsementCount(context.Item.Id) Zeyil</MudChip>
+                                        }
+                                    </MudStack>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="TIP">
+                            <CellTemplate>
+                                <div style="text-align: center;">
+                                    <MudText Typo="Typo.caption">@GetStateTypeShortText(context.Item.StateType)</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Müşteri">
+                            <CellTemplate>
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        @if (context.Item.Customer != null)
+                                        {
+                                            @context.Item.Customer.FirstName.FirstOrDefault()
+                                            @context.Item.Customer.LastName.FirstOrDefault()
+                                        }
+                                    </MudAvatar>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2">
+                                            @if (context.Item.Customer != null)
+                                            {
+                                                @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
+                                            }
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @context.Item.Customer?.Email
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />
+                        <PropertyColumn Property="x => x.PolicyType!.Name" Title="Poliçe Tipi" />
+                        <TemplateColumn Title="Araç">
+                            <CellTemplate>
+                                @if (context.Item.Vehicle != null)
+                                {
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Small" Class="mr-1" />
+                                            @context.Item.Vehicle.PlateNumber
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @context.Item.Vehicle.BrandName @context.Item.Vehicle.ModelName
+                                        </MudText>
+                                    </MudStack>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Prim Tutarı">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    @context.Item.CurrencySymbol@context.Item.PremiumAmount.ToString("N2")
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Bakiye">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    @{
+                                        var balance = GetPolicyBalance(context.Item.Id);
+                                        if (balance > 0)
+                                        {
+                                            <MudChip T="String" Size="Size.Small" Color="Color.Error">@context.Item.CurrencySymbol@balance.ToString("N2")</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                        }
+                                    }
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Başlangıç">
+                            <CellTemplate>
+                                <div style="text-align: center;">
+                                    @context.Item.StartDate.ToString("dd.MM.yyyy")
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Bitiş">
+                            <CellTemplate>
+                                <div style="text-align: center;">
+                                    <div>@context.Item.EndDate.ToString("dd.MM.yyyy")</div>
+                                    @if (context.Item.DaysUntilExpiry <= 30 && context.Item.DaysUntilExpiry >= 0)
+                                    {
+                                        <div style="font-size: 0.75rem; color: var(--mud-palette-warning);">
+                                            @context.Item.DaysUntilExpiry gün kaldı
+                                        </div>
+                                    }
+                                    else if (context.Item.IsExpired)
+                                    {
+                                        <div style="font-size: 0.75rem; color: var(--mud-palette-error);">
+                                            @Math.Abs(context.Item.DaysUntilExpiry) gün geçti
+                                        </div>
+                                    }
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Durum">
+                            <CellTemplate>
+                                <div style="text-align: center;">
+                                    <MudChip T="string" Color="@GetStatusColor(context.Item.Status)" Size="Size.Small">
+                                        @GetStatusText(context.Item.Status)
+                                    </MudChip>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Info"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                                   Title="Detayları Görüntüle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
+                                                   Title="Düzenle" />
+                                    @if (context.Item.Status == PolicyStatus.Draft)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                                       Color="Color.Success"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => ActivatePolicy(context.Item))"
+                                                       Title="Aktifleştir" />
+                                    }
+                                    @if (context.Item.Status == PolicyStatus.Active)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.Pause"
+                                                       Color="Color.Warning"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => SuspendPolicy(context.Item))"
+                                                       Title="Askıya Al" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => CancelPolicy(context.Item))"
+                                                       Title="İptal Et" />
+                                    }
+                                    @if (context.Item.CanRenew)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                                       Color="Color.Success"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => RenewPolicy(context.Item))"
+                                                       Title="Yenile" />
+                                    }
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    }
                 </Columns>
                 <ChildRowContent>
                     @if (IsExpanded(context.Item.Id) && HasEndorsements(context.Item.Id))
@@ -494,6 +590,7 @@
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
     private Dictionary<int, decimal> policyBalances = new(); // Policy outstanding balances
     private bool loading = true;
+    private ListViewMode viewMode = ListViewMode.Detailed; // Default to detailed for policies
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
@@ -508,6 +605,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Load user preferences for view mode
+        viewMode = await PreferencesService.GetListViewModeAsync();
+
         // Run sequentially to avoid DbContext concurrency issues
         await LoadPolicies();
         await LoadPolicyBalances();
@@ -851,6 +951,19 @@
             PolicyStatus.Expired => Color.Warning,
             PolicyStatus.Suspended => Color.Secondary,
             _ => Color.Default
+        };
+    }
+
+    private string GetStatusColorHex(PolicyStatus status)
+    {
+        return status switch
+        {
+            PolicyStatus.Active => "#4caf50",      // Green
+            PolicyStatus.Draft => "#2196f3",       // Blue
+            PolicyStatus.Cancelled => "#f44336",   // Red
+            PolicyStatus.Expired => "#ff9800",     // Orange
+            PolicyStatus.Suspended => "#9e9e9e",   // Grey
+            _ => "#000000"
         };
     }
 

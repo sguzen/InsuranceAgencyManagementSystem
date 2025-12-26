@@ -26,6 +26,23 @@
 
         <!-- Settings Cards -->
         <MudGrid>
+            <!-- UI Preferences -->
+            <MudItem xs="12" md="6">
+                <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/ui"))">
+                    <MudCardContent>
+                        <MudStack Row Spacing="3" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Palette" Size="Size.Large" Color="Color.Primary" />
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.h6">Görünüm Tercihleri</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Liste görünümü ve kullanıcı arayüzü tercihleri
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
             <!-- General Settings -->
             <MudItem xs="12" md="6">
                 <MudCard Class="cursor-pointer" @onclick="@(() => NavigateTo("/settings/general"))">

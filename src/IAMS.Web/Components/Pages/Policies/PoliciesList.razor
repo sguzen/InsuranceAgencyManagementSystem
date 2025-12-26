@@ -131,6 +131,22 @@
                     @if (viewMode == ListViewMode.Simple)
                     {
                         <!-- Simple View Columns -->
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Info"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                                   Title="Görüntüle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
                         <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
                             <CellTemplate>
                                 <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">
@@ -140,7 +156,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Müşteri" Sortable="true" SortBy="x => x.Customer!.FirstName">
                             <CellTemplate>
-                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem;">
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 600;">
                                     @if (context.Item.Customer != null)
                                     {
                                         @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
@@ -196,27 +212,6 @@
                                 </div>
                             </CellTemplate>
                         </TemplateColumn>
-                        <TemplateColumn Title="İşlemler" Sortable="false" CellClass="d-flex justify-end">
-                            <CellTemplate>
-                                <MudStack Row Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
-                                                   Title="Görüntüle" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
-                                                   Title="Düzenle" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeletePolicy(context.Item))"
-                                                   Title="Sil" />
-                                </MudStack>
-                            </CellTemplate>
-                        </TemplateColumn>
                     }
                     else
                     {
@@ -232,9 +227,27 @@
                                 }
                             </CellTemplate>
                         </TemplateColumn>
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Info"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                                   Title="Görüntüle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
                         <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
                             <CellTemplate>
-                                <MudText Typo="Typo.body2">@(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)</MudText>
+                                <MudChip T="String" Size="Size.Small" Color="Color.Info">
+                                    @(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)
+                                </MudChip>
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Z.No">
@@ -259,7 +272,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Müşteri">
                             <CellTemplate>
-                                <MudText Typo="Typo.body2">
+                                <MudText Typo="Typo.body1" Style="font-weight: 600;">
                                     @if (context.Item.Customer != null)
                                     {
                                         @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
@@ -346,56 +359,6 @@
                                         @GetStatusText(context.Item.Status)
                                     </MudChip>
                                 </div>
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="İşlemler" Sortable="false">
-                            <CellTemplate>
-                                <MudStack Row Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                                   Color="Color.Info"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
-                                                   Title="Detayları Görüntüle" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
-                                                   Title="Düzenle" />
-                                    @if (context.Item.Status == PolicyStatus.Draft)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                                       Color="Color.Success"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => ActivatePolicy(context.Item))"
-                                                       Title="Aktifleştir" />
-                                    }
-                                    @if (context.Item.Status == PolicyStatus.Active)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.Pause"
-                                                       Color="Color.Warning"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => SuspendPolicy(context.Item))"
-                                                       Title="Askıya Al" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => CancelPolicy(context.Item))"
-                                                       Title="İptal Et" />
-                                    }
-                                    @if (context.Item.CanRenew)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                                                       Color="Color.Success"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => RenewPolicy(context.Item))"
-                                                       Title="Yenile" />
-                                    }
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeletePolicy(context.Item))"
-                                                   Title="Sil" />
-                                </MudStack>
                             </CellTemplate>
                         </TemplateColumn>
                     }

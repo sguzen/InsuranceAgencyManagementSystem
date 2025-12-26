@@ -135,11 +135,11 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Telefon" Sortable="false">
                             <CellTemplate>
-                                @if (!string.IsNullOrEmpty(context.Item.Phone))
+                                @if (!string.IsNullOrEmpty(context.Item.MobilePhoneNumber))
                                 {
                                     <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
                                         <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Primary" />
-                                        <MudText Typo="Typo.body2">@context.Item.Phone</MudText>
+                                        <MudText Typo="Typo.body2">@context.Item.MobilePhoneNumber</MudText>
                                     </MudStack>
                                 }
                             </CellTemplate>

@@ -519,6 +519,7 @@
     private Dictionary<int, decimal> policyBalances = new(); // Policy outstanding balances
     private bool loading = true;
     private ListViewMode viewMode = ListViewMode.Detailed; // Default to detailed for policies
+    private bool firstRender = true;
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
@@ -532,6 +533,16 @@
 
         // Load initial data
         await LoadPolicyTypes();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && dataGrid != null)
+        {
+            this.firstRender = false;
+            await dataGrid.ReloadServerData();
+            StateHasChanged();
+        }
     }
 
     private async Task<GridData<PolicyDto>> LoadServerData(GridState<PolicyDto> state)

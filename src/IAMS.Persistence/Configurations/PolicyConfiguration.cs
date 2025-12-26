@@ -38,6 +38,16 @@ namespace IAMS.Persistence.Configurations
 
             builder.HasIndex(p => new { p.CustomerId});
             builder.HasIndex(p => new { p.InsuranceCompanyId });
+            builder.HasIndex(p => new { p.PolicyTypeId });
+            builder.HasIndex(p => new { p.Status });
+            builder.HasIndex(p => new { p.EndDate });
+            builder.HasIndex(p => new { p.CreatedOn });
+
+            // Composite index for common queries (active policies ordered by creation)
+            builder.HasIndex(p => new { p.Status, p.CreatedOn });
+
+            // Composite index for expiring policies queries
+            builder.HasIndex(p => new { p.Status, p.EndDate });
 
             // Configure relationships
             builder.HasOne(p => p.Customer)

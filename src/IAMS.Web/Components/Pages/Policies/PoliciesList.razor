@@ -259,26 +259,12 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Müşteri">
                             <CellTemplate>
-                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                        @if (context.Item.Customer != null)
-                                        {
-                                            @context.Item.Customer.FirstName.FirstOrDefault()
-                                            @context.Item.Customer.LastName.FirstOrDefault()
-                                        }
-                                    </MudAvatar>
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body2">
-                                            @if (context.Item.Customer != null)
-                                            {
-                                                @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
-                                            }
-                                        </MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @context.Item.Customer?.Email
-                                        </MudText>
-                                    </MudStack>
-                                </MudStack>
+                                <MudText Typo="Typo.body2">
+                                    @if (context.Item.Customer != null)
+                                    {
+                                        @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
+                                    }
+                                </MudText>
                             </CellTemplate>
                         </TemplateColumn>
                         <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />

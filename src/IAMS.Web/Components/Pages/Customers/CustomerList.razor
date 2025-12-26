@@ -12,6 +12,7 @@
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Components.Shared.Dialogs
 @using IAMS.Web.Services.ApiClient
+@using IAMS.Web.Services
 @inject ICustomersApiClient CustomersApi
 @inject IPaymentsApiClient PaymentsApi
 @inject ICurrenciesApiClient CurrenciesApi
@@ -19,6 +20,7 @@
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IUserPreferencesService PreferencesService
 
 <PageTitle>Müşteriler</PageTitle>
 
@@ -79,37 +81,112 @@
                     <MudSpacer />
                 </ToolBarContent>
                 <Columns>
-                    <TemplateColumn Title="Müşteri Kodu" Sortable="true" SortBy="x => x.CustomerCode">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">@context.Item.CustomerCode</MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Ad Soyad" Sortable="true" SortBy="x => x.FirstName">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 600;">
-                                @context.Item.FirstName @context.Item.LastName
-                            </MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Poliçe Sayısı" Sortable="true" SortBy="x => x.ActivePolicyCount">
-                        <CellTemplate>
-                            <MudText Typo="Typo.body1" Style="font-size: 0.95rem; text-align: center;">
-                                @context.Item.ActivePolicyCount
-                            </MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Bakiye" Sortable="false">
-                        <CellTemplate>
-                            @{
-                                var balance = GetCustomerBalance(context.Item.Id);
-                                var hasBalance = balance != "-";
-                            }
-                            <MudText Typo="Typo.body1"
-                                     Style="@($"font-size: 1rem; font-weight: 600; {(hasBalance ? "color: #d32f2f;" : "")}")">
-                                @balance
-                            </MudText>
-                        </CellTemplate>
-                    </TemplateColumn>
+                    @if (viewMode == ListViewMode.Simple)
+                    {
+                        <!-- Simple View Columns -->
+                        <TemplateColumn Title="Müşteri Kodu" Sortable="true" SortBy="x => x.CustomerCode">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">@context.Item.CustomerCode</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Ad Soyad" Sortable="true" SortBy="x => x.FirstName">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 600;">
+                                    @context.Item.FirstName @context.Item.LastName
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Poliçe Sayısı" Sortable="true" SortBy="x => x.ActivePolicyCount">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem; text-align: center;">
+                                    @context.Item.ActivePolicyCount
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Bakiye" Sortable="false">
+                            <CellTemplate>
+                                @{
+                                    var balance = GetCustomerBalance(context.Item.Id);
+                                    var hasBalance = balance != "-";
+                                }
+                                <MudText Typo="Typo.body1"
+                                         Style="@($"font-size: 1rem; font-weight: 600; {(hasBalance ? "color: #d32f2f;" : "")}")">
+                                    @balance
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    }
+                    else
+                    {
+                        <!-- Detailed View Columns -->
+                        <TemplateColumn Title="Müşteri" Sortable="true" SortBy="x => x.FirstName">
+                            <CellTemplate>
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Medium">
+                                        @context.Item.FirstName.FirstOrDefault()@context.Item.LastName.FirstOrDefault()
+                                    </MudAvatar>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body1" Style="font-weight: 600;">
+                                            @context.Item.FirstName @context.Item.LastName
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @context.Item.Email
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Kod" Sortable="true" SortBy="x => x.CustomerCode">
+                            <CellTemplate>
+                                <MudChip T="String" Size="Size.Small" Color="Color.Info">
+                                    @context.Item.CustomerCode
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Telefon" Sortable="false">
+                            <CellTemplate>
+                                @if (!string.IsNullOrEmpty(context.Item.Phone))
+                                {
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Primary" />
+                                        <MudText Typo="Typo.body2">@context.Item.Phone</MudText>
+                                    </MudStack>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Poliçeler" Sortable="true" SortBy="x => x.ActivePolicyCount">
+                            <CellTemplate>
+                                @if (context.Item.ActivePolicyCount > 0)
+                                {
+                                    <MudChip T="String" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.Assignment">
+                                        @context.Item.ActivePolicyCount Aktif
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Poliçe yok</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Bakiye" Sortable="false">
+                            <CellTemplate>
+                                @{
+                                    var balance = GetCustomerBalance(context.Item.Id);
+                                    var hasBalance = balance != "-";
+                                }
+                                @if (hasBalance)
+                                {
+                                    <MudChip T="String" Size="Size.Small" Color="Color.Error" Icon="@Icons.Material.Filled.Warning">
+                                        @balance
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" Title="Bakiye yok" />
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                    }
 
                     <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end" Sortable="false">
                         <CellTemplate>
@@ -225,6 +302,7 @@
     private Dictionary<int, Dictionary<string, decimal>> customerBalances = new();
     private List<CurrencyDto> currencies = new();
     private bool loading = true;
+    private ListViewMode viewMode = ListViewMode.Simple;
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
@@ -239,6 +317,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Load user preferences for view mode
+        viewMode = await PreferencesService.GetListViewModeAsync();
+
         // Read filter query parameter from URL
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);

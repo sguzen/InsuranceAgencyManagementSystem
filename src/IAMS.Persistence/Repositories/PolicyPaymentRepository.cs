@@ -81,6 +81,26 @@ namespace IAMS.Persistence.Repositories
                 .SumAsync(pp => pp.Amount);
         }
 
+        public async Task<Dictionary<int, decimal>> GetTotalPaymentsByPolicyIdsAsync(IEnumerable<int> policyIds)
+        {
+            var policyIdsList = policyIds.ToList();
+            if (!policyIdsList.Any())
+            {
+                return new Dictionary<int, decimal>();
+            }
+
+            // Use a single query to get total payments for all policies at once
+            var result = await _dbSet
+                .Where(pp => policyIdsList.Contains(pp.PolicyId) &&
+                            !pp.IsDeleted &&
+                            pp.Status == Domain.Enums.PaymentStatus.Completed)
+                .GroupBy(pp => pp.PolicyId)
+                .Select(g => new { PolicyId = g.Key, Total = g.Sum(pp => pp.Amount) })
+                .ToDictionaryAsync(x => x.PolicyId, x => x.Total);
+
+            return result;
+        }
+
         public async Task<DateTime?> GetLastPaymentDateAsync(int customerId)
         {
             // Optimized: No Include needed when using Select

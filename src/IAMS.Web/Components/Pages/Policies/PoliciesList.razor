@@ -106,14 +106,14 @@
         <!-- Policies Data Grid -->
         <MudCard>
             <MudDataGrid T="PolicyDto"
-                         Items="@policies"
+                         ServerData="LoadServerData"
+                         @ref="dataGrid"
                          Loading="@loading"
                          Hover="true"
                          Striped="true"
-                         Virtualize="true"
                          FixedHeader="true"
                          Height="600px"
-                         RowsPerPage="10">
+                         RowsPerPage="20">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Poliçe Listesi</MudText>
                     <MudSpacer />
@@ -582,9 +582,8 @@
 </MudContainer>
 
 @code {
-    private List<PolicyDto> policies = new();
-    private List<PolicyDto> allPolicies = new(); // Stores all policies including endorsements
-    private List<PolicyDto> mainPolicies = new(); // Stores only main policies for display
+    private MudDataGrid<PolicyDto> dataGrid;
+    private List<PolicyDto> allPolicies = new(); // Stores all policies including endorsements for current page
     private Dictionary<int, List<PolicyDto>> endorsementsByPolicy = new(); // Endorsements grouped by main policy ID
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
@@ -608,24 +607,25 @@
         // Load user preferences for view mode
         viewMode = await PreferencesService.GetListViewModeAsync();
 
-        // Run sequentially to avoid DbContext concurrency issues
-        await LoadPolicies();
-        await LoadPolicyBalances();
+        // Load initial data (statistics and policy types don't need grid reload)
         await LoadStatistics();
         await LoadPolicyTypes();
     }
 
-    private async Task LoadPolicies()
+    private async Task<GridData<PolicyDto>> LoadServerData(GridState<PolicyDto> state)
     {
         loading = true;
         try
         {
+            var pageNumber = state.Page + 1; // MudBlazor uses 0-based index
+            var pageSize = state.PageSize;
+
             var queryParams = new PolicyQueryParams
             {
                 SearchTerm = searchTerm,
                 PolicyTypeId = selectedPolicyTypeId,
-                PageSize = 1000,
-                PageNumber = 1
+                PageSize = pageSize,
+                PageNumber = pageNumber
             };
 
             var result = await PoliciesApi.GetPoliciesAsync(queryParams);
@@ -634,13 +634,7 @@
                 allPolicies = result.Data.Items.ToList();
 
                 // Separate main policies from endorsements
-                mainPolicies = allPolicies.Where(p => p.InnerCode == "000").ToList();
-
-                // Filter by outstanding balance if enabled
-                if (filterByOutstandingBalance)
-                {
-                    mainPolicies = mainPolicies.Where(p => policyBalances.ContainsKey(p.Id) && policyBalances[p.Id] > 0).ToList();
-                }
+                var mainPolicies = allPolicies.Where(p => p.InnerCode == "000").ToList();
 
                 // Group endorsements by their main policy ID
                 endorsementsByPolicy.Clear();
@@ -660,28 +654,34 @@
                     endorsementsByPolicy[key] = endorsementsByPolicy[key].OrderBy(e => e.InnerCode).ToList();
                 }
 
-                // Set policies to mainPolicies for display
-                policies = mainPolicies;
+                // Load balances for the current page policies only (batch load)
+                await LoadPolicyBalancesBatch(mainPolicies.Select(p => p.Id).ToList());
+
+                // Filter by outstanding balance if enabled (client-side for now)
+                if (filterByOutstandingBalance)
+                {
+                    mainPolicies = mainPolicies.Where(p => policyBalances.ContainsKey(p.Id) && policyBalances[p.Id] > 0).ToList();
+                }
+
+                return new GridData<PolicyDto>
+                {
+                    Items = mainPolicies,
+                    TotalItems = result.Data.TotalCount
+                };
             }
             else
             {
-                allPolicies = new List<PolicyDto>();
-                mainPolicies = new List<PolicyDto>();
-                policies = new List<PolicyDto>();
-                endorsementsByPolicy.Clear();
                 if (!string.IsNullOrEmpty(result.Message))
                 {
                     Snackbar.Add(result.Message, MudBlazor.Severity.Warning);
                 }
+                return new GridData<PolicyDto> { Items = new List<PolicyDto>(), TotalItems = 0 };
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
-            allPolicies = new List<PolicyDto>();
-            mainPolicies = new List<PolicyDto>();
-            policies = new List<PolicyDto>();
-            endorsementsByPolicy.Clear();
+            return new GridData<PolicyDto> { Items = new List<PolicyDto>(), TotalItems = 0 };
         }
         finally
         {
@@ -725,23 +725,43 @@
         }
     }
 
-    private async Task LoadPolicyBalances()
+    private async Task LoadPolicyBalancesBatch(List<int> policyIds)
     {
         try
         {
-            // Load balances for all policies
-            foreach (var policy in allPolicies.Where(p => p.InnerCode == "000"))
+            if (!policyIds.Any())
             {
-                var totalPaymentsResult = await PaymentsApi.GetTotalPaymentsByPolicyIdAsync(policy.Id);
-                if (totalPaymentsResult.IsSuccess)
+                return;
+            }
+
+            // Batch load total payments for all policies in one query
+            var totalPaymentsResult = await PaymentsApi.GetBatchTotalPaymentsByPolicyIdsAsync(policyIds);
+            if (totalPaymentsResult.IsSuccess && totalPaymentsResult.Data != null)
+            {
+                var paymentTotals = totalPaymentsResult.Data;
+
+                // Calculate balances for each policy
+                foreach (var policyId in policyIds)
                 {
-                    var totalPaid = totalPaymentsResult.Data;
-                    var balance = policy.PremiumAmount - totalPaid;
-                    policyBalances[policy.Id] = balance > 0 ? balance : 0;
+                    var policy = allPolicies.FirstOrDefault(p => p.Id == policyId);
+                    if (policy != null)
+                    {
+                        var totalPaid = paymentTotals.ContainsKey(policyId) ? paymentTotals[policyId] : 0;
+                        var balance = policy.PremiumAmount - totalPaid;
+                        policyBalances[policyId] = balance > 0 ? balance : 0;
+                    }
                 }
-                else
+            }
+            else
+            {
+                // Fallback: set balance to premium amount for all policies
+                foreach (var policyId in policyIds)
                 {
-                    policyBalances[policy.Id] = policy.PremiumAmount;
+                    var policy = allPolicies.FirstOrDefault(p => p.Id == policyId);
+                    if (policy != null)
+                    {
+                        policyBalances[policyId] = policy.PremiumAmount;
+                    }
                 }
             }
         }
@@ -753,19 +773,28 @@
 
     private async Task OnSearch()
     {
-        await LoadPolicies();
+        if (dataGrid != null)
+        {
+            await dataGrid.ReloadServerData();
+        }
     }
 
     private async Task OnPolicyTypeChanged(int? value)
     {
         selectedPolicyTypeId = value;
-        await LoadPolicies();
+        if (dataGrid != null)
+        {
+            await dataGrid.ReloadServerData();
+        }
     }
 
     private async Task OnOutstandingBalanceFilterChanged(bool value)
     {
         filterByOutstandingBalance = value;
-        await LoadPolicies();
+        if (dataGrid != null)
+        {
+            await dataGrid.ReloadServerData();
+        }
     }
 
     private async Task ClearFilters()
@@ -773,7 +802,10 @@
         searchTerm = string.Empty;
         selectedPolicyTypeId = null;
         filterByOutstandingBalance = false;
-        await LoadPolicies();
+        if (dataGrid != null)
+        {
+            await dataGrid.ReloadServerData();
+        }
     }
 
     private decimal GetPolicyBalance(int policyId)
@@ -821,7 +853,7 @@
                 if (activateResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla aktifleştirildi", MudBlazor.Severity.Success);
-                    await LoadPolicies();
+                    await dataGrid.ReloadServerData();
                     await LoadStatistics();
                 }
                 else
@@ -856,7 +888,7 @@
                 if (suspendResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla askıya alındı", MudBlazor.Severity.Success);
-                    await LoadPolicies();
+                    await dataGrid.ReloadServerData();
                     await LoadStatistics();
                 }
                 else
@@ -891,7 +923,7 @@
                 if (cancelResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla iptal edildi", MudBlazor.Severity.Success);
-                    await LoadPolicies();
+                    await dataGrid.ReloadServerData();
                     await LoadStatistics();
                 }
                 else
@@ -926,7 +958,7 @@
                 if (deleteResult.IsSuccess)
                 {
                     Snackbar.Add("Poliçe başarıyla silindi", MudBlazor.Severity.Success);
-                    await LoadPolicies();
+                    await dataGrid.ReloadServerData();
                     await LoadStatistics();
                 }
                 else

@@ -108,7 +108,6 @@
             <MudDataGrid T="PolicyDto"
                          ServerData="LoadServerData"
                          @ref="dataGrid"
-                         Loading="@loading"
                          Hover="true"
                          Striped="true"
                          FixedHeader="true"
@@ -480,7 +479,7 @@
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
     private Dictionary<int, decimal> policyBalances = new(); // Policy outstanding balances
-    private bool loading = true;
+    private bool loading = false;
     private ListViewMode viewMode = ListViewMode.Detailed; // Default to detailed for policies
     private bool firstRender = true;
 
@@ -500,21 +499,28 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && dataGrid != null)
+        if (firstRender)
         {
             this.firstRender = false;
-            await dataGrid.ReloadServerData();
-            StateHasChanged();
+            // Small delay to ensure grid is fully initialized
+            await Task.Delay(100);
+            if (dataGrid != null)
+            {
+                await InvokeAsync(async () =>
+                {
+                    await dataGrid.ReloadServerData();
+                    StateHasChanged();
+                });
+            }
         }
     }
 
     private async Task<GridData<PolicyDto>> LoadServerData(GridState<PolicyDto> state)
     {
-        loading = true;
         try
         {
             var pageNumber = state.Page + 1; // MudBlazor uses 0-based index
-            var pageSize = state.PageSize;
+            var pageSize = state.PageSize > 0 ? state.PageSize : 20; // Default to 20 if not set
 
             var queryParams = new PolicyQueryParams
             {
@@ -578,10 +584,6 @@
         {
             Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
             return new GridData<PolicyDto> { Items = new List<PolicyDto>(), TotalItems = 0 };
-        }
-        finally
-        {
-            loading = false;
         }
     }
 

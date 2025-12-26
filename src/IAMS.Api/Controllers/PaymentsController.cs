@@ -9,6 +9,7 @@ using IAMS.Application.Features.Payments.Queries.GetPaymentById;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsByPolicyId;
 using IAMS.Application.Features.Payments.Queries.GetPaymentsPaged;
 using IAMS.Application.Features.Payments.Queries.GetTotalPaymentsByPolicyId;
+using IAMS.Application.Features.Payments.Queries.GetBatchTotalPaymentsByPolicyIds;
 using IAMS.Application.Features.Payments.Queries.GetCustomersWithOutstandingBalance;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
@@ -83,6 +84,21 @@ namespace IAMS.Api.Controllers
         public async Task<ActionResult<Result<decimal>>> GetTotalPaymentsByPolicy(int policyId)
         {
             var query = new GetTotalPaymentsByPolicyIdQuery(policyId);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get total payments (balances) for multiple policies in batch
+        /// </summary>
+        [HttpPost("batch-totals")]
+        public async Task<ActionResult<Result<Dictionary<int, decimal>>>> GetBatchTotalPaymentsByPolicies([FromBody] List<int> policyIds)
+        {
+            var query = new GetBatchTotalPaymentsByPolicyIdsQuery(policyIds);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

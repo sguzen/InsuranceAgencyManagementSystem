@@ -11,6 +11,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<PolicyPaymentDto?> GetPaymentByIdAsync(int id);
         Task<Result<List<PolicyPaymentDto>>> GetPaymentsByPolicyIdAsync(int policyId);
         Task<Result<decimal>> GetTotalPaymentsByPolicyIdAsync(int policyId);
+        Task<Result<Dictionary<int, decimal>>> GetBatchTotalPaymentsByPolicyIdsAsync(List<int> policyIds);
         Task<List<PolicyPaymentDto>> GetOverduePaymentsAsync();
         Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync(int? limit = null);
         Task<Result<PolicyPaymentDto>> CreateAsync(CreatePolicyPaymentDto paymentDto);
@@ -86,6 +87,11 @@ namespace IAMS.Web.Services.ApiClient
         public async Task<Result<decimal>> GetTotalPaymentsByPolicyIdAsync(int policyId)
         {
             return await GetAsync<decimal>($"api/payments/policy/{policyId}/total");
+        }
+
+        public async Task<Result<Dictionary<int, decimal>>> GetBatchTotalPaymentsByPolicyIdsAsync(List<int> policyIds)
+        {
+            return await PostAsync<Dictionary<int, decimal>>("api/payments/batch-totals", policyIds);
         }
 
         public async Task<List<PolicyPaymentDto>> GetPaymentsDueThisMonthAsync(int? limit = null)

@@ -1,0 +1,158 @@
+@page "/settings/ui"
+@layout Layout.MainLayout
+@attribute [Authorize]
+
+@using IAMS.Web.Services
+@inject IUserPreferencesService PreferencesService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Görünüm Tercihleri</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.Palette" Class="mr-3" />
+                Görünüm Tercihleri
+            </MudText>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => Navigation.NavigateTo("/settings"))">
+                Ayarlara Dön
+            </MudButton>
+        </MudStack>
+
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Liste görünümü ve kullanıcı arayüzü tercihlerinizi buradan yönetebilirsiniz
+        </MudText>
+
+        <!-- List View Mode Settings -->
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Liste Görünümü</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Müşteri ve Poliçe listelerinde kullanılacak görünüm stilini seçin
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudRadioGroup @bind-Value="selectedViewMode" T="ListViewMode">
+                    <MudStack Spacing="3">
+                        <!-- Simple View Option -->
+                        <MudCard Outlined="true" Class="@GetCardClass(ListViewMode.Simple)">
+                            <MudCardContent>
+                                <MudRadio Value="@ListViewMode.Simple" Color="Color.Primary">
+                                    <MudStack Spacing="2">
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.ViewList" Color="Color.Primary" />
+                                            <MudText Typo="Typo.h6">Basit Görünüm</MudText>
+                                        </MudStack>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            Temiz ve minimal tasarım. Sadece gerekli bilgiler gösterilir.
+                                            Daha hızlı yükleme ve basit kullanım için idealdir.
+                                        </MudText>
+                                        <MudStack Row Spacing="1">
+                                            <MudChip T="String" Size="Size.Small" Icon="@Icons.Material.Filled.Speed">Hızlı</MudChip>
+                                            <MudChip T="String" Size="Size.Small" Icon="@Icons.Material.Filled.Straighten">Minimal</MudChip>
+                                            <MudChip T="String" Size="Size.Small" Icon="@Icons.Material.Filled.TableRows">Tablo</MudChip>
+                                        </MudStack>
+                                    </MudStack>
+                                </MudRadio>
+                            </MudCardContent>
+                        </MudCard>
+
+                        <!-- Detailed View Option -->
+                        <MudCard Outlined="true" Class="@GetCardClass(ListViewMode.Detailed)">
+                            <MudCardContent>
+                                <MudRadio Value="@ListViewMode.Detailed" Color="Color.Primary">
+                                    <MudStack Spacing="2">
+                                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.ViewModule" Color="Color.Success" />
+                                            <MudText Typo="Typo.h6">Detaylı Görünüm</MudText>
+                                        </MudStack>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            Zengin görsellerle daha fazla bilgi. Avatarlar, renkli etiketler ve
+                                            genişletilebilir satırlar ile detaylı bir deneyim sunar.
+                                        </MudText>
+                                        <MudStack Row Spacing="1">
+                                            <MudChip T="String" Size="Size.Small" Icon="@Icons.Material.Filled.Stars">Zengin</MudChip>
+                                            <MudChip T="String" Size="Size.Small" Icon="@Icons.Material.Filled.Palette">Renkli</MudChip>
+                                            <MudChip T="String" Size="Size.Small" Icon="@Icons.Material.Filled.Info">Detaylı</MudChip>
+                                        </MudStack>
+                                    </MudStack>
+                                </MudRadio>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudStack>
+                </MudRadioGroup>
+            </MudCardContent>
+            <MudCardActions>
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           OnClick="SavePreferences"
+                           Disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+                        <span>Kaydediliyor...</span>
+                    }
+                    else
+                    {
+                        <span>Kaydet</span>
+                    }
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+
+        <!-- Preview Section -->
+        <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
+            <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Info" />
+                <MudText>
+                    Değişiklikleri görmek için kaydettikten sonra Müşteriler veya Poliçeler sayfasını yeniden yükleyin.
+                </MudText>
+            </MudStack>
+        </MudAlert>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private ListViewMode selectedViewMode = ListViewMode.Simple;
+    private bool isSaving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedViewMode = await PreferencesService.GetListViewModeAsync();
+    }
+
+    private async Task SavePreferences()
+    {
+        isSaving = true;
+        try
+        {
+            await PreferencesService.SetListViewModeAsync(selectedViewMode);
+            Snackbar.Add("Görünüm tercihleri kaydedildi", MudBlazor.Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kaydetme hatası: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private string GetCardClass(ListViewMode mode)
+    {
+        return selectedViewMode == mode
+            ? "border-2 border-solid border-primary"
+            : "";
+    }
+}

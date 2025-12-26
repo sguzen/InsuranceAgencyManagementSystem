@@ -8,12 +8,14 @@
 @using IAMS.Shared.QueryParams
 @using IAMS.Web.Components.Shared
 @using IAMS.Web.Services.ApiClient
+@using IAMS.Web.Services
 @inject IPoliciesApiClient PoliciesApi
 @inject IPolicyTypesApiClient PolicyTypesApi
 @inject IPaymentsApiClient PaymentsApi
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IUserPreferencesService PreferencesService
 
 <PageTitle>Poliçeler</PageTitle>
 
@@ -494,6 +496,7 @@
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
     private Dictionary<int, decimal> policyBalances = new(); // Policy outstanding balances
     private bool loading = true;
+    private ListViewMode viewMode = ListViewMode.Detailed; // Default to detailed for policies
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
@@ -508,6 +511,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Load user preferences for view mode
+        viewMode = await PreferencesService.GetListViewModeAsync();
+
         // Run sequentially to avoid DbContext concurrency issues
         await LoadPolicies();
         await LoadPolicyBalances();

@@ -313,7 +313,7 @@ else
                                                        Title="@(IsExpanded(context.Id) ? "Zeyilleri Gizle" : "Zeyilleri Göster")" />
                                     }
                                 </MudTd>
-                                <MudTd DataLabel="Poliçe No">@context.PolicyNumber</MudTd>
+                                <MudTd DataLabel="Poliçe No">@(context.FormattedPolicyNumber ?? context.PolicyNumber)</MudTd>
                                 <MudTd DataLabel="Z.No">
                                     <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
                                         <MudText Typo="Typo.body2">@context.InnerCode</MudText>

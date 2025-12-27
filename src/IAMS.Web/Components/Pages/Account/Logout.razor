@@ -1,0 +1,76 @@
+@page "/account/logout"
+@using Microsoft.AspNetCore.Identity
+@using IAMS.Domain.Entities
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject ILogger<Logout> Logger
+
+<PageTitle>Çıkış Yapılıyor</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center" Style="min-height: 100vh;">
+    <MudPaper Elevation="4" Class="pa-8" Style="width: 100%; max-width: 400px;">
+        <MudStack Spacing="4" AlignItems="AlignItems.Center">
+            @if (!_loggingOut)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Logout" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h5" Align="Align.Center">Çıkış Yap</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary">
+                    Sistemden çıkış yapmak istediğinizden emin misiniz?
+                </MudText>
+                <MudStack Row Spacing="2" Class="mt-4">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="Cancel">
+                        İptal
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="PerformLogout" StartIcon="@Icons.Material.Filled.Logout">
+                        Çıkış Yap
+                    </MudButton>
+                </MudStack>
+            }
+            else
+            {
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.h6" Align="Align.Center">Çıkış yapılıyor...</MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                    Lütfen bekleyin
+                </MudText>
+            }
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool _loggingOut = false;
+
+    private async Task PerformLogout()
+    {
+        _loggingOut = true;
+        StateHasChanged();
+
+        try
+        {
+            var userName = SignInManager.Context?.User?.Identity?.Name;
+
+            // Sign out the user
+            await SignInManager.SignOutAsync();
+
+            Logger.LogInformation("User {UserName} logged out successfully", userName ?? "Unknown");
+
+            // Small delay for UX
+            await Task.Delay(500);
+
+            // Redirect to login page
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error during logout");
+            // Still redirect to login even if there's an error
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

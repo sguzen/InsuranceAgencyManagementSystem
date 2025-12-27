@@ -503,12 +503,12 @@
             var sent = await EmailService.SendPolicyReminderAsync(
                 policy.Customer.Email,
                 customerName,
-                policy.PolicyNumber,
+                policy.FormattedPolicyNumber ?? policy.PolicyNumber,
                 policy.EndDate);
 
             if (sent)
             {
-                Snackbar.Add($"{policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
+                Snackbar.Add($"{policy.FormattedPolicyNumber ?? policy.PolicyNumber} için hatırlatma e-postası gönderildi", MudBlazor.Severity.Success);
             }
             else
             {
@@ -559,7 +559,7 @@
                     var sent = await EmailService.SendPolicyReminderAsync(
                         policy.Customer.Email!,
                         customerName,
-                        policy.PolicyNumber,
+                        policy.FormattedPolicyNumber ?? policy.PolicyNumber,
                         policy.EndDate);
 
                     if (sent)
@@ -623,7 +623,7 @@
                     : "N/A";
                 var companyName = policy.InsuranceCompany?.Name ?? "N/A";
 
-                csv.AppendLine($"\"{policy.PolicyNumber}\",\"{customerName}\",\"{companyName}\"," +
+                csv.AppendLine($"\"{policy.FormattedPolicyNumber ?? policy.PolicyNumber}\",\"{customerName}\",\"{companyName}\"," +
                     $"\"{policy.StartDate:dd.MM.yyyy}\",\"{policy.EndDate:dd.MM.yyyy}\"," +
                     $"\"{policy.PremiumAmount:N2}\",\"{GetExpiryStatusText(policy)}\",\"{policy.DaysUntilExpiry}\"");
             }

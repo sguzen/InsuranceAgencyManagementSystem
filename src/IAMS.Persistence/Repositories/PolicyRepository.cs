@@ -111,7 +111,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.PolicyType)
                 .Include(p => p.Currency)
                 .Include(p => p.Vehicle)
-                .Where(p => !p.IsDeleted);
+                .Where(p => !p.IsDeleted && p.InnerCode == "000"); // Only return main policies, not endorsements
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))

@@ -33,8 +33,11 @@ namespace IAMS.Web.Services.ApiClient
 
     public class PoliciesApiClient : BaseApiClient, IPoliciesApiClient
     {
-        public PoliciesApiClient(HttpClient httpClient) : base(httpClient)
+        private readonly IPolicyFormattingService _policyFormattingService;
+
+        public PoliciesApiClient(HttpClient httpClient, IPolicyFormattingService policyFormattingService) : base(httpClient)
         {
+            _policyFormattingService = policyFormattingService;
         }
 
         public async Task<Result<PagedResult<PolicyDto>>> GetPoliciesAsync(PolicyQueryParams queryParams)
@@ -50,27 +53,52 @@ namespace IAMS.Web.Services.ApiClient
                 queryString += $"&policyTypeId={queryParams.PolicyTypeId}";
             queryString += $"&status={queryParams.Status}";
 
-            return await GetAsync<PagedResult<PolicyDto>>($"api/policies{queryString}");
+            var result = await GetAsync<PagedResult<PolicyDto>>($"api/policies{queryString}");
+            if (result.IsSuccess && result.Data?.Items != null)
+            {
+                _policyFormattingService.FormatPolicyNumbers(result.Data.Items);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> GetPolicyByIdAsync(int id)
         {
-            return await GetAsync<PolicyDto>($"api/policies/{id}");
+            var result = await GetAsync<PolicyDto>($"api/policies/{id}");
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> GetPolicyByNumberAsync(string policyNumber)
         {
-            return await GetAsync<PolicyDto>($"api/policies/by-number/{Uri.EscapeDataString(policyNumber)}");
+            var result = await GetAsync<PolicyDto>($"api/policies/by-number/{Uri.EscapeDataString(policyNumber)}");
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> CreatePolicyAsync(CreatePolicyDto policyDto)
         {
-            return await PostAsync<PolicyDto>("api/policies", policyDto);
+            var result = await PostAsync<PolicyDto>("api/policies", policyDto);
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> UpdatePolicyAsync(int id, UpdatePolicyDto policyDto)
         {
-            return await PutAsync<PolicyDto>($"api/policies/{id}", policyDto);
+            var result = await PutAsync<PolicyDto>($"api/policies/{id}", policyDto);
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result> DeletePolicyAsync(int id)
@@ -80,47 +108,87 @@ namespace IAMS.Web.Services.ApiClient
 
         public async Task<Result<PolicyDto>> ActivatePolicyAsync(int id)
         {
-            return await PostAsync<PolicyDto>($"api/policies/{id}/activate", null);
+            var result = await PostAsync<PolicyDto>($"api/policies/{id}/activate", null);
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> CancelPolicyAsync(int id, string? reason)
         {
-            return await PostAsync<PolicyDto>($"api/policies/{id}/cancel", new { Reason = reason });
+            var result = await PostAsync<PolicyDto>($"api/policies/{id}/cancel", new { Reason = reason });
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> SuspendPolicyAsync(int id, string? reason)
         {
-            return await PostAsync<PolicyDto>($"api/policies/{id}/suspend", new { Reason = reason });
+            var result = await PostAsync<PolicyDto>($"api/policies/{id}/suspend", new { Reason = reason });
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> ReactivatePolicyAsync(int id)
         {
-            return await PostAsync<PolicyDto>($"api/policies/{id}/reactivate", null);
+            var result = await PostAsync<PolicyDto>($"api/policies/{id}/reactivate", null);
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyDto>> RenewPolicyAsync(int id, DateTime startDate, DateTime endDate, decimal premiumAmount)
         {
-            return await PostAsync<PolicyDto>($"api/policies/{id}/renew", new
+            var result = await PostAsync<PolicyDto>($"api/policies/{id}/renew", new
             {
                 StartDate = startDate,
                 EndDate = endDate,
                 PremiumAmount = premiumAmount
             });
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumber(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<List<PolicyDto>>> GetExpiringPoliciesAsync(int daysAhead = 30)
         {
-            return await GetAsync<List<PolicyDto>>($"api/policies/expiring?daysAhead={daysAhead}");
+            var result = await GetAsync<List<PolicyDto>>($"api/policies/expiring?daysAhead={daysAhead}");
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumbers(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<List<PolicyDto>>> GetPoliciesByCustomerAsync(int customerId)
         {
-            return await GetAsync<List<PolicyDto>>($"api/policies/customer/{customerId}");
+            var result = await GetAsync<List<PolicyDto>>($"api/policies/customer/{customerId}");
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumbers(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<List<PolicyDto>>> GetEndorsementsByPolicyIdAsync(int policyId)
         {
-            return await GetAsync<List<PolicyDto>>($"api/policies/{policyId}/endorsements");
+            var result = await GetAsync<List<PolicyDto>>($"api/policies/{policyId}/endorsements");
+            if (result.IsSuccess && result.Data != null)
+            {
+                _policyFormattingService.FormatPolicyNumbers(result.Data);
+            }
+            return result;
         }
 
         public async Task<Result<PolicyStatisticsDto>> GetStatisticsAsync()

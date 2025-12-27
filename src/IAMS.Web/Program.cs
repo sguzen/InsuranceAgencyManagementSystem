@@ -105,7 +105,8 @@ builder.Services.AddScoped<ICurrenciesApiClient, CurrenciesApiClient>(sp =>
 builder.Services.AddScoped<IPoliciesApiClient, PoliciesApiClient>(sp =>
 {
     var httpClient = sp.GetRequiredService<HttpClient>();
-    return new PoliciesApiClient(httpClient);
+    var policyFormattingService = sp.GetRequiredService<IPolicyFormattingService>();
+    return new PoliciesApiClient(httpClient, policyFormattingService);
 });
 
 builder.Services.AddScoped<IPaymentsApiClient, PaymentsApiClient>(sp =>

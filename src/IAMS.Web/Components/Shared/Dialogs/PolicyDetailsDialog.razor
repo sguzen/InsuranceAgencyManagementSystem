@@ -21,7 +21,7 @@
                         <MudPaper Class="pa-4 mb-4" Elevation="0" Outlined="true">
                             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                 <div>
-                                    <MudText Typo="Typo.h6">@policy.PolicyNumber</MudText>
+                                    <MudText Typo="Typo.h6">@(policy.FormattedPolicyNumber ?? policy.PolicyNumber)</MudText>
                                     <MudText Typo="Typo.body2" Color="Color.Secondary">
                                         @(policy.PolicyType?.Name ?? "N/A")
                                     </MudText>

@@ -4,9 +4,11 @@
 @using IAMS.Web.Services.ApiClient
 @using IAMS.Domain.Enums
 @using IAMS.Shared.QueryParams
+@using Microsoft.JSInterop
 @inject IPaymentsApiClient PaymentsApi
 @inject IPoliciesApiClient PoliciesApi
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <MudDialog>
     <DialogContent>
@@ -53,7 +55,10 @@
                              Variant="Variant.Outlined"
                              Format="N2"
                              Adornment="Adornment.Start"
-                             AdornmentText="@currencySymbol" />
+                             AdornmentText="@currencySymbol"
+                             @onfocus="SelectAmountText"
+                             Immediate="true"
+                             HideSpinButtons="true" />
 
             <MudDatePicker @bind-Date="paymentDate"
                            Label="Ödeme Tarihi"
@@ -283,6 +288,30 @@
         finally
         {
             isSaving = false;
+        }
+    }
+
+    private async Task SelectAmountText()
+    {
+        try
+        {
+            // Use JavaScript to select all text in the input field
+            // MudNumericField renders as mud-input-control, so we need to find the actual input element
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                setTimeout(() => {
+                    const inputs = document.querySelectorAll('.mud-input-control input[type=""text""]');
+                    for (let input of inputs) {
+                        if (input.value && input.offsetParent !== null) {
+                            input.select();
+                            break;
+                        }
+                    }
+                }, 50);
+            ");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error selecting text: {ex.Message}");
         }
     }
 

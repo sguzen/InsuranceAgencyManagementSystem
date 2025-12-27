@@ -133,6 +133,22 @@
                     @if (viewMode == ListViewMode.Simple)
                     {
                         <!-- Simple View Columns -->
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Payment"
+                                                   Color="Color.Success"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => OpenPaymentDialog(context.Item.Id))"
+                                                   Title="Ödeme Al" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
                         <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
                             <CellTemplate>
                                 <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">
@@ -198,27 +214,6 @@
                                 </div>
                             </CellTemplate>
                         </TemplateColumn>
-                        <TemplateColumn Title="İşlemler" Sortable="false" CellClass="d-flex justify-end">
-                            <CellTemplate>
-                                <MudStack Row Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Payment"
-                                                   Color="Color.Success"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => OpenPaymentDialog(context.Item.Id))"
-                                                   Title="Ödeme Al" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
-                                                   Title="Düzenle" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeletePolicy(context.Item))"
-                                                   Title="Sil" />
-                                </MudStack>
-                            </CellTemplate>
-                        </TemplateColumn>
                     }
                     else
                     {
@@ -232,6 +227,22 @@
                                                    OnClick="@(() => ToggleExpand(context.Item.Id))"
                                                    Title="@(IsExpanded(context.Item.Id) ? "Zeyilleri Gizle" : "Zeyilleri Göster")" />
                                 }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Payment"
+                                                   Color="Color.Success"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => OpenPaymentDialog(context.Item.Id))"
+                                                   Title="Ödeme Al" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
@@ -350,56 +361,6 @@
                                         @GetStatusText(context.Item.Status)
                                     </MudChip>
                                 </div>
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="İşlemler" Sortable="false">
-                            <CellTemplate>
-                                <MudStack Row Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Payment"
-                                                   Color="Color.Success"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => OpenPaymentDialog(context.Item.Id))"
-                                                   Title="Ödeme Al" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
-                                                   Title="Düzenle" />
-                                    @if (context.Item.Status == PolicyStatus.Draft)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                                       Color="Color.Success"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => ActivatePolicy(context.Item))"
-                                                       Title="Aktifleştir" />
-                                    }
-                                    @if (context.Item.Status == PolicyStatus.Active)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.Pause"
-                                                       Color="Color.Warning"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => SuspendPolicy(context.Item))"
-                                                       Title="Askıya Al" />
-                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel"
-                                                       Color="Color.Error"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => CancelPolicy(context.Item))"
-                                                       Title="İptal Et" />
-                                    }
-                                    @if (context.Item.CanRenew)
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                                                       Color="Color.Success"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => RenewPolicy(context.Item))"
-                                                       Title="Yenile" />
-                                    }
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeletePolicy(context.Item))"
-                                                   Title="Sil" />
-                                </MudStack>
                             </CellTemplate>
                         </TemplateColumn>
                     }

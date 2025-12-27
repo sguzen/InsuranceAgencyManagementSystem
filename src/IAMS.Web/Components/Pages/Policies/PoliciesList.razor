@@ -474,7 +474,6 @@
 
 @code {
     private MudDataGrid<PolicyDto> dataGrid;
-    private List<PolicyDto> allPolicies = new(); // Stores all policies including endorsements for current page
     private Dictionary<int, List<PolicyDto>> endorsementsByPolicy = new(); // Endorsements grouped by main policy ID
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
@@ -540,31 +539,19 @@
             Console.WriteLine($"API result - Success: {result.IsSuccess}, HasData: {result.Data != null}, ItemCount: {result.Data?.Items?.Count ?? 0}");
             if (result.IsSuccess && result.Data != null)
             {
-                allPolicies = result.Data.Items.ToList();
+                var mainPolicies = result.Data.Items.ToList();
+                Console.WriteLine($"Main policies received: {mainPolicies.Count}");
 
-                // Separate main policies from endorsements
-                var mainPolicies = allPolicies.Where(p => p.InnerCode == "000").ToList();
-
-                // Group endorsements by their main policy ID
+                // Load endorsements for each policy (for the detailed view)
                 endorsementsByPolicy.Clear();
-                var endorsements = allPolicies.Where(p => p.InnerCode != "000" && p.OriginalPolicyId.HasValue).ToList();
-                foreach (var endorsement in endorsements)
+                foreach (var policy in mainPolicies)
                 {
-                    if (!endorsementsByPolicy.ContainsKey(endorsement.OriginalPolicyId.Value))
-                    {
-                        endorsementsByPolicy[endorsement.OriginalPolicyId.Value] = new List<PolicyDto>();
-                    }
-                    endorsementsByPolicy[endorsement.OriginalPolicyId.Value].Add(endorsement);
-                }
-
-                // Sort endorsements by InnerCode
-                foreach (var key in endorsementsByPolicy.Keys.ToList())
-                {
-                    endorsementsByPolicy[key] = endorsementsByPolicy[key].OrderBy(e => e.InnerCode).ToList();
+                    // Load endorsements for this policy if needed
+                    // For now, we'll load them on-demand when the row is expanded
                 }
 
                 // Load balances for the current page policies only (batch load)
-                await LoadPolicyBalancesBatch(mainPolicies.Select(p => p.Id).ToList());
+                await LoadPolicyBalancesBatch(mainPolicies.Select(p => p.Id).ToList(), mainPolicies);
 
                 // Filter by outstanding balance if enabled (client-side for now)
                 if (filterByOutstandingBalance)
@@ -614,7 +601,7 @@
         }
     }
 
-    private async Task LoadPolicyBalancesBatch(List<int> policyIds)
+    private async Task LoadPolicyBalancesBatch(List<int> policyIds, List<PolicyDto> policies)
     {
         try
         {
@@ -630,27 +617,19 @@
                 var paymentTotals = totalPaymentsResult.Data;
 
                 // Calculate balances for each policy
-                foreach (var policyId in policyIds)
+                foreach (var policy in policies)
                 {
-                    var policy = allPolicies.FirstOrDefault(p => p.Id == policyId);
-                    if (policy != null)
-                    {
-                        var totalPaid = paymentTotals.ContainsKey(policyId) ? paymentTotals[policyId] : 0;
-                        var balance = policy.PremiumAmount - totalPaid;
-                        policyBalances[policyId] = balance > 0 ? balance : 0;
-                    }
+                    var totalPaid = paymentTotals.ContainsKey(policy.Id) ? paymentTotals[policy.Id] : 0;
+                    var balance = policy.PremiumAmount - totalPaid;
+                    policyBalances[policy.Id] = balance > 0 ? balance : 0;
                 }
             }
             else
             {
                 // Fallback: set balance to premium amount for all policies
-                foreach (var policyId in policyIds)
+                foreach (var policy in policies)
                 {
-                    var policy = allPolicies.FirstOrDefault(p => p.Id == policyId);
-                    if (policy != null)
-                    {
-                        policyBalances[policyId] = policy.PremiumAmount;
-                    }
+                    policyBalances[policy.Id] = policy.PremiumAmount;
                 }
             }
         }

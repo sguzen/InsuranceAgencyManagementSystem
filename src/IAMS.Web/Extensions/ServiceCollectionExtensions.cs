@@ -1,6 +1,4 @@
 ﻿using IAMS.Web.Services;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace IAMS.Web.Extensions
 {

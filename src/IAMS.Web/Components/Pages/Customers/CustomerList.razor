@@ -121,19 +121,9 @@
                         <!-- Detailed View Columns -->
                         <TemplateColumn Title="Müşteri" Sortable="true" SortBy="x => x.FirstName">
                             <CellTemplate>
-                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Color="Color.Primary" Size="Size.Medium">
-                                        @context.Item.FirstName.FirstOrDefault()@context.Item.LastName.FirstOrDefault()
-                                    </MudAvatar>
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body1" Style="font-weight: 600;">
-                                            @context.Item.FirstName @context.Item.LastName
-                                        </MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @context.Item.Email
-                                        </MudText>
-                                    </MudStack>
-                                </MudStack>
+                                <MudText Typo="Typo.body1" Style="font-weight: 600;">
+                                    @context.Item.FirstName @context.Item.LastName
+                                </MudText>
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Kod" Sortable="true" SortBy="x => x.CustomerCode">
@@ -145,11 +135,11 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Telefon" Sortable="false">
                             <CellTemplate>
-                                @if (!string.IsNullOrEmpty(context.Item.Phone))
+                                @if (!string.IsNullOrEmpty(context.Item.MobilePhoneNumber))
                                 {
                                     <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
                                         <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Primary" />
-                                        <MudText Typo="Typo.body2">@context.Item.Phone</MudText>
+                                        <MudText Typo="Typo.body2">@context.Item.MobilePhoneNumber</MudText>
                                     </MudStack>
                                 }
                             </CellTemplate>

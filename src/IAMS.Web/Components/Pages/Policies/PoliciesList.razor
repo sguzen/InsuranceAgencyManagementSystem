@@ -132,6 +132,22 @@
                     @if (viewMode == ListViewMode.Simple)
                     {
                         <!-- Simple View Columns -->
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Info"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                                   Title="Görüntüle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
                         <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
                             <CellTemplate>
                                 <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 500;">
@@ -141,7 +157,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Müşteri" Sortable="true" SortBy="x => x.Customer!.FirstName">
                             <CellTemplate>
-                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem;">
+                                <MudText Typo="Typo.body1" Style="font-size: 0.95rem; font-weight: 600;">
                                     @if (context.Item.Customer != null)
                                     {
                                         @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
@@ -233,9 +249,27 @@
                                 }
                             </CellTemplate>
                         </TemplateColumn>
+                        <TemplateColumn Title="İşlemler" Sortable="false">
+                            <CellTemplate>
+                                <MudStack Row Spacing="2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Color="Color.Info"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
+                                                   Title="Görüntüle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Medium"
+                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
                         <TemplateColumn Title="Poliçe No" Sortable="true" SortBy="x => x.PolicyNumber">
                             <CellTemplate>
-                                <MudText Typo="Typo.body2">@(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)</MudText>
+                                <MudChip T="String" Size="Size.Small" Color="Color.Info">
+                                    @(context.Item.FormattedPolicyNumber ?? context.Item.PolicyNumber)
+                                </MudChip>
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Z.No">
@@ -260,26 +294,12 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Müşteri">
                             <CellTemplate>
-                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                        @if (context.Item.Customer != null)
-                                        {
-                                            @context.Item.Customer.FirstName.FirstOrDefault()
-                                            @context.Item.Customer.LastName.FirstOrDefault()
-                                        }
-                                    </MudAvatar>
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body2">
-                                            @if (context.Item.Customer != null)
-                                            {
-                                                @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
-                                            }
-                                        </MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @context.Item.Customer?.Email
-                                        </MudText>
-                                    </MudStack>
-                                </MudStack>
+                                <MudText Typo="Typo.body1" Style="font-weight: 600;">
+                                    @if (context.Item.Customer != null)
+                                    {
+                                        @($"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}")
+                                    }
+                                </MudText>
                             </CellTemplate>
                         </TemplateColumn>
                         <PropertyColumn Property="x => x.InsuranceCompany!.Name" Title="Sigorta Şirketi" />

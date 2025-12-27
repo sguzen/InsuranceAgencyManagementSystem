@@ -112,7 +112,9 @@
                          Striped="true"
                          FixedHeader="true"
                          Height="600px"
-                         RowsPerPage="20">
+                         RowsPerPage="20"
+                         RowStyle="cursor: pointer"
+                         RowClick="@OnRowClick">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Poliçe Listesi</MudText>
                     <MudSpacer />
@@ -198,20 +200,20 @@
                         <TemplateColumn Title="İşlemler" Sortable="false" CellClass="d-flex justify-end">
                             <CellTemplate>
                                 <MudStack Row Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                                   Color="Color.Info"
+                                    <MudIconButton Icon="@Icons.Material.Filled.Payment"
+                                                   Color="Color.Success"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
-                                                   Title="Görüntüle" />
+                                                   OnClick="@((e) => { e.StopPropagation(); OpenPaymentDialog(context.Item.Id); })"
+                                                   Title="Ödeme Al" />
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
+                                                   OnClick="@((e) => { e.StopPropagation(); EditPolicy(context.Item.Id); })"
                                                    Title="Düzenle" />
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   OnClick="@((e) => { e.StopPropagation(); DeletePolicy(context.Item); })"
                                                    Title="Sil" />
                                 </MudStack>
                             </CellTemplate>
@@ -364,22 +366,22 @@
                         <TemplateColumn Title="İşlemler" Sortable="false">
                             <CellTemplate>
                                 <MudStack Row Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                                   Color="Color.Info"
+                                    <MudIconButton Icon="@Icons.Material.Filled.Payment"
+                                                   Color="Color.Success"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => ViewPolicy(context.Item.Id))"
-                                                   Title="Detayları Görüntüle" />
+                                                   OnClick="@((e) => { e.StopPropagation(); OpenPaymentDialog(context.Item.Id); })"
+                                                   Title="Ödeme Al" />
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Color="Color.Primary"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => EditPolicy(context.Item.Id))"
+                                                   OnClick="@((e) => { e.StopPropagation(); EditPolicy(context.Item.Id); })"
                                                    Title="Düzenle" />
                                     @if (context.Item.Status == PolicyStatus.Draft)
                                     {
                                         <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
                                                        Color="Color.Success"
                                                        Size="Size.Small"
-                                                       OnClick="@(() => ActivatePolicy(context.Item))"
+                                                       OnClick="@((e) => { e.StopPropagation(); ActivatePolicy(context.Item); })"
                                                        Title="Aktifleştir" />
                                     }
                                     @if (context.Item.Status == PolicyStatus.Active)
@@ -387,12 +389,12 @@
                                         <MudIconButton Icon="@Icons.Material.Filled.Pause"
                                                        Color="Color.Warning"
                                                        Size="Size.Small"
-                                                       OnClick="@(() => SuspendPolicy(context.Item))"
+                                                       OnClick="@((e) => { e.StopPropagation(); SuspendPolicy(context.Item); })"
                                                        Title="Askıya Al" />
                                         <MudIconButton Icon="@Icons.Material.Filled.Cancel"
                                                        Color="Color.Error"
                                                        Size="Size.Small"
-                                                       OnClick="@(() => CancelPolicy(context.Item))"
+                                                       OnClick="@((e) => { e.StopPropagation(); CancelPolicy(context.Item); })"
                                                        Title="İptal Et" />
                                     }
                                     @if (context.Item.CanRenew)
@@ -400,13 +402,13 @@
                                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                                        Color="Color.Success"
                                                        Size="Size.Small"
-                                                       OnClick="@(() => RenewPolicy(context.Item))"
+                                                       OnClick="@((e) => { e.StopPropagation(); RenewPolicy(context.Item); })"
                                                        Title="Yenile" />
                                     }
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => DeletePolicy(context.Item))"
+                                                   OnClick="@((e) => { e.StopPropagation(); DeletePolicy(context.Item); })"
                                                    Title="Sil" />
                                 </MudStack>
                             </CellTemplate>
@@ -737,9 +739,37 @@
         Navigation.NavigateTo("/policies/create");
     }
 
-    private void ViewPolicy(int policyId)
+    private void OnRowClick(DataGridRowClickEventArgs<PolicyDto> args)
     {
-        Navigation.NavigateTo($"/policies/{policyId}");
+        Navigation.NavigateTo($"/policies/{args.Item.Id}");
+    }
+
+    private async Task OpenPaymentDialog(int policyId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "PolicyId", policyId }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddPaymentDialog>("Ödeme Al", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            Snackbar.Add("Ödeme başarıyla kaydedildi", MudBlazor.Severity.Success);
+            if (dataGrid != null)
+            {
+                await dataGrid.ReloadServerData();
+            }
+        }
     }
 
     private void EditPolicy(int policyId)

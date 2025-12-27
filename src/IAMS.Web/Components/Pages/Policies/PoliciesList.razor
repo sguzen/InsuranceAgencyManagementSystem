@@ -479,9 +479,8 @@
     private HashSet<int> expandedPolicies = new(); // Track which policies are expanded
     private List<IAMS.Shared.DTOs.PolicyType.PolicyTypeDto> policyTypes;
     private Dictionary<int, decimal> policyBalances = new(); // Policy outstanding balances
-    private bool loading = false;
     private ListViewMode viewMode = ListViewMode.Detailed; // Default to detailed for policies
-    private bool firstRender = true;
+    private bool isInitialized = false;
 
     // Search and filter parameters
     private string searchTerm = string.Empty;
@@ -499,18 +498,21 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !isInitialized)
         {
-            this.firstRender = false;
-            // Small delay to ensure grid is fully initialized
-            await Task.Delay(100);
+            isInitialized = true;
+            await Task.Delay(50);
+
             if (dataGrid != null)
             {
-                await InvokeAsync(async () =>
+                try
                 {
                     await dataGrid.ReloadServerData();
-                    StateHasChanged();
-                });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading initial data: {ex.Message}");
+                }
             }
         }
     }
@@ -519,8 +521,12 @@
     {
         try
         {
+            Console.WriteLine($"LoadServerData called - Page: {state.Page}, PageSize: {state.PageSize}");
+
             var pageNumber = state.Page + 1; // MudBlazor uses 0-based index
             var pageSize = state.PageSize > 0 ? state.PageSize : 20; // Default to 20 if not set
+
+            Console.WriteLine($"Fetching policies - PageNumber: {pageNumber}, PageSize: {pageSize}, SearchTerm: '{searchTerm}', PolicyTypeId: {selectedPolicyTypeId}");
 
             var queryParams = new PolicyQueryParams
             {
@@ -531,6 +537,7 @@
             };
 
             var result = await PoliciesApi.GetPoliciesAsync(queryParams);
+            Console.WriteLine($"API result - Success: {result.IsSuccess}, HasData: {result.Data != null}, ItemCount: {result.Data?.Items?.Count ?? 0}");
             if (result.IsSuccess && result.Data != null)
             {
                 allPolicies = result.Data.Items.ToList();
@@ -565,6 +572,8 @@
                     mainPolicies = mainPolicies.Where(p => policyBalances.ContainsKey(p.Id) && policyBalances[p.Id] > 0).ToList();
                 }
 
+                Console.WriteLine($"Returning GridData - Items: {mainPolicies.Count}, TotalItems: {result.Data.TotalCount}");
+
                 return new GridData<PolicyDto>
                 {
                     Items = mainPolicies,
@@ -573,6 +582,7 @@
             }
             else
             {
+                Console.WriteLine($"API call failed - Message: {result.Message}");
                 if (!string.IsNullOrEmpty(result.Message))
                 {
                     Snackbar.Add(result.Message, MudBlazor.Severity.Warning);
@@ -582,6 +592,7 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Exception in LoadServerData: {ex}");
             Snackbar.Add($"Poliçeler yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
             return new GridData<PolicyDto> { Items = new List<PolicyDto>(), TotalItems = 0 };
         }

@@ -76,6 +76,7 @@ namespace IAMS.Persistence.Extensions
             services.AddScoped<IInsuranceCompanyRepository, InsuranceCompanyRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<ICommissionRateRepository, CommissionRateRepository>();
+            services.AddScoped<IImportConfigurationRepository, ImportConfigurationRepository>();
 
             // Register tenant service (moved from Infrastructure to fix dependency direction)
             // This service uses ApplicationDbContext directly, so it belongs in Persistence layer

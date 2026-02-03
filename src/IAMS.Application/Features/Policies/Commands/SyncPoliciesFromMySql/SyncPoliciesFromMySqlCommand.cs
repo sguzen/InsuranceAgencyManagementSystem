@@ -8,11 +8,6 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
     public class SyncPoliciesFromMySqlCommand : IRequest<Result<PolicyImportResultDto>>
     {
         /// <summary>
-        /// Agency code to filter policies (e.g., "A022")
-        /// </summary>
-        public string AgencyCode { get; set; }
-
-        /// <summary>
         /// Start date for the import range
         /// </summary>
         public DateTime StartDate { get; set; }
@@ -23,7 +18,8 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Insurance company ID in the local system to associate imported policies with
+        /// Insurance company ID — used to look up the ImportConfiguration
+        /// which contains MySQL connection details and agency code
         /// </summary>
         public int InsuranceCompanyId { get; set; }
 
@@ -33,13 +29,11 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
         public string UserId { get; set; }
 
         public SyncPoliciesFromMySqlCommand(
-            string agencyCode,
             DateTime startDate,
             DateTime endDate,
             int insuranceCompanyId,
             string userId)
         {
-            AgencyCode = agencyCode;
             StartDate = startDate;
             EndDate = endDate;
             InsuranceCompanyId = insuranceCompanyId;

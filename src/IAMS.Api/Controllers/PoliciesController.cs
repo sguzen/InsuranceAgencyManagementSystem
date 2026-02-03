@@ -25,6 +25,7 @@ using IAMS.Application.Features.Policies.Queries.GetPolicyStatistics;
 using IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
+using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using MediatR;
@@ -407,7 +408,9 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Import policies from external MySQL database
+        /// Import policies from external MySQL database.
+        /// Connection details and agency code are loaded from ImportConfiguration
+        /// associated with the given insurance company.
         /// </summary>
         [HttpPost("import/mysql-sync")]
         public async Task<ActionResult<Result<PolicyImportResultDto>>> SyncPoliciesFromMySql(
@@ -418,14 +421,8 @@ namespace IAMS.Api.Controllers
                 return BadRequest(Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null));
             }
 
-            if (string.IsNullOrWhiteSpace(request.AgencyCode))
-            {
-                return BadRequest(Result<PolicyImportResultDto>.Failure("Agency code is required", (List<string>?)null));
-            }
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             var command = new SyncPoliciesFromMySqlCommand(
-                request.AgencyCode,
                 request.StartDate,
                 request.EndDate,
                 request.InsuranceCompanyId,
@@ -439,13 +436,31 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Test MySQL database connection
+        /// Test MySQL database connection for a given insurance company.
+        /// Loads the ImportConfiguration (SourceType=DatabaseImport) for that company.
         /// </summary>
         [HttpPost("import/mysql-test")]
         public async Task<ActionResult<Result<bool>>> TestMySqlConnection(
-            [FromServices] IMySqlPolicyImportService mySqlService)
+            [FromBody] MySqlTestRequest request,
+            [FromServices] IMySqlPolicyImportService mySqlService,
+            [FromServices] IUnitOfWork unitOfWork)
         {
-            var success = await mySqlService.TestConnectionAsync();
+            if (request.InsuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<bool>.Failure("Insurance company must be selected"));
+            }
+
+            var configurations = await unitOfWork.ImportConfigurations.GetByInsuranceCompanyIdAsync(request.InsuranceCompanyId);
+            var importConfig = configurations.FirstOrDefault(c =>
+                c.SourceType == ImportSourceType.DatabaseImport && c.IsActive);
+
+            if (importConfig == null)
+            {
+                return BadRequest(Result<bool>.Failure(
+                    $"No active MySQL import configuration found for insurance company ID: {request.InsuranceCompanyId}"));
+            }
+
+            var success = await mySqlService.TestConnectionAsync(importConfig);
 
             if (success)
                 return Ok(Result<bool>.Success(true, "MySQL connection successful"));
@@ -480,9 +495,13 @@ namespace IAMS.Api.Controllers
 
     public class MySqlSyncRequest
     {
-        public string AgencyCode { get; set; } = "A022";
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public int InsuranceCompanyId { get; set; }
+    }
+
+    public class MySqlTestRequest
+    {
         public int InsuranceCompanyId { get; set; }
     }
 }

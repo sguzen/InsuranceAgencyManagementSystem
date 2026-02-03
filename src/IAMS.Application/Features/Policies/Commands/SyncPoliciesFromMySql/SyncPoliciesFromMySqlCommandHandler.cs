@@ -38,10 +38,6 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
 
             try
             {
-                _logger.LogInformation(
-                    "Starting MySQL database sync: Agency={AgencyCode}, DateRange={StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}",
-                    request.AgencyCode, request.StartDate, request.EndDate);
-
                 // Validate insurance company exists before proceeding
                 var insuranceCompany = await _unitOfWork.InsuranceCompanies.GetByIdAsync(request.InsuranceCompanyId);
                 if (insuranceCompany == null)
@@ -49,6 +45,24 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                     return Result<PolicyImportResultDto>.Failure(
                         $"Insurance company not found with ID: {request.InsuranceCompanyId}", (List<string>?)null);
                 }
+
+                // Load the import configuration for this insurance company (SourceType = DatabaseImport)
+                var configurations = await _unitOfWork.ImportConfigurations.GetByInsuranceCompanyIdAsync(request.InsuranceCompanyId);
+                var importConfig = configurations.FirstOrDefault(c =>
+                    c.SourceType == ImportSourceType.DatabaseImport && c.IsActive);
+
+                if (importConfig == null)
+                {
+                    return Result<PolicyImportResultDto>.Failure(
+                        $"No active MySQL import configuration found for insurance company '{insuranceCompany.Name}' (ID: {request.InsuranceCompanyId}). " +
+                        "Please create an ImportConfiguration with SourceType=DatabaseImport for this company.", (List<string>?)null);
+                }
+
+                var agencyCode = importConfig.ApiKey?.Trim() ?? "unknown";
+
+                _logger.LogInformation(
+                    "Starting MySQL database sync: Config={ConfigName}, Agency={AgencyCode}, DateRange={StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}",
+                    importConfig.Name, agencyCode, request.StartDate, request.EndDate);
 
                 // Create import history record
                 importHistory = new ImportHistory
@@ -58,7 +72,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                     StartedAt = DateTime.UtcNow,
                     Status = "InProgress",
                     ImportedBy = request.UserId,
-                    Notes = $"MySQL sync: Agency={request.AgencyCode}, Range={request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd}",
+                    Notes = $"MySQL sync: Config={importConfig.Name}, Agency={agencyCode}, Range={request.StartDate:yyyy-MM-dd} to {request.EndDate:yyyy-MM-dd}",
                     CreatedBy = request.UserId,
                     CreatedOn = DateTime.UtcNow,
                     ModifiedBy = request.UserId,
@@ -68,9 +82,9 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                 await _unitOfWork.ImportHistories.AddAsync(importHistory);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Fetch policies from MySQL
+                // Fetch policies from MySQL using the per-company configuration
                 var policies = await _mySqlImportService.FetchPoliciesAsync(
-                    request.AgencyCode,
+                    importConfig,
                     request.StartDate,
                     request.EndDate,
                     cancellationToken);

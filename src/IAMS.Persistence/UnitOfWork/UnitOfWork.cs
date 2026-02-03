@@ -237,6 +237,25 @@ namespace IAMS.Persistence.UnitOfWork
             return await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
 
+        public void DetachAllEntities()
+        {
+            var entries = _context.ChangeTracker.Entries().ToList();
+            foreach (var entry in entries)
+            {
+                entry.State = EntityState.Detached;
+            }
+        }
+
+        public void AttachEntity<T>(T entity) where T : class
+        {
+            var entry = _context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                _context.Attach(entity);
+                entry.State = EntityState.Modified;
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed && disposing)

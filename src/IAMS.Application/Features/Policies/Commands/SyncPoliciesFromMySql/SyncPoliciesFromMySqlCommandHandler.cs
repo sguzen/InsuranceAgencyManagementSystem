@@ -42,6 +42,14 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                     "Starting MySQL database sync: Agency={AgencyCode}, DateRange={StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}",
                     request.AgencyCode, request.StartDate, request.EndDate);
 
+                // Validate insurance company exists before proceeding
+                var insuranceCompany = await _unitOfWork.InsuranceCompanies.GetByIdAsync(request.InsuranceCompanyId);
+                if (insuranceCompany == null)
+                {
+                    return Result<PolicyImportResultDto>.Failure(
+                        $"Insurance company not found with ID: {request.InsuranceCompanyId}", (List<string>?)null);
+                }
+
                 // Create import history record
                 importHistory = new ImportHistory
                 {
@@ -91,9 +99,10 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                     }
                     catch (Exception ex)
                     {
+                        var innerMsg = ex.InnerException?.Message ?? ex.Message;
                         _logger.LogWarning(ex,
-                            "Error importing policy from MySQL: Row={RowNumber}, PolicyNumber={PolicyNumber}",
-                            policyDto.RowNumber, policyDto.PolicyNumber);
+                            "Error importing policy from MySQL: Row={RowNumber}, PolicyNumber={PolicyNumber}, BranchCode={BranchCode}, Error={Error}",
+                            policyDto.RowNumber, policyDto.PolicyNumber, policyDto.BranchCode, innerMsg);
 
                         result.FailureCount++;
                         importHistory.FailureCount++;
@@ -102,8 +111,13 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                         {
                             RowNumber = policyDto.RowNumber,
                             PolicyNumber = policyDto.PolicyNumber ?? "Unknown",
-                            ErrorMessage = ex.Message
+                            ErrorMessage = innerMsg
                         });
+
+                        // Detach any pending tracked entities to prevent cascading failures
+                        _unitOfWork.DetachAllEntities();
+                        // Re-attach importHistory so we can continue updating it
+                        _unitOfWork.AttachEntity(importHistory);
                     }
                 }
 
@@ -111,7 +125,15 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                 importHistory.MarkAsCompleted(result.FailureCount == 0 ? "Success" : "PartialSuccess");
                 importHistory.ModifiedBy = request.UserId;
                 importHistory.ModifiedOn = DateTime.UtcNow;
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                try
+                {
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                catch (Exception saveEx)
+                {
+                    _logger.LogError(saveEx, "Failed to save import history completion status");
+                }
 
                 _logger.LogInformation(
                     "MySQL sync completed. Total: {Total}, Success: {Success}, Failure: {Failure}",
@@ -121,18 +143,26 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during MySQL database sync");
+                var innerMsg = ex.InnerException?.Message ?? ex.Message;
+                _logger.LogError(ex, "Error during MySQL database sync: {Error}", innerMsg);
 
                 if (importHistory != null)
                 {
-                    importHistory.MarkAsCompleted("Failed");
-                    importHistory.ErrorMessages = ex.Message;
-                    importHistory.ModifiedBy = request.UserId;
-                    importHistory.ModifiedOn = DateTime.UtcNow;
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    try
+                    {
+                        importHistory.MarkAsCompleted("Failed");
+                        importHistory.ErrorMessages = innerMsg;
+                        importHistory.ModifiedBy = request.UserId;
+                        importHistory.ModifiedOn = DateTime.UtcNow;
+                        await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        _logger.LogError(saveEx, "Failed to save import history failure status");
+                    }
                 }
 
-                return Result<PolicyImportResultDto>.Failure($"MySQL sync failed: {ex.Message}", (List<string>?)null);
+                return Result<PolicyImportResultDto>.Failure($"MySQL sync failed: {innerMsg}", (List<string>?)null);
             }
         }
 

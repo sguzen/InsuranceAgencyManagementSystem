@@ -2,6 +2,7 @@
 using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Services;
 using IAMS.Infrastructure.Data;
+using IAMS.Infrastructure.Configuration;
 using IAMS.Infrastructure.Interfaces;
 using IAMS.Infrastructure.Services;
 using IAMS.Shared.Constants;
@@ -35,6 +36,10 @@ namespace IAMS.Infrastructure.Extensions
             services.AddScoped<ICountryDataService, CountryDataService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped<IExternalPolicyImportService, ExternalPolicyImportService>();
+
+            // Register MySQL import service
+            services.Configure<MySqlImportSettings>(configuration.GetSection(MySqlImportSettings.SectionName));
+            services.AddScoped<IMySqlPolicyImportService, MySqlPolicyImportService>();
 
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection(ApplicationConstants.ConfigurationSections.EmailSettings));

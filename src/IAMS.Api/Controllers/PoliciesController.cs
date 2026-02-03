@@ -5,7 +5,9 @@ using IAMS.Application.Features.Policies.Commands.CreatePolicy;
 using IAMS.Application.Features.Policies.Commands.DeletePolicy;
 using IAMS.Application.Features.Policies.Commands.ImportPolicies;
 using IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping;
+using IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql;
 using IAMS.Application.Features.Policies.Commands.ReactivatePolicy;
+using IAMS.Application.Interfaces.Services;
 using IAMS.Application.Features.Policies.Queries.ParsePolicyImport;
 using IAMS.Application.Features.Policies.Commands.RenewPolicy;
 using IAMS.Application.Features.Policies.Commands.SuspendPolicy;
@@ -23,7 +25,6 @@ using IAMS.Application.Features.Policies.Queries.GetPolicyStatistics;
 using IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
-using IAMS.Shared.DTOs.Policy;
 using IAMS.Shared.Models;
 using IAMS.Shared.QueryParams;
 using MediatR;
@@ -404,6 +405,53 @@ namespace IAMS.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Import policies from external MySQL database
+        /// </summary>
+        [HttpPost("import/mysql-sync")]
+        public async Task<ActionResult<Result<PolicyImportResultDto>>> SyncPoliciesFromMySql(
+            [FromBody] MySqlSyncRequest request)
+        {
+            if (request.InsuranceCompanyId <= 0)
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
+            if (string.IsNullOrWhiteSpace(request.AgencyCode))
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure("Agency code is required", (List<string>?)null));
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var command = new SyncPoliciesFromMySqlCommand(
+                request.AgencyCode,
+                request.StartDate,
+                request.EndDate,
+                request.InsuranceCompanyId,
+                userId);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Test MySQL database connection
+        /// </summary>
+        [HttpPost("import/mysql-test")]
+        public async Task<ActionResult<Result<bool>>> TestMySqlConnection(
+            [FromServices] IMySqlPolicyImportService mySqlService)
+        {
+            var success = await mySqlService.TestConnectionAsync();
+
+            if (success)
+                return Ok(Result<bool>.Success(true, "MySQL connection successful"));
+
+            return BadRequest(Result<bool>.Failure("MySQL connection failed"));
+        }
     }
 
     // Request models
@@ -428,5 +476,13 @@ namespace IAMS.Api.Controllers
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal PremiumAmount { get; set; }
+    }
+
+    public class MySqlSyncRequest
+    {
+        public string AgencyCode { get; set; } = "A022";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int InsuranceCompanyId { get; set; }
     }
 }

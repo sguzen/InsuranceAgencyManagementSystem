@@ -23,6 +23,11 @@ namespace IAMS.Domain.Enums
         /// <summary>
         /// Automated scheduled sync
         /// </summary>
-        ScheduledSync = 3
+        ScheduledSync = 3,
+
+        /// <summary>
+        /// Direct database import (e.g., MySQL)
+        /// </summary>
+        DatabaseImport = 4
     }
 }

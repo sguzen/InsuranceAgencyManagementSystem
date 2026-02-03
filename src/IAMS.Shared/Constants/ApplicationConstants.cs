@@ -25,6 +25,7 @@ namespace IAMS.Shared.Constants
             public const string FileStorageSettings = "FileStorageSettings";
             public const string MultiTenancy = "MultiTenancy";
             public const string TenantConnections = "TenantConnections";
+            public const string MySqlImport = "MySqlImport";
         }
 
         /// <summary>

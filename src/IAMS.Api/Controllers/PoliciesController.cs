@@ -450,7 +450,7 @@ namespace IAMS.Api.Controllers
             if (success)
                 return Ok(Result<bool>.Success(true, "MySQL connection successful"));
 
-            return BadRequest(Result<bool>.Failure("MySQL connection failed"));
+            return BadRequest(Result<bool>.Failure("MySQL connection failed", (List<string>?)null));
         }
     }
 

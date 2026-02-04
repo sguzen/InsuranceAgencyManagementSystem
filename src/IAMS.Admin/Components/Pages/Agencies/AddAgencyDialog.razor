@@ -1,0 +1,156 @@
+@using IAMS.Domain.Enums
+@using IAMS.Shared.DTOs.Agency
+@inject IAgenciesApiClient AgenciesApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            <MudForm @ref="form" @bind-IsValid="@isValid">
+                <MudStack Spacing="3">
+                    <!-- Basic Information -->
+                    <MudText Typo="Typo.h6" Class="mb-2">Temel Bilgiler</MudText>
+
+                    <MudTextField @bind-Value="model.Name"
+                                  Label="Acenta Adı"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Acenta adı gereklidir" />
+
+                    <MudTextField @bind-Value="model.Identifier"
+                                  Label="Tanımlayıcı (Alt Alan Adı)"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Tanımlayıcı gereklidir"
+                                  HelperText="Benzersiz bir tanımlayıcı girin (ör: acenta-001)" />
+
+                    <MudTextField @bind-Value="model.ExternalId"
+                                  Label="Dış Sistem Kodu"
+                                  Variant="Variant.Outlined"
+                                  HelperText="Poliçe görüntülemede kullanılan acenta numarası (ör: A001)" />
+
+                    <!-- Contact Information -->
+                    <MudText Typo="Typo.h6" Class="mb-2 mt-4">İletişim Bilgileri</MudText>
+
+                    <MudTextField @bind-Value="model.ContactEmail"
+                                  Label="E-posta"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Email" />
+
+                    <MudTextField @bind-Value="model.ContactPhone"
+                                  Label="Telefon"
+                                  Variant="Variant.Outlined" />
+
+                    <!-- Subscription -->
+                    <MudText Typo="Typo.h6" Class="mb-2 mt-4">Abonelik Bilgileri</MudText>
+
+                    <MudSelect @bind-Value="model.SubscriptionType"
+                               Label="Abonelik Tipi"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem Value="SubscriptionType.Basic">Temel</MudSelectItem>
+                        <MudSelectItem Value="SubscriptionType.Standard">Standart</MudSelectItem>
+                        <MudSelectItem Value="SubscriptionType.Premium">Premium</MudSelectItem>
+                        <MudSelectItem Value="SubscriptionType.Enterprise">Kurumsal</MudSelectItem>
+                        <MudSelectItem Value="SubscriptionType.Trial">Deneme</MudSelectItem>
+                    </MudSelect>
+
+                    <MudDatePicker @bind-Date="subscriptionExpiryDate"
+                                   Label="Abonelik Bitiş Tarihi"
+                                   Variant="Variant.Outlined"
+                                   DateFormat="dd.MM.yyyy" />
+
+                    <!-- Limits -->
+                    <MudText Typo="Typo.h6" Class="mb-2 mt-4">Limitler</MudText>
+
+                    <MudNumericField @bind-Value="model.MaxUsers"
+                                     Label="Maksimum Kullanıcı"
+                                     Variant="Variant.Outlined"
+                                     Min="1" Max="9999" />
+
+                    <MudNumericField @bind-Value="model.MaxPolicies"
+                                     Label="Maksimum Poliçe"
+                                     Variant="Variant.Outlined"
+                                     Min="1" Max="999999" />
+                </MudStack>
+            </MudForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="@(!isValid || saving)">
+            @if (saving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Kaydediliyor...</MudText>
+            }
+            else
+            {
+                <MudText>Kaydet</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private CreateAgencyDto model = new()
+    {
+        SubscriptionType = SubscriptionType.Basic,
+        MaxUsers = 5,
+        MaxPolicies = 1000
+    };
+    private MudForm form = null!;
+    private bool isValid;
+    private bool saving;
+    private DateTime? subscriptionExpiryDate;
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (!isValid) return;
+
+        saving = true;
+        try
+        {
+            if (subscriptionExpiryDate.HasValue)
+            {
+                model.SubscriptionExpiryDate = subscriptionExpiryDate.Value;
+            }
+
+            var result = await AgenciesApi.CreateAgencyAsync(model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Acenta başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result.Data));
+            }
+            else
+            {
+                if (result.Errors?.Any() == true)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        Snackbar.Add(error, MudBlazor.Severity.Warning);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Acenta oluşturulurken hata oluştu", MudBlazor.Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

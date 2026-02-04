@@ -2,7 +2,7 @@ using IAMS.Shared.DTOs.Agency;
 using IAMS.Shared.Models;
 using System.Net.Http.Json;
 
-namespace IAMS.Web.Services.ApiClient
+namespace IAMS.Admin.Services.ApiClient
 {
     public interface IAgenciesApiClient
     {
@@ -34,20 +34,20 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<List<AgencyDto>>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<List<AgencyDto>>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<AgenciesResponse>(_jsonOptions);
                 if (result != null)
                 {
-                    return Result<List<AgencyDto>>.Success(result.Agencies, "Agencies loaded successfully");
+                    return Result<List<AgencyDto>>.Success(result.Agencies, "Agencies loaded");
                 }
 
-                return Result<List<AgencyDto>>.Failure("Boş yanıt");
+                return Result<List<AgencyDto>>.Failure("Empty response");
             }
             catch (Exception ex)
             {
-                return Result<List<AgencyDto>>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<List<AgencyDto>>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -60,7 +60,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<AgencyDto>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<AgencyDto>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var agency = await response.Content.ReadFromJsonAsync<AgencyDto>(_jsonOptions);
@@ -69,11 +69,11 @@ namespace IAMS.Web.Services.ApiClient
                     return Result<AgencyDto>.Success(agency);
                 }
 
-                return Result<AgencyDto>.Failure("Acenta bulunamadı");
+                return Result<AgencyDto>.Failure("Agency not found");
             }
             catch (Exception ex)
             {
-                return Result<AgencyDto>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<AgencyDto>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -86,7 +86,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<AgencyDto>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<AgencyDto>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var agency = await response.Content.ReadFromJsonAsync<AgencyDto>(_jsonOptions);
@@ -96,7 +96,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<AgencyDto>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<AgencyDto>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -109,14 +109,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 return Result.Success("Acenta başarıyla güncellendi");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -129,14 +129,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
-                return Result.Success("Acenta başarıyla askıya alındı");
+                return Result.Success("Acenta askıya alındı");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -149,14 +149,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
-                return Result.Success("Acenta başarıyla aktifleştirildi");
+                return Result.Success("Acenta aktifleştirildi");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -169,14 +169,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
-                return Result.Success("Acenta başarıyla askıya alındı");
+                return Result.Success("Acenta askıya alındı");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 

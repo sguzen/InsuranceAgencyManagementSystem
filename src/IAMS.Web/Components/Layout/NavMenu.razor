@@ -66,21 +66,6 @@
         </MudNavGroup>
     }
 
-    <!-- Admin Panel Section (SuperAdmin and Admin only) -->
-    @if (IsAdmin)
-    {
-        <MudDivider Class="my-2" />
-
-        <MudNavGroup Title="Yönetim Paneli" Icon="@Icons.Material.Filled.AdminPanelSettings">
-            <MudNavLink Href="/admin/agencies" Icon="@Icons.Material.Filled.Business" IconColor="Color.Primary">
-                Acenta Yönetimi
-            </MudNavLink>
-            <MudNavLink Href="/admin/roles" Icon="@Icons.Material.Filled.Security" IconColor="Color.Warning">
-                Rol ve Yetkiler
-            </MudNavLink>
-        </MudNavGroup>
-    }
-
     <MudDivider Class="my-2" />
 
     <!-- Settings Section -->
@@ -114,16 +99,13 @@
     private bool IsAccountingModuleEnabled => CheckModuleEnabled("Accounting");
     private bool IsIntegrationModuleEnabled => CheckModuleEnabled("Integration");
     private bool IsSuperAdmin { get; set; }
-    private bool IsAdmin { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        // Check if user has SuperAdmin or Admin role
         IsSuperAdmin = user.IsInRole(RoleNames.SuperAdmin);
-        IsAdmin = IsSuperAdmin || user.IsInRole(RoleNames.Admin);
     }
 
     private bool CheckModuleEnabled(string moduleName)

@@ -1,12 +1,9 @@
-@page "/admin/agencies"
-@layout Layout.MainLayout
-@attribute [Authorize(Roles = "SuperAdmin,Admin")]
+@page "/agencies"
 @rendermode InteractiveServer
 
 @using IAMS.Application.Constants
 @using IAMS.Domain.Enums
 @using IAMS.Shared.DTOs.Agency
-@using IAMS.Web.Services.ApiClient
 @inject IAgenciesApiClient AgenciesApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -219,7 +216,7 @@
     {
         _breadcrumbItems = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Yönetim Paneli", href: "/admin/agencies"),
+            new BreadcrumbItem("Yönetim Paneli", href: "/agencies"),
             new BreadcrumbItem("Acenta Yönetimi", href: null, disabled: true)
         };
 

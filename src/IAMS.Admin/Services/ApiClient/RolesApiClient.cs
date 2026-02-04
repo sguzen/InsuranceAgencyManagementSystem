@@ -2,7 +2,7 @@ using IAMS.Shared.DTOs.Identity;
 using IAMS.Shared.Models;
 using System.Net.Http.Json;
 
-namespace IAMS.Web.Services.ApiClient
+namespace IAMS.Admin.Services.ApiClient
 {
     public interface IRolesApiClient
     {
@@ -35,20 +35,20 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<List<RoleDto>>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<List<RoleDto>>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<RolesResponse>(_jsonOptions);
                 if (result != null)
                 {
-                    return Result<List<RoleDto>>.Success(result.Roles, "Roles loaded successfully");
+                    return Result<List<RoleDto>>.Success(result.Roles, "Roles loaded");
                 }
 
-                return Result<List<RoleDto>>.Failure("Boş yanıt");
+                return Result<List<RoleDto>>.Failure("Empty response");
             }
             catch (Exception ex)
             {
-                return Result<List<RoleDto>>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<List<RoleDto>>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -61,17 +61,17 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<RoleDto>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<RoleDto>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var role = await response.Content.ReadFromJsonAsync<RoleDto>(_jsonOptions);
                 return role != null
                     ? Result<RoleDto>.Success(role)
-                    : Result<RoleDto>.Failure("Rol bulunamadı");
+                    : Result<RoleDto>.Failure("Role not found");
             }
             catch (Exception ex)
             {
-                return Result<RoleDto>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<RoleDto>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -84,7 +84,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<string>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<string>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<CreateRoleResponse>(_jsonOptions);
@@ -92,7 +92,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<string>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<string>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -105,14 +105,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 return Result.Success("Rol başarıyla güncellendi");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -125,14 +125,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 return Result.Success("Rol başarıyla silindi");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -145,7 +145,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<List<PermissionDto>>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<List<PermissionDto>>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var permissions = await response.Content.ReadFromJsonAsync<List<PermissionDto>>(_jsonOptions);
@@ -153,7 +153,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<List<PermissionDto>>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<List<PermissionDto>>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -166,14 +166,14 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
-                return Result.Success("İzinler başarıyla güncellendi");
+                return Result.Success("Yetkiler başarıyla güncellendi");
             }
             catch (Exception ex)
             {
-                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 
@@ -190,7 +190,7 @@ namespace IAMS.Web.Services.ApiClient
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return Result<List<PermissionDto>>.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                    return Result<List<PermissionDto>>.Failure($"API request failed: {response.StatusCode}", errorContent);
                 }
 
                 var permissions = await response.Content.ReadFromJsonAsync<List<PermissionDto>>(_jsonOptions);
@@ -198,7 +198,7 @@ namespace IAMS.Web.Services.ApiClient
             }
             catch (Exception ex)
             {
-                return Result<List<PermissionDto>>.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+                return Result<List<PermissionDto>>.Failure($"API call failed: {ex.Message}", ex.ToString());
             }
         }
 

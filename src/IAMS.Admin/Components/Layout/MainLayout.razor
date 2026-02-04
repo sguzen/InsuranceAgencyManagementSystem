@@ -1,0 +1,77 @@
+@using MudBlazor
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<MudThemeProvider Theme="@_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <!-- AppBar -->
+    <MudAppBar Elevation="1" Color="Color.Dark">
+        <MudIconButton Icon="Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="@ToggleDrawer" />
+        <MudSpacer />
+        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" />
+            <MudText Typo="Typo.h6">IAMS Yönetim Paneli</MudText>
+        </MudStack>
+        <MudSpacer />
+
+        <!-- User Menu -->
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
+            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Çıkış</MudMenuItem>
+        </MudMenu>
+    </MudAppBar>
+
+    <!-- Navigation Drawer -->
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu />
+    </MudDrawer>
+
+    <!-- Main Content -->
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#1565c0",
+            Secondary = "#424242",
+            AppbarBackground = "#263238",
+            Background = "#f5f5f5",
+            DrawerBackground = "#ffffff",
+            Surface = "#ffffff"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#2196f3",
+            Secondary = "#757575",
+            AppbarBackground = "#1e1e1e",
+            Background = "#121212",
+            DrawerBackground = "#1e1e1e",
+            Surface = "#1e1e1e"
+        }
+    };
+
+    void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    void Logout()
+    {
+        Navigation.NavigateTo("/Account/Logout");
+    }
+}

@@ -1,6 +1,5 @@
 @using IAMS.Domain.Enums
 @using IAMS.Shared.DTOs.Agency
-@using IAMS.Web.Services.ApiClient
 @inject IAgenciesApiClient AgenciesApi
 @inject ISnackbar Snackbar
 
@@ -22,25 +21,13 @@
                                   Label="Tanımlayıcı (Alt Alan Adı)"
                                   Variant="Variant.Outlined"
                                   Required="true"
-                                  RequiredError="Tanımlayıcı gereklidir" />
+                                  RequiredError="Tanımlayıcı gereklidir"
+                                  HelperText="Benzersiz bir tanımlayıcı girin (ör: acenta-001)" />
 
                     <MudTextField @bind-Value="model.ExternalId"
                                   Label="Dış Sistem Kodu"
-                                  Variant="Variant.Outlined" />
-
-                    <!-- Status -->
-                    <MudText Typo="Typo.h6" Class="mb-2 mt-4">Durum</MudText>
-
-                    <MudSelect @bind-Value="model.Status"
-                               Label="Durum"
-                               Variant="Variant.Outlined">
-                        <MudSelectItem Value="TenantStatus.Active">Aktif</MudSelectItem>
-                        <MudSelectItem Value="TenantStatus.Inactive">Pasif</MudSelectItem>
-                        <MudSelectItem Value="TenantStatus.Suspended">Askıda</MudSelectItem>
-                        <MudSelectItem Value="TenantStatus.Trial">Deneme</MudSelectItem>
-                        <MudSelectItem Value="TenantStatus.Expired">Süresi Dolmuş</MudSelectItem>
-                        <MudSelectItem Value="TenantStatus.PendingSetup">Kurulum Bekliyor</MudSelectItem>
-                    </MudSelect>
+                                  Variant="Variant.Outlined"
+                                  HelperText="Poliçe görüntülemede kullanılan acenta numarası (ör: A001)" />
 
                     <!-- Contact Information -->
                     <MudText Typo="Typo.h6" Class="mb-2 mt-4">İletişim Bilgileri</MudText>
@@ -101,7 +88,7 @@
             }
             else
             {
-                <MudText>Güncelle</MudText>
+                <MudText>Kaydet</MudText>
             }
         </MudButton>
     </DialogActions>
@@ -109,34 +96,17 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public AgencyDto Agency { get; set; } = null!;
 
-    private UpdateAgencyDto model = new();
+    private CreateAgencyDto model = new()
+    {
+        SubscriptionType = SubscriptionType.Basic,
+        MaxUsers = 5,
+        MaxPolicies = 1000
+    };
     private MudForm form = null!;
     private bool isValid;
     private bool saving;
     private DateTime? subscriptionExpiryDate;
-
-    protected override void OnInitialized()
-    {
-        if (Agency != null)
-        {
-            model = new UpdateAgencyDto
-            {
-                Name = Agency.Name,
-                Identifier = Agency.Identifier,
-                ExternalId = Agency.ExternalId,
-                Status = Agency.Status,
-                SubscriptionType = Agency.SubscriptionType,
-                ContactEmail = Agency.ContactEmail,
-                ContactPhone = Agency.ContactPhone,
-                MaxUsers = Agency.MaxUsers,
-                MaxPolicies = Agency.MaxPolicies,
-                SubscriptionExpiryDate = Agency.SubscriptionExpiryDate
-            };
-            subscriptionExpiryDate = Agency.SubscriptionExpiryDate;
-        }
-    }
 
     private async Task Submit()
     {
@@ -146,13 +116,16 @@
         saving = true;
         try
         {
-            model.SubscriptionExpiryDate = subscriptionExpiryDate;
+            if (subscriptionExpiryDate.HasValue)
+            {
+                model.SubscriptionExpiryDate = subscriptionExpiryDate.Value;
+            }
 
-            var result = await AgenciesApi.UpdateAgencyAsync(Agency.Id, model);
+            var result = await AgenciesApi.CreateAgencyAsync(model);
             if (result.IsSuccess)
             {
-                Snackbar.Add("Acenta başarıyla güncellendi", MudBlazor.Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
+                Snackbar.Add("Acenta başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result.Data));
             }
             else
             {
@@ -165,7 +138,7 @@
                 }
                 else
                 {
-                    Snackbar.Add(result.Message ?? "Acenta güncellenirken hata oluştu", MudBlazor.Severity.Error);
+                    Snackbar.Add(result.Message ?? "Acenta oluşturulurken hata oluştu", MudBlazor.Severity.Error);
                 }
             }
         }

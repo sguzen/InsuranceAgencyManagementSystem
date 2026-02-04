@@ -1,5 +1,4 @@
 @using IAMS.Shared.DTOs.Identity
-@using IAMS.Web.Services.ApiClient
 @inject IRolesApiClient RolesApi
 @inject ISnackbar Snackbar
 
@@ -39,7 +38,7 @@
             }
             else
             {
-                <MudText>Güncelle</MudText>
+                <MudText>Kaydet</MudText>
             }
         </MudButton>
     </DialogActions>
@@ -47,26 +46,11 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public RoleDto Role { get; set; } = null!;
 
-    private UpdateRoleRequest model = new();
+    private CreateRoleRequest model = new();
     private MudForm form = null!;
     private bool isValid;
     private bool saving;
-
-    protected override void OnInitialized()
-    {
-        if (Role != null)
-        {
-            model = new UpdateRoleRequest
-            {
-                Name = Role.Name,
-                Description = Role.Description,
-                IsDefault = Role.IsDefault,
-                PermissionIds = Role.Permissions.Select(p => p.Id).ToList()
-            };
-        }
-    }
 
     private async Task Submit()
     {
@@ -76,15 +60,15 @@
         saving = true;
         try
         {
-            var result = await RolesApi.UpdateRoleAsync(Role.Id, model);
+            var result = await RolesApi.CreateRoleAsync(model);
             if (result.IsSuccess)
             {
-                Snackbar.Add("Rol başarıyla güncellendi", MudBlazor.Severity.Success);
+                Snackbar.Add("Rol başarıyla oluşturuldu", MudBlazor.Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Rol güncellenirken hata oluştu", MudBlazor.Severity.Error);
+                Snackbar.Add(result.Message ?? "Rol oluşturulurken hata oluştu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)

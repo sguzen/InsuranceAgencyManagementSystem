@@ -1,12 +1,9 @@
-@page "/admin/roles"
-@layout Layout.MainLayout
-@attribute [Authorize(Roles = "SuperAdmin,Admin")]
+@page "/roles"
 @rendermode InteractiveServer
 
 @using IAMS.Application.Constants
 @using IAMS.Application.Helpers
 @using IAMS.Shared.DTOs.Identity
-@using IAMS.Web.Services.ApiClient
 @inject IRolesApiClient RolesApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -135,7 +132,7 @@
     {
         _breadcrumbItems = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Yönetim Paneli", href: "/admin/agencies"),
+            new BreadcrumbItem("Yönetim Paneli", href: "/agencies"),
             new BreadcrumbItem("Rol ve Yetki Yönetimi", href: null, disabled: true)
         };
 

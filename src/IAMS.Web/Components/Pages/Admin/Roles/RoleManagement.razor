@@ -1,0 +1,282 @@
+@page "/admin/roles"
+@layout Layout.MainLayout
+@attribute [Authorize(Roles = "SuperAdmin,Admin")]
+@rendermode InteractiveServer
+
+@using IAMS.Application.Constants
+@using IAMS.Application.Helpers
+@using IAMS.Shared.DTOs.Identity
+@using IAMS.Web.Services.ApiClient
+@inject IRolesApiClient RolesApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Rol ve Yetki Yönetimi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_breadcrumbItems" Separator=">" />
+
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-3" />
+                Rol ve Yetki Yönetimi
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenAddRoleDialog">
+                Yeni Rol
+            </MudButton>
+        </MudStack>
+
+        <!-- Roles List -->
+        <MudCard>
+            <MudCardContent>
+                @if (loading)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else if (!roles.Any())
+                {
+                    <MudAlert Severity="MudBlazor.Severity.Info">Henüz rol bulunmamaktadır.</MudAlert>
+                }
+                else
+                {
+                    <MudTable Items="@roles" Hover="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>Rol Adı</MudTh>
+                            <MudTh>Açıklama</MudTh>
+                            <MudTh>Tip</MudTh>
+                            <MudTh>Yetkiler</MudTh>
+                            <MudTh>İşlemler</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Rol Adı">
+                                <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Shield" Color="GetRoleColor(context.Name)" />
+                                    <MudText Typo="Typo.body1" Style="font-weight: 500;">@RoleTranslations.ToTurkish(context.Name)</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Açıklama">
+                                <MudText Typo="Typo.body2">@(string.IsNullOrEmpty(context.Description) ? "-" : context.Description)</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Tip">
+                                @if (context.IsSystem)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">Sistem</MudChip>
+                                }
+                                else if (context.IsDefault)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Varsayılan</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Özel</MudChip>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Yetkiler">
+                                <MudStack Row Spacing="1" Style="flex-wrap: wrap;">
+                                    @if (context.Permissions.Any())
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                                            @context.Permissions.Count yetki
+                                        </MudChip>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                       Size="Size.Small"
+                                                       Color="Color.Info"
+                                                       OnClick="@(() => OpenPermissionsDialog(context))"
+                                                       Title="Yetkileri Görüntüle" />
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Yetki atanmamış</MudText>
+                                    }
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="İşlemler">
+                                <MudStack Row Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => OpenEditRoleDialog(context))"
+                                                   Disabled="@context.IsSystem"
+                                                   Title="@(context.IsSystem ? "Sistem rolleri düzenlenemez" : "Düzenle")" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Security"
+                                                   Size="Size.Small"
+                                                   Color="Color.Warning"
+                                                   OnClick="@(() => OpenPermissionMatrixDialog(context))"
+                                                   Disabled="@context.IsSystem"
+                                                   Title="@(context.IsSystem ? "Sistem rol yetkileri değiştirilemez" : "Yetkileri Yönet")" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => DeleteRole(context))"
+                                                   Disabled="@context.IsSystem"
+                                                   Title="@(context.IsSystem ? "Sistem rolleri silinemez" : "Sil")" />
+                                </MudStack>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private List<BreadcrumbItem> _breadcrumbItems = new();
+    private List<RoleDto> roles = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbItems = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Yönetim Paneli", href: "/admin/agencies"),
+            new BreadcrumbItem("Rol ve Yetki Yönetimi", href: null, disabled: true)
+        };
+
+        await LoadRoles();
+    }
+
+    private async Task LoadRoles()
+    {
+        loading = true;
+        try
+        {
+            var result = await RolesApi.GetRolesAsync(1, 100);
+            if (result.IsSuccess && result.Data != null)
+            {
+                roles = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Roller yüklenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private Color GetRoleColor(string roleName) => roleName switch
+    {
+        RoleNames.SuperAdmin => Color.Error,
+        RoleNames.Admin => Color.Warning,
+        RoleNames.Manager => Color.Info,
+        RoleNames.Agent => Color.Success,
+        _ => Color.Default
+    };
+
+    private async Task OpenAddRoleDialog()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddRoleDialog>("Yeni Rol Ekle", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadRoles();
+        }
+    }
+
+    private async Task OpenEditRoleDialog(RoleDto role)
+    {
+        var parameters = new DialogParameters<EditRoleDialog>
+        {
+            { x => x.Role, role }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<EditRoleDialog>("Rol Düzenle", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadRoles();
+        }
+    }
+
+    private async Task OpenPermissionsDialog(RoleDto role)
+    {
+        var parameters = new DialogParameters<ViewPermissionsDialog>
+        {
+            { x => x.Role, role }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        await DialogService.ShowAsync<ViewPermissionsDialog>($"{RoleTranslations.ToTurkish(role.Name)} - Yetkiler", parameters, options);
+    }
+
+    private async Task OpenPermissionMatrixDialog(RoleDto role)
+    {
+        var parameters = new DialogParameters<PermissionMatrixDialog>
+        {
+            { x => x.Role, role }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<PermissionMatrixDialog>(
+            $"{RoleTranslations.ToTurkish(role.Name)} - Yetki Yönetimi", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadRoles();
+        }
+    }
+
+    private async Task DeleteRole(RoleDto role)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Rol Sil",
+            $"'{RoleTranslations.ToTurkish(role.Name)}' rolünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+            yesText: "Sil", cancelText: "İptal");
+
+        if (confirmed == true)
+        {
+            var result = await RolesApi.DeleteRoleAsync(role.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Rol başarıyla silindi", MudBlazor.Severity.Success);
+                await LoadRoles();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Rol silinirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+    }
+}

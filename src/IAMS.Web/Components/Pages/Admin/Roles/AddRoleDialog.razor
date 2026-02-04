@@ -1,0 +1,86 @@
+@using IAMS.Shared.DTOs.Identity
+@using IAMS.Web.Services.ApiClient
+@inject IRolesApiClient RolesApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            <MudForm @ref="form" @bind-IsValid="@isValid">
+                <MudStack Spacing="3">
+                    <MudTextField @bind-Value="model.Name"
+                                  Label="Rol Adı"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Rol adı gereklidir" />
+
+                    <MudTextField @bind-Value="model.Description"
+                                  Label="Açıklama"
+                                  Variant="Variant.Outlined"
+                                  Lines="3" />
+
+                    <MudCheckBox @bind-Value="model.IsDefault"
+                                 Label="Varsayılan rol (yeni kullanıcılara otomatik atanır)"
+                                 Color="Color.Primary" />
+                </MudStack>
+            </MudForm>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="@(!isValid || saving)">
+            @if (saving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Kaydediliyor...</MudText>
+            }
+            else
+            {
+                <MudText>Kaydet</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private CreateRoleRequest model = new();
+    private MudForm form = null!;
+    private bool isValid;
+    private bool saving;
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (!isValid) return;
+
+        saving = true;
+        try
+        {
+            var result = await RolesApi.CreateRoleAsync(model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Rol başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Rol oluşturulurken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

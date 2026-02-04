@@ -1,0 +1,47 @@
+@using IAMS.Shared.DTOs.Identity
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            @if (Role?.Permissions == null || !Role.Permissions.Any())
+            {
+                <MudAlert Severity="MudBlazor.Severity.Info">Bu role atanmış yetki bulunmamaktadır.</MudAlert>
+            }
+            else
+            {
+                @foreach (var moduleGroup in Role.Permissions.GroupBy(p => p.Module ?? "Genel").OrderBy(g => g.Key))
+                {
+                    <MudText Typo="Typo.subtitle1" Class="mt-3 mb-2" Style="font-weight: 600;">
+                        <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Class="mr-1" />
+                        @moduleGroup.Key
+                    </MudText>
+                    <MudStack Spacing="1" Class="mb-3">
+                        @foreach (var permission in moduleGroup.OrderBy(p => p.DisplayName))
+                        {
+                            <MudStack Row Spacing="2" AlignItems="AlignItems.Center" Class="pl-4">
+                                <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small" />
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body2">@permission.DisplayName</MudText>
+                                    @if (!string.IsNullOrEmpty(permission.Description))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@permission.Description</MudText>
+                                    }
+                                </MudStack>
+                            </MudStack>
+                        }
+                    </MudStack>
+                }
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Filled" Color="Color.Primary">Kapat</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public RoleDto Role { get; set; } = null!;
+
+    private void Close() => MudDialog.Close();
+}

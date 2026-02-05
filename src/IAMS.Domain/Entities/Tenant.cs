@@ -21,6 +21,9 @@ namespace IAMS.Domain.Entities
         public int MaxUsers { get; set; } = 5;
         public int MaxPolicies { get; set; } = 1000;
 
+        // Navigation properties
+        public virtual ICollection<TenantInsuranceCompany> TenantInsuranceCompanies { get; set; } = new List<TenantInsuranceCompany>();
+
         // Business methods
         public bool IsActive => Status == TenantStatus.Active && !IsExpired;
         public bool IsExpired => SubscriptionExpiryDate.HasValue && SubscriptionExpiryDate < DateTime.Today;

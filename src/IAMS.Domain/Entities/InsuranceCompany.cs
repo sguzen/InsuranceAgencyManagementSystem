@@ -23,6 +23,7 @@ namespace IAMS.Domain.Entities
         public virtual ICollection<Policy> Policies { get; set; } = new List<Policy>();
         public virtual ICollection<CustomerInsuranceCompany> CustomerInsuranceCompanies { get; set; } = new List<CustomerInsuranceCompany>();
         public virtual ICollection<CommissionRate> CommissionRates { get; set; } = new List<CommissionRate>();
+        public virtual ICollection<TenantInsuranceCompany> TenantInsuranceCompanies { get; set; } = new List<TenantInsuranceCompany>();
 
         // Business methods
         public void Activate(string activatedBy)

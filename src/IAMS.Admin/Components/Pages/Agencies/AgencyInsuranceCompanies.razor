@@ -1,0 +1,315 @@
+@page "/agencies/{AgencyId:int}/insurance-companies"
+@rendermode InteractiveServer
+
+@using IAMS.Shared.DTOs.Agency
+@inject IAgenciesApiClient AgenciesApi
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Sigorta Şirketleri - Acenta Yönetimi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_breadcrumbItems" Separator=">" />
+
+        @if (loading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else if (agency == null)
+        {
+            <MudAlert Severity="MudBlazor.Severity.Error">Acenta bulunamadı.</MudAlert>
+        }
+        else
+        {
+            <!-- Header -->
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h4" GutterBottom="false">
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-3" />
+                        Sigorta Şirketleri
+                    </MudText>
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@agency.Name</MudText>
+                </MudStack>
+                <MudStack Row Spacing="2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="@(() => Navigation.NavigateTo("/agencies"))">
+                        Acentalara Dön
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="OpenAddDialog">
+                        Sigorta Şirketi Ekle
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            <!-- Summary -->
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Primary" Size="Size.Large" />
+                                <MudText Typo="Typo.h4">@associations.Count</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Şirket</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                <MudText Typo="Typo.h4">@associations.Count(a => a.IsActive)</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Aktif</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.Storage" Color="Color.Info" Size="Size.Large" />
+                                <MudText Typo="Typo.h4">@associations.Count(a => !string.IsNullOrEmpty(a.DbServer) || !string.IsNullOrEmpty(a.ConnectionString))</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">DB Bağlantısı Tanımlı</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Insurance Companies Table -->
+            <MudCard>
+                <MudCardContent>
+                    @if (!associations.Any())
+                    {
+                        <MudAlert Severity="MudBlazor.Severity.Info">
+                            Bu acentaya henüz sigorta şirketi eklenmemiş.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable Items="@associations" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Sigorta Şirketi</MudTh>
+                                <MudTh>Durum</MudTh>
+                                <MudTh>DB Sunucu</MudTh>
+                                <MudTh>Veritabanı</MudTh>
+                                <MudTh>DB Kullanıcı</MudTh>
+                                <MudTh>Notlar</MudTh>
+                                <MudTh>İşlemler</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Sigorta Şirketi">
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body1">@context.InsuranceCompanyName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.InsuranceCompanyCode</MudText>
+                                    </MudStack>
+                                </MudTd>
+                                <MudTd DataLabel="Durum">
+                                    <MudChip T="string" Size="Size.Small"
+                                             Color="@(context.IsActive ? Color.Success : Color.Default)"
+                                             Variant="Variant.Filled">
+                                        @(context.IsActive ? "Aktif" : "Pasif")
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="DB Sunucu">
+                                    <MudText Typo="Typo.body2">@(context.DbServer ?? "-")</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Veritabanı">
+                                    <MudText Typo="Typo.body2">@(context.DbName ?? "-")</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="DB Kullanıcı">
+                                    <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.body2">@(context.DbUsername ?? "-")</MudText>
+                                        @if (context.HasPassword)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.Key" Size="Size.Small" Color="Color.Success" />
+                                        }
+                                    </MudStack>
+                                </MudTd>
+                                <MudTd DataLabel="Notlar">
+                                    <MudText Typo="Typo.body2" Style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        @(context.Notes ?? "-")
+                                    </MudText>
+                                </MudTd>
+                                <MudTd DataLabel="İşlemler">
+                                    <MudStack Row Spacing="1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(() => OpenEditDialog(context))"
+                                                       Title="Düzenle" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.NetworkCheck"
+                                                       Size="Size.Small"
+                                                       Color="Color.Info"
+                                                       OnClick="@(() => TestConnection(context))"
+                                                       Title="Bağlantı Testi" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => RemoveInsuranceCompany(context))"
+                                                       Title="Kaldır" />
+                                    </MudStack>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter] public int AgencyId { get; set; }
+
+    private AgencyDto? agency;
+    private List<AgencyInsuranceCompanyDto> associations = new();
+    private bool loading = true;
+    private List<BreadcrumbItem> _breadcrumbItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbItems = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Yönetim Paneli", href: "/"),
+            new BreadcrumbItem("Acentalar", href: "/agencies"),
+            new BreadcrumbItem("Sigorta Şirketleri", href: null, disabled: true)
+        };
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            var agencyResult = await AgenciesApi.GetAgencyByIdAsync(AgencyId);
+            if (agencyResult.IsSuccess && agencyResult.Data != null)
+            {
+                agency = agencyResult.Data;
+                _breadcrumbItems[2] = new BreadcrumbItem($"{agency.Name} - Sigorta Şirketleri", href: null, disabled: true);
+            }
+
+            var result = await InsuranceCompaniesApi.GetAgencyInsuranceCompaniesAsync(AgencyId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                associations = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Veriler yüklenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters<AddInsuranceCompanyDialog>
+        {
+            { x => x.AgencyId, AgencyId }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddInsuranceCompanyDialog>("Sigorta Şirketi Ekle", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task OpenEditDialog(AgencyInsuranceCompanyDto association)
+    {
+        var parameters = new DialogParameters<EditInsuranceCompanyDialog>
+        {
+            { x => x.AgencyId, AgencyId },
+            { x => x.Association, association }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<EditInsuranceCompanyDialog>("Bağlantı Bilgilerini Düzenle", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task TestConnection(AgencyInsuranceCompanyDto association)
+    {
+        Snackbar.Add("Bağlantı test ediliyor...", MudBlazor.Severity.Info);
+
+        var result = await InsuranceCompaniesApi.TestConnectionAsync(AgencyId, association.Id);
+        if (result.IsSuccess && result.Data != null)
+        {
+            if (result.Data.Success)
+            {
+                Snackbar.Add("Bağlantı başarılı!", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Bağlantı başarısız: {result.Data.Message}", MudBlazor.Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Bağlantı testi sırasında hata oluştu", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task RemoveInsuranceCompany(AgencyInsuranceCompanyDto association)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Sigorta Şirketini Kaldır",
+            $"'{association.InsuranceCompanyName}' sigorta şirketini bu acentadan kaldırmak istediğinizden emin misiniz?",
+            yesText: "Evet", cancelText: "İptal");
+
+        if (confirmed == true)
+        {
+            var result = await InsuranceCompaniesApi.RemoveInsuranceCompanyAsync(AgencyId, association.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Sigorta şirketi kaldırıldı", MudBlazor.Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "İşlem sırasında hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+    }
+}

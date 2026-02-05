@@ -1,0 +1,108 @@
+@using IAMS.Shared.DTOs.Agency
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="formIsValid">
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.subtitle1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-2" />
+                    @Association.InsuranceCompanyName
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@Association.InsuranceCompanyCode</MudText>
+                </MudText>
+
+                <MudSwitch @bind-Value="model.IsActive" Label="Aktif" Color="Color.Success" />
+
+                <MudDivider />
+                <MudText Typo="Typo.subtitle1">Veritabanı Bağlantı Bilgileri</MudText>
+
+                <MudTextField @bind-Value="model.DbServer" Label="DB Sunucu" Variant="Variant.Outlined"
+                              Placeholder="örn: 192.168.1.100 veya sqlserver.domain.com" />
+
+                <MudTextField @bind-Value="model.DbName" Label="Veritabanı Adı" Variant="Variant.Outlined"
+                              Placeholder="örn: InsuranceDB" />
+
+                <MudTextField @bind-Value="model.DbUsername" Label="DB Kullanıcı Adı" Variant="Variant.Outlined"
+                              Placeholder="örn: sa" />
+
+                <MudTextField @bind-Value="model.DbPassword" Label="DB Şifre" Variant="Variant.Outlined"
+                              InputType="InputType.Password"
+                              HelperText="@(Association.HasPassword ? "Mevcut şifre korunacak. Değiştirmek için yeni şifre girin." : "Şifre tanımlı değil.")" />
+
+                <MudDivider />
+
+                <MudTextField @bind-Value="model.ConnectionString" Label="Connection String (Opsiyonel)"
+                              Variant="Variant.Outlined" Lines="2"
+                              HelperText="Sunucu/veritabanı bilgileri yerine doğrudan connection string de girebilirsiniz" />
+
+                <MudTextField @bind-Value="model.Notes" Label="Notlar" Variant="Variant.Outlined" Lines="2" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   OnClick="Submit" Disabled="@saving">
+            @if (saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Kaydet
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int AgencyId { get; set; }
+    [Parameter] public AgencyInsuranceCompanyDto Association { get; set; } = null!;
+
+    private MudForm form = null!;
+    private bool formIsValid;
+    private bool saving;
+
+    private UpdateAgencyInsuranceCompanyDto model = new();
+
+    protected override void OnInitialized()
+    {
+        model = new UpdateAgencyInsuranceCompanyDto
+        {
+            DbServer = Association.DbServer,
+            DbName = Association.DbName,
+            DbUsername = Association.DbUsername,
+            DbPassword = null, // Don't pre-fill password
+            ConnectionString = Association.ConnectionString,
+            IsActive = Association.IsActive,
+            Notes = Association.Notes
+        };
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        saving = true;
+        try
+        {
+            var result = await InsuranceCompaniesApi.UpdateInsuranceCompanyAsync(AgencyId, Association.Id, model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Bağlantı bilgileri başarıyla güncellendi", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Güncelleme sırasında hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

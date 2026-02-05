@@ -7,6 +7,7 @@
 @inject IAgenciesApiClient AgenciesApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 
 <PageTitle>Acenta Yönetimi</PageTitle>
 
@@ -173,6 +174,11 @@
                                                    Color="Color.Primary"
                                                    OnClick="@(() => OpenEditAgencyDialog(context))"
                                                    Title="Düzenle" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.AccountBalance"
+                                                   Size="Size.Small"
+                                                   Color="Color.Info"
+                                                   OnClick="@(() => Navigation.NavigateTo($"/agencies/{context.Id}/insurance-companies"))"
+                                                   Title="Sigorta Şirketleri" />
                                     @if (context.Status == TenantStatus.Active)
                                     {
                                         <MudIconButton Icon="@Icons.Material.Filled.Pause"

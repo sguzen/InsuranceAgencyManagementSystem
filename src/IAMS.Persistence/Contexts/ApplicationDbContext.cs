@@ -59,6 +59,7 @@ namespace IAMS.Persistence.Contexts
 
         // Tenant/Agency Management
         public DbSet<Tenant> Tenants { get; set; }
+        public DbSet<TenantInsuranceCompany> TenantInsuranceCompanies { get; set; }
 
         // Identity entities (inherited from IdentityDbContext)
         // Users, Roles, UserRoles, etc. are already included
@@ -154,6 +155,30 @@ namespace IAMS.Persistence.Contexts
                 entity.Property(t => t.ContactPhone).HasMaxLength(50);
                 entity.HasIndex(t => t.Identifier).IsUnique();
                 entity.HasIndex(t => t.Name);
+            });
+
+            // Configure TenantInsuranceCompany entity (many-to-many with payload)
+            modelBuilder.Entity<TenantInsuranceCompany>(entity =>
+            {
+                entity.HasKey(tic => tic.Id);
+                entity.Property(tic => tic.DbServer).HasMaxLength(200);
+                entity.Property(tic => tic.DbName).HasMaxLength(200);
+                entity.Property(tic => tic.DbUsername).HasMaxLength(200);
+                entity.Property(tic => tic.DbPassword).HasMaxLength(500);
+                entity.Property(tic => tic.ConnectionString).HasMaxLength(1000);
+                entity.Property(tic => tic.Notes).HasMaxLength(1000);
+
+                entity.HasOne(tic => tic.Tenant)
+                    .WithMany(t => t.TenantInsuranceCompanies)
+                    .HasForeignKey(tic => tic.TenantId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(tic => tic.InsuranceCompany)
+                    .WithMany(ic => ic.TenantInsuranceCompanies)
+                    .HasForeignKey(tic => tic.InsuranceCompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(tic => new { tic.TenantId, tic.InsuranceCompanyId }).IsUnique();
             });
 
             // Configure TenantSettings entity

@@ -1,0 +1,136 @@
+@using IAMS.Shared.DTOs.Agency
+@inject IInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (loadingCompanies)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else
+        {
+            <MudForm @ref="form" @bind-IsValid="formIsValid">
+                <MudStack Spacing="3">
+                    <MudSelect T="int" Label="Sigorta Şirketi" @bind-Value="model.InsuranceCompanyId"
+                               Required="true" RequiredError="Sigorta şirketi seçilmelidir"
+                               Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var company in availableCompanies)
+                        {
+                            <MudSelectItem T="int" Value="@company.Id">
+                                @company.Name (@company.Code)
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @if (!availableCompanies.Any())
+                    {
+                        <MudAlert Severity="MudBlazor.Severity.Warning">
+                            Eklenebilecek sigorta şirketi bulunamadı. Önce sigorta şirketi tanımlamanız gerekiyor.
+                        </MudAlert>
+                    }
+
+                    <MudDivider />
+                    <MudText Typo="Typo.subtitle1">Veritabanı Bağlantı Bilgileri</MudText>
+
+                    <MudTextField @bind-Value="model.DbServer" Label="DB Sunucu" Variant="Variant.Outlined"
+                                  Placeholder="örn: 192.168.1.100 veya sqlserver.domain.com" />
+
+                    <MudTextField @bind-Value="model.DbName" Label="Veritabanı Adı" Variant="Variant.Outlined"
+                                  Placeholder="örn: InsuranceDB" />
+
+                    <MudTextField @bind-Value="model.DbUsername" Label="DB Kullanıcı Adı" Variant="Variant.Outlined"
+                                  Placeholder="örn: sa" />
+
+                    <MudTextField @bind-Value="model.DbPassword" Label="DB Şifre" Variant="Variant.Outlined"
+                                  InputType="InputType.Password" />
+
+                    <MudDivider />
+
+                    <MudTextField @bind-Value="model.ConnectionString" Label="Connection String (Opsiyonel)"
+                                  Variant="Variant.Outlined" Lines="2"
+                                  HelperText="Sunucu/veritabanı bilgileri yerine doğrudan connection string de girebilirsiniz" />
+
+                    <MudTextField @bind-Value="model.Notes" Label="Notlar" Variant="Variant.Outlined" Lines="2" />
+                </MudStack>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   OnClick="Submit" Disabled="@(saving || !formIsValid || model.InsuranceCompanyId == 0)">
+            @if (saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Ekle
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int AgencyId { get; set; }
+
+    private MudForm form = null!;
+    private bool formIsValid;
+    private bool saving;
+    private bool loadingCompanies = true;
+
+    private CreateAgencyInsuranceCompanyDto model = new();
+    private List<InsuranceCompanySummaryDto> availableCompanies = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        loadingCompanies = true;
+        try
+        {
+            var result = await InsuranceCompaniesApi.GetAllInsuranceCompaniesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                availableCompanies = result.Data.Where(c => c.IsActive).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Sigorta şirketleri yüklenirken hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loadingCompanies = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (!formIsValid || model.InsuranceCompanyId == 0)
+            return;
+
+        saving = true;
+        try
+        {
+            var result = await InsuranceCompaniesApi.AddInsuranceCompanyAsync(AgencyId, model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Sigorta şirketi başarıyla eklendi", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Ekleme sırasında hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

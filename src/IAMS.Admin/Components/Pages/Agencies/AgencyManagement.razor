@@ -1,0 +1,382 @@
+@page "/agencies"
+@rendermode InteractiveServer
+
+@using IAMS.Application.Constants
+@using IAMS.Domain.Enums
+@using IAMS.Shared.DTOs.Agency
+@inject IAgenciesApiClient AgenciesApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Acenta Yönetimi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_breadcrumbItems" Separator=">" />
+
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-3" />
+                Acenta Yönetimi
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenAddAgencyDialog">
+                Yeni Acenta
+            </MudButton>
+        </MudStack>
+
+        <!-- Stats Cards -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Size="Size.Large" />
+                            <MudText Typo="Typo.h4">@agencies.Count</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Acenta</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Active)</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Aktif</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Pause" Color="Color.Warning" Size="Size.Large" />
+                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Suspended)</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Askıda</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Info" Size="Size.Large" />
+                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Trial)</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Deneme</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Search -->
+        <MudTextField @bind-Value="searchText"
+                      Placeholder="Acenta ara (isim, tanımlayıcı, e-posta)..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Immediate="true"
+                      DebounceInterval="300"
+                      OnDebounceIntervalElapsed="OnSearch" />
+
+        <!-- Agency List -->
+        <MudCard>
+            <MudCardContent>
+                @if (loading)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else if (!agencies.Any())
+                {
+                    <MudAlert Severity="MudBlazor.Severity.Info">Henüz acenta bulunmamaktadır.</MudAlert>
+                }
+                else
+                {
+                    <MudTable Items="@filteredAgencies" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+                        <HeaderContent>
+                            <MudTh>Acenta Adı</MudTh>
+                            <MudTh>Tanımlayıcı</MudTh>
+                            <MudTh>Durum</MudTh>
+                            <MudTh>Abonelik</MudTh>
+                            <MudTh>İletişim</MudTh>
+                            <MudTh>Limitler</MudTh>
+                            <MudTh>Kayıt Tarihi</MudTh>
+                            <MudTh>İşlemler</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Acenta Adı">
+                                <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        @context.Name[0]
+                                    </MudAvatar>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body1">@context.Name</MudText>
+                                        @if (!string.IsNullOrEmpty(context.ExternalId))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ExternalId</MudText>
+                                        }
+                                    </MudStack>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Tanımlayıcı">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Identifier</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Durum">
+                                <MudChip T="string" Size="Size.Small" Color="GetStatusColor(context.Status)" Variant="Variant.Filled">
+                                    @GetStatusText(context.Status)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Abonelik">
+                                <MudChip T="string" Size="Size.Small" Color="GetSubscriptionColor(context.SubscriptionType)" Variant="Variant.Text">
+                                    @GetSubscriptionText(context.SubscriptionType)
+                                </MudChip>
+                                @if (context.SubscriptionExpiryDate.HasValue)
+                                {
+                                    <MudText Typo="Typo.caption" Color="@(context.IsExpired ? Color.Error : Color.Secondary)">
+                                        @(context.IsExpired ? "Süresi doldu" : $"Bitiş: {context.SubscriptionExpiryDate.Value:dd.MM.yyyy}")
+                                    </MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="İletişim">
+                                <MudStack Spacing="0">
+                                    @if (!string.IsNullOrEmpty(context.ContactEmail))
+                                    {
+                                        <MudText Typo="Typo.caption">@context.ContactEmail</MudText>
+                                    }
+                                    @if (!string.IsNullOrEmpty(context.ContactPhone))
+                                    {
+                                        <MudText Typo="Typo.caption">@context.ContactPhone</MudText>
+                                    }
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Limitler">
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.caption">Kullanıcı: @context.MaxUsers</MudText>
+                                    <MudText Typo="Typo.caption">Poliçe: @context.MaxPolicies.ToString("N0")</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Kayıt Tarihi">
+                                <MudText Typo="Typo.body2">@context.CreatedOn.ToString("dd.MM.yyyy")</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="İşlemler">
+                                <MudStack Row Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => OpenEditAgencyDialog(context))"
+                                                   Title="Düzenle" />
+                                    @if (context.Status == TenantStatus.Active)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.Pause"
+                                                       Size="Size.Small"
+                                                       Color="Color.Warning"
+                                                       OnClick="@(() => SuspendAgency(context))"
+                                                       Title="Askıya Al" />
+                                    }
+                                    else
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                                       Size="Size.Small"
+                                                       Color="Color.Success"
+                                                       OnClick="@(() => ActivateAgency(context))"
+                                                       Title="Aktifleştir" />
+                                    }
+                                </MudStack>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private List<BreadcrumbItem> _breadcrumbItems = new();
+    private List<AgencyDto> agencies = new();
+    private bool loading = true;
+    private string searchText = string.Empty;
+
+    private IEnumerable<AgencyDto> filteredAgencies => string.IsNullOrEmpty(searchText)
+        ? agencies
+        : agencies.Where(a =>
+            a.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            a.Identifier.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            (a.ContactEmail?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbItems = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Yönetim Paneli", href: "/agencies"),
+            new BreadcrumbItem("Acenta Yönetimi", href: null, disabled: true)
+        };
+
+        await LoadAgencies();
+    }
+
+    private async Task LoadAgencies()
+    {
+        loading = true;
+        try
+        {
+            var result = await AgenciesApi.GetAgenciesAsync(1, 100);
+            if (result.IsSuccess && result.Data != null)
+            {
+                agencies = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Acentalar yüklenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void OnSearch(string value)
+    {
+        searchText = value;
+        StateHasChanged();
+    }
+
+    private async Task OpenAddAgencyDialog()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddAgencyDialog>("Yeni Acenta Ekle", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadAgencies();
+        }
+    }
+
+    private async Task OpenEditAgencyDialog(AgencyDto agency)
+    {
+        var parameters = new DialogParameters<EditAgencyDialog>
+        {
+            { x => x.Agency, agency }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<EditAgencyDialog>("Acenta Düzenle", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadAgencies();
+        }
+    }
+
+    private async Task SuspendAgency(AgencyDto agency)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Acenta Askıya Al",
+            $"'{agency.Name}' acentasını askıya almak istediğinizden emin misiniz?",
+            yesText: "Evet", cancelText: "İptal");
+
+        if (confirmed == true)
+        {
+            var result = await AgenciesApi.SuspendAgencyAsync(agency.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Acenta askıya alındı", MudBlazor.Severity.Success);
+                await LoadAgencies();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "İşlem sırasında hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task ActivateAgency(AgencyDto agency)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Acenta Aktifleştir",
+            $"'{agency.Name}' acentasını aktifleştirmek istediğinizden emin misiniz?",
+            yesText: "Evet", cancelText: "İptal");
+
+        if (confirmed == true)
+        {
+            var result = await AgenciesApi.ActivateAgencyAsync(agency.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Acenta aktifleştirildi", MudBlazor.Severity.Success);
+                await LoadAgencies();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "İşlem sırasında hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private Color GetStatusColor(TenantStatus status) => status switch
+    {
+        TenantStatus.Active => Color.Success,
+        TenantStatus.Suspended => Color.Warning,
+        TenantStatus.Trial => Color.Info,
+        TenantStatus.Expired => Color.Error,
+        TenantStatus.PendingSetup => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(TenantStatus status) => status switch
+    {
+        TenantStatus.Active => "Aktif",
+        TenantStatus.Inactive => "Pasif",
+        TenantStatus.Suspended => "Askıda",
+        TenantStatus.Trial => "Deneme",
+        TenantStatus.Expired => "Süresi Dolmuş",
+        TenantStatus.PendingSetup => "Kurulum Bekliyor",
+        _ => status.ToString()
+    };
+
+    private Color GetSubscriptionColor(SubscriptionType type) => type switch
+    {
+        SubscriptionType.Basic => Color.Default,
+        SubscriptionType.Standard => Color.Info,
+        SubscriptionType.Premium => Color.Warning,
+        SubscriptionType.Enterprise => Color.Error,
+        SubscriptionType.Trial => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private string GetSubscriptionText(SubscriptionType type) => type switch
+    {
+        SubscriptionType.Basic => "Temel",
+        SubscriptionType.Standard => "Standart",
+        SubscriptionType.Premium => "Premium",
+        SubscriptionType.Enterprise => "Kurumsal",
+        SubscriptionType.Trial => "Deneme",
+        _ => type.ToString()
+    };
+}

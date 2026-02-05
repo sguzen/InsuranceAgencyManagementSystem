@@ -1,0 +1,187 @@
+@using IAMS.Shared.DTOs.Identity
+@inject IRolesApiClient RolesApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            @if (loadingPermissions)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+            }
+            else if (!allPermissions.Any())
+            {
+                <MudAlert Severity="MudBlazor.Severity.Warning">Sistemde tanımlı yetki bulunamadı.</MudAlert>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Yetkileri seçin veya kaldırın. Değişiklikleri kaydetmek için "Kaydet" düğmesine basın.
+                </MudText>
+
+                <!-- Select All / Deselect All -->
+                <MudStack Row Spacing="2" Class="mb-3">
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary"
+                               OnClick="SelectAll">Tümünü Seç</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary"
+                               OnClick="DeselectAll">Tümünü Kaldır</MudButton>
+                </MudStack>
+
+                @foreach (var moduleGroup in allPermissions.GroupBy(p => p.Module ?? "Genel").OrderBy(g => g.Key))
+                {
+                    <MudExpansionPanels MultiExpansion="true" Class="mb-2">
+                        <MudExpansionPanel @bind-IsExpanded="expandedModules[moduleGroup.Key]">
+                            <TitleContent>
+                                <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Folder" Color="Color.Primary" />
+                                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">@moduleGroup.Key</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                                        @moduleGroup.Count(p => selectedPermissionIds.Contains(p.Id)) / @moduleGroup.Count()
+                                    </MudChip>
+                                </MudStack>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudStack Spacing="1">
+                                    @foreach (var permission in moduleGroup.OrderBy(p => p.DisplayName))
+                                    {
+                                        var isSelected = selectedPermissionIds.Contains(permission.Id);
+                                        <MudCheckBox Value="@isSelected"
+                                                     Label="@permission.DisplayName"
+                                                     Color="Color.Primary"
+                                                     ValueChanged="@((bool val) => OnPermissionToggle(permission.Id, val))" />
+                                        @if (!string.IsNullOrEmpty(permission.Description))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="pl-8 mt-n1 mb-1">
+                                                @permission.Description
+                                            </MudText>
+                                        }
+                                    }
+                                </MudStack>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                }
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="SavePermissions"
+                   Disabled="@saving">
+            @if (saving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Kaydediliyor...</MudText>
+            }
+            else
+            {
+                <MudText>Kaydet</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public RoleDto Role { get; set; } = null!;
+
+    private List<PermissionDto> allPermissions = new();
+    private HashSet<int> selectedPermissionIds = new();
+    private Dictionary<string, bool> expandedModules = new();
+    private bool loadingPermissions = true;
+    private bool saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPermissions();
+    }
+
+    private async Task LoadPermissions()
+    {
+        loadingPermissions = true;
+        try
+        {
+            var result = await RolesApi.GetAllPermissionsAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                allPermissions = result.Data;
+
+                // Initialize expanded state for each module
+                foreach (var module in allPermissions.Select(p => p.Module ?? "Genel").Distinct())
+                {
+                    expandedModules[module] = true;
+                }
+
+                // Set currently assigned permissions
+                if (Role?.Permissions != null)
+                {
+                    selectedPermissionIds = new HashSet<int>(Role.Permissions.Select(p => p.Id));
+                }
+            }
+            else
+            {
+                Snackbar.Add("Yetkiler yüklenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loadingPermissions = false;
+        }
+    }
+
+    private void OnPermissionToggle(int permissionId, bool isSelected)
+    {
+        if (isSelected)
+        {
+            selectedPermissionIds.Add(permissionId);
+        }
+        else
+        {
+            selectedPermissionIds.Remove(permissionId);
+        }
+    }
+
+    private void SelectAll()
+    {
+        selectedPermissionIds = new HashSet<int>(allPermissions.Select(p => p.Id));
+    }
+
+    private void DeselectAll()
+    {
+        selectedPermissionIds.Clear();
+    }
+
+    private async Task SavePermissions()
+    {
+        saving = true;
+        try
+        {
+            var result = await RolesApi.UpdateRolePermissionsAsync(Role.Id, selectedPermissionIds.ToList());
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Yetkiler başarıyla güncellendi", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Yetkiler güncellenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

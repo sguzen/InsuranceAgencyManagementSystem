@@ -105,7 +105,6 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        // Check if user has SuperAdmin role
         IsSuperAdmin = user.IsInRole(RoleNames.SuperAdmin);
     }
 

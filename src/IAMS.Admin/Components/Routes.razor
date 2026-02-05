@@ -1,0 +1,33 @@
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+                            <MudAlert Severity="MudBlazor.Severity.Error">
+                                Bu sayfaya erişim yetkiniz bulunmamaktadır.
+                            </MudAlert>
+                        </MudContainer>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Sayfa Bulunamadi</PageTitle>
+            <LayoutView Layout="@typeof(Layout.MainLayout)">
+                <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+                    <MudAlert Severity="MudBlazor.Severity.Warning">
+                        Aradiginiz sayfa mevcut degil veya tasinmis olabilir.
+                    </MudAlert>
+                </MudContainer>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

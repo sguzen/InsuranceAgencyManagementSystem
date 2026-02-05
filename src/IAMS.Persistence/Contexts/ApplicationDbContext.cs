@@ -57,6 +57,9 @@ namespace IAMS.Persistence.Contexts
         public DbSet<ImportConfiguration> ImportConfigurations { get; set; }
         public DbSet<ImportHistory> ImportHistories { get; set; }
 
+        // Tenant/Agency Management
+        public DbSet<Tenant> Tenants { get; set; }
+
         // Identity entities (inherited from IdentityDbContext)
         // Users, Roles, UserRoles, etc. are already included
 
@@ -138,6 +141,19 @@ namespace IAMS.Persistence.Contexts
             {
                 entity.Property(r => r.Description).HasMaxLength(500);
                 entity.HasIndex(r => r.Name).IsUnique();
+            });
+
+            // Configure Tenant entity
+            modelBuilder.Entity<Tenant>(entity =>
+            {
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
+                entity.Property(t => t.Identifier).IsRequired().HasMaxLength(100);
+                entity.Property(t => t.ExternalId).HasMaxLength(50);
+                entity.Property(t => t.ContactEmail).HasMaxLength(200);
+                entity.Property(t => t.ContactPhone).HasMaxLength(50);
+                entity.HasIndex(t => t.Identifier).IsUnique();
+                entity.HasIndex(t => t.Name);
             });
 
             // Configure TenantSettings entity

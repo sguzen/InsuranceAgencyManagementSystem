@@ -57,8 +57,11 @@ namespace IAMS.MultiTenancy.Entities
         public DateTime? DeletedOn { get; set; }
         public string? DeletedBy { get; set; }
 
-        // Navigation property
+        // Navigation properties
         [ForeignKey(nameof(AgencyId))]
         public virtual TenantEntity Agency { get; set; } = null!;
+
+        [ForeignKey(nameof(InsuranceCompanyId))]
+        public virtual InsuranceCompany InsuranceCompany { get; set; } = null!;
     }
 }

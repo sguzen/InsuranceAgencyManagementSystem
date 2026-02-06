@@ -11,6 +11,7 @@ namespace IAMS.MultiTenancy.Data
 
         public DbSet<TenantEntity> Tenants { get; set; }
         public DbSet<TenantModule> TenantModules { get; set; }
+        public DbSet<InsuranceCompany> InsuranceCompanies { get; set; }
         public DbSet<AgencyInsuranceCompany> AgencyInsuranceCompanies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,6 +43,15 @@ namespace IAMS.MultiTenancy.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Configure InsuranceCompany
+            modelBuilder.Entity<InsuranceCompany>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            });
+
             // Configure AgencyInsuranceCompany
             modelBuilder.Entity<AgencyInsuranceCompany>(entity =>
             {
@@ -51,6 +61,11 @@ namespace IAMS.MultiTenancy.Data
                 entity.HasOne(e => e.Agency)
                     .WithMany(a => a.AgencyInsuranceCompanies)
                     .HasForeignKey(e => e.AgencyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.InsuranceCompany)
+                    .WithMany(ic => ic.AgencyInsuranceCompanies)
+                    .HasForeignKey(e => e.InsuranceCompanyId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -62,6 +77,30 @@ namespace IAMS.MultiTenancy.Data
         {
             // Use static date instead of DateTime.UtcNow
             var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            // Seed Turkish insurance companies
+            modelBuilder.Entity<InsuranceCompany>().HasData(
+                new InsuranceCompany { Id = 1, Name = "Anadolu Sigorta", Code = "ANADOLU", IsActive = true, DisplayOrder = 1, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 2, Name = "Allianz Sigorta", Code = "ALLIANZ", IsActive = true, DisplayOrder = 2, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 3, Name = "Axa Sigorta", Code = "AXA", IsActive = true, DisplayOrder = 3, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 4, Name = "Aksigorta", Code = "AKSIGORTA", IsActive = true, DisplayOrder = 4, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 5, Name = "Sompo Sigorta", Code = "SOMPO", IsActive = true, DisplayOrder = 5, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 6, Name = "Mapfre Sigorta", Code = "MAPFRE", IsActive = true, DisplayOrder = 6, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 7, Name = "HDI Sigorta", Code = "HDI", IsActive = true, DisplayOrder = 7, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 8, Name = "Zurich Sigorta", Code = "ZURICH", IsActive = true, DisplayOrder = 8, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 9, Name = "Groupama Sigorta", Code = "GROUPAMA", IsActive = true, DisplayOrder = 9, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 10, Name = "Türkiye Sigorta", Code = "TURKIYE", IsActive = true, DisplayOrder = 10, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 11, Name = "Generali Sigorta", Code = "GENERALI", IsActive = true, DisplayOrder = 11, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 12, Name = "Doga Sigorta", Code = "DOGA", IsActive = true, DisplayOrder = 12, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 13, Name = "Neova Sigorta", Code = "NEOVA", IsActive = true, DisplayOrder = 13, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 14, Name = "Quick Sigorta", Code = "QUICK", IsActive = true, DisplayOrder = 14, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 15, Name = "Hepiyi Sigorta", Code = "HEPIYI", IsActive = true, DisplayOrder = 15, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 16, Name = "Magdeburger Sigorta", Code = "MAGDEBURGER", IsActive = true, DisplayOrder = 16, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 17, Name = "Koru Sigorta", Code = "KORU", IsActive = true, DisplayOrder = 17, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 18, Name = "Turk Nippon Sigorta", Code = "TURKNIPPON", IsActive = true, DisplayOrder = 18, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 19, Name = "Corpus Sigorta", Code = "CORPUS", IsActive = true, DisplayOrder = 19, CreatedOn = seedDate },
+                new InsuranceCompany { Id = 20, Name = "Orient Sigorta", Code = "ORIENT", IsActive = true, DisplayOrder = 20, CreatedOn = seedDate }
+            );
 
             // Seed a default tenant/agency for development
             modelBuilder.Entity<TenantEntity>().HasData(

@@ -1,0 +1,245 @@
+@page "/insurance-companies"
+@using IAMS.Admin.Services.ApiClient
+@using IAMS.Shared.DTOs.MasterData
+@inject IMasterInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Sigorta Sirketleri - IAMS Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Class="pa-4">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudText Typo="Typo.h5">Sigorta Sirketleri</MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenCreateDialog">
+                Yeni Sigorta Sirketi
+            </MudButton>
+        </MudStack>
+
+        <!-- Filters -->
+        <MudStack Row="true" Spacing="3" Class="mb-4">
+            <MudTextField @bind-Value="searchText"
+                          Placeholder="Ara..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="LoadData"
+                          Style="max-width: 300px;" />
+
+            <MudSelect @bind-Value="activeFilter"
+                       Label="Durum"
+                       Variant="Variant.Outlined"
+                       Style="max-width: 150px;"
+                       ValueChanged="@((bool? value) => OnFilterChanged(value))">
+                <MudSelectItem Value="@((bool?)null)">Tumu</MudSelectItem>
+                <MudSelectItem Value="@((bool?)true)">Aktif</MudSelectItem>
+                <MudSelectItem Value="@((bool?)false)">Pasif</MudSelectItem>
+            </MudSelect>
+
+            <MudSpacer />
+
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                           OnClick="LoadData"
+                           Title="Yenile" />
+        </MudStack>
+
+        @if (loading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+
+        @if (companies != null && companies.Any())
+        {
+            <MudTable Items="@companies" Hover="true" Dense="true" Striped="true">
+                <HeaderContent>
+                    <MudTh>Sira</MudTh>
+                    <MudTh>Kod</MudTh>
+                    <MudTh>Ad</MudTh>
+                    <MudTh>Website</MudTh>
+                    <MudTh>Bagli Acenta</MudTh>
+                    <MudTh>Durum</MudTh>
+                    <MudTh Style="width: 150px;">Islemler</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Sira">@context.DisplayOrder</MudTd>
+                    <MudTd DataLabel="Kod">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default">@context.Code</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Ad">@context.Name</MudTd>
+                    <MudTd DataLabel="Website">
+                        @if (!string.IsNullOrEmpty(context.Website))
+                        {
+                            <MudLink Href="@context.Website" Target="_blank">@context.Website</MudLink>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Bagli Acenta">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.LinkedAgenciesCount</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Durum">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="@(context.IsActive ? Color.Success : Color.Default)"
+                                 Variant="Variant.Filled">
+                            @(context.IsActive ? "Aktif" : "Pasif")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Islemler">
+                        <MudStack Row="true" Spacing="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           Color="Color.Primary"
+                                           OnClick="@(() => OpenEditDialog(context))"
+                                           Title="Duzenle" />
+                            <MudIconButton Icon="@(context.IsActive ? Icons.Material.Filled.ToggleOn : Icons.Material.Filled.ToggleOff)"
+                                           Size="Size.Small"
+                                           Color="@(context.IsActive ? Color.Success : Color.Default)"
+                                           OnClick="@(() => ToggleStatus(context))"
+                                           Title="@(context.IsActive ? "Pasif Yap" : "Aktif Yap")" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteCompany(context))"
+                                           Title="Sil"
+                                           Disabled="@(context.LinkedAgenciesCount > 0)" />
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+        else if (!loading)
+        {
+            <MudAlert Severity="Severity.Info">
+                @if (!string.IsNullOrEmpty(searchText))
+                {
+                    <text>Arama kriterlerine uygun sigorta sirketi bulunamadi.</text>
+                }
+                else
+                {
+                    <text>Henuz sigorta sirketi tanimlanmamis.</text>
+                }
+            </MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<MasterInsuranceCompanyDto>? companies;
+    private bool loading = true;
+    private string? searchText;
+    private bool? activeFilter = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            var result = await InsuranceCompaniesApi.GetAllAsync(searchText, activeFilter);
+            if (result.IsSuccess)
+            {
+                companies = result.Data ?? new List<MasterInsuranceCompanyDto>();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Veri yuklenirken hata olustu", Severity.Error);
+                companies = new List<MasterInsuranceCompanyDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            companies = new List<MasterInsuranceCompanyDto>();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task OnFilterChanged(bool? value)
+    {
+        activeFilter = value;
+        await LoadData();
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var dialog = await DialogService.ShowAsync<CreateInsuranceCompanyDialog>("Yeni Sigorta Sirketi");
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task OpenEditDialog(MasterInsuranceCompanyDto company)
+    {
+        var parameters = new DialogParameters<EditInsuranceCompanyDialog>
+        {
+            { x => x.Company, company }
+        };
+
+        var dialog = await DialogService.ShowAsync<EditInsuranceCompanyDialog>("Sigorta Sirketi Duzenle", parameters);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task ToggleStatus(MasterInsuranceCompanyDto company)
+    {
+        var newStatus = company.IsActive ? "pasif" : "aktif";
+        var confirm = await DialogService.ShowMessageBox(
+            "Durum Degistir",
+            $"{company.Name} sirketini {newStatus} yapmak istediginize emin misiniz?",
+            yesText: "Evet", cancelText: "Iptal");
+
+        if (confirm == true)
+        {
+            var result = await InsuranceCompaniesApi.ToggleStatusAsync(company.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Durum guncellendi", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Hata olustu", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteCompany(MasterInsuranceCompanyDto company)
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Sigorta Sirketi Sil",
+            $"{company.Name} sirketini silmek istediginize emin misiniz? Bu islem geri alinamaz.",
+            yesText: "Sil", cancelText: "Iptal");
+
+        if (confirm == true)
+        {
+            var result = await InsuranceCompaniesApi.DeleteAsync(company.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Sigorta sirketi silindi", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Hata olustu", Severity.Error);
+            }
+        }
+    }
+}

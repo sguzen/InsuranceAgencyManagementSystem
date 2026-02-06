@@ -1,0 +1,138 @@
+@using IAMS.Admin.Services.ApiClient
+@using IAMS.Shared.DTOs.MasterData
+@inject IMasterInsuranceCompaniesApiClient InsuranceCompaniesApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@isValid">
+            <MudStack Spacing="3">
+                <MudTextField @bind-Value="model.Name"
+                              Label="Sirket Adi"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Sirket adi gereklidir" />
+
+                <MudTextField @bind-Value="model.Code"
+                              Label="Kod"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Kod gereklidir"
+                              HelperText="Benzersiz sirket kodu (ornek: ANADOLU)" />
+
+                <MudTextField @bind-Value="model.Website"
+                              Label="Website"
+                              Variant="Variant.Outlined"
+                              Placeholder="https://www.example.com" />
+
+                <MudTextField @bind-Value="model.LogoUrl"
+                              Label="Logo URL"
+                              Variant="Variant.Outlined" />
+
+                <MudTextField @bind-Value="model.ApiEndpoint"
+                              Label="API Endpoint"
+                              Variant="Variant.Outlined"
+                              HelperText="Entegrasyon icin API adresi" />
+
+                <MudTextField @bind-Value="model.IntegrationSettings"
+                              Label="Entegrasyon Ayarlari (JSON)"
+                              Variant="Variant.Outlined"
+                              Lines="3" />
+
+                <MudNumericField @bind-Value="model.DisplayOrder"
+                                 Label="Siralama"
+                                 Variant="Variant.Outlined"
+                                 Min="0" />
+
+                <MudSwitch @bind-Value="model.IsActive"
+                           Label="Aktif"
+                           Color="Color.Primary" />
+
+                @if (Company != null)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        <MudText Typo="Typo.caption">
+                            Bagli Acenta Sayisi: @Company.LinkedAgenciesCount
+                        </MudText>
+                    </MudAlert>
+                }
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Iptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="@(!isValid || saving)">
+            @if (saving)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Kaydediliyor...</MudText>
+            }
+            else
+            {
+                <MudText>Guncelle</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public MasterInsuranceCompanyDto Company { get; set; } = null!;
+
+    private UpdateMasterInsuranceCompanyDto model = new();
+    private MudForm form = null!;
+    private bool isValid;
+    private bool saving;
+
+    protected override void OnInitialized()
+    {
+        if (Company != null)
+        {
+            model = new UpdateMasterInsuranceCompanyDto
+            {
+                Name = Company.Name,
+                Code = Company.Code,
+                LogoUrl = Company.LogoUrl,
+                Website = Company.Website,
+                ApiEndpoint = Company.ApiEndpoint,
+                IntegrationSettings = Company.IntegrationSettings,
+                IsActive = Company.IsActive,
+                DisplayOrder = Company.DisplayOrder
+            };
+        }
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (!isValid) return;
+
+        saving = true;
+        try
+        {
+            var result = await InsuranceCompaniesApi.UpdateAsync(Company.Id, model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Sigorta sirketi guncellendi", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Hata olustu", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

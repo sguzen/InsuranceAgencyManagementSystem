@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace IAMS.Domain.Enums
 {
-    public enum TenantStatus
+    public enum AgencyStatus
     {
         Active = 0,
         Inactive = 1,
@@ -15,5 +9,4 @@ namespace IAMS.Domain.Enums
         Expired = 4,
         PendingSetup = 5
     }
-
 }

@@ -48,7 +48,7 @@
                     <MudCardContent>
                         <MudStack AlignItems="AlignItems.Center">
                             <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
-                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Active)</MudText>
+                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == AgencyStatus.Active)</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Aktif</MudText>
                         </MudStack>
                     </MudCardContent>
@@ -59,7 +59,7 @@
                     <MudCardContent>
                         <MudStack AlignItems="AlignItems.Center">
                             <MudIcon Icon="@Icons.Material.Filled.Pause" Color="Color.Warning" Size="Size.Large" />
-                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Suspended)</MudText>
+                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == AgencyStatus.Suspended)</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Askıda</MudText>
                         </MudStack>
                     </MudCardContent>
@@ -70,7 +70,7 @@
                     <MudCardContent>
                         <MudStack AlignItems="AlignItems.Center">
                             <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Info" Size="Size.Large" />
-                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Trial)</MudText>
+                            <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == AgencyStatus.Trial)</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Deneme</MudText>
                         </MudStack>
                     </MudCardContent>
@@ -179,7 +179,7 @@
                                                    Color="Color.Info"
                                                    OnClick="@(() => Navigation.NavigateTo($"/agencies/{context.Id}/insurance-companies"))"
                                                    Title="Sigorta Şirketleri" />
-                                    @if (context.Status == TenantStatus.Active)
+                                    @if (context.Status == AgencyStatus.Active)
                                     {
                                         <MudIconButton Icon="@Icons.Material.Filled.Pause"
                                                        Size="Size.Small"
@@ -345,24 +345,24 @@
         }
     }
 
-    private Color GetStatusColor(TenantStatus status) => status switch
+    private Color GetStatusColor(AgencyStatus status) => status switch
     {
-        TenantStatus.Active => Color.Success,
-        TenantStatus.Suspended => Color.Warning,
-        TenantStatus.Trial => Color.Info,
-        TenantStatus.Expired => Color.Error,
-        TenantStatus.PendingSetup => Color.Secondary,
+        AgencyStatus.Active => Color.Success,
+        AgencyStatus.Suspended => Color.Warning,
+        AgencyStatus.Trial => Color.Info,
+        AgencyStatus.Expired => Color.Error,
+        AgencyStatus.PendingSetup => Color.Secondary,
         _ => Color.Default
     };
 
-    private string GetStatusText(TenantStatus status) => status switch
+    private string GetStatusText(AgencyStatus status) => status switch
     {
-        TenantStatus.Active => "Aktif",
-        TenantStatus.Inactive => "Pasif",
-        TenantStatus.Suspended => "Askıda",
-        TenantStatus.Trial => "Deneme",
-        TenantStatus.Expired => "Süresi Dolmuş",
-        TenantStatus.PendingSetup => "Kurulum Bekliyor",
+        AgencyStatus.Active => "Aktif",
+        AgencyStatus.Inactive => "Pasif",
+        AgencyStatus.Suspended => "Askıda",
+        AgencyStatus.Trial => "Deneme",
+        AgencyStatus.Expired => "Süresi Dolmuş",
+        AgencyStatus.PendingSetup => "Kurulum Bekliyor",
         _ => status.ToString()
     };
 

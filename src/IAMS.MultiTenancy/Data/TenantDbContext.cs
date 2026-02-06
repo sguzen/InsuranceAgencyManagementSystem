@@ -11,12 +11,13 @@ namespace IAMS.MultiTenancy.Data
 
         public DbSet<TenantEntity> Tenants { get; set; }
         public DbSet<TenantModule> TenantModules { get; set; }
+        public DbSet<AgencyInsuranceCompany> AgencyInsuranceCompanies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure TenantEntity
+            // Configure TenantEntity (Agency)
             modelBuilder.Entity<TenantEntity>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -24,6 +25,8 @@ namespace IAMS.MultiTenancy.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Identifier).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.ConnectionString).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.ModuleSettings).HasMaxLength(4000);
+                entity.Property(e => e.Settings).HasMaxLength(4000);
             });
 
             // Configure TenantModule
@@ -39,6 +42,18 @@ namespace IAMS.MultiTenancy.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Configure AgencyInsuranceCompany
+            modelBuilder.Entity<AgencyInsuranceCompany>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.AgencyId, e.InsuranceCompanyId }).IsUnique();
+
+                entity.HasOne(e => e.Agency)
+                    .WithMany(a => a.AgencyInsuranceCompanies)
+                    .HasForeignKey(e => e.AgencyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             // Seed default data
             SeedData(modelBuilder);
         }
@@ -48,7 +63,7 @@ namespace IAMS.MultiTenancy.Data
             // Use static date instead of DateTime.UtcNow
             var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-            // Seed a default tenant for development
+            // Seed a default tenant/agency for development
             modelBuilder.Entity<TenantEntity>().HasData(
                 new TenantEntity
                 {
@@ -57,14 +72,19 @@ namespace IAMS.MultiTenancy.Data
                     Identifier = "default",
                     ConnectionString = "Data Source=localhost;Initial Catalog=TenantDb;Integrated Security=True;Trust Server Certificate=True",
                     IsActive = true,
-                    CreatedOn = seedDate, // Static date instead of DateTime.UtcNow
+                    CreatedOn = seedDate,
                     SubscriptionPlan = "Premium",
                     MaxUsers = 50,
                     MaxStorageBytes = 5L * 1024 * 1024 * 1024, // 5GB
                     ContactEmail = "admin@default-agency.com",
                     TimeZone = "Europe/Istanbul",
                     Currency = "TRY",
-                    Language = "tr"
+                    Language = "tr",
+                    // Agency-specific fields
+                    Status = Domain.Enums.AgencyStatus.Active,
+                    SubscriptionType = Domain.Enums.SubscriptionType.Premium,
+                    MaxPolicies = 20000,
+                    ExternalId = "A001"
                 }
             );
 

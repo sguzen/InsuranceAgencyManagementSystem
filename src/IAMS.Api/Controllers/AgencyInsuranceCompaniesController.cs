@@ -1,9 +1,9 @@
-using IAMS.Domain.Entities;
+using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Entities;
 using IAMS.Shared.DTOs.Agency;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using IAMS.Persistence.Contexts;
 
 namespace IAMS.Api.Controllers
 {
@@ -12,11 +12,11 @@ namespace IAMS.Api.Controllers
     [Authorize(Policy = "ApiKeyOrJwt")]
     public class AgencyInsuranceCompaniesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly TenantDbContext _context;
         private readonly ILogger<AgencyInsuranceCompaniesController> _logger;
 
         public AgencyInsuranceCompaniesController(
-            ApplicationDbContext context,
+            TenantDbContext context,
             ILogger<AgencyInsuranceCompaniesController> logger)
         {
             _context = context;
@@ -28,14 +28,13 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(agencyId);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(agencyId);
+                if (agency == null)
                     return NotFound(new { message = "Agency not found" });
 
-                var associations = await _context.TenantInsuranceCompanies
-                    .Include(tic => tic.InsuranceCompany)
-                    .Where(tic => tic.TenantId == agencyId && !tic.IsDeleted)
-                    .OrderBy(tic => tic.InsuranceCompany.Name)
+                var associations = await _context.AgencyInsuranceCompanies
+                    .Where(aic => aic.AgencyId == agencyId && !aic.IsDeleted)
+                    .OrderBy(aic => aic.InsuranceCompanyName)
                     .ToListAsync();
 
                 var dtos = associations.Select(MapToDto).ToList();
@@ -53,9 +52,8 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var association = await _context.TenantInsuranceCompanies
-                    .Include(tic => tic.InsuranceCompany)
-                    .FirstOrDefaultAsync(tic => tic.Id == id && tic.TenantId == agencyId && !tic.IsDeleted);
+                var association = await _context.AgencyInsuranceCompanies
+                    .FirstOrDefaultAsync(aic => aic.Id == id && aic.AgencyId == agencyId && !aic.IsDeleted);
 
                 if (association == null)
                     return NotFound(new { message = "Association not found" });
@@ -74,33 +72,33 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(agencyId);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(agencyId);
+                if (agency == null)
                     return NotFound(new { message = "Agency not found" });
 
-                var insuranceCompany = await _context.InsuranceCompanies.FindAsync(request.InsuranceCompanyId);
-                if (insuranceCompany == null)
-                    return NotFound(new { message = "Insurance company not found" });
-
                 // Check for existing association (including soft-deleted)
-                var existingActive = await _context.TenantInsuranceCompanies
-                    .FirstOrDefaultAsync(tic => tic.TenantId == agencyId
-                        && tic.InsuranceCompanyId == request.InsuranceCompanyId
-                        && !tic.IsDeleted);
+                var existingActive = await _context.AgencyInsuranceCompanies
+                    .FirstOrDefaultAsync(aic => aic.AgencyId == agencyId
+                        && aic.InsuranceCompanyId == request.InsuranceCompanyId
+                        && !aic.IsDeleted);
                 if (existingActive != null)
                     return BadRequest(new { message = "This insurance company is already associated with this agency" });
 
                 // Check for soft-deleted association and reactivate it
-                var existingDeleted = await _context.TenantInsuranceCompanies
-                    .FirstOrDefaultAsync(tic => tic.TenantId == agencyId
-                        && tic.InsuranceCompanyId == request.InsuranceCompanyId
-                        && tic.IsDeleted);
+                var existingDeleted = await _context.AgencyInsuranceCompanies
+                    .FirstOrDefaultAsync(aic => aic.AgencyId == agencyId
+                        && aic.InsuranceCompanyId == request.InsuranceCompanyId
+                        && aic.IsDeleted);
 
-                TenantInsuranceCompany association;
+                AgencyInsuranceCompany association;
                 if (existingDeleted != null)
                 {
                     // Reactivate the soft-deleted record
-                    existingDeleted.Restore();
+                    existingDeleted.IsDeleted = false;
+                    existingDeleted.DeletedOn = null;
+                    existingDeleted.DeletedBy = null;
+                    existingDeleted.InsuranceCompanyName = request.InsuranceCompanyName;
+                    existingDeleted.InsuranceCompanyCode = request.InsuranceCompanyCode;
                     existingDeleted.DbServer = request.DbServer;
                     existingDeleted.DbName = request.DbName;
                     existingDeleted.DbUsername = request.DbUsername;
@@ -114,10 +112,12 @@ namespace IAMS.Api.Controllers
                 }
                 else
                 {
-                    association = new TenantInsuranceCompany
+                    association = new AgencyInsuranceCompany
                     {
-                        TenantId = agencyId,
+                        AgencyId = agencyId,
                         InsuranceCompanyId = request.InsuranceCompanyId,
+                        InsuranceCompanyName = request.InsuranceCompanyName,
+                        InsuranceCompanyCode = request.InsuranceCompanyCode,
                         DbServer = request.DbServer,
                         DbName = request.DbName,
                         DbUsername = request.DbUsername,
@@ -128,13 +128,10 @@ namespace IAMS.Api.Controllers
                         CreatedBy = "admin",
                         CreatedOn = DateTime.UtcNow
                     };
-                    _context.TenantInsuranceCompanies.Add(association);
+                    _context.AgencyInsuranceCompanies.Add(association);
                 }
 
                 await _context.SaveChangesAsync();
-
-                // Reload with navigation property
-                await _context.Entry(association).Reference(a => a.InsuranceCompany).LoadAsync();
 
                 return CreatedAtAction(
                     nameof(GetAgencyInsuranceCompany),
@@ -153,8 +150,8 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var association = await _context.TenantInsuranceCompanies
-                    .FirstOrDefaultAsync(tic => tic.Id == id && tic.TenantId == agencyId && !tic.IsDeleted);
+                var association = await _context.AgencyInsuranceCompanies
+                    .FirstOrDefaultAsync(aic => aic.Id == id && aic.AgencyId == agencyId && !aic.IsDeleted);
 
                 if (association == null)
                     return NotFound(new { message = "Association not found" });
@@ -187,13 +184,15 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var association = await _context.TenantInsuranceCompanies
-                    .FirstOrDefaultAsync(tic => tic.Id == id && tic.TenantId == agencyId && !tic.IsDeleted);
+                var association = await _context.AgencyInsuranceCompanies
+                    .FirstOrDefaultAsync(aic => aic.Id == id && aic.AgencyId == agencyId && !aic.IsDeleted);
 
                 if (association == null)
                     return NotFound(new { message = "Association not found" });
 
-                association.MarkAsDeleted("admin");
+                association.IsDeleted = true;
+                association.DeletedOn = DateTime.UtcNow;
+                association.DeletedBy = "admin";
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Insurance company removed from agency" });
@@ -206,32 +205,32 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Returns all insurance companies (for dropdown selection when adding a new association).
+        /// Returns a list of well-known insurance companies for selection.
         /// </summary>
         [HttpGet("/api/insurance-companies/all")]
-        public async Task<IActionResult> GetAllInsuranceCompanies()
+        public Task<IActionResult> GetAllInsuranceCompanies()
         {
-            try
+            // Return a static list of well-known insurance companies in Turkey
+            var companies = new List<InsuranceCompanySummaryDto>
             {
-                var companies = await _context.InsuranceCompanies
-                    .Where(ic => !ic.IsDeleted)
-                    .OrderBy(ic => ic.Name)
-                    .Select(ic => new InsuranceCompanySummaryDto
-                    {
-                        Id = ic.Id,
-                        Name = ic.Name,
-                        Code = ic.Code,
-                        IsActive = ic.IsActive
-                    })
-                    .ToListAsync();
+                new() { Id = 1, Name = "Allianz Sigorta", Code = "ALLIANZ", IsActive = true },
+                new() { Id = 2, Name = "Anadolu Sigorta", Code = "ANADOLU", IsActive = true },
+                new() { Id = 3, Name = "Axa Sigorta", Code = "AXA", IsActive = true },
+                new() { Id = 4, Name = "Groupama Sigorta", Code = "GROUPAMA", IsActive = true },
+                new() { Id = 5, Name = "HDI Sigorta", Code = "HDI", IsActive = true },
+                new() { Id = 6, Name = "Mapfre Sigorta", Code = "MAPFRE", IsActive = true },
+                new() { Id = 7, Name = "Sompo Sigorta", Code = "SOMPO", IsActive = true },
+                new() { Id = 8, Name = "Türkiye Sigorta", Code = "TURKIYE", IsActive = true },
+                new() { Id = 9, Name = "Zurich Sigorta", Code = "ZURICH", IsActive = true },
+                new() { Id = 10, Name = "Aksigorta", Code = "AKSIGORTA", IsActive = true },
+                new() { Id = 11, Name = "Eureko Sigorta", Code = "EUREKO", IsActive = true },
+                new() { Id = 12, Name = "Güneş Sigorta", Code = "GUNES", IsActive = true },
+                new() { Id = 13, Name = "Halk Sigorta", Code = "HALK", IsActive = true },
+                new() { Id = 14, Name = "Neova Sigorta", Code = "NEOVA", IsActive = true },
+                new() { Id = 15, Name = "Ray Sigorta", Code = "RAY", IsActive = true }
+            };
 
-                return Ok(companies);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all insurance companies");
-                return StatusCode(500, new { message = "Error retrieving insurance companies" });
-            }
+            return Task.FromResult<IActionResult>(Ok(companies));
         }
 
         [HttpPost("{id}/test-connection")]
@@ -239,8 +238,8 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var association = await _context.TenantInsuranceCompanies
-                    .FirstOrDefaultAsync(tic => tic.Id == id && tic.TenantId == agencyId && !tic.IsDeleted);
+                var association = await _context.AgencyInsuranceCompanies
+                    .FirstOrDefaultAsync(aic => aic.Id == id && aic.AgencyId == agencyId && !aic.IsDeleted);
 
                 if (association == null)
                     return NotFound(new { message = "Association not found" });
@@ -272,15 +271,15 @@ namespace IAMS.Api.Controllers
             }
         }
 
-        private static AgencyInsuranceCompanyDto MapToDto(TenantInsuranceCompany association)
+        private static AgencyInsuranceCompanyDto MapToDto(AgencyInsuranceCompany association)
         {
             return new AgencyInsuranceCompanyDto
             {
                 Id = association.Id,
-                TenantId = association.TenantId,
+                AgencyId = association.AgencyId,
                 InsuranceCompanyId = association.InsuranceCompanyId,
-                InsuranceCompanyName = association.InsuranceCompany?.Name ?? string.Empty,
-                InsuranceCompanyCode = association.InsuranceCompany?.Code ?? string.Empty,
+                InsuranceCompanyName = association.InsuranceCompanyName,
+                InsuranceCompanyCode = association.InsuranceCompanyCode,
                 DbServer = association.DbServer,
                 DbName = association.DbName,
                 DbUsername = association.DbUsername,

@@ -36,7 +36,7 @@
                         <MudCardContent>
                             <MudStack AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
-                                <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Active)</MudText>
+                                <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == AgencyStatus.Active)</MudText>
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Aktif Acenta</MudText>
                             </MudStack>
                         </MudCardContent>
@@ -47,7 +47,7 @@
                         <MudCardContent>
                             <MudStack AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.Pause" Color="Color.Warning" Size="Size.Large" />
-                                <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == TenantStatus.Suspended)</MudText>
+                                <MudText Typo="Typo.h4">@agencies.Count(a => a.Status == AgencyStatus.Suspended)</MudText>
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Askıda</MudText>
                             </MudStack>
                         </MudCardContent>
@@ -126,9 +126,9 @@
                                         <td>@agency.Name</td>
                                         <td>
                                             <MudChip T="string" Size="Size.Small"
-                                                     Color="@(agency.Status == TenantStatus.Active ? Color.Success : Color.Warning)"
+                                                     Color="@(agency.Status == AgencyStatus.Active ? Color.Success : Color.Warning)"
                                                      Variant="Variant.Filled">
-                                                @(agency.Status == TenantStatus.Active ? "Aktif" : agency.Status.ToString())
+                                                @(agency.Status == AgencyStatus.Active ? "Aktif" : agency.Status.ToString())
                                             </MudChip>
                                         </td>
                                         <td>@agency.SubscriptionType</td>

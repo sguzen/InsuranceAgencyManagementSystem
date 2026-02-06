@@ -3,7 +3,7 @@ namespace IAMS.Shared.DTOs.Agency
     public class AgencyInsuranceCompanyDto
     {
         public int Id { get; set; }
-        public int TenantId { get; set; }
+        public int AgencyId { get; set; }
         public int InsuranceCompanyId { get; set; }
         public string InsuranceCompanyName { get; set; } = string.Empty;
         public string InsuranceCompanyCode { get; set; } = string.Empty;
@@ -21,6 +21,8 @@ namespace IAMS.Shared.DTOs.Agency
     public class CreateAgencyInsuranceCompanyDto
     {
         public int InsuranceCompanyId { get; set; }
+        public string InsuranceCompanyName { get; set; } = string.Empty;
+        public string InsuranceCompanyCode { get; set; } = string.Empty;
         public string? DbServer { get; set; }
         public string? DbName { get; set; }
         public string? DbUsername { get; set; }

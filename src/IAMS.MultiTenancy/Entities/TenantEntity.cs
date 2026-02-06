@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using IAMS.Domain.Enums;
 
 namespace IAMS.MultiTenancy.Entities
 {
@@ -24,7 +26,7 @@ namespace IAMS.MultiTenancy.Entities
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedOn { get; set; } 
+        public DateTime CreatedOn { get; set; }
 
         public DateTime? LastUpdated { get; set; }
 
@@ -54,5 +56,16 @@ namespace IAMS.MultiTenancy.Entities
 
         [MaxLength(50)]
         public string? ExternalId { get; set; } // Agency number for display (e.g., "A001")
+
+        // Agency-specific fields
+        public AgencyStatus Status { get; set; } = AgencyStatus.Active;
+        public SubscriptionType SubscriptionType { get; set; } = SubscriptionType.Basic;
+        public DateTime? TrialExpiryDate { get; set; }
+        public int MaxPolicies { get; set; } = 1000;
+        public string? ModuleSettings { get; set; } // JSON for module on/off switches
+        public string? Settings { get; set; } // JSON settings
+
+        // Navigation properties
+        public virtual ICollection<AgencyInsuranceCompany> AgencyInsuranceCompanies { get; set; } = new List<AgencyInsuranceCompany>();
     }
 }

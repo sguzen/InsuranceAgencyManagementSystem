@@ -43,7 +43,7 @@ namespace IAMS.Admin.Services.ApiClient
                     return Result<List<AgencyDto>>.Success(result.Agencies, "Agencies loaded");
                 }
 
-                return Result<List<AgencyDto>>.Failure("Empty response");
+                return Result<List<AgencyDto>>.Failure("Empty response", (List<string>?)null);
             }
             catch (Exception ex)
             {
@@ -69,7 +69,7 @@ namespace IAMS.Admin.Services.ApiClient
                     return Result<AgencyDto>.Success(agency);
                 }
 
-                return Result<AgencyDto>.Failure("Agency not found");
+                return Result<AgencyDto>.Failure("Agency not found", (List<string>?)null);
             }
             catch (Exception ex)
             {

@@ -447,7 +447,7 @@ namespace IAMS.Api.Controllers
         {
             if (request.InsuranceCompanyId <= 0)
             {
-                return BadRequest(Result<bool>.Failure("Insurance company must be selected"));
+                return BadRequest(Result<bool>.Failure("Insurance company must be selected", (List<string>?)null));
             }
 
             var configurations = await unitOfWork.ImportConfigurations.GetByInsuranceCompanyIdAsync(request.InsuranceCompanyId);
@@ -457,7 +457,7 @@ namespace IAMS.Api.Controllers
             if (importConfig == null)
             {
                 return BadRequest(Result<bool>.Failure(
-                    $"No active MySQL import configuration found for insurance company ID: {request.InsuranceCompanyId}"));
+                    $"No active MySQL import configuration found for insurance company ID: {request.InsuranceCompanyId}", (List<string>?)null));
             }
 
             var success = await mySqlService.TestConnectionAsync(importConfig);

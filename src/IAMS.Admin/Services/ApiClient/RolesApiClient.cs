@@ -44,7 +44,7 @@ namespace IAMS.Admin.Services.ApiClient
                     return Result<List<RoleDto>>.Success(result.Roles, "Roles loaded");
                 }
 
-                return Result<List<RoleDto>>.Failure("Empty response");
+                return Result<List<RoleDto>>.Failure("Empty response", (List<string>?)null);
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace IAMS.Admin.Services.ApiClient
                 var role = await response.Content.ReadFromJsonAsync<RoleDto>(_jsonOptions);
                 return role != null
                     ? Result<RoleDto>.Success(role)
-                    : Result<RoleDto>.Failure("Role not found");
+                    : Result<RoleDto>.Failure("Role not found", (List<string>?)null);
             }
             catch (Exception ex)
             {

@@ -1,10 +1,10 @@
-using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
+using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Entities;
 using IAMS.Shared.DTOs.Agency;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using IAMS.Persistence.Contexts;
 
 namespace IAMS.Api.Controllers
 {
@@ -13,11 +13,11 @@ namespace IAMS.Api.Controllers
     [Authorize(Policy = "ApiKeyOrJwt")]
     public class AgenciesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly TenantDbContext _context;
         private readonly ILogger<AgenciesController> _logger;
 
         public AgenciesController(
-            ApplicationDbContext context,
+            TenantDbContext context,
             ILogger<AgenciesController> logger)
         {
             _context = context;
@@ -29,7 +29,7 @@ namespace IAMS.Api.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null,
-            [FromQuery] TenantStatus? status = null)
+            [FromQuery] AgencyStatus? status = null)
         {
             try
             {
@@ -79,13 +79,13 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(id);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(id);
+                if (agency == null)
                 {
                     return NotFound(new { message = "Agency not found" });
                 }
 
-                return Ok(MapToDto(tenant));
+                return Ok(MapToDto(agency));
             }
             catch (Exception ex)
             {
@@ -107,25 +107,31 @@ namespace IAMS.Api.Controllers
                     return BadRequest(new { message = "Agency identifier already exists" });
                 }
 
-                var tenant = new Tenant
+                var agency = new TenantEntity
                 {
                     Name = request.Name,
                     Identifier = request.Identifier,
                     ExternalId = request.ExternalId,
                     SubscriptionType = request.SubscriptionType,
-                    ContactEmail = request.ContactEmail,
-                    ContactPhone = request.ContactPhone,
+                    SubscriptionPlan = request.SubscriptionType.ToString(),
+                    ContactEmail = request.ContactEmail ?? string.Empty,
+                    ContactPhone = request.ContactPhone ?? string.Empty,
                     MaxUsers = request.MaxUsers,
                     MaxPolicies = request.MaxPolicies,
-                    SubscriptionExpiryDate = request.SubscriptionExpiryDate,
-                    Status = TenantStatus.Active,
-                    CreatedOn = DateTime.UtcNow
+                    SubscriptionExpiry = request.SubscriptionExpiryDate,
+                    Status = AgencyStatus.Active,
+                    IsActive = true,
+                    CreatedOn = DateTime.UtcNow,
+                    ConnectionString = string.Empty, // Will be set during setup
+                    TimeZone = "Europe/Istanbul",
+                    Currency = "TRY",
+                    Language = "tr"
                 };
 
-                _context.Tenants.Add(tenant);
+                _context.Tenants.Add(agency);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetAgency), new { id = tenant.Id }, MapToDto(tenant));
+                return CreatedAtAction(nameof(GetAgency), new { id = agency.Id }, MapToDto(agency));
             }
             catch (Exception ex)
             {
@@ -139,14 +145,14 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(id);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(id);
+                if (agency == null)
                 {
                     return NotFound(new { message = "Agency not found" });
                 }
 
                 // Check if identifier conflicts with another agency
-                if (tenant.Identifier.ToLower() != request.Identifier.ToLower())
+                if (agency.Identifier.ToLower() != request.Identifier.ToLower())
                 {
                     var existing = await _context.Tenants
                         .AnyAsync(t => t.Identifier.ToLower() == request.Identifier.ToLower() && t.Id != id);
@@ -156,16 +162,19 @@ namespace IAMS.Api.Controllers
                     }
                 }
 
-                tenant.Name = request.Name;
-                tenant.Identifier = request.Identifier;
-                tenant.ExternalId = request.ExternalId;
-                tenant.Status = request.Status;
-                tenant.SubscriptionType = request.SubscriptionType;
-                tenant.ContactEmail = request.ContactEmail;
-                tenant.ContactPhone = request.ContactPhone;
-                tenant.MaxUsers = request.MaxUsers;
-                tenant.MaxPolicies = request.MaxPolicies;
-                tenant.SubscriptionExpiryDate = request.SubscriptionExpiryDate;
+                agency.Name = request.Name;
+                agency.Identifier = request.Identifier;
+                agency.ExternalId = request.ExternalId;
+                agency.Status = request.Status;
+                agency.IsActive = request.Status == AgencyStatus.Active;
+                agency.SubscriptionType = request.SubscriptionType;
+                agency.SubscriptionPlan = request.SubscriptionType.ToString();
+                agency.ContactEmail = request.ContactEmail ?? string.Empty;
+                agency.ContactPhone = request.ContactPhone ?? string.Empty;
+                agency.MaxUsers = request.MaxUsers;
+                agency.MaxPolicies = request.MaxPolicies;
+                agency.SubscriptionExpiry = request.SubscriptionExpiryDate;
+                agency.LastUpdated = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
@@ -183,14 +192,16 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(id);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(id);
+                if (agency == null)
                 {
                     return NotFound(new { message = "Agency not found" });
                 }
 
                 // Soft delete - suspend the agency
-                tenant.Status = TenantStatus.Suspended;
+                agency.Status = AgencyStatus.Suspended;
+                agency.IsActive = false;
+                agency.LastUpdated = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Agency suspended successfully" });
@@ -207,13 +218,15 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(id);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(id);
+                if (agency == null)
                 {
                     return NotFound(new { message = "Agency not found" });
                 }
 
-                tenant.ActivateTenant();
+                agency.Status = AgencyStatus.Active;
+                agency.IsActive = true;
+                agency.LastUpdated = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Agency activated successfully" });
@@ -230,13 +243,15 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(id);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(id);
+                if (agency == null)
                 {
                     return NotFound(new { message = "Agency not found" });
                 }
 
-                tenant.SuspendTenant();
+                agency.Status = AgencyStatus.Suspended;
+                agency.IsActive = false;
+                agency.LastUpdated = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Agency suspended successfully" });
@@ -253,13 +268,38 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var tenant = await _context.Tenants.FindAsync(id);
-                if (tenant == null)
+                var agency = await _context.Tenants.FindAsync(id);
+                if (agency == null)
                 {
                     return NotFound(new { message = "Agency not found" });
                 }
 
-                tenant.UpgradeSubscription(request.SubscriptionType, request.ExpiryDate);
+                agency.SubscriptionType = request.SubscriptionType;
+                agency.SubscriptionPlan = request.SubscriptionType.ToString();
+                agency.SubscriptionExpiry = request.ExpiryDate;
+                agency.LastUpdated = DateTime.UtcNow;
+
+                // Update limits based on subscription type
+                switch (request.SubscriptionType)
+                {
+                    case SubscriptionType.Basic:
+                        agency.MaxUsers = 5;
+                        agency.MaxPolicies = 1000;
+                        break;
+                    case SubscriptionType.Standard:
+                        agency.MaxUsers = 15;
+                        agency.MaxPolicies = 5000;
+                        break;
+                    case SubscriptionType.Premium:
+                        agency.MaxUsers = 50;
+                        agency.MaxPolicies = 20000;
+                        break;
+                    case SubscriptionType.Enterprise:
+                        agency.MaxUsers = 999;
+                        agency.MaxPolicies = 999999;
+                        break;
+                }
+
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Subscription updated successfully" });
@@ -277,9 +317,9 @@ namespace IAMS.Api.Controllers
             try
             {
                 var totalAgencies = await _context.Tenants.CountAsync();
-                var activeAgencies = await _context.Tenants.CountAsync(t => t.Status == TenantStatus.Active);
-                var suspendedAgencies = await _context.Tenants.CountAsync(t => t.Status == TenantStatus.Suspended);
-                var trialAgencies = await _context.Tenants.CountAsync(t => t.Status == TenantStatus.Trial);
+                var activeAgencies = await _context.Tenants.CountAsync(t => t.Status == AgencyStatus.Active);
+                var suspendedAgencies = await _context.Tenants.CountAsync(t => t.Status == AgencyStatus.Suspended);
+                var trialAgencies = await _context.Tenants.CountAsync(t => t.Status == AgencyStatus.Trial);
 
                 var bySubscription = await _context.Tenants
                     .GroupBy(t => t.SubscriptionType)
@@ -302,26 +342,26 @@ namespace IAMS.Api.Controllers
             }
         }
 
-        private static AgencyDto MapToDto(Tenant tenant)
+        private static AgencyDto MapToDto(TenantEntity agency)
         {
             return new AgencyDto
             {
-                Id = tenant.Id,
-                Name = tenant.Name,
-                Identifier = tenant.Identifier,
-                ExternalId = tenant.ExternalId,
-                Status = tenant.Status,
-                SubscriptionType = tenant.SubscriptionType,
-                CreatedOn = tenant.CreatedOn,
-                TrialExpiryDate = tenant.TrialExpiryDate,
-                SubscriptionExpiryDate = tenant.SubscriptionExpiryDate,
-                ContactEmail = tenant.ContactEmail,
-                ContactPhone = tenant.ContactPhone,
-                MaxUsers = tenant.MaxUsers,
-                MaxPolicies = tenant.MaxPolicies,
-                ModuleSettings = tenant.ModuleSettings,
-                IsActive = tenant.IsActive,
-                IsExpired = tenant.IsExpired
+                Id = agency.Id,
+                Name = agency.Name,
+                Identifier = agency.Identifier,
+                ExternalId = agency.ExternalId,
+                Status = agency.Status,
+                SubscriptionType = agency.SubscriptionType,
+                CreatedOn = agency.CreatedOn,
+                TrialExpiryDate = agency.TrialExpiryDate,
+                SubscriptionExpiryDate = agency.SubscriptionExpiry,
+                ContactEmail = agency.ContactEmail,
+                ContactPhone = agency.ContactPhone,
+                MaxUsers = agency.MaxUsers,
+                MaxPolicies = agency.MaxPolicies,
+                ModuleSettings = agency.ModuleSettings,
+                IsActive = agency.IsActive && agency.Status == AgencyStatus.Active,
+                IsExpired = agency.SubscriptionExpiry.HasValue && agency.SubscriptionExpiry < DateTime.Today
             };
         }
     }

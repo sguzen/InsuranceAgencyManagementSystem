@@ -110,6 +110,14 @@
         if (!formIsValid || model.InsuranceCompanyId == 0)
             return;
 
+        // Set the name and code from the selected company
+        var selectedCompany = availableCompanies.FirstOrDefault(c => c.Id == model.InsuranceCompanyId);
+        if (selectedCompany != null)
+        {
+            model.InsuranceCompanyName = selectedCompany.Name;
+            model.InsuranceCompanyCode = selectedCompany.Code;
+        }
+
         saving = true;
         try
         {

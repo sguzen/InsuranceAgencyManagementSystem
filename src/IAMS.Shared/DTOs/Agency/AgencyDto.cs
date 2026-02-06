@@ -8,7 +8,7 @@ namespace IAMS.Shared.DTOs.Agency
         public string Name { get; set; } = string.Empty;
         public string Identifier { get; set; } = string.Empty;
         public string? ExternalId { get; set; }
-        public TenantStatus Status { get; set; }
+        public AgencyStatus Status { get; set; }
         public SubscriptionType SubscriptionType { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime? TrialExpiryDate { get; set; }
@@ -40,7 +40,7 @@ namespace IAMS.Shared.DTOs.Agency
         public string Name { get; set; } = string.Empty;
         public string Identifier { get; set; } = string.Empty;
         public string? ExternalId { get; set; }
-        public TenantStatus Status { get; set; }
+        public AgencyStatus Status { get; set; }
         public SubscriptionType SubscriptionType { get; set; }
         public string? ContactEmail { get; set; }
         public string? ContactPhone { get; set; }

@@ -205,32 +205,34 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Returns a list of well-known insurance companies for selection.
+        /// Returns a list of insurance companies from the master database for selection.
         /// </summary>
         [HttpGet("/api/insurance-companies/all")]
-        public Task<IActionResult> GetAllInsuranceCompanies()
+        public async Task<IActionResult> GetAllInsuranceCompanies()
         {
-            // Return a static list of well-known insurance companies in Turkey
-            var companies = new List<InsuranceCompanySummaryDto>
+            try
             {
-                new() { Id = 1, Name = "Allianz Sigorta", Code = "ALLIANZ", IsActive = true },
-                new() { Id = 2, Name = "Anadolu Sigorta", Code = "ANADOLU", IsActive = true },
-                new() { Id = 3, Name = "Axa Sigorta", Code = "AXA", IsActive = true },
-                new() { Id = 4, Name = "Groupama Sigorta", Code = "GROUPAMA", IsActive = true },
-                new() { Id = 5, Name = "HDI Sigorta", Code = "HDI", IsActive = true },
-                new() { Id = 6, Name = "Mapfre Sigorta", Code = "MAPFRE", IsActive = true },
-                new() { Id = 7, Name = "Sompo Sigorta", Code = "SOMPO", IsActive = true },
-                new() { Id = 8, Name = "Türkiye Sigorta", Code = "TURKIYE", IsActive = true },
-                new() { Id = 9, Name = "Zurich Sigorta", Code = "ZURICH", IsActive = true },
-                new() { Id = 10, Name = "Aksigorta", Code = "AKSIGORTA", IsActive = true },
-                new() { Id = 11, Name = "Eureko Sigorta", Code = "EUREKO", IsActive = true },
-                new() { Id = 12, Name = "Güneş Sigorta", Code = "GUNES", IsActive = true },
-                new() { Id = 13, Name = "Halk Sigorta", Code = "HALK", IsActive = true },
-                new() { Id = 14, Name = "Neova Sigorta", Code = "NEOVA", IsActive = true },
-                new() { Id = 15, Name = "Ray Sigorta", Code = "RAY", IsActive = true }
-            };
+                var companies = await _context.InsuranceCompanies
+                    .AsNoTracking()
+                    .Where(ic => ic.IsActive)
+                    .OrderBy(ic => ic.DisplayOrder)
+                    .ThenBy(ic => ic.Name)
+                    .Select(ic => new InsuranceCompanySummaryDto
+                    {
+                        Id = ic.Id,
+                        Name = ic.Name,
+                        Code = ic.Code,
+                        IsActive = ic.IsActive
+                    })
+                    .ToListAsync();
 
-            return Task.FromResult<IActionResult>(Ok(companies));
+                return Ok(companies);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving insurance companies");
+                return StatusCode(500, new { message = "Error retrieving insurance companies" });
+            }
         }
 
         [HttpPost("{id}/test-connection")]

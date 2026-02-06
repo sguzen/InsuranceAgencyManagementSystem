@@ -78,6 +78,9 @@ builder.Services.AddScoped<IUsersApiClient, UsersApiClient>(sp =>
 builder.Services.AddScoped<IInsuranceCompaniesApiClient, InsuranceCompaniesApiClient>(sp =>
     new InsuranceCompaniesApiClient(sp.GetRequiredService<HttpClient>()));
 
+builder.Services.AddScoped<IMasterInsuranceCompaniesApiClient, MasterInsuranceCompaniesApiClient>(sp =>
+    new MasterInsuranceCompaniesApiClient(sp.GetRequiredService<HttpClient>()));
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

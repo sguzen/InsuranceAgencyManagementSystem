@@ -14,7 +14,7 @@ namespace IAMS.Api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/master/insurance-companies")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize(Policy = "ApiKeyOrJwt")]
     public class MasterInsuranceCompaniesController : ControllerBase
     {
         private readonly TenantDbContext _tenantDb;

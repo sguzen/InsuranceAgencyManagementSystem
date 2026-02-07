@@ -1,0 +1,90 @@
+@using IAMS.Web.Services.ApiClient
+@inject IPolicyImportApiClient ImportApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudAlert Severity="Severity.Info" Dense="true">
+                <b>@Company.Name</b> sisteminden policeler import edilecek.
+            </MudAlert>
+
+            <MudText Typo="Typo.subtitle2">Tarih Filtresi (Opsiyonel)</MudText>
+
+            <MudDateRangePicker @bind-DateRange="dateRange"
+                                Label="Tarih Araligi"
+                                Variant="Variant.Outlined"
+                                DateFormat="dd.MM.yyyy"
+                                Placeholder="Tum policeler" />
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Tarih araligi secmezseniz tum policeler import edilir.
+            </MudText>
+
+            @if (Company.LastImportDate.HasValue)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true">
+                    Son import: @Company.LastImportDate.Value.ToString("dd.MM.yyyy HH:mm")
+                    <br />
+                    Ayni policeler tekrar import edilirse guncellenir.
+                </MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Iptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="@submitting">
+            @if (submitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Import Baslat
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ImportableCompanyDto Company { get; set; } = null!;
+
+    private DateRange? dateRange;
+    private bool submitting;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        submitting = true;
+        try
+        {
+            var request = new ImportRequestDto
+            {
+                MasterInsuranceCompanyId = Company.MasterInsuranceCompanyId,
+                StartDate = dateRange?.Start,
+                EndDate = dateRange?.End
+            };
+
+            var result = await ImportApi.RequestImportAsync(request);
+
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(result.Data));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Import baslatilamadi", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            submitting = false;
+        }
+    }
+}

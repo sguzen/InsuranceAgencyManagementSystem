@@ -139,6 +139,7 @@ namespace IAMS.Api.Controllers
                 // Create import job
                 var job = new ImportJob
                 {
+                    AgencyId = agencyId.Value,
                     InsuranceCompanyId = tenantCompanyId,
                     MasterInsuranceCompanyId = request.MasterInsuranceCompanyId,
                     FilterStartDate = request.StartDate,

@@ -80,6 +80,7 @@ namespace IAMS.Infrastructure.Services
             try
             {
                 var result = await importService.ImportPoliciesAsync(
+                    job.AgencyId,
                     job.InsuranceCompanyId,
                     job.MasterInsuranceCompanyId,
                     job.FilterStartDate,
@@ -108,6 +109,7 @@ namespace IAMS.Infrastructure.Services
     public interface IPolicyImportService
     {
         Task<ImportResult> ImportPoliciesAsync(
+            int agencyId,
             int tenantInsuranceCompanyId,
             int masterInsuranceCompanyId,
             DateTime? startDate,
@@ -119,25 +121,20 @@ namespace IAMS.Infrastructure.Services
     {
         private readonly ApplicationDbContext _tenantDb;
         private readonly IAgencyCredentialService _credentialService;
-        private readonly IInsuranceCompanySyncService _syncService;
         private readonly ILogger<PolicyImportService> _logger;
-        private readonly int _agencyId;
 
         public PolicyImportService(
             ApplicationDbContext tenantDb,
             IAgencyCredentialService credentialService,
-            IInsuranceCompanySyncService syncService,
-            ILogger<PolicyImportService> logger,
-            int agencyId)
+            ILogger<PolicyImportService> logger)
         {
             _tenantDb = tenantDb;
             _credentialService = credentialService;
-            _syncService = syncService;
             _logger = logger;
-            _agencyId = agencyId;
         }
 
         public async Task<ImportResult> ImportPoliciesAsync(
+            int agencyId,
             int tenantInsuranceCompanyId,
             int masterInsuranceCompanyId,
             DateTime? startDate,
@@ -150,9 +147,10 @@ namespace IAMS.Infrastructure.Services
             try
             {
                 logEntries.Add($"Starting import at {DateTime.UtcNow:u}");
+                logEntries.Add($"Agency: {agencyId}, InsuranceCompany: {masterInsuranceCompanyId}");
 
                 // Get connection string securely
-                var connectionString = await _credentialService.GetConnectionStringAsync(_agencyId, masterInsuranceCompanyId);
+                var connectionString = await _credentialService.GetConnectionStringAsync(agencyId, masterInsuranceCompanyId);
 
                 if (string.IsNullOrEmpty(connectionString))
                 {

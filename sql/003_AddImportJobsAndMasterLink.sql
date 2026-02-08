@@ -60,6 +60,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'ImportJobs')
 BEGIN
     CREATE TABLE [ImportJobs] (
         [Id] INT IDENTITY(1,1) NOT NULL,
+        [AgencyId] INT NOT NULL,
         [InsuranceCompanyId] INT NOT NULL,
         [MasterInsuranceCompanyId] INT NOT NULL,
         [Status] INT NOT NULL DEFAULT 0,
@@ -86,10 +87,31 @@ BEGIN
 
     -- Create indexes
     CREATE NONCLUSTERED INDEX [IX_ImportJobs_Status] ON [ImportJobs]([Status]) INCLUDE ([CreatedOn]);
+    CREATE NONCLUSTERED INDEX [IX_ImportJobs_AgencyId] ON [ImportJobs]([AgencyId]);
     CREATE NONCLUSTERED INDEX [IX_ImportJobs_InsuranceCompanyId] ON [ImportJobs]([InsuranceCompanyId]);
     CREATE NONCLUSTERED INDEX [IX_ImportJobs_MasterInsuranceCompanyId] ON [ImportJobs]([MasterInsuranceCompanyId]);
 
     PRINT 'Created ImportJobs table with indexes';
+END
+GO
+
+-- =====================================================
+-- 4. Add AgencyId column if table exists but missing column
+-- (For tables created before AgencyId was added)
+-- =====================================================
+
+IF EXISTS (SELECT 1 FROM sys.tables WHERE name = 'ImportJobs')
+   AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('ImportJobs') AND name = 'AgencyId')
+BEGIN
+    ALTER TABLE [ImportJobs] ADD [AgencyId] INT NOT NULL DEFAULT 0;
+    PRINT 'Added AgencyId column to existing ImportJobs table';
+
+    -- Create index if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ImportJobs_AgencyId')
+    BEGIN
+        CREATE NONCLUSTERED INDEX [IX_ImportJobs_AgencyId] ON [ImportJobs]([AgencyId]);
+        PRINT 'Created index on AgencyId';
+    END
 END
 GO
 

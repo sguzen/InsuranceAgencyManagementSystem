@@ -6,6 +6,12 @@ namespace IAMS.Domain.Entities
     /// </summary>
     public class ImportJob : BaseEntity
     {
+        /// <summary>
+        /// The agency (tenant) ID this job belongs to.
+        /// Used for credential lookup in master database.
+        /// </summary>
+        public int AgencyId { get; set; }
+
         public int InsuranceCompanyId { get; set; }
 
         /// <summary>

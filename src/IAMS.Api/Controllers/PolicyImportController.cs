@@ -1,5 +1,5 @@
 using IAMS.Domain.Entities;
-using IAMS.Infrastructure.Services;
+using IAMS.Persistence.Services;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.Persistence.Contexts;

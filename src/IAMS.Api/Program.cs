@@ -60,12 +60,12 @@ builder.Services.AddDataProtection();
 
 // Register Import Infrastructure Services
 builder.Services.AddScoped<IAMS.Infrastructure.Security.ICredentialEncryptionService, IAMS.Infrastructure.Security.CredentialEncryptionService>();
-builder.Services.AddScoped<IAMS.Infrastructure.Security.IAgencyCredentialService, IAMS.Infrastructure.Security.AgencyCredentialService>();
-builder.Services.AddScoped<IAMS.Infrastructure.Services.IInsuranceCompanySyncService, IAMS.Infrastructure.Services.InsuranceCompanySyncService>();
-builder.Services.AddScoped<IAMS.Infrastructure.Services.IPolicyImportService, IAMS.Infrastructure.Services.PolicyImportService>();
+builder.Services.AddScoped<IAMS.Shared.Interfaces.Services.IAgencyCredentialService, IAMS.Infrastructure.Security.AgencyCredentialService>();
+builder.Services.AddScoped<IAMS.Persistence.Services.IInsuranceCompanySyncService, IAMS.Persistence.Services.InsuranceCompanySyncService>();
+builder.Services.AddScoped<IAMS.Persistence.Services.IPolicyImportService, IAMS.Persistence.Services.PolicyImportService>();
 
 // Register Policy Import Background Service
-builder.Services.AddHostedService<IAMS.Infrastructure.Services.PolicyImportBackgroundService>();
+builder.Services.AddHostedService<IAMS.Persistence.Services.PolicyImportBackgroundService>();
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

@@ -1,12 +1,12 @@
 using IAMS.Domain.Entities;
-using IAMS.Infrastructure.Security;
 using IAMS.Persistence.Contexts;
+using IAMS.Shared.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace IAMS.Infrastructure.Services
+namespace IAMS.Persistence.Services
 {
     /// <summary>
     /// Background service that processes policy import jobs.
@@ -119,16 +119,13 @@ namespace IAMS.Infrastructure.Services
 
     public class PolicyImportService : IPolicyImportService
     {
-        private readonly ApplicationDbContext _tenantDb;
         private readonly IAgencyCredentialService _credentialService;
         private readonly ILogger<PolicyImportService> _logger;
 
         public PolicyImportService(
-            ApplicationDbContext tenantDb,
             IAgencyCredentialService credentialService,
             ILogger<PolicyImportService> logger)
         {
-            _tenantDb = tenantDb;
             _credentialService = credentialService;
             _logger = logger;
         }

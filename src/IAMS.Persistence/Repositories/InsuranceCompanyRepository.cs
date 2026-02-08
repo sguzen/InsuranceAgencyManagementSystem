@@ -40,7 +40,7 @@ namespace IAMS.Persistence.Repositories
         {
             return await _dbSet
                 .Where(ic => ic.IsActive && !ic.IsDeleted &&
-                            !string.IsNullOrEmpty(ic.ApiEndpoint))
+                            ic.MasterInsuranceCompanyId.HasValue)
                 .OrderBy(ic => ic.Name)
                 .ToListAsync();
         }

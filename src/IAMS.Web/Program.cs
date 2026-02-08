@@ -151,6 +151,12 @@ builder.Services.AddScoped<IReportingApiClient, ReportingApiClient>(sp =>
     return new ReportingApiClient(httpClient);
 });
 
+builder.Services.AddScoped<IPolicyImportApiClient, PolicyImportApiClient>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new PolicyImportApiClient(httpClient);
+});
+
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionChecker, PermissionChecker>();

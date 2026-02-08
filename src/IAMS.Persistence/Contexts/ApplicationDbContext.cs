@@ -56,6 +56,7 @@ namespace IAMS.Persistence.Contexts
         // Import Management
         public DbSet<ImportConfiguration> ImportConfigurations { get; set; }
         public DbSet<ImportHistory> ImportHistories { get; set; }
+        public DbSet<ImportJob> ImportJobs { get; set; }
 
         // Identity entities (inherited from IdentityDbContext)
         // Users, Roles, UserRoles, etc. are already included

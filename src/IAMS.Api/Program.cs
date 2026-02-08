@@ -55,6 +55,18 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 // Register Audit Logger
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 
+// Add Data Protection for credential encryption
+builder.Services.AddDataProtection();
+
+// Register Import Infrastructure Services
+builder.Services.AddScoped<IAMS.Infrastructure.Security.ICredentialEncryptionService, IAMS.Infrastructure.Security.CredentialEncryptionService>();
+builder.Services.AddScoped<IAMS.Infrastructure.Security.IAgencyCredentialService, IAMS.Infrastructure.Security.AgencyCredentialService>();
+builder.Services.AddScoped<IAMS.Infrastructure.Services.IInsuranceCompanySyncService, IAMS.Infrastructure.Services.InsuranceCompanySyncService>();
+builder.Services.AddScoped<IAMS.Infrastructure.Services.IPolicyImportService, IAMS.Infrastructure.Services.PolicyImportService>();
+
+// Register Policy Import Background Service
+builder.Services.AddHostedService<IAMS.Infrastructure.Services.PolicyImportBackgroundService>();
+
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"];

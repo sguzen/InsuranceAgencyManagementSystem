@@ -1,0 +1,305 @@
+@page "/import"
+@page "/import/policies"
+@using IAMS.Web.Services.ApiClient
+@inject IPolicyImportApiClient ImportApi
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize]
+
+<PageTitle>Police Import - IAMS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Police Import</MudText>
+
+    <MudGrid>
+        <!-- Available Companies -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Class="mr-2" />
+                    Import Edilebilir Sigorta Sirketleri
+                </MudText>
+
+                @if (loadingCompanies)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else if (availableCompanies == null || !availableCompanies.Any())
+                {
+                    <MudAlert Severity="Severity.Info">
+                        Import edilebilecek sigorta sirketi bulunamadi.
+                        Lutfen Admin panelinden acentaniza sigorta sirketi baglayiniz.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudList T="ImportableCompanyDto" Dense="true">
+                        @foreach (var company in availableCompanies)
+                        {
+                            <MudListItem>
+                                <div class="d-flex align-center justify-space-between" style="width: 100%">
+                                    <div>
+                                        <MudText Typo="Typo.body1">@company.Name</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @if (company.LastImportDate.HasValue)
+                                            {
+                                                <text>Son import: @company.LastImportDate.Value.ToString("dd.MM.yyyy HH:mm")</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Henuz import yapilmamis</text>
+                                            }
+                                        </MudText>
+                                    </div>
+                                    <div>
+                                        @if (company.HasCredentials)
+                                        {
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       StartIcon="@Icons.Material.Filled.Download"
+                                                       OnClick="@(() => OpenImportDialog(company))">
+                                                Import
+                                            </MudButton>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Color="Color.Warning" Size="Size.Small">
+                                                Baglanti bilgisi yok
+                                            </MudChip>
+                                        }
+                                    </div>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                }
+
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="LoadAvailableCompanies"
+                           Class="mt-2">
+                    Yenile
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Recent Import Jobs -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+                    Son Import Islemleri
+                </MudText>
+
+                @if (loadingJobs)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else if (recentJobs == null || !recentJobs.Any())
+                {
+                    <MudAlert Severity="Severity.Info">
+                        Henuz import islemi yapilmamis.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                        <thead>
+                            <tr>
+                                <th>Sirket</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th>Sonuc</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var job in recentJobs.Take(10))
+                            {
+                                <tr>
+                                    <td>@job.InsuranceCompanyName</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(job.Status)">
+                                            @GetStatusText(job.Status)
+                                        </MudChip>
+                                    </td>
+                                    <td>@job.CreatedOn.ToString("dd.MM HH:mm")</td>
+                                    <td>
+                                        @if (job.Status == "Completed")
+                                        {
+                                            <MudText Typo="Typo.caption">
+                                                @job.ImportedRecords basarili
+                                                @if (job.FailedRecords > 0)
+                                                {
+                                                    <text>, @job.FailedRecords basarisiz</text>
+                                                }
+                                            </MudText>
+                                        }
+                                        else if (job.Status == "Failed")
+                                        {
+                                            <MudTooltip Text="@job.ErrorMessage">
+                                                <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                                            </MudTooltip>
+                                        }
+                                        else if (job.Status == "Pending")
+                                        {
+                                            <MudButton Size="Size.Small" Color="Color.Warning" OnClick="@(() => CancelJob(job.Id))">
+                                                Iptal
+                                            </MudButton>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="LoadRecentJobs"
+                           Class="mt-2">
+                    Yenile
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private List<ImportableCompanyDto>? availableCompanies;
+    private List<ImportJobDto>? recentJobs;
+    private bool loadingCompanies = true;
+    private bool loadingJobs = true;
+    private System.Timers.Timer? refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadAvailableCompanies(), LoadRecentJobs());
+
+        // Auto-refresh every 30 seconds if there are pending jobs
+        refreshTimer = new System.Timers.Timer(30000);
+        refreshTimer.Elapsed += async (s, e) => await InvokeAsync(async () =>
+        {
+            if (recentJobs?.Any(j => j.Status == "Pending" || j.Status == "Running") == true)
+            {
+                await LoadRecentJobs();
+                StateHasChanged();
+            }
+        });
+        refreshTimer.Start();
+    }
+
+    private async Task LoadAvailableCompanies()
+    {
+        loadingCompanies = true;
+        try
+        {
+            var result = await ImportApi.GetAvailableCompaniesAsync();
+            if (result.IsSuccess)
+            {
+                availableCompanies = result.Data ?? new List<ImportableCompanyDto>();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Sigorta sirketleri yuklenemedi", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loadingCompanies = false;
+        }
+    }
+
+    private async Task LoadRecentJobs()
+    {
+        loadingJobs = true;
+        try
+        {
+            var result = await ImportApi.GetRecentJobsAsync();
+            if (result.IsSuccess)
+            {
+                recentJobs = result.Data ?? new List<ImportJobDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loadingJobs = false;
+        }
+    }
+
+    private async Task OpenImportDialog(ImportableCompanyDto company)
+    {
+        var parameters = new DialogParameters<ImportDialog>
+        {
+            { x => x.Company, company }
+        };
+
+        var dialog = await DialogService.ShowAsync<ImportDialog>($"{company.Name} - Import", parameters);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            await LoadRecentJobs();
+            Snackbar.Add("Import islemi kuyruga alindi", Severity.Success);
+        }
+    }
+
+    private async Task CancelJob(int jobId)
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Import Iptal",
+            "Bu import islemini iptal etmek istediginize emin misiniz?",
+            yesText: "Iptal Et", cancelText: "Vazgec");
+
+        if (confirm == true)
+        {
+            var result = await ImportApi.CancelJobAsync(jobId);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Import islemi iptal edildi", Severity.Success);
+                await LoadRecentJobs();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Iptal edilemedi", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Info,
+        "Running" => Color.Warning,
+        "Completed" => Color.Success,
+        "Failed" => Color.Error,
+        "Cancelled" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending" => "Bekliyor",
+        "Running" => "Calisiyor",
+        "Completed" => "Tamamlandi",
+        "Failed" => "Basarisiz",
+        "Cancelled" => "Iptal Edildi",
+        _ => status
+    };
+
+    public void Dispose()
+    {
+        refreshTimer?.Stop();
+        refreshTimer?.Dispose();
+    }
+}

@@ -166,27 +166,27 @@ namespace IAMS.UnitTests.Domain.Entities
         }
 
         [Fact]
-        public void HasIntegration_WithApiEndpoint_ShouldReturnTrue()
+        public void HasMasterLink_WithMasterInsuranceCompanyId_ShouldReturnTrue()
         {
             // Arrange
             var company = InsuranceCompany.Create("Test", null, null, null, null, null, "TestUser");
-            company.ApiEndpoint = "https://api.test.com";
+            company.MasterInsuranceCompanyId = 1;
 
             // Act
-            var result = company.HasIntegration;
+            var result = company.HasMasterLink;
 
             // Assert
             result.Should().BeTrue();
         }
 
         [Fact]
-        public void HasIntegration_WithoutApiEndpoint_ShouldReturnFalse()
+        public void HasMasterLink_WithoutMasterInsuranceCompanyId_ShouldReturnFalse()
         {
             // Arrange
             var company = InsuranceCompany.Create("Test", null, null, null, null, null, "TestUser");
 
             // Act
-            var result = company.HasIntegration;
+            var result = company.HasMasterLink;
 
             // Assert
             result.Should().BeFalse();

@@ -3,7 +3,7 @@ using IAMS.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace IAMS.Infrastructure.Services
+namespace IAMS.Persistence.Services
 {
     /// <summary>
     /// Synchronizes insurance companies from master database to tenant database.
@@ -97,7 +97,7 @@ namespace IAMS.Infrastructure.Services
                 else
                 {
                     // Create new tenant company
-                    var tenantCompany = new Domain.Entities.InsuranceCompany
+                    var tenantCompany = new IAMS.Domain.Entities.InsuranceCompany
                     {
                         Name = masterCompany.Name,
                         Code = masterCompany.Code,
@@ -169,7 +169,7 @@ namespace IAMS.Infrastructure.Services
             }
 
             // Create tenant company
-            var tenantCompany = new Domain.Entities.InsuranceCompany
+            var tenantCompany = new IAMS.Domain.Entities.InsuranceCompany
             {
                 Name = masterCompany.Name,
                 Code = masterCompany.Code,

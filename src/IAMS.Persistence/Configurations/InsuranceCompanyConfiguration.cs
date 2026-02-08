@@ -33,11 +33,11 @@ namespace IAMS.Persistence.Configurations
             builder.Property(ic => ic.Address)
                 .HasMaxLength(500);
 
-            builder.Property(ic => ic.ApiEndpoint)
+            builder.Property(ic => ic.LogoUrl)
                 .HasMaxLength(500);
 
-            builder.Property(ic => ic.ApiKey)
-                .HasMaxLength(200);
+            builder.Property(ic => ic.Website)
+                .HasMaxLength(500);
 
             builder.HasIndex(ic => ic.Code)
                 .IsUnique()

@@ -132,7 +132,7 @@ namespace IAMS.MultiTenancy.Data
                     Id = 1,
                     Name = "Default Insurance Agency",
                     Identifier = "default",
-                    ConnectionString = "Data Source=localhost;Initial Catalog=TenantDb;Integrated Security=True;Trust Server Certificate=True",
+                    ConnectionString = "Data Source=localhost;Initial Catalog=DefaultAgencyDb;Integrated Security=True;Trust Server Certificate=True",
                     IsActive = true,
                     CreatedOn = seedDate,
                     SubscriptionPlan = "Premium",

@@ -1,6 +1,7 @@
 using IAMS.Shared.Interfaces;
 using IAMS.MultiTenancy.Data;
 using IAMS.Persistence.Contexts;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -45,7 +46,7 @@ namespace IAMS.Persistence.Services
                 if (!canConnect)
                 {
                     _logger.LogInformation("Creating database for tenant {TenantIdentifier}", tenantIdentifier);
-                    await context.Database.MigrateAsync();
+                    await MigrateWithLockHandlingAsync(context, tenantIdentifier);
                 }
                 else
                 {
@@ -53,7 +54,7 @@ namespace IAMS.Persistence.Services
                     if (pendingMigrations.Any())
                     {
                         _logger.LogInformation("Applying migrations for tenant {TenantIdentifier}", tenantIdentifier);
-                        await context.Database.MigrateAsync();
+                        await MigrateWithLockHandlingAsync(context, tenantIdentifier);
                     }
                 }
             }
@@ -76,6 +77,32 @@ namespace IAMS.Persistence.Services
             // await context.Database.EnsureCreatedAsync();
 
             _logger.LogInformation("Created database for tenant {TenantIdentifier}", tenantIdentifier);
+        }
+
+        /// <summary>
+        /// Runs MigrateAsync with handling for the EF Core 9 migration lock release error (SQL error 1223).
+        /// The __EFMigrationsLock distributed lock can fail to release even when the migration succeeds.
+        /// </summary>
+        private async Task MigrateWithLockHandlingAsync(ApplicationDbContext context, string tenantIdentifier)
+        {
+            try
+            {
+                await context.Database.MigrateAsync();
+            }
+            catch (SqlException ex) when (ex.Number == 1223)
+            {
+                // SQL error 1223: "Cannot release the application lock ... because it is not currently held."
+                // This is a known EF Core 9 issue where the migration lock release fails.
+                // Verify that migrations actually completed before swallowing the error.
+                var pending = await context.Database.GetPendingMigrationsAsync();
+                if (pending.Any())
+                {
+                    _logger.LogError(ex, "Migration lock error for tenant {TenantIdentifier} and migrations are still pending", tenantIdentifier);
+                    throw;
+                }
+
+                _logger.LogWarning(ex, "EF Core migration lock release failed for tenant {TenantIdentifier}, but all migrations were applied successfully", tenantIdentifier);
+            }
         }
 
         /// <summary>

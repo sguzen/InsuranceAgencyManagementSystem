@@ -23,6 +23,8 @@ namespace IAMS.MultiTenancy.Entities
 
         public DateTime? LastUpdated { get; set; }
 
+        public DateTime? ModifiedOn { get; set; }
+
         [ForeignKey(nameof(TenantId))]
         public virtual TenantEntity Tenant { get; set; }
     }

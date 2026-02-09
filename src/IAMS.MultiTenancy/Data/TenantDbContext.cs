@@ -39,7 +39,7 @@ namespace IAMS.MultiTenancy.Data
                 entity.Property(e => e.ModuleName).IsRequired().HasMaxLength(100);
 
                 entity.HasOne(e => e.Tenant)
-                    .WithMany()
+                    .WithMany(t => t.TenantModules)
                     .HasForeignKey(e => e.TenantId)
                     .OnDelete(DeleteBehavior.Cascade);
             });

@@ -1,5 +1,5 @@
-using IAMS.Domain.Entities;
-using IAMS.Persistence.Contexts;
+using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Entities;
 using IAMS.Shared.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +10,7 @@ namespace IAMS.Persistence.Services
 {
     /// <summary>
     /// Background service that processes policy import jobs.
-    /// Securely accesses credentials from master database and imports policies to tenant database.
+    /// Reads jobs from master database (TenantDb) and imports policies to tenant databases.
     /// </summary>
     public class PolicyImportBackgroundService : BackgroundService
     {
@@ -48,10 +48,10 @@ namespace IAMS.Persistence.Services
         private async Task ProcessPendingJobsAsync(CancellationToken stoppingToken)
         {
             using var scope = _serviceProvider.CreateScope();
-            var tenantDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var masterDb = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
 
-            // Get pending jobs
-            var pendingJobs = await tenantDb.ImportJobs
+            // Get pending jobs from master database
+            var pendingJobs = await masterDb.ImportJobs
                 .Where(j => j.Status == ImportJobStatus.Pending)
                 .OrderBy(j => j.CreatedOn)
                 .Take(5) // Process up to 5 jobs at a time
@@ -68,21 +68,20 @@ namespace IAMS.Persistence.Services
 
         private async Task ProcessJobAsync(IServiceProvider serviceProvider, ImportJob job, CancellationToken stoppingToken)
         {
-            var tenantDb = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            var masterDb = serviceProvider.GetRequiredService<TenantDbContext>();
             var importService = serviceProvider.GetRequiredService<IPolicyImportService>();
 
-            _logger.LogInformation("Processing import job {JobId} for InsuranceCompany {MasterCompanyId}",
-                job.Id, job.MasterInsuranceCompanyId);
+            _logger.LogInformation("Processing import job {JobId} for Agency {AgencyId}, InsuranceCompany {InsuranceCompanyId}",
+                job.Id, job.AgencyId, job.InsuranceCompanyId);
 
             job.Start();
-            await tenantDb.SaveChangesAsync(stoppingToken);
+            await masterDb.SaveChangesAsync(stoppingToken);
 
             try
             {
                 var result = await importService.ImportPoliciesAsync(
                     job.AgencyId,
                     job.InsuranceCompanyId,
-                    job.MasterInsuranceCompanyId,
                     job.FilterStartDate,
                     job.FilterEndDate,
                     stoppingToken);
@@ -99,7 +98,7 @@ namespace IAMS.Persistence.Services
                 _logger.LogError(ex, "Import job {JobId} failed", job.Id);
             }
 
-            await tenantDb.SaveChangesAsync(stoppingToken);
+            await masterDb.SaveChangesAsync(stoppingToken);
         }
     }
 
@@ -110,8 +109,7 @@ namespace IAMS.Persistence.Services
     {
         Task<ImportResult> ImportPoliciesAsync(
             int agencyId,
-            int tenantInsuranceCompanyId,
-            int masterInsuranceCompanyId,
+            int insuranceCompanyId,
             DateTime? startDate,
             DateTime? endDate,
             CancellationToken cancellationToken = default);
@@ -132,8 +130,7 @@ namespace IAMS.Persistence.Services
 
         public async Task<ImportResult> ImportPoliciesAsync(
             int agencyId,
-            int tenantInsuranceCompanyId,
-            int masterInsuranceCompanyId,
+            int insuranceCompanyId,
             DateTime? startDate,
             DateTime? endDate,
             CancellationToken cancellationToken = default)
@@ -144,10 +141,10 @@ namespace IAMS.Persistence.Services
             try
             {
                 logEntries.Add($"Starting import at {DateTime.UtcNow:u}");
-                logEntries.Add($"Agency: {agencyId}, InsuranceCompany: {masterInsuranceCompanyId}");
+                logEntries.Add($"Agency: {agencyId}, InsuranceCompany: {insuranceCompanyId}");
 
-                // Get connection string securely
-                var connectionString = await _credentialService.GetConnectionStringAsync(agencyId, masterInsuranceCompanyId);
+                // Get connection string securely from master database
+                var connectionString = await _credentialService.GetConnectionStringAsync(agencyId, insuranceCompanyId);
 
                 if (string.IsNullOrEmpty(connectionString))
                 {
@@ -164,9 +161,10 @@ namespace IAMS.Persistence.Services
                 // TODO: Implement actual policy import logic here
                 // This would:
                 // 1. Query the external database for policies
-                // 2. Transform data to match our schema
-                // 3. Insert/update policies in tenant database
-                // 4. Track imported, failed, skipped counts
+                // 2. Get tenant connection string for the agency
+                // 3. Transform data to match our schema
+                // 4. Insert/update policies in tenant database
+                // 5. Track imported, failed, skipped counts
 
                 // Placeholder - actual implementation depends on the external DB schema
                 logEntries.Add("Policy import logic would execute here");

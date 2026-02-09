@@ -1,8 +1,7 @@
-using IAMS.Domain.Entities;
-using IAMS.Persistence.Services;
 using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Entities;
 using IAMS.MultiTenancy.Interfaces;
-using IAMS.Persistence.Contexts;
+using IAMS.Persistence.Services;
 using IAMS.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +11,7 @@ namespace IAMS.Api.Controllers
 {
     /// <summary>
     /// Handles policy import requests from Web app.
-    /// Web app requests import → API queues job → Background worker processes with credentials.
+    /// Web app requests import → API queues job in master DB → Background worker processes with credentials.
     /// Credentials are NEVER exposed to the Web app.
     /// </summary>
     [ApiController]
@@ -20,20 +19,17 @@ namespace IAMS.Api.Controllers
     [Authorize(Policy = "ApiKeyOrJwt")]
     public class PolicyImportController : ControllerBase
     {
-        private readonly ApplicationDbContext _tenantDb;
         private readonly TenantDbContext _masterDb;
         private readonly ITenantContextAccessor _tenantContext;
         private readonly IInsuranceCompanySyncService _syncService;
         private readonly ILogger<PolicyImportController> _logger;
 
         public PolicyImportController(
-            ApplicationDbContext tenantDb,
             TenantDbContext masterDb,
             ITenantContextAccessor tenantContext,
             IInsuranceCompanySyncService syncService,
             ILogger<PolicyImportController> logger)
         {
-            _tenantDb = tenantDb;
             _masterDb = masterDb;
             _tenantContext = tenantContext;
             _syncService = syncService;
@@ -69,18 +65,20 @@ namespace IAMS.Api.Controllers
                     })
                     .ToListAsync();
 
-                // Get last import dates from tenant DB
+                // Get last import dates from master DB (ImportJobs now in master)
                 var masterIds = linkedCompanies.Select(c => c.MasterInsuranceCompanyId).ToList();
-                var lastImports = await _tenantDb.ImportJobs
-                    .Where(j => masterIds.Contains(j.MasterInsuranceCompanyId) && j.Status == ImportJobStatus.Completed)
-                    .GroupBy(j => j.MasterInsuranceCompanyId)
-                    .Select(g => new { MasterInsuranceCompanyId = g.Key, LastImport = g.Max(j => j.CompletedAt) })
+                var lastImports = await _masterDb.ImportJobs
+                    .Where(j => j.AgencyId == agencyId.Value &&
+                           masterIds.Contains(j.InsuranceCompanyId) &&
+                           j.Status == ImportJobStatus.Completed)
+                    .GroupBy(j => j.InsuranceCompanyId)
+                    .Select(g => new { InsuranceCompanyId = g.Key, LastImport = g.Max(j => j.CompletedAt) })
                     .ToListAsync();
 
                 foreach (var company in linkedCompanies)
                 {
                     company.LastImportDate = lastImports
-                        .FirstOrDefault(i => i.MasterInsuranceCompanyId == company.MasterInsuranceCompanyId)
+                        .FirstOrDefault(i => i.InsuranceCompanyId == company.MasterInsuranceCompanyId)
                         ?.LastImport;
                 }
 
@@ -95,7 +93,7 @@ namespace IAMS.Api.Controllers
 
         /// <summary>
         /// Request a policy import from an insurance company.
-        /// Creates a job that will be processed by the background worker.
+        /// Creates a job in master database that will be processed by the background worker.
         /// </summary>
         [HttpPost("request")]
         public async Task<ActionResult<Result<ImportJobDto>>> RequestImport([FromBody] ImportRequestDto request)
@@ -122,9 +120,10 @@ namespace IAMS.Api.Controllers
                     return BadRequest(Result<ImportJobDto>.Failure("Bu sigorta şirketine erişim izniniz yok"));
                 }
 
-                // Check for existing pending/running jobs
-                var existingJob = await _tenantDb.ImportJobs
-                    .AnyAsync(j => j.MasterInsuranceCompanyId == request.MasterInsuranceCompanyId &&
+                // Check for existing pending/running jobs for this agency and company
+                var existingJob = await _masterDb.ImportJobs
+                    .AnyAsync(j => j.AgencyId == agencyId.Value &&
+                        j.InsuranceCompanyId == request.MasterInsuranceCompanyId &&
                         (j.Status == ImportJobStatus.Pending || j.Status == ImportJobStatus.Running));
 
                 if (existingJob)
@@ -132,16 +131,11 @@ namespace IAMS.Api.Controllers
                     return BadRequest(Result<ImportJobDto>.Failure("Bu şirket için zaten devam eden bir import işlemi var"));
                 }
 
-                // Ensure tenant has the insurance company record
-                var tenantCompanyId = await _syncService.GetOrCreateTenantInsuranceCompanyIdAsync(
-                    agencyId.Value, request.MasterInsuranceCompanyId, User.Identity?.Name ?? "System");
-
-                // Create import job
+                // Create import job in master database
                 var job = new ImportJob
                 {
                     AgencyId = agencyId.Value,
-                    InsuranceCompanyId = tenantCompanyId,
-                    MasterInsuranceCompanyId = request.MasterInsuranceCompanyId,
+                    InsuranceCompanyId = request.MasterInsuranceCompanyId,
                     FilterStartDate = request.StartDate,
                     FilterEndDate = request.EndDate,
                     RequestedBy = User.Identity?.Name ?? "Unknown",
@@ -149,8 +143,11 @@ namespace IAMS.Api.Controllers
                     CreatedOn = DateTime.UtcNow
                 };
 
-                _tenantDb.ImportJobs.Add(job);
-                await _tenantDb.SaveChangesAsync();
+                _masterDb.ImportJobs.Add(job);
+                await _masterDb.SaveChangesAsync();
+
+                // Load navigation property for DTO mapping
+                await _masterDb.Entry(job).Reference(j => j.InsuranceCompany).LoadAsync();
 
                 _logger.LogInformation("Import job {JobId} created for agency {AgencyId}, company {CompanyId}",
                     job.Id, agencyId.Value, request.MasterInsuranceCompanyId);
@@ -172,10 +169,12 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var job = await _tenantDb.ImportJobs
+                var agencyId = _tenantContext.TenantId;
+
+                var job = await _masterDb.ImportJobs
                     .AsNoTracking()
                     .Include(j => j.InsuranceCompany)
-                    .FirstOrDefaultAsync(j => j.Id == jobId);
+                    .FirstOrDefaultAsync(j => j.Id == jobId && (agencyId == null || j.AgencyId == agencyId.Value));
 
                 if (job == null)
                 {
@@ -192,17 +191,23 @@ namespace IAMS.Api.Controllers
         }
 
         /// <summary>
-        /// Get recent import jobs.
+        /// Get recent import jobs for the current agency.
         /// </summary>
         [HttpGet("jobs")]
         public async Task<ActionResult<Result<List<ImportJobDto>>>> GetRecentJobs([FromQuery] int? insuranceCompanyId = null)
         {
             try
             {
-                var query = _tenantDb.ImportJobs
+                var agencyId = _tenantContext.TenantId;
+                if (agencyId == null)
+                {
+                    return BadRequest(Result<List<ImportJobDto>>.Failure("Tenant not identified"));
+                }
+
+                var query = _masterDb.ImportJobs
                     .AsNoTracking()
                     .Include(j => j.InsuranceCompany)
-                    .AsQueryable();
+                    .Where(j => j.AgencyId == agencyId.Value);
 
                 if (insuranceCompanyId.HasValue)
                 {
@@ -212,10 +217,9 @@ namespace IAMS.Api.Controllers
                 var jobs = await query
                     .OrderByDescending(j => j.CreatedOn)
                     .Take(20)
-                    .Select(j => MapToDto(j))
                     .ToListAsync();
 
-                return Ok(Result<List<ImportJobDto>>.Success(jobs));
+                return Ok(Result<List<ImportJobDto>>.Success(jobs.Select(MapToDto).ToList()));
             }
             catch (Exception ex)
             {
@@ -232,7 +236,10 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var job = await _tenantDb.ImportJobs.FindAsync(jobId);
+                var agencyId = _tenantContext.TenantId;
+
+                var job = await _masterDb.ImportJobs
+                    .FirstOrDefaultAsync(j => j.Id == jobId && (agencyId == null || j.AgencyId == agencyId.Value));
 
                 if (job == null)
                 {
@@ -245,7 +252,7 @@ namespace IAMS.Api.Controllers
                 }
 
                 job.Cancel("Kullanıcı tarafından iptal edildi");
-                await _tenantDb.SaveChangesAsync();
+                await _masterDb.SaveChangesAsync();
 
                 return Ok(Result.Success("Import işlemi iptal edildi"));
             }

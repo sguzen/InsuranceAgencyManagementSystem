@@ -1,5 +1,6 @@
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
+using IAMS.Persistence.Services;
 using IAMS.Shared.DTOs.Agency;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,16 @@ namespace IAMS.Api.Controllers
     public class AgencyInsuranceCompaniesController : ControllerBase
     {
         private readonly TenantDbContext _context;
+        private readonly IInsuranceCompanySyncService _syncService;
         private readonly ILogger<AgencyInsuranceCompaniesController> _logger;
 
         public AgencyInsuranceCompaniesController(
             TenantDbContext context,
+            IInsuranceCompanySyncService syncService,
             ILogger<AgencyInsuranceCompaniesController> logger)
         {
             _context = context;
+            _syncService = syncService;
             _logger = logger;
         }
 
@@ -132,6 +136,17 @@ namespace IAMS.Api.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+
+                // Sync the insurance company to the tenant database
+                try
+                {
+                    await _syncService.SyncInsuranceCompanyAsync(agencyId, request.InsuranceCompanyId);
+                }
+                catch (Exception syncEx)
+                {
+                    _logger.LogError(syncEx, "Failed to sync insurance company {InsuranceCompanyId} to tenant DB for agency {AgencyId}. The association was saved but tenant sync failed.",
+                        request.InsuranceCompanyId, agencyId);
+                }
 
                 return CreatedAtAction(
                     nameof(GetAgencyInsuranceCompany),

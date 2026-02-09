@@ -12,7 +12,7 @@ namespace IAMS.MultiTenancy.Services
     /// Service for managing tenant metadata stored in the master database.
     /// Reads tenant connection strings from the Tenants table instead of appsettings.
     /// </summary>
-    public class TenantService : ITenantService
+    public class TenantService : IAMS.MultiTenancy.Interfaces.ITenantService
     {
         private readonly TenantDbContext _context;
         private readonly ITenantContextAccessor _tenantContextAccessor;
@@ -213,10 +213,9 @@ namespace IAMS.MultiTenancy.Services
                 Currency = entity.Currency,
                 Language = entity.Language,
                 EnabledModules = entity.TenantModules?
-                    .Where(m => m.IsEnabled)
-                    .Select(m => m.ModuleName)
-                    .ToList() ?? new List<string>(),
-                Settings = new Dictionary<string, string>()
+                    .ToDictionary(m => m.ModuleName, m => m.IsEnabled)
+                    ?? new Dictionary<string, bool>(),
+                Settings = new Dictionary<string, object>()
             };
         }
     }

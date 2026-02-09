@@ -26,6 +26,8 @@ namespace IAMS.MultiTenancy.Entities
 
         public bool IsActive { get; set; } = true;
 
+        public bool IsDeleted { get; set; }
+
         public DateTime CreatedOn { get; set; }
 
         public DateTime? LastUpdated { get; set; }
@@ -66,6 +68,7 @@ namespace IAMS.MultiTenancy.Entities
         public string? Settings { get; set; } // JSON settings
 
         // Navigation properties
+        public virtual ICollection<TenantModule> TenantModules { get; set; } = new List<TenantModule>();
         public virtual ICollection<AgencyInsuranceCompany> AgencyInsuranceCompanies { get; set; } = new List<AgencyInsuranceCompany>();
     }
 }

@@ -5,7 +5,7 @@
 <MudDialog>
     <DialogContent>
         <MudStack Spacing="3">
-            <MudAlert Severity="Severity.Info" Dense="true">
+            <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
                 <b>@Company.Name</b> sisteminden policeler import edilecek.
             </MudAlert>
 
@@ -23,7 +23,7 @@
 
             @if (Company.LastImportDate.HasValue)
             {
-                <MudAlert Severity="Severity.Warning" Dense="true">
+                <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">
                     Son import: @Company.LastImportDate.Value.ToString("dd.MM.yyyy HH:mm")
                     <br />
                     Ayni policeler tekrar import edilirse guncellenir.
@@ -75,12 +75,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Import baslatilamadi", Severity.Error);
+                Snackbar.Add(result.Message ?? "Import baslatilamadi", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

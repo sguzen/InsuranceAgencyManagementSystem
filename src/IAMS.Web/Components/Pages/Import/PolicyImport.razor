@@ -26,7 +26,7 @@
                 }
                 else if (availableCompanies == null || !availableCompanies.Any())
                 {
-                    <MudAlert Severity="Severity.Info">
+                    <MudAlert Severity="MudBlazor.Severity.Info">
                         Import edilebilecek sigorta sirketi bulunamadi.
                         Lutfen Admin panelinden acentaniza sigorta sirketi baglayiniz.
                     </MudAlert>
@@ -100,7 +100,7 @@
                 }
                 else if (recentJobs == null || !recentJobs.Any())
                 {
-                    <MudAlert Severity="Severity.Info">
+                    <MudAlert Severity="MudBlazor.Severity.Info">
                         Henuz import islemi yapilmamis.
                     </MudAlert>
                 }
@@ -204,12 +204,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Sigorta sirketleri yuklenemedi", Severity.Error);
+                Snackbar.Add(result.Message ?? "Sigorta sirketleri yuklenemedi", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -230,7 +230,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {
@@ -251,7 +251,7 @@
         if (!result!.Canceled)
         {
             await LoadRecentJobs();
-            Snackbar.Add("Import islemi kuyruga alindi", Severity.Success);
+            Snackbar.Add("Import islemi kuyruga alindi", MudBlazor.Severity.Success);
         }
     }
 
@@ -267,12 +267,12 @@
             var result = await ImportApi.CancelJobAsync(jobId);
             if (result.IsSuccess)
             {
-                Snackbar.Add("Import islemi iptal edildi", Severity.Success);
+                Snackbar.Add("Import islemi iptal edildi", MudBlazor.Severity.Success);
                 await LoadRecentJobs();
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Iptal edilemedi", Severity.Error);
+                Snackbar.Add(result.Message ?? "Iptal edilemedi", MudBlazor.Severity.Error);
             }
         }
     }

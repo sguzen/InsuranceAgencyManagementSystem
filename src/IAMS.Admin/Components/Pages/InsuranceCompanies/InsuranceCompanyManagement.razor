@@ -31,7 +31,7 @@
                           OnDebounceIntervalElapsed="LoadData"
                           Style="max-width: 300px;" />
 
-            <MudSelect @bind-Value="activeFilter"
+            <MudSelect Value="activeFilter"
                        Label="Durum"
                        Variant="Variant.Outlined"
                        Style="max-width: 150px;"
@@ -150,13 +150,13 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Veri yuklenirken hata olustu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Veri yuklenirken hata olustu", MudBlazor.Severity.Error);
                 companies = new List<MasterInsuranceCompanyDto>();
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Hata: {ex.Message}", MudBlazor.Severity.Error);
             companies = new List<MasterInsuranceCompanyDto>();
         }
         finally
@@ -216,7 +216,7 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Hata olustu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Hata olustu", MudBlazor.Severity.Error);
             }
         }
     }
@@ -238,7 +238,7 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Hata olustu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Hata olustu", MudBlazor.Severity.Error);
             }
         }
     }

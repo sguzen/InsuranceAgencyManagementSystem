@@ -48,7 +48,7 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var agencyId = _tenantContext.TenantId;
+                var agencyId = _tenantContext.CurrentTenantId;
                 if (agencyId == null)
                 {
                     return BadRequest(Result<List<ImportableCompanyDto>>.Failure("Tenant not identified"));
@@ -102,7 +102,7 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var agencyId = _tenantContext.TenantId;
+                var agencyId = _tenantContext.CurrentTenantId;
                 if (agencyId == null)
                 {
                     return BadRequest(Result<ImportJobDto>.Failure("Tenant not identified"));

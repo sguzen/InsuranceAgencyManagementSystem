@@ -93,12 +93,12 @@
             }
             else
             {
-                Snackbar.Add(result.Message ?? "Hata olustu", Severity.Error);
+                Snackbar.Add(result.Message ?? "Hata olustu", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

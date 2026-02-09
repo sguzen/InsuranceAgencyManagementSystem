@@ -13,6 +13,7 @@ namespace IAMS.MultiTenancy.Data
         public DbSet<TenantModule> TenantModules { get; set; }
         public DbSet<InsuranceCompany> InsuranceCompanies { get; set; }
         public DbSet<AgencyInsuranceCompany> AgencyInsuranceCompanies { get; set; }
+        public DbSet<ImportJob> ImportJobs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -65,6 +66,28 @@ namespace IAMS.MultiTenancy.Data
 
                 entity.HasOne(e => e.InsuranceCompany)
                     .WithMany(ic => ic.AgencyInsuranceCompanies)
+                    .HasForeignKey(e => e.InsuranceCompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure ImportJob
+            modelBuilder.Entity<ImportJob>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.AgencyId);
+                entity.HasIndex(e => e.InsuranceCompanyId);
+                entity.Property(e => e.RequestedBy).HasMaxLength(256);
+                entity.Property(e => e.CreatedBy).HasMaxLength(256);
+                entity.Property(e => e.ModifiedBy).HasMaxLength(256);
+
+                entity.HasOne(e => e.Agency)
+                    .WithMany()
+                    .HasForeignKey(e => e.AgencyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.InsuranceCompany)
+                    .WithMany()
                     .HasForeignKey(e => e.InsuranceCompanyId)
                     .OnDelete(DeleteBehavior.Restrict);
             });

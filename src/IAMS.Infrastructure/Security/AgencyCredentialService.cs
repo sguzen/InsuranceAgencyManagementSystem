@@ -136,6 +136,41 @@ namespace IAMS.Infrastructure.Security
             }
         }
 
+        public async Task<AgencyCredentialDetails?> GetCredentialDetailsAsync(int agencyId, int insuranceCompanyId)
+        {
+            var entity = await _context.AgencyInsuranceCompanies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.AgencyId == agencyId
+                    && x.InsuranceCompanyId == insuranceCompanyId
+                    && !x.IsDeleted
+                    && x.IsActive);
+
+            if (entity == null || string.IsNullOrEmpty(entity.DbServer) || string.IsNullOrEmpty(entity.DbName))
+                return null;
+
+            var isMySql = IsMySqlServer(entity.DbServer);
+            var (host, port) = ParseHostPort(entity.DbServer, isMySql ? 3306 : 1433);
+            var password = !string.IsNullOrEmpty(entity.DbPassword)
+                ? _encryption.Decrypt(entity.DbPassword)
+                : "";
+
+            // Get the agency code from the tenant entity
+            var tenant = await _context.Tenants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == agencyId);
+
+            return new AgencyCredentialDetails
+            {
+                Host = host,
+                Port = port,
+                DatabaseName = entity.DbName,
+                Username = entity.DbUsername ?? "",
+                Password = password,
+                IsMySql = isMySql,
+                AgencyCode = tenant?.ExternalId
+            };
+        }
+
         /// <summary>
         /// Detects if a server address is likely MySQL based on port number.
         /// Common MySQL ports: 3306, 23306, 33306. SQL Server default: 1433.

@@ -19,8 +19,28 @@ namespace IAMS.Shared.Interfaces.Services
         Task<string?> GetConnectionStringAsync(int agencyId, int insuranceCompanyId);
 
         /// <summary>
+        /// Gets the raw credential details (decrypted) for building import configurations.
+        /// Returns null if no credentials are configured.
+        /// </summary>
+        Task<AgencyCredentialDetails?> GetCredentialDetailsAsync(int agencyId, int insuranceCompanyId);
+
+        /// <summary>
         /// Tests connection using stored credentials.
         /// </summary>
         Task<(bool Success, string Message)> TestConnectionAsync(int agencyId, int insuranceCompanyId);
+    }
+
+    /// <summary>
+    /// Raw credential details for an agency-insurance company link (with decrypted password).
+    /// </summary>
+    public class AgencyCredentialDetails
+    {
+        public string Host { get; set; } = string.Empty;
+        public int Port { get; set; } = 3306;
+        public string DatabaseName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public bool IsMySql { get; set; }
+        public string? AgencyCode { get; set; }
     }
 }

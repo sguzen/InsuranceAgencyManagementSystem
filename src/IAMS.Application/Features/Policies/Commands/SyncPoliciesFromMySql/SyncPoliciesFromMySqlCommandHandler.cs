@@ -46,10 +46,15 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                         $"Insurance company not found with ID: {request.InsuranceCompanyId}", (List<string>?)null);
                 }
 
-                // Load the import configuration for this insurance company (SourceType = DatabaseImport)
-                var configurations = await _unitOfWork.ImportConfigurations.GetByInsuranceCompanyIdAsync(request.InsuranceCompanyId);
-                var importConfig = configurations.FirstOrDefault(c =>
-                    c.SourceType == ImportSourceType.DatabaseImport && c.IsActive);
+                // Use externally-provided configuration (from background import pipeline)
+                // or fall back to looking up from tenant database
+                ImportConfiguration? importConfig = request.ExternalConfiguration;
+                if (importConfig == null)
+                {
+                    var configurations = await _unitOfWork.ImportConfigurations.GetByInsuranceCompanyIdAsync(request.InsuranceCompanyId);
+                    importConfig = configurations.FirstOrDefault(c =>
+                        c.SourceType == ImportSourceType.DatabaseImport && c.IsActive);
+                }
 
                 if (importConfig == null)
                 {

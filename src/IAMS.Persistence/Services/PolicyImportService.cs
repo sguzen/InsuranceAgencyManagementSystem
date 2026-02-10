@@ -1,14 +1,18 @@
 using IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql;
+using IAMS.Domain.Entities;
+using IAMS.Domain.Enums;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
 using IAMS.Shared.Interfaces.Repositories;
+using IAMS.Shared.Interfaces.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace IAMS.Persistence.Services
 {
@@ -174,15 +178,18 @@ namespace IAMS.Persistence.Services
     {
         private readonly IMediator _mediator;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAgencyCredentialService _credentialService;
         private readonly ILogger<PolicyImportService> _logger;
 
         public PolicyImportService(
             IMediator mediator,
             IUnitOfWork unitOfWork,
+            IAgencyCredentialService credentialService,
             ILogger<PolicyImportService> logger)
         {
             _mediator = mediator;
             _unitOfWork = unitOfWork;
+            _credentialService = credentialService;
             _logger = logger;
         }
 
@@ -221,15 +228,22 @@ namespace IAMS.Persistence.Services
 
                 logEntries.Add($"Date range: {effectiveStartDate:yyyy-MM-dd} to {effectiveEndDate:yyyy-MM-dd}");
 
+                // Build ImportConfiguration from master DB credentials
+                // This avoids requiring manual ImportConfiguration creation in the tenant DB
+                var importConfig = await BuildImportConfigurationAsync(
+                    agencyId, masterInsuranceCompanyId, tenantInsuranceCompany.Id, logEntries);
+
                 // Send the MediatR command which handles:
-                //   1. Loading ImportConfiguration (MySQL connection details)
-                //   2. Fetching policies from external MySQL database
-                //   3. Creating/updating Customers, Vehicles, Policies in tenant DB
+                //   1. Fetching policies from external MySQL database (using the config)
+                //   2. Creating/updating Customers, Vehicles, Policies in tenant DB
                 var command = new SyncPoliciesFromMySqlCommand(
                     effectiveStartDate,
                     effectiveEndDate,
                     tenantInsuranceCompany.Id,
-                    requestedBy ?? "system-import");
+                    requestedBy ?? "system-import")
+                {
+                    ExternalConfiguration = importConfig
+                };
 
                 var commandResult = await _mediator.Send(command, cancellationToken);
 
@@ -270,6 +284,45 @@ namespace IAMS.Persistence.Services
             }
 
             return result;
+        }
+
+        private async Task<ImportConfiguration> BuildImportConfigurationAsync(
+            int agencyId, int masterInsuranceCompanyId, int tenantInsuranceCompanyId,
+            List<string> logEntries)
+        {
+            var credentials = await _credentialService.GetCredentialDetailsAsync(agencyId, masterInsuranceCompanyId);
+
+            if (credentials == null)
+            {
+                throw new InvalidOperationException(
+                    $"No database credentials configured for agency {agencyId}, insurance company {masterInsuranceCompanyId}. " +
+                    "Please configure connection details in the agency insurance company settings.");
+            }
+
+            logEntries.Add($"Credentials loaded: Host={credentials.Host}:{credentials.Port}, " +
+                           $"Database={credentials.DatabaseName}, AgencyCode={credentials.AgencyCode ?? "N/A"}");
+
+            var additionalSettings = JsonSerializer.Serialize(new
+            {
+                Port = credentials.Port,
+                UseSsl = false,
+                ConnectionTimeoutSeconds = 30,
+                CommandTimeoutSeconds = 120
+            });
+
+            return new ImportConfiguration
+            {
+                Name = $"Auto-{tenantInsuranceCompanyId}",
+                InsuranceCompanyId = tenantInsuranceCompanyId,
+                SourceType = ImportSourceType.DatabaseImport,
+                IsActive = true,
+                ApiBaseUrl = credentials.Host,
+                ApiKey = credentials.AgencyCode ?? "",
+                ApiUsername = credentials.Username,
+                ApiPassword = credentials.Password,
+                PoliciesEndpoint = credentials.DatabaseName,
+                AdditionalSettings = additionalSettings
+            };
         }
     }
 

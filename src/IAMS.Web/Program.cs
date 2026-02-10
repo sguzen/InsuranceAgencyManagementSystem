@@ -181,8 +181,7 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
-// Multi-tenancy middleware removed - each tenant uses their own database via connection string
-// app.UseMiddleware<IAMS.MultiTenancy.Middleware.TenantMiddleware>();
+app.UseMultiTenancy();
 
 
 

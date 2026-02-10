@@ -130,8 +130,7 @@ namespace IAMS.Persistence.Services
                         SettingValue = jsonValue,
                         Category = InferCategory(settingKey),
                         Description = $"Setting for {settingKey}",
-                        IsSystemSetting = false,
-                        LastModified = DateTime.UtcNow
+                        IsSystemSetting = false
                     };
 
                     await _applicationDbContext.TenantSettings.AddAsync(setting);
@@ -140,7 +139,6 @@ namespace IAMS.Persistence.Services
                 {
                     // Update existing setting
                     setting.SettingValue = jsonValue;
-                    setting.LastModified = DateTime.UtcNow;
                     _applicationDbContext.TenantSettings.Update(setting);
                 }
 

@@ -31,10 +31,5 @@ namespace IAMS.Domain.Entities
         /// Whether this setting is system-managed or user-configurable
         /// </summary>
         public bool IsSystemSetting { get; set; } = false;
-
-        /// <summary>
-        /// When this setting was last modified
-        /// </summary>
-        public DateTime LastModified { get; set; } = DateTime.UtcNow;
     }
 }

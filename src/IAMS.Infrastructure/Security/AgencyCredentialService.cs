@@ -2,6 +2,7 @@ using IAMS.MultiTenancy.Data;
 using IAMS.Shared.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MySqlConnector;
 
 namespace IAMS.Infrastructure.Security
 {
@@ -80,6 +81,15 @@ namespace IAMS.Infrastructure.Security
                     ? _encryption.Decrypt(entity.DbPassword)
                     : "";
 
+                if (IsMySqlServer(entity.DbServer))
+                {
+                    // Parse host:port for MySQL
+                    var (host, port) = ParseHostPort(entity.DbServer, 3306);
+                    return $"Server={host};Port={port};Database={entity.DbName};" +
+                           $"User Id={entity.DbUsername};Password={password};" +
+                           "SslMode=Preferred;";
+                }
+
                 return $"Server={entity.DbServer};Database={entity.DbName};" +
                        $"User Id={entity.DbUsername};Password={password};" +
                        "TrustServerCertificate=True;";
@@ -99,9 +109,18 @@ namespace IAMS.Infrastructure.Security
                     return (false, "No connection information configured");
                 }
 
-                using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
-                await connection.OpenAsync();
-                await connection.CloseAsync();
+                if (IsMySqlConnectionString(connectionString))
+                {
+                    await using var connection = new MySqlConnection(connectionString);
+                    await connection.OpenAsync();
+                    await connection.CloseAsync();
+                }
+                else
+                {
+                    using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+                    await connection.OpenAsync();
+                    await connection.CloseAsync();
+                }
 
                 _logger.LogInformation("Connection test successful for Agency {AgencyId}, InsuranceCompany {InsuranceCompanyId}",
                     agencyId, insuranceCompanyId);
@@ -115,6 +134,42 @@ namespace IAMS.Infrastructure.Security
 
                 return (false, $"Connection failed: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Detects if a server address is likely MySQL based on port number.
+        /// Common MySQL ports: 3306, 23306, 33306. SQL Server default: 1433.
+        /// </summary>
+        private static bool IsMySqlServer(string server)
+        {
+            if (server.Contains(':'))
+            {
+                var portStr = server.Split(':').Last();
+                if (int.TryParse(portStr, out var port))
+                {
+                    return port == 3306 || port % 10000 == 3306;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Detects if a connection string is MySQL format (has SslMode or Port keywords).
+        /// </summary>
+        private static bool IsMySqlConnectionString(string connectionString)
+        {
+            return connectionString.Contains("SslMode=", StringComparison.OrdinalIgnoreCase)
+                || connectionString.Contains("Port=", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static (string Host, int Port) ParseHostPort(string server, int defaultPort)
+        {
+            var parts = server.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[1], out var port))
+            {
+                return (parts[0], port);
+            }
+            return (server, defaultPort);
         }
     }
 }

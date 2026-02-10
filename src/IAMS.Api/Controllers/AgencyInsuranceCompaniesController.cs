@@ -262,30 +262,76 @@ namespace IAMS.Api.Controllers
                     return NotFound(new { message = "Association not found" });
 
                 var connectionString = association.ConnectionString;
+                var isMySql = false;
+
                 if (string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(association.DbServer))
                 {
-                    connectionString = $"Server={association.DbServer};Database={association.DbName};User Id={association.DbUsername};Password={association.DbPassword};TrustServerCertificate=True;";
+                    // Detect MySQL by port (3306, 23306, etc.)
+                    isMySql = IsMySqlServer(association.DbServer);
+
+                    if (isMySql)
+                    {
+                        var (host, port) = ParseHostPort(association.DbServer, 3306);
+                        connectionString = $"Server={host};Port={port};Database={association.DbName};" +
+                                           $"User Id={association.DbUsername};Password={association.DbPassword};" +
+                                           "SslMode=Preferred;";
+                    }
+                    else
+                    {
+                        connectionString = $"Server={association.DbServer};Database={association.DbName};" +
+                                           $"User Id={association.DbUsername};Password={association.DbPassword};" +
+                                           "TrustServerCertificate=True;";
+                    }
+                }
+                else if (!string.IsNullOrEmpty(connectionString))
+                {
+                    isMySql = connectionString.Contains("SslMode=", StringComparison.OrdinalIgnoreCase)
+                           || connectionString.Contains("Port=", StringComparison.OrdinalIgnoreCase);
                 }
 
                 if (string.IsNullOrEmpty(connectionString))
                     return BadRequest(new { message = "No connection information configured" });
 
-                // Test the connection
-                using var testConnection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
-                await testConnection.OpenAsync();
-                await testConnection.CloseAsync();
+                // Test the connection with the appropriate provider
+                if (isMySql)
+                {
+                    await using var mysqlConn = new MySqlConnector.MySqlConnection(connectionString);
+                    await mysqlConn.OpenAsync();
+                    await mysqlConn.CloseAsync();
+                }
+                else
+                {
+                    using var sqlConn = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+                    await sqlConn.OpenAsync();
+                    await sqlConn.CloseAsync();
+                }
 
                 return Ok(new { message = "Connection successful", success = true });
-            }
-            catch (Microsoft.Data.SqlClient.SqlException ex)
-            {
-                return Ok(new { message = $"Connection failed: {ex.Message}", success = false });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error testing connection for association {Id} agency {AgencyId}", id, agencyId);
                 return Ok(new { message = $"Connection failed: {ex.Message}", success = false });
             }
+        }
+
+        private static bool IsMySqlServer(string server)
+        {
+            if (server.Contains(':'))
+            {
+                var portStr = server.Split(':').Last();
+                if (int.TryParse(portStr, out var port))
+                    return port == 3306 || port % 10000 == 3306;
+            }
+            return false;
+        }
+
+        private static (string Host, int Port) ParseHostPort(string server, int defaultPort)
+        {
+            var parts = server.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[1], out var port))
+                return (parts[0], port);
+            return (server, defaultPort);
         }
 
         private static AgencyInsuranceCompanyDto MapToDto(AgencyInsuranceCompany association)

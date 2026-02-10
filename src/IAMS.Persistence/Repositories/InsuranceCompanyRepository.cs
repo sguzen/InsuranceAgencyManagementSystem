@@ -248,6 +248,13 @@ namespace IAMS.Persistence.Repositories
             return total;
         }
 
+        public async Task<InsuranceCompany?> GetByMasterIdAsync(int masterInsuranceCompanyId)
+        {
+            return await _dbSet
+                .Where(ic => !ic.IsDeleted && ic.MasterInsuranceCompanyId == masterInsuranceCompanyId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<CurrencyBreakdown>> GetCurrencyBreakdownAsync(int companyId)
         {
             return await _context.Policies

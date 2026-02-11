@@ -58,9 +58,7 @@ builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 // Add Data Protection for credential encryption
 builder.Services.AddDataProtection();
 
-// Register Import Infrastructure Services
-builder.Services.AddScoped<IAMS.Infrastructure.Security.ICredentialEncryptionService, IAMS.Infrastructure.Security.CredentialEncryptionService>();
-builder.Services.AddScoped<IAMS.Shared.Interfaces.Services.IAgencyCredentialService, IAMS.Infrastructure.Security.AgencyCredentialService>();
+// Register Import Infrastructure Services (ICredentialEncryptionService + IAgencyCredentialService are in AddInfrastructureServices)
 builder.Services.AddScoped<IAMS.Persistence.Services.IInsuranceCompanySyncService, IAMS.Persistence.Services.InsuranceCompanySyncService>();
 builder.Services.AddScoped<IAMS.Persistence.Services.IPolicyImportService, IAMS.Persistence.Services.PolicyImportService>();
 

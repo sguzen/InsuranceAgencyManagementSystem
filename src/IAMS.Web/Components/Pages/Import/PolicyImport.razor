@@ -251,8 +251,8 @@
 
         if (!result!.Canceled && result.Data is string navigationUrl)
         {
-            // Navigate to the review page with Cari Kart mapping
-            Navigation.NavigateTo(navigationUrl);
+            // Navigate to the review page with Cari Kart mapping (forceLoad ensures clean page init)
+            Navigation.NavigateTo(navigationUrl, forceLoad: true);
         }
     }
 

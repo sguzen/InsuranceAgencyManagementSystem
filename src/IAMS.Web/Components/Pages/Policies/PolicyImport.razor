@@ -29,6 +29,19 @@
             <MudText Typo="Typo.body2" Color="Color.Secondary">Bu işlem birkaç dakika sürebilir</MudText>
         </MudStack>
     }
+    else if (isMySqlSource && mySqlError != null)
+    {
+        <MudStack Spacing="4" AlignItems="AlignItems.Center" Class="mt-8">
+            <MudAlert Severity="MudBlazor.Severity.Error">
+                MySQL'den poliçeler alınamadı: @mySqlError
+            </MudAlert>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       Href="/import/policies">
+                Geri Dön
+            </MudButton>
+        </MudStack>
+    }
     else if (currentStep == ImportStep.FileSelection)
     {
         <!-- Step 1: File Selection -->
@@ -295,33 +308,39 @@
     // MySQL import source support
     private bool isMySqlSource = false;
     private bool isMySqlLoading = false;
+    private string? mySqlError = null;
 
     // KKTC country ID constant (fallback)
     private const int KKTC_COUNTRY_ID = 601;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCountriesAsync();
-
-        // Check if navigated from MySQL import hub with query params
+        // Check MySQL source BEFORE any await so the loading spinner shows on first render
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var queryParams = QueryHelpers.ParseQuery(uri.Query);
 
+        int masterCompanyId = 0;
+        DateTime? startDate = null;
+        DateTime? endDate = null;
+
         if (queryParams.TryGetValue("source", out var source) && source == "mysql" &&
             queryParams.TryGetValue("masterCompanyId", out var masterCompanyIdStr) &&
-            int.TryParse(masterCompanyIdStr, out var masterCompanyId))
+            int.TryParse(masterCompanyIdStr, out masterCompanyId))
         {
             isMySqlSource = true;
             isMySqlLoading = true;
-
-            DateTime? startDate = null;
-            DateTime? endDate = null;
 
             if (queryParams.TryGetValue("startDate", out var startStr) && DateTime.TryParse(startStr, out var parsedStart))
                 startDate = parsedStart;
             if (queryParams.TryGetValue("endDate", out var endStr) && DateTime.TryParse(endStr, out var parsedEnd))
                 endDate = parsedEnd;
+        }
 
+        // Now first await — Blazor renders here with isMySqlLoading already set
+        await LoadCountriesAsync();
+
+        if (isMySqlSource)
+        {
             await LoadMySqlPreviewAsync(masterCompanyId, startDate, endDate);
         }
         else
@@ -364,11 +383,13 @@
             }
             else
             {
+                mySqlError = result.Message ?? "MySQL'den poliçeler alınamadı";
                 Snackbar.Add($"MySQL'den poliçeler alınamadı: {result.Message}", MudBlazor.Severity.Error);
             }
         }
         catch (Exception ex)
         {
+            mySqlError = ex.Message;
             Snackbar.Add($"MySQL önizleme hatası: {ex.Message}", MudBlazor.Severity.Error);
         }
         finally

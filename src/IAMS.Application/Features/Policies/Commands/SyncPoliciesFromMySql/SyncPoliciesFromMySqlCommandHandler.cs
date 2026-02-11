@@ -200,6 +200,16 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                 originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(dto.PolicyNumber);
             }
 
+            // Build EnsuredEntity string (Sigortalı) - same pattern as CSV import
+            // The insured person is stored as text; the Customer (Cari Kart) is the policy owner
+            string? ensuredEntity = null;
+            if (!string.IsNullOrEmpty(dto.CustomerName))
+            {
+                ensuredEntity = !string.IsNullOrEmpty(dto.CustomerIdentifier)
+                    ? $"{dto.CustomerName} - {dto.CustomerIdentifier}"
+                    : dto.CustomerName;
+            }
+
             var policy = new Policy
             {
                 PolicyNumber = dto.PolicyNumber ?? $"POL-{DateTime.Now:yyyyMMdd-HHmmssfff}",
@@ -215,6 +225,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                 Status = dto.Status,
                 CurrencyId = currency.Id,
                 Notes = dto.Notes,
+                EnsuredEntity = ensuredEntity,
                 InnerCode = dto.InnerCode,
                 StateType = dto.StateType,
                 OriginalPolicyId = originalPolicy?.Id,
@@ -231,7 +242,61 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             await _unitOfWork.Policies.AddAsync(policy);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Auto-create payment for traffic and kasko policies (legally required to be fully paid)
+            await CreateAutoPaymentIfRequiredAsync(policy, policyType, currency.Id, userId, cancellationToken);
+
             return policy;
+        }
+
+        /// <summary>
+        /// Traffic (Trafik) and Kasko policies are legally required to be fully paid.
+        /// Automatically creates a completed payment record for these policy types.
+        /// </summary>
+        private async Task CreateAutoPaymentIfRequiredAsync(
+            Policy policy, PolicyType policyType, int currencyId, string userId, CancellationToken cancellationToken)
+        {
+            bool isTrafficPolicy =
+                policyType.Code?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Code?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Code?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
+
+            bool isKaskoPolicy =
+                policyType.Code?.Contains("KASKO", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Name?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true ||
+                policyType.Category?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true;
+
+            if (!isTrafficPolicy && !isKaskoPolicy)
+                return;
+
+            if (policy.PremiumAmount <= 0)
+                return;
+
+            var payment = new PolicyPayment
+            {
+                PolicyId = policy.Id,
+                Amount = policy.PremiumAmount,
+                PaymentDate = policy.StartDate,
+                PaymentMethod = PaymentMethod.BankTransfer,
+                Status = PaymentStatus.Completed,
+                CurrencyId = currencyId,
+                Notes = isTrafficPolicy
+                    ? "Trafik poliçesi - Tam ödeme (Yasal gereklilik)"
+                    : "Kasko poliçesi - Tam ödeme (Yasal gereklilik)",
+                CreatedBy = userId,
+                CreatedOn = DateTime.UtcNow,
+                ModifiedBy = userId,
+                ModifiedOn = DateTime.UtcNow
+            };
+
+            await _unitOfWork.PolicyPayments.AddAsync(payment);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogDebug("Auto-created payment for {PolicyType} policy {PolicyNumber}: {Amount}",
+                isTrafficPolicy ? "traffic" : "kasko", policy.PolicyNumber, policy.PremiumAmount);
         }
 
         private async Task<Customer> GetOrCreateCustomerAsync(ImportPolicyDto dto, string userId)

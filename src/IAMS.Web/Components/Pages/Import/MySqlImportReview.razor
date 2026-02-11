@@ -169,9 +169,9 @@
 
                                             @if (policy.PolicyOwnerCustomerType == CustomerType.Individual)
                                             {
-                                                @{
+
                                                     var selectedCountry = countries.FirstOrDefault(c => c.Id == policy.PolicyOwnerNationalityCountryId);
-                                                }
+
                                                 <MudAutocomplete T="CountryDto"
                                                                  SearchFunc="@SearchCountriesAsync"
                                                                  ToStringFunc="@(c => c == null ? "" : c.NameTr)"
@@ -185,9 +185,8 @@
                                                                  AdornmentColor="Color.Primary"
                                                                  ValueChanged="@((CountryDto c) => OnNationalityCountrySelected(policy, c))" />
 
-                                                @{
                                                     var identifierLabel = GetIdentifierLabel(policy.PolicyOwnerNationalityCountryId);
-                                                }
+
                                                 <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
                                                               Label="@identifierLabel" Variant="Variant.Outlined"
                                                               Dense="true" Margin="Margin.Dense" Class="mt-2"
@@ -401,15 +400,18 @@
         return "Pasaport No (Passport)";
     }
 
-    private async Task<IEnumerable<CountryDto>> SearchCountriesAsync(string searchTerm, CancellationToken cancellationToken)
+    private Task<IEnumerable<CountryDto>> SearchCountriesAsync(string searchTerm, CancellationToken cancellationToken)
     {
+        // Return all countries if no search term or too short
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 1)
-            return countries;
+            return Task.FromResult<IEnumerable<CountryDto>>(countries);
 
         var searchLower = searchTerm.ToLowerInvariant();
 
-        return countries.Where(c =>
+        // Search by Turkish name, English name, code, or special handling for KKTC
+        var result = countries.Where(c =>
         {
+            // Special handling for KKTC - match if search contains "kktc" or any part of the name
             if (kktcCountry != null && c.Id == kktcCountry.Id)
             {
                 if (searchLower.Contains("kktc") || searchLower.Contains("kk"))
@@ -418,10 +420,14 @@
                 if (nameLower.Contains(searchLower))
                     return true;
             }
+
+            // For all countries: search in Turkish name, English name, or code
             return c.NameTr.ToLowerInvariant().Contains(searchLower) ||
                    c.NameEn.ToLowerInvariant().Contains(searchLower) ||
                    (!string.IsNullOrEmpty(c.Code) && c.Code.ToLowerInvariant().Contains(searchLower));
         }).ToList();
+
+        return Task.FromResult<IEnumerable<CountryDto>>(result);
     }
 
     private async Task<IEnumerable<CustomerDto>> SearchCustomersAsync(string searchTerm, CancellationToken cancellationToken)
@@ -513,7 +519,14 @@
 
     private void OnNationalityCountrySelected(PolicyImportPreviewDto policy, CountryDto? country)
     {
-        policy.PolicyOwnerNationalityCountryId = country?.Id;
+        if (country != null)
+        {
+            policy.PolicyOwnerNationalityCountryId = country.Id;
+        }
+        else
+        {
+            policy.PolicyOwnerNationalityCountryId = null;
+        }
         InvokeAsync(StateHasChanged);
     }
 }

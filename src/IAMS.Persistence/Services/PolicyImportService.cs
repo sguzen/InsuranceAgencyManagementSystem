@@ -1,10 +1,10 @@
 using IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql;
-using IAMS.Domain.Entities;
 using IAMS.Domain.Enums;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
+using ImportConfiguration = IAMS.Domain.Entities.ImportConfiguration;
 using IAMS.Shared.Interfaces.Repositories;
 using IAMS.Shared.Interfaces.Services;
 using MediatR;

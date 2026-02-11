@@ -438,7 +438,7 @@ SELECT kisaAD, a.brkod, a.ackod, polno, tecdt, zytip, zeyno, tarih, bstar, bttar
        IFNULL((SELECT COUNT(*) FROM hasgen d WHERE d.brkod=a.brkod AND d.ackod=a.ackod AND d.polno=a.polno AND d.tecdt=a.tecdt AND a.zeyno='000'), 0) AS xadths,
        GREATEST(0, IFNULL((SELECT SUM(thmin-IFNULL((SELECT SUM(d.moden) FROM odnhas d WHERE d.brkod=h.brkod AND d.dosno=h.dosno AND d.tlpno=hastlp.tlpno),0))
                            FROM hasgen h LEFT OUTER JOIN hastlp ON h.brkod=hastlp.brkod AND h.dosno=hastlp.dosno
-                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar='0000-00-00' OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
+                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar=@endDate OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
        IFNULL((SELECT SUM(moden) FROM hasgen h LEFT OUTER JOIN odnhas ON h.brkod=odnhas.brkod AND h.dosno=odnhas.dosno
                WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt),0) AS xodnhs,
        '' AS menfaat
@@ -461,7 +461,7 @@ SELECT kisaAD, a.brkod, a.ackod, polno, tecdt, zytip, zeyno, tarih, bstar, bttar
        IFNULL((SELECT COUNT(*) FROM hasgen d WHERE d.brkod=a.brkod AND d.ackod=a.ackod AND d.polno=a.polno AND d.tecdt=a.tecdt AND a.zeyno='000'), 0) AS xadths,
        GREATEST(0, IFNULL((SELECT SUM(thmin-IFNULL((SELECT SUM(d.moden) FROM odnhas d WHERE d.brkod=h.brkod AND d.dosno=h.dosno AND d.tlpno=hastlp.tlpno),0))
                            FROM hasgen h LEFT OUTER JOIN hastlp ON h.brkod=hastlp.brkod AND h.dosno=hastlp.dosno
-                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar='0000-00-00' OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
+                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar=@endDate OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
        IFNULL((SELECT SUM(moden) FROM hasgen h LEFT OUTER JOIN odnhas ON h.brkod=odnhas.brkod AND h.dosno=odnhas.dosno
                WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt),0) AS xodnhs,
        '' AS menfaat
@@ -487,7 +487,7 @@ SELECT kisaAD, a.brkod, a.ackod, polno, tecdt, zytip, zeyno, tarih, bstar, bttar
        IFNULL((SELECT COUNT(*) FROM hasgen d WHERE d.brkod=a.brkod AND d.ackod=a.ackod AND d.polno=a.polno AND d.tecdt=a.tecdt AND a.zeyno='000'), 0) AS xadths,
        GREATEST(0, IFNULL((SELECT SUM(thmin-IFNULL((SELECT SUM(d.moden) FROM odnhas d WHERE d.brkod=h.brkod AND d.dosno=h.dosno AND d.tlpno=hastlp.tlpno),0))
                            FROM hasgen h LEFT OUTER JOIN hastlp ON h.brkod=hastlp.brkod AND h.dosno=hastlp.dosno
-                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar='0000-00-00' OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
+                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar=@endDate OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
        IFNULL((SELECT SUM(moden) FROM hasgen h LEFT OUTER JOIN odnhas ON h.brkod=odnhas.brkod AND h.dosno=odnhas.dosno
                WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt),0) AS xodnhs,
        '' AS menfaat
@@ -513,7 +513,7 @@ SELECT kisaAD, a.brkod, a.ackod, polno, tecdt, zytip, zeyno, tarih, bstar, bttar
        IFNULL((SELECT COUNT(*) FROM hasgen d WHERE d.brkod=a.brkod AND d.ackod=a.ackod AND d.polno=a.polno AND d.tecdt=a.tecdt AND a.zeyno='000'), 0) AS xadths,
        GREATEST(0, IFNULL((SELECT SUM(thmin-IFNULL((SELECT SUM(d.moden) FROM odnhas d WHERE d.brkod=h.brkod AND d.dosno=h.dosno AND d.tlpno=hastlp.tlpno),0))
                            FROM hasgen h LEFT OUTER JOIN hastlp ON h.brkod=hastlp.brkod AND h.dosno=hastlp.dosno
-                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar='0000-00-00' OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
+                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar=@endDate OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
        IFNULL((SELECT SUM(moden) FROM hasgen h LEFT OUTER JOIN odnhas ON h.brkod=odnhas.brkod AND h.dosno=odnhas.dosno
                WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt),0) AS xodnhs,
        IF(a.brkod IN ('19','36','45','48'), CONCAT(ack01,' ',ack02), '') AS menfaat
@@ -536,7 +536,7 @@ SELECT kisaAD, a.brkod, a.ackod, polno, tecdt, zytip, zeyno, tarih, bstar, bttar
        IFNULL((SELECT COUNT(*) FROM hasgen d WHERE d.brkod=a.brkod AND d.ackod=a.ackod AND d.polno=a.polno AND d.tecdt=a.tecdt AND a.zeyno='000'), 0) AS xadths,
        GREATEST(0, IFNULL((SELECT SUM(thmin-IFNULL((SELECT SUM(d.moden) FROM odnhas d WHERE d.brkod=h.brkod AND d.dosno=h.dosno AND d.tlpno=hastlp.tlpno),0))
                            FROM hasgen h LEFT OUTER JOIN hastlp ON h.brkod=hastlp.brkod AND h.dosno=hastlp.dosno
-                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar='0000-00-00' OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
+                           WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt AND (hastlp.kptar=@endDate OR (hastlp.kptar IS NULL))), 0) ) AS xmuahs,
        IFNULL((SELECT SUM(moden) FROM hasgen h LEFT OUTER JOIN odnhas ON h.brkod=odnhas.brkod AND h.dosno=odnhas.dosno
                WHERE h.brkod=a.brkod AND h.ackod=a.ackod AND h.polno=a.polno AND h.tecdt=a.tecdt),0) AS xodnhs,
        '' AS menfaat

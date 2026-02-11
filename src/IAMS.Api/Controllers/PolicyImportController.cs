@@ -175,7 +175,7 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var agencyId = _tenantContext.TenantId;
+                var agencyId = _tenantContext.CurrentTenantId;
 
                 var job = await _masterDb.ImportJobs
                     .AsNoTracking()
@@ -204,7 +204,7 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var agencyId = _tenantContext.TenantId;
+                var agencyId = _tenantContext.CurrentTenantId;
                 if (agencyId == null)
                 {
                     return BadRequest(Result<List<ImportJobDto>>.Failure("Tenant not identified"));
@@ -242,7 +242,7 @@ namespace IAMS.Api.Controllers
         {
             try
             {
-                var agencyId = _tenantContext.TenantId;
+                var agencyId = _tenantContext.CurrentTenantId;
 
                 var job = await _masterDb.ImportJobs
                     .FirstOrDefaultAsync(j => j.Id == jobId && (agencyId == null || j.AgencyId == agencyId.Value));

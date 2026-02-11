@@ -60,8 +60,8 @@
         submitting = true;
         try
         {
-            // Build navigation URL with query parameters
-            var url = $"/import/review?masterCompanyId={Company.MasterInsuranceCompanyId}";
+            // Navigate to the existing Cari Kart mapping page with MySQL source params
+            var url = $"/policies/import?source=mysql&masterCompanyId={Company.MasterInsuranceCompanyId}";
 
             if (dateRange?.Start != null)
                 url += $"&startDate={dateRange.Start.Value:yyyy-MM-dd}";

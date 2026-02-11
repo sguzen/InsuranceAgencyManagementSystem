@@ -19,7 +19,11 @@ namespace IAMS.MultiTenancy.Extensions
             {
                 var connectionString = configuration.GetConnectionString("MasterConnection")
                     ?? configuration.GetConnectionString("MasterDatabase");
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, sqlOptions =>
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null));
             });
 
             // Add memory cache for tenant caching

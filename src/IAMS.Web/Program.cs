@@ -38,6 +38,9 @@ builder.Services.AddMudServices();
 // Add HTTP Context Accessor
 builder.Services.AddHttpContextAccessor();
 
+// Add Data Protection for credential encryption
+builder.Services.AddDataProtection();
+
 // Add your existing services
 builder.Services.AddMultiTenancyServices(builder.Configuration);
 builder.Services.AddPersistenceServices(builder.Configuration);

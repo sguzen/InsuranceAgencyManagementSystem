@@ -84,6 +84,14 @@ builder.Services.AddScoped(sp =>
     }
     httpClient.DefaultRequestHeaders.Add("X-API-Key", apiKey);
 
+    // Forward tenant identity to API so it resolves the correct tenant database
+    var tenantContextAccessor = sp.GetService<IAMS.MultiTenancy.Interfaces.ITenantContextAccessor>();
+    var tenantIdentifier = tenantContextAccessor?.TenantContext?.TenantIdentifier;
+    if (!string.IsNullOrEmpty(tenantIdentifier))
+    {
+        httpClient.DefaultRequestHeaders.Add("X-Tenant-ID", tenantIdentifier);
+    }
+
     // Log the configured API base URL for debugging
     var logger = sp.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("API Base URL configured: {ApiBaseUrl} (Environment: {Environment})",

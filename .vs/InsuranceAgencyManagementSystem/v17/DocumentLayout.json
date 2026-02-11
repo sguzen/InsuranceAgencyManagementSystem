@@ -3,96 +3,36 @@
   "WorkspaceRootPath": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209092335_importjobs2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\IAMS.MultiTenancy\\Migrations\\20260209092335_importjobs2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209092043_importjobs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\IAMS.MultiTenancy\\Migrations\\20260209092043_importjobs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\controllers\\policyimportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\controllers\\policyimportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\services\\mysqlpolicyimportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\services\\mysqlpolicyimportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\services\\policyimportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\services\\policyimportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\backgroundservices\\policyreminderbackgroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\backgroundservices\\policyreminderbackgroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.infrastructure\\backgroundservices\\tenantawarebackgroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6581733F-F014-4737-911D-A4EFC58DFE7E}|src\\IAMS.Infrastructure\\IAMS.Infrastructure.csproj|solutionrelative:src\\iams.infrastructure\\backgroundservices\\tenantawarebackgroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\migrations\\20260209084132_insurancecomp2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\migrations\\20260209084132_insurancecomp2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209044347_insuranceComp2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\IAMS.MultiTenancy\\Migrations\\20260209044347_insuranceComp2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\configurations\\insurancecompanyconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\configurations\\insurancecompanyconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\import\\policyimport.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\import\\policyimport.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\components\\pages\\import\\importdialog.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\components\\pages\\import\\importdialog.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260206164936_insuranceComp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\IAMS.MultiTenancy\\Migrations\\20260206164936_insuranceComp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.admin\\components\\pages\\insurancecompanies\\insurancecompanymanagement.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|solutionrelative:src\\iams.admin\\components\\pages\\insurancecompanies\\insurancecompanymanagement.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FB78F40D-E3CD-4090-845A-34A697DA5F62}|src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.multitenancy\\migrations\\20260206112816_tennants.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FB78F40D-E3CD-4090-845A-34A697DA5F62}|src\\IAMS.MultiTenancy\\IAMS.MultiTenancy.csproj|solutionrelative:src\\iams.multitenancy\\migrations\\20260206112816_tennants.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.admin\\services\\apiclient\\insurancecompaniesapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|solutionrelative:src\\iams.admin\\services\\apiclient\\insurancecompaniesapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.admin\\services\\apiclient\\rolesapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|solutionrelative:src\\iams.admin\\services\\apiclient\\rolesapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.application\\features\\importconfigurations\\commands\\updateimportconfiguration\\updateimportconfigurationcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7178DD9E-0EB3-4DFE-A2E6-4558455D9084}|src\\IAMS.Application\\IAMS.Application.csproj|solutionrelative:src\\iams.application\\features\\importconfigurations\\commands\\updateimportconfiguration\\updateimportconfigurationcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.admin\\services\\apiclient\\agenciesapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|solutionrelative:src\\iams.admin\\services\\apiclient\\agenciesapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.admin\\components\\pages\\agencies\\agencyinsurancecompanies.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D4E5F6A7-B8C9-4D0E-A1B2-C3D4E5F6A7B8}|src\\IAMS.Admin\\IAMS.Admin.csproj|solutionrelative:src\\iams.admin\\components\\pages\\agencies\\agencyinsurancecompanies.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.persistence\\migrations\\20260203124606_mysql.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{40013F7B-7079-4BF2-B5BE-A6B50507EAA3}|src\\IAMS.Persistence\\IAMS.Persistence.csproj|solutionrelative:src\\iams.persistence\\migrations\\20260203124606_mysql.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\controllers\\agencyinsurancecompaniescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\controllers\\agencyinsurancecompaniescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\controllers\\policiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\controllers\\policiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\controllers\\agenciescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\controllers\\agenciescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{251D6030-C4B5-4D5D-A293-AC22A0131DF2}|src\\IAMS.Domain\\IAMS.Domain.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.domain\\entities\\importconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{251D6030-C4B5-4D5D-A293-AC22A0131DF2}|src\\IAMS.Domain\\IAMS.Domain.csproj|solutionrelative:src\\iams.domain\\entities\\importconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{5C278219-3DCA-481E-32EA-2DE4B1756FD3}|src\\IAMS.Api\\IAMS.Api.csproj|solutionrelative:src\\iams.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|c:\\users\\sis\\source\\repos\\insuranceagencymanagementsystem\\src\\iams.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{FEA713A1-2AC6-4D1F-AB00-0BC071DDB16A}|src\\IAMS.Web\\IAMS.Web.csproj|solutionrelative:src\\iams.web\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -102,7 +42,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -118,294 +58,107 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "20260209092335_importjobs2.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209092335_importjobs2.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.MultiTenancy\\Migrations\\20260209092335_importjobs2.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209092335_importjobs2.cs",
-              "RelativeToolTip": "src\\IAMS.MultiTenancy\\Migrations\\20260209092335_importjobs2.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T09:23:35.989Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "20260209092043_importjobs.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209092043_importjobs.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.MultiTenancy\\Migrations\\20260209092043_importjobs.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209092043_importjobs.cs",
-              "RelativeToolTip": "src\\IAMS.MultiTenancy\\Migrations\\20260209092043_importjobs.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T09:20:44.055Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\appsettings.json",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\appsettings.json",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\appsettings.json",
-              "RelativeToolTip": "src\\IAMS.Web\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-09T09:10:55.256Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
               "Title": "PolicyImportService.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Services\\PolicyImportService.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Services\\PolicyImportService.cs",
               "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Services\\PolicyImportService.cs",
               "RelativeToolTip": "src\\IAMS.Persistence\\Services\\PolicyImportService.cs",
-              "ViewState": "AgIAABkAAAAAAAAAAAAgwDUAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAADQAAAAAAAAAAADwv0kAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T08:56:05.852Z",
+              "WhenOpened": "2026-02-10T17:17:40.537Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UpdateImportConfigurationCommandHandler.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\ImportConfigurations\\Commands\\UpdateImportConfiguration\\UpdateImportConfigurationCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Application\\Features\\ImportConfigurations\\Commands\\UpdateImportConfiguration\\UpdateImportConfigurationCommandHandler.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Application\\Features\\ImportConfigurations\\Commands\\UpdateImportConfiguration\\UpdateImportConfigurationCommandHandler.cs",
+              "RelativeToolTip": "src\\IAMS.Application\\Features\\ImportConfigurations\\Commands\\UpdateImportConfiguration\\UpdateImportConfigurationCommandHandler.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAQwBcAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-10T17:04:56.161Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MySqlPolicyImportService.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\Services\\MySqlPolicyImportService.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\Services\\MySqlPolicyImportService.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\Services\\MySqlPolicyImportService.cs",
+              "RelativeToolTip": "src\\IAMS.Infrastructure\\Services\\MySqlPolicyImportService.cs",
+              "ViewState": "AgIAAPsBAAAAAAAAAAAAABoCAACHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-10T16:34:12.896Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "PolicyReminderBackgroundService.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\BackgroundServices\\PolicyReminderBackgroundService.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\BackgroundServices\\PolicyReminderBackgroundService.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\BackgroundServices\\PolicyReminderBackgroundService.cs",
-              "RelativeToolTip": "src\\IAMS.Infrastructure\\BackgroundServices\\PolicyReminderBackgroundService.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Title": "AgencyInsuranceCompaniesController.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\AgencyInsuranceCompaniesController.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\AgencyInsuranceCompaniesController.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\AgencyInsuranceCompaniesController.cs",
+              "RelativeToolTip": "src\\IAMS.Api\\Controllers\\AgencyInsuranceCompaniesController.cs",
+              "ViewState": "AgIAAP8AAAAAAAAAAAAwwBwBAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T08:55:24.705Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "TenantAwareBackgroundService.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\BackgroundServices\\TenantAwareBackgroundService.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Infrastructure\\BackgroundServices\\TenantAwareBackgroundService.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Infrastructure\\BackgroundServices\\TenantAwareBackgroundService.cs",
-              "RelativeToolTip": "src\\IAMS.Infrastructure\\BackgroundServices\\TenantAwareBackgroundService.cs",
-              "ViewState": "AgIAAB8AAAAAAAAAAAAgwCQAAAAwAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T08:54:48.321Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "20260209084132_insuranceComp2.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20260209084132_insuranceComp2.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Migrations\\20260209084132_insuranceComp2.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20260209084132_insuranceComp2.cs",
-              "RelativeToolTip": "src\\IAMS.Persistence\\Migrations\\20260209084132_insuranceComp2.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T08:41:33.098Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "20260209044347_insuranceComp2.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209044347_insuranceComp2.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.MultiTenancy\\Migrations\\20260209044347_insuranceComp2.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260209044347_insuranceComp2.cs",
-              "RelativeToolTip": "src\\IAMS.MultiTenancy\\Migrations\\20260209044347_insuranceComp2.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T04:43:47.653Z",
+              "WhenOpened": "2026-02-10T11:00:53.415Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "PolicyImportController.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\PolicyImportController.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\PolicyImportController.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\PolicyImportController.cs",
-              "RelativeToolTip": "src\\IAMS.Api\\Controllers\\PolicyImportController.cs",
-              "ViewState": "AgIAAFEAAAAAAAAAAAASwGMAAAAdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T18:28:49.183Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "InsuranceCompanyConfiguration.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Configurations\\InsuranceCompanyConfiguration.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Configurations\\InsuranceCompanyConfiguration.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Configurations\\InsuranceCompanyConfiguration.cs",
-              "RelativeToolTip": "src\\IAMS.Persistence\\Configurations\\InsuranceCompanyConfiguration.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAAAAwCYAAAAuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T18:28:42.484Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "ImportDialog.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Import\\ImportDialog.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Import\\ImportDialog.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Import\\ImportDialog.razor",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Import\\ImportDialog.razor",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAmwBkAAAAuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-02-08T11:08:55.798Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "PolicyImport.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Import\\PolicyImport.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Components\\Pages\\Import\\PolicyImport.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Components\\Pages\\Import\\PolicyImport.razor",
-              "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Import\\PolicyImport.razor",
-              "ViewState": "AgIAAO0AAAAAAAAAAAAmwP0AAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-02-08T11:06:12.601Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "20260206164936_insuranceComp.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260206164936_insuranceComp.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.MultiTenancy\\Migrations\\20260206164936_insuranceComp.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260206164936_insuranceComp.cs",
-              "RelativeToolTip": "src\\IAMS.MultiTenancy\\Migrations\\20260206164936_insuranceComp.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-06T16:49:37.177Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "InsuranceCompanyManagement.razor",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyManagement.razor",
-              "RelativeDocumentMoniker": "src\\IAMS.Admin\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyManagement.razor",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyManagement.razor",
-              "RelativeToolTip": "src\\IAMS.Admin\\Components\\Pages\\InsuranceCompanies\\InsuranceCompanyManagement.razor",
-              "ViewState": "AgIAABQAAAAAAAAAAAAwwCEAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-02-06T16:47:36.563Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "20260206112816_tennants.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260206112816_tennants.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.MultiTenancy\\Migrations\\20260206112816_tennants.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.MultiTenancy\\Migrations\\20260206112816_tennants.cs",
-              "RelativeToolTip": "src\\IAMS.MultiTenancy\\Migrations\\20260206112816_tennants.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-06T11:28:16.326Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "InsuranceCompaniesApiClient.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Services\\ApiClient\\InsuranceCompaniesApiClient.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Admin\\Services\\ApiClient\\InsuranceCompaniesApiClient.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Services\\ApiClient\\InsuranceCompaniesApiClient.cs",
-              "RelativeToolTip": "src\\IAMS.Admin\\Services\\ApiClient\\InsuranceCompaniesApiClient.cs",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAAADQAAAA/AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-06T10:04:27.797Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "RolesApiClient.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Services\\ApiClient\\RolesApiClient.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Admin\\Services\\ApiClient\\RolesApiClient.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Services\\ApiClient\\RolesApiClient.cs",
-              "RelativeToolTip": "src\\IAMS.Admin\\Services\\ApiClient\\RolesApiClient.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-05T07:50:25.92Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
               "Title": "AgenciesApiClient.cs",
               "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Services\\ApiClient\\AgenciesApiClient.cs",
               "RelativeDocumentMoniker": "src\\IAMS.Admin\\Services\\ApiClient\\AgenciesApiClient.cs",
               "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Services\\ApiClient\\AgenciesApiClient.cs",
               "RelativeToolTip": "src\\IAMS.Admin\\Services\\ApiClient\\AgenciesApiClient.cs",
-              "ViewState": "AgIAADcAAAAAAAAAAAAAAEcAAABaAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-05T07:49:58.624Z"
+              "WhenOpened": "2026-02-10T10:59:54.919Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Program.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Web\\Program.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Program.cs",
-              "RelativeToolTip": "src\\IAMS.Web\\Program.cs",
-              "ViewState": "AgIAAJAAAAAAAAAAAAAvwJoAAAAbAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "AgenciesController.cs",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\AgenciesController.cs",
+              "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\AgenciesController.cs",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\AgenciesController.cs",
+              "RelativeToolTip": "src\\IAMS.Api\\Controllers\\AgenciesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-03T13:30:00.555Z"
+              "WhenOpened": "2026-02-10T10:58:50.518Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
-              "Title": "20260203124606_mysql.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20260203124606_mysql.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Persistence\\Migrations\\20260203124606_mysql.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Persistence\\Migrations\\20260203124606_mysql.cs",
-              "RelativeToolTip": "src\\IAMS.Persistence\\Migrations\\20260203124606_mysql.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-03T12:46:07.7Z"
+              "DocumentIndex": 4,
+              "Title": "AgencyInsuranceCompanies.razor",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Components\\Pages\\Agencies\\AgencyInsuranceCompanies.razor",
+              "RelativeDocumentMoniker": "src\\IAMS.Admin\\Components\\Pages\\Agencies\\AgencyInsuranceCompanies.razor",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Admin\\Components\\Pages\\Agencies\\AgencyInsuranceCompanies.razor",
+              "RelativeToolTip": "src\\IAMS.Admin\\Components\\Pages\\Agencies\\AgencyInsuranceCompanies.razor",
+              "ViewState": "AgIAAAoBAAAAAAAAAAASwBgBAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-10T10:57:06.75Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
-              "Title": "PoliciesController.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\PoliciesController.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Api\\Controllers\\PoliciesController.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\Controllers\\PoliciesController.cs",
-              "RelativeToolTip": "src\\IAMS.Api\\Controllers\\PoliciesController.cs",
-              "ViewState": "AgIAAMMBAAAAAAAAAAAuwMEBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-03T12:45:08.941Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 21,
-              "Title": "ImportConfiguration.cs",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Domain\\Entities\\ImportConfiguration.cs",
-              "RelativeDocumentMoniker": "src\\IAMS.Domain\\Entities\\ImportConfiguration.cs",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Domain\\Entities\\ImportConfiguration.cs",
-              "RelativeToolTip": "src\\IAMS.Domain\\Entities\\ImportConfiguration.cs",
-              "ViewState": "AgIAAFgAAAAAAAAAAAAxwF4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-03T12:27:10.927Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 7,
               "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\appsettings.json",
-              "RelativeDocumentMoniker": "src\\IAMS.Api\\appsettings.json",
-              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Api\\appsettings.json",
-              "RelativeToolTip": "src\\IAMS.Api\\appsettings.json",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAACkAAAAjAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\IAMS.Web\\appsettings.json",
+              "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\appsettings.json",
+              "RelativeToolTip": "src\\IAMS.Web\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-02-03T11:42:04.086Z"
+              "WhenOpened": "2026-02-10T08:54:53.711Z",
+              "EditorCaption": ""
             }
           ]
         }

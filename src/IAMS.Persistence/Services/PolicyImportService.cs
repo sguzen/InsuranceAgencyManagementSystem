@@ -61,7 +61,7 @@ namespace IAMS.Persistence.Services
 
             // Get pending jobs from master database
             var pendingJobs = await masterDb.ImportJobs
-                .Where(j => j.Status == ImportJobStatus.Pending)
+                .Where(j => j.Status == MultiTenancy.Entities.ImportJobStatus.Pending)
                 .OrderBy(j => j.CreatedOn)
                 .Take(5)
                 .ToListAsync(stoppingToken);
@@ -75,7 +75,7 @@ namespace IAMS.Persistence.Services
             }
         }
 
-        private async Task ProcessJobAsync(TenantDbContext masterDb, ImportJob job, CancellationToken stoppingToken)
+        private async Task ProcessJobAsync(TenantDbContext masterDb, MultiTenancy.Entities.ImportJob job, CancellationToken stoppingToken)
         {
             _logger.LogInformation("Processing import job {JobId} for Agency {AgencyId}, InsuranceCompany {InsuranceCompanyId}",
                 job.Id, job.AgencyId, job.InsuranceCompanyId);

@@ -3,8 +3,10 @@ using IAMS.Application.Interfaces.Services;
 using IAMS.Domain.Services;
 using IAMS.Infrastructure.Data;
 using IAMS.Infrastructure.Interfaces;
+using IAMS.Infrastructure.Security;
 using IAMS.Infrastructure.Services;
 using IAMS.Shared.Constants;
+using IAMS.Shared.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +40,10 @@ namespace IAMS.Infrastructure.Extensions
 
             // Register MySQL import service (connection details come from ImportConfiguration per insurance company)
             services.AddScoped<IMySqlPolicyImportService, MySqlPolicyImportService>();
+
+            // Register credential services for secure agency-insurance company credential management
+            services.AddScoped<ICredentialEncryptionService, CredentialEncryptionService>();
+            services.AddScoped<IAgencyCredentialService, AgencyCredentialService>();
 
             // Configure email settings
             services.Configure<EmailSettings>(configuration.GetSection(ApplicationConstants.ConfigurationSections.EmailSettings));

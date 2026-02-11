@@ -1,8 +1,11 @@
+using IAMS.Application.Features.Policies.Queries.PreviewMySqlImport;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.Persistence.Services;
+using IAMS.Shared.DTOs.Policy;
 using IAMS.Shared.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,17 +25,20 @@ namespace IAMS.Api.Controllers
         private readonly TenantDbContext _masterDb;
         private readonly ITenantContextAccessor _tenantContext;
         private readonly IInsuranceCompanySyncService _syncService;
+        private readonly IMediator _mediator;
         private readonly ILogger<PolicyImportController> _logger;
 
         public PolicyImportController(
             TenantDbContext masterDb,
             ITenantContextAccessor tenantContext,
             IInsuranceCompanySyncService syncService,
+            IMediator mediator,
             ILogger<PolicyImportController> logger)
         {
             _masterDb = masterDb;
             _tenantContext = tenantContext;
             _syncService = syncService;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -260,6 +266,56 @@ namespace IAMS.Api.Controllers
             {
                 _logger.LogError(ex, "Error cancelling import job");
                 return StatusCode(500, Result.Failure("Error cancelling job"));
+            }
+        }
+
+        /// <summary>
+        /// Preview policies from external MySQL database for Cari Kart mapping.
+        /// Fetches data from MySQL but does NOT save anything.
+        /// </summary>
+        [HttpPost("preview-mysql")]
+        public async Task<ActionResult<Result<MySqlImportPreviewResult>>> PreviewMySqlImport(
+            [FromBody] ImportRequestDto request)
+        {
+            try
+            {
+                var agencyId = _tenantContext.CurrentTenantId;
+                if (agencyId == null)
+                {
+                    return BadRequest(Result<MySqlImportPreviewResult>.Failure("Tenant not identified"));
+                }
+
+                // Verify the agency is linked to this insurance company
+                var link = await _masterDb.AgencyInsuranceCompanies
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(aic =>
+                        aic.AgencyId == agencyId.Value &&
+                        aic.InsuranceCompanyId == request.MasterInsuranceCompanyId &&
+                        !aic.IsDeleted &&
+                        aic.IsActive);
+
+                if (link == null)
+                {
+                    return BadRequest(Result<MySqlImportPreviewResult>.Failure("Bu sigorta sirketine erisim izniniz yok"));
+                }
+
+                var query = new PreviewMySqlImportQuery(
+                    agencyId.Value,
+                    request.MasterInsuranceCompanyId,
+                    request.StartDate,
+                    request.EndDate);
+
+                var result = await _mediator.Send(query);
+
+                if (!result.IsSuccess)
+                    return BadRequest(result);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error previewing MySQL import");
+                return StatusCode(500, Result<MySqlImportPreviewResult>.Failure($"Onizleme sirasinda hata: {ex.Message}"));
             }
         }
 

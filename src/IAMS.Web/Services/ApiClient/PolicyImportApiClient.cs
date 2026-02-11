@@ -1,3 +1,4 @@
+using IAMS.Shared.DTOs.Policy;
 using IAMS.Shared.Models;
 using System.Net.Http.Json;
 
@@ -10,6 +11,7 @@ namespace IAMS.Web.Services.ApiClient
         Task<Result<ImportJobDto>> GetJobStatusAsync(int jobId);
         Task<Result<List<ImportJobDto>>> GetRecentJobsAsync(int? insuranceCompanyId = null);
         Task<Result> CancelJobAsync(int jobId);
+        Task<Result<MySqlImportPreviewResult>> PreviewMySqlImportAsync(ImportRequestDto request);
     }
 
     public class PolicyImportApiClient : BaseApiClient, IPolicyImportApiClient
@@ -126,6 +128,27 @@ namespace IAMS.Web.Services.ApiClient
             catch (Exception ex)
             {
                 return Result.Failure($"Error: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<MySqlImportPreviewResult>> PreviewMySqlImportAsync(ImportRequestDto request)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/import/preview-mysql", request, _jsonOptions);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return Result<MySqlImportPreviewResult>.Failure($"API error: {response.StatusCode}", error);
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<Result<MySqlImportPreviewResult>>(_jsonOptions);
+                return result ?? Result<MySqlImportPreviewResult>.Failure("Empty response");
+            }
+            catch (Exception ex)
+            {
+                return Result<MySqlImportPreviewResult>.Failure($"Error: {ex.Message}");
             }
         }
     }

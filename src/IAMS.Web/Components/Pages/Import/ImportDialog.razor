@@ -18,7 +18,7 @@
                                 Placeholder="Tum policeler" />
 
             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                Tarih araligi secmezseniz tum policeler import edilir.
+                Tarih araligi secmezseniz son 1 yildaki tum policeler import edilir.
             </MudText>
 
             @if (Company.LastImportDate.HasValue)
@@ -41,7 +41,7 @@
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
             }
-            Import Baslat
+            Onizle ve Eslestir
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -60,23 +60,17 @@
         submitting = true;
         try
         {
-            var request = new ImportRequestDto
-            {
-                MasterInsuranceCompanyId = Company.MasterInsuranceCompanyId,
-                StartDate = dateRange?.Start,
-                EndDate = dateRange?.End
-            };
+            // Build navigation URL with query parameters
+            var url = $"/import/review?masterCompanyId={Company.MasterInsuranceCompanyId}";
 
-            var result = await ImportApi.RequestImportAsync(request);
+            if (dateRange?.Start != null)
+                url += $"&startDate={dateRange.Start.Value:yyyy-MM-dd}";
 
-            if (result.IsSuccess)
-            {
-                MudDialog.Close(DialogResult.Ok(result.Data));
-            }
-            else
-            {
-                Snackbar.Add(result.Message ?? "Import baslatilamadi", MudBlazor.Severity.Error);
-            }
+            if (dateRange?.End != null)
+                url += $"&endDate={dateRange.End.Value:yyyy-MM-dd}";
+
+            // Close dialog and return the navigation URL
+            MudDialog.Close(DialogResult.Ok(url));
         }
         catch (Exception ex)
         {

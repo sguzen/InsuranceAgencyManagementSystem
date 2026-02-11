@@ -22,7 +22,11 @@ namespace IAMS.Infrastructure.Extensions
             // Add Integration Database for logs, reports, and file metadata
             services.AddDbContext<IntegrationDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString(ApplicationConstants.ConnectionStrings.IntegrationConnection)
-                    ?? throw new InvalidOperationException($"{ApplicationConstants.ConnectionStrings.IntegrationConnection} is required")));
+                    ?? throw new InvalidOperationException($"{ApplicationConstants.ConnectionStrings.IntegrationConnection} is required"),
+                    sqlOptions => sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null)));
 
             // Add HTTP Client Factory for integration services
             services.AddHttpClient();

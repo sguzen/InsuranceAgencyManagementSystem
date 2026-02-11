@@ -36,7 +36,11 @@ namespace IAMS.Persistence.Services
                 var connectionString = await GetTenantConnectionStringAsync(tenantIdentifier);
 
                 var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseSqlServer(connectionString)
+                    .UseSqlServer(connectionString, sqlOptions =>
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null))
                     .Options;
 
                 using var context = new ApplicationDbContext(options, null);
@@ -70,7 +74,11 @@ namespace IAMS.Persistence.Services
             var connectionString = await GetTenantConnectionStringAsync(tenantIdentifier);
 
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlServer(connectionString)
+                .UseSqlServer(connectionString, sqlOptions =>
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null))
                 .Options;
 
             using var context = new ApplicationDbContext(options, null);

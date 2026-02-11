@@ -1,0 +1,519 @@
+@page "/import/review"
+@layout Layout.MainLayout
+@attribute [Authorize]
+
+@using IAMS.Shared.DTOs.Policy
+@using IAMS.Shared.DTOs.Customer
+@using IAMS.Shared.DTOs.Parametric
+@using IAMS.Domain.Enums
+@using IAMS.Web.Services.ApiClient
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IPolicyImportApiClient ImportApi
+@inject IPoliciesApiClient PoliciesApi
+@inject ICustomersApiClient CustomersApi
+@inject IParametricApiClient ParametricApi
+
+<PageTitle>MySQL Import - Musteri Eslestirme</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+    @if (isLoading)
+    {
+        <MudStack Spacing="4" AlignItems="AlignItems.Center" Class="mt-8">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.h6">Policeler MySQL veritabanindan aliniyor...</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Bu islem birkaç dakika surebilir</MudText>
+        </MudStack>
+    }
+    else if (loadError != null)
+    {
+        <MudAlert Severity="MudBlazor.Severity.Error" Class="mt-4">
+            @loadError
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Href="/import/policies" Class="mt-4">
+            Geri Don
+        </MudButton>
+    }
+    else if (previewPolicies.Any())
+    {
+        <MudStack Spacing="4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h4">
+                    <MudIcon Icon="@Icons.Material.Filled.Preview" Class="mr-3" />
+                    @companyName - Musteri Eslestirme (@previewPolicies.Count Police)
+                </MudText>
+                <MudStack Row Spacing="2">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               Href="/import/policies">
+                        Geri Don
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="@(!AllPoliciesMapped() || isSaving)"
+                               OnClick="SaveImport">
+                        @if (isSaving)
+                        {
+                            <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+                            <span>Kaydediliyor...</span>
+                        }
+                        else
+                        {
+                            <span>Kaydet (@GetMappedCount() / @previewPolicies.Count)</span>
+                        }
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            @if (!AllPoliciesMapped())
+            {
+                <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">
+                    Lutfen tum policeler icin musteri eslestirmesi yapin (@GetUnmappedCount() police kaldi)
+                </MudAlert>
+            }
+
+            <!-- Policy List with Mapping -->
+            <MudPaper Elevation="0" Class="pa-4">
+                @foreach (var policy in previewPolicies)
+                {
+                    <MudCard Class="@(policy.IsValid ? "mb-3" : "mb-3 border-l-4 border-warning")">
+                        <MudCardContent>
+                            <MudGrid>
+                                <!-- Policy Info Column -->
+                                <MudItem xs="12" md="4">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Police Bilgileri</MudText>
+                                    <MudText Typo="Typo.body2"><b>Police No:</b> @policy.PolicyNumber</MudText>
+                                    <MudText Typo="Typo.body2"><b>Tarih:</b> @policy.StartDate?.ToString("dd.MM.yyyy") - @policy.EndDate?.ToString("dd.MM.yyyy")</MudText>
+                                    <MudText Typo="Typo.body2"><b>Tip:</b> @policy.PolicyTypeName</MudText>
+                                    @if (!string.IsNullOrEmpty(policy.PlateNumber))
+                                    {
+                                        <MudText Typo="Typo.body2"><b>Plaka:</b> @policy.PlateNumber</MudText>
+                                    }
+                                    <MudText Typo="Typo.body2"><b>Prim:</b> @policy.PremiumAmount.ToString("N2") @policy.CurrencyCode</MudText>
+                                </MudItem>
+
+                                <!-- Sigortali (Insured Person) -->
+                                <MudItem xs="12" md="4">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Sigortali</MudText>
+                                    <MudText Typo="Typo.body2"><b>Isim:</b> @policy.InsuredCustomerName</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-xs text-gray-500">
+                                        Kimlik/Pasaport: @policy.InsuredCustomerIdentifier
+                                    </MudText>
+                                    <MudAlert Severity="MudBlazor.Severity.Info" Dense="true" Class="mt-2">
+                                        Bu bilgi policede metin olarak saklanacak
+                                    </MudAlert>
+                                </MudItem>
+
+                                <!-- Policy Owner Mapping Column -->
+                                <MudItem xs="12" md="4">
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Cari Kart</MudText>
+
+                                    <MudStack Row Class="mb-2">
+                                        <MudCheckBox T="bool"
+                                                     Value="@policy.PolicyOwnerSameAsInsured"
+                                                     ValueChanged="@((bool value) => OnPolicyOwnerSameAsInsuredChanged(policy, value))"
+                                                     Label="Sigortali ile ayni"
+                                                     Dense="true"
+                                                     Color="Color.Success" />
+                                        <MudChip T="String" Size="Size.Small" Color="@(policy.PolicyOwnerSameAsInsured ? Color.Success : Color.Default)">
+                                            @(policy.PolicyOwnerSameAsInsured ? "Ayni" : "Farkli")
+                                        </MudChip>
+                                    </MudStack>
+
+                                    @if (!policy.PolicyOwnerSameAsInsured)
+                                    {
+                                        <MudAutocomplete T="CustomerDto"
+                                                         Label="Mevcut Musteri Ara"
+                                                         SearchFunc="@SearchCustomersAsync"
+                                                         ToStringFunc="@(c => c == null ? "" : $"{c.FullName} ({c.CustomerCode})")"
+                                                         Dense="true"
+                                                         Variant="Variant.Outlined"
+                                                         Margin="Margin.Dense"
+                                                         ResetValueOnEmptyText="true"
+                                                         CoerceText="true"
+                                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                                         AdornmentColor="Color.Primary"
+                                                         ValueChanged="@((CustomerDto c) => OnOwnerCustomerSelected(policy, c))" />
+
+                                        <MudText Typo="Typo.body2" Class="my-2 text-center">veya</MudText>
+
+                                        <MudCheckBox T="bool"
+                                                     Value="@policy.CreateNewPolicyOwner"
+                                                     ValueChanged="@((bool value) => OnCreateNewPolicyOwnerChanged(policy, value))"
+                                                     Label="Yeni police sahibi musteri olustur"
+                                                     Dense="true"
+                                                     Color="Color.Warning" />
+
+                                        @if (policy.CreateNewPolicyOwner)
+                                        {
+                                            <MudTextField @bind-Value="policy.PolicyOwnerName"
+                                                          Label="Musteri Adi" Variant="Variant.Outlined"
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Required="true" />
+                                            <MudTextField @bind-Value="policy.PolicyOwnerPhone"
+                                                          Label="Telefon" Variant="Variant.Outlined"
+                                                          Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                          Placeholder="0542XXXXXXX" />
+
+                                            <MudSelect T="CustomerType"
+                                                       Value="@policy.PolicyOwnerCustomerType"
+                                                       ValueChanged="@((CustomerType type) => OnCustomerTypeChanged(policy, type))"
+                                                       Label="Musteri Tipi" Variant="Variant.Outlined"
+                                                       Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                       Required="true">
+                                                <MudSelectItem Value="@CustomerType.Individual">Bireysel</MudSelectItem>
+                                                <MudSelectItem Value="@CustomerType.Corporate">Kurumsal</MudSelectItem>
+                                            </MudSelect>
+
+                                            @if (policy.PolicyOwnerCustomerType == CustomerType.Individual)
+                                            {
+                                                @{
+                                                    var selectedCountry = countries.FirstOrDefault(c => c.Id == policy.PolicyOwnerNationalityCountryId);
+                                                }
+                                                <MudAutocomplete T="CountryDto"
+                                                                 SearchFunc="@SearchCountriesAsync"
+                                                                 ToStringFunc="@(c => c == null ? "" : c.NameTr)"
+                                                                 Value="@selectedCountry"
+                                                                 Label="Uyruk (Nationality)" Variant="Variant.Outlined"
+                                                                 Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                                 Required="true"
+                                                                 ResetValueOnEmptyText="true"
+                                                                 CoerceText="true"
+                                                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                                                 AdornmentColor="Color.Primary"
+                                                                 ValueChanged="@((CountryDto c) => OnNationalityCountrySelected(policy, c))" />
+
+                                                @{
+                                                    var identifierLabel = GetIdentifierLabel(policy.PolicyOwnerNationalityCountryId);
+                                                }
+                                                <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
+                                                              Label="@identifierLabel" Variant="Variant.Outlined"
+                                                              Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                              Required="true" />
+                                            }
+                                            else
+                                            {
+                                                <MudTextField @bind-Value="policy.PolicyOwnerIdentifier"
+                                                              Label="Ticaret Sicil No (Trade License)" Variant="Variant.Outlined"
+                                                              Dense="true" Margin="Margin.Dense" Class="mt-2"
+                                                              Required="true" />
+                                            }
+                                        }
+                                    }
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                }
+            </MudPaper>
+        </MudStack>
+    }
+</MudContainer>
+
+@code {
+    private List<CountryDto> countries = new();
+    private CountryDto? kktcCountry = null;
+    private List<PolicyImportPreviewDto> previewPolicies = new();
+    private int tenantInsuranceCompanyId;
+    private string companyName = "";
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string? loadError;
+
+    private const int KKTC_COUNTRY_ID = 601;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Parse query parameters
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (!queryParams.TryGetValue("masterCompanyId", out var masterCompanyIdStr) ||
+            !int.TryParse(masterCompanyIdStr, out var masterCompanyId))
+        {
+            loadError = "Sigorta sirketi bilgisi eksik. Lutfen import sayfasindan tekrar deneyin.";
+            isLoading = false;
+            return;
+        }
+
+        DateTime? startDate = null;
+        DateTime? endDate = null;
+
+        if (queryParams.TryGetValue("startDate", out var startStr) &&
+            DateTime.TryParse(startStr, out var parsedStart))
+        {
+            startDate = parsedStart;
+        }
+
+        if (queryParams.TryGetValue("endDate", out var endStr) &&
+            DateTime.TryParse(endStr, out var parsedEnd))
+        {
+            endDate = parsedEnd;
+        }
+
+        // Load countries for nationality autocomplete
+        await LoadCountriesAsync();
+
+        // Fetch preview from MySQL
+        await LoadPreviewAsync(masterCompanyId, startDate, endDate);
+    }
+
+    private async Task LoadPreviewAsync(int masterCompanyId, DateTime? startDate, DateTime? endDate)
+    {
+        isLoading = true;
+        try
+        {
+            var request = new ImportRequestDto
+            {
+                MasterInsuranceCompanyId = masterCompanyId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            var result = await ImportApi.PreviewMySqlImportAsync(request);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                tenantInsuranceCompanyId = result.Data.TenantInsuranceCompanyId;
+                companyName = result.Data.InsuranceCompanyName;
+                previewPolicies = result.Data.Policies;
+
+                // Ensure all policies have default values
+                foreach (var policy in previewPolicies)
+                {
+                    if (!policy.PolicyOwnerSameAsInsured &&
+                        !policy.PolicyOwnerCustomerId.HasValue &&
+                        !policy.CreateNewPolicyOwner)
+                    {
+                        policy.PolicyOwnerSameAsInsured = true;
+                    }
+                }
+
+                Snackbar.Add($"{previewPolicies.Count} police basariyla okundu. Lutfen musteri eslestirmesi yapin.",
+                    MudBlazor.Severity.Success);
+            }
+            else
+            {
+                loadError = result.Message ?? "MySQL veritabanindan policeler alinamadi";
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Hata: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadCountriesAsync()
+    {
+        try
+        {
+            var result = await ParametricApi.GetCountriesAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                countries = result.Data;
+                kktcCountry = countries.FirstOrDefault(c =>
+                    c.Id == KKTC_COUNTRY_ID ||
+                    c.Code == "601" ||
+                    c.NameTr.Contains("KUZEY") ||
+                    c.NameTr.Contains("KIBRIS") ||
+                    c.NameTr.ToUpperInvariant().Contains("KKTC"));
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ulkeler yuklenirken hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task SaveImport()
+    {
+        if (!AllPoliciesMapped())
+        {
+            Snackbar.Add("Lutfen tum policeler icin musteri eslestirmesi yapin", MudBlazor.Severity.Warning);
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var result = await PoliciesApi.ImportPoliciesWithMappingAsync(previewPolicies, tenantInsuranceCompanyId);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                var importResult = result.Data;
+                if (importResult.SuccessCount > 0)
+                {
+                    Snackbar.Add(
+                        $"{importResult.SuccessCount} police basariyla ice aktarildi! " +
+                        (importResult.FailureCount > 0 ? $"{importResult.FailureCount} police basarisiz oldu." : ""),
+                        importResult.FailureCount > 0 ? MudBlazor.Severity.Warning : MudBlazor.Severity.Success);
+
+                    if (importResult.Errors.Any())
+                    {
+                        foreach (var error in importResult.Errors.Take(5))
+                        {
+                            Snackbar.Add($"Satir {error.RowNumber}: {error.ErrorMessage}", MudBlazor.Severity.Error);
+                        }
+                    }
+
+                    if (importResult.FailureCount == 0)
+                    {
+                        await Task.Delay(1500);
+                        Navigation.NavigateTo("/policies");
+                    }
+                }
+                else
+                {
+                    Snackbar.Add("Hicbir police ice aktarilamadi", MudBlazor.Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Ice aktarma basarisiz: {result.Message}", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kayit sirasinda hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private bool AllPoliciesMapped() => previewPolicies.All(p => p.IsValid);
+    private int GetMappedCount() => previewPolicies.Count(p => p.IsValid);
+    private int GetUnmappedCount() => previewPolicies.Count(p => !p.IsValid);
+
+    private string GetIdentifierLabel(int? nationalityCountryId)
+    {
+        if (!nationalityCountryId.HasValue)
+            return "Kimlik/Pasaport";
+        if (kktcCountry != null && nationalityCountryId.Value == kktcCountry.Id)
+            return "Kimlik No (ID Card)";
+        return "Pasaport No (Passport)";
+    }
+
+    private async Task<IEnumerable<CountryDto>> SearchCountriesAsync(string searchTerm, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 1)
+            return countries;
+
+        var searchLower = searchTerm.ToLowerInvariant();
+
+        return countries.Where(c =>
+        {
+            if (kktcCountry != null && c.Id == kktcCountry.Id)
+            {
+                if (searchLower.Contains("kktc") || searchLower.Contains("kk"))
+                    return true;
+                var nameLower = c.NameTr.ToLowerInvariant();
+                if (nameLower.Contains(searchLower))
+                    return true;
+            }
+            return c.NameTr.ToLowerInvariant().Contains(searchLower) ||
+                   c.NameEn.ToLowerInvariant().Contains(searchLower) ||
+                   (!string.IsNullOrEmpty(c.Code) && c.Code.ToLowerInvariant().Contains(searchLower));
+        }).ToList();
+    }
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomersAsync(string searchTerm, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 2)
+            return Enumerable.Empty<CustomerDto>();
+
+        try
+        {
+            var queryParams = new IAMS.Shared.QueryParams.CustomerQueryParams
+            {
+                PageNumber = 1,
+                PageSize = 10,
+                SearchTerm = searchTerm
+            };
+
+            var result = await CustomersApi.GetCustomersAsync(queryParams);
+            if (result.IsSuccess && result.Data != null)
+                return result.Data.Items;
+
+            return Enumerable.Empty<CustomerDto>();
+        }
+        catch
+        {
+            return Enumerable.Empty<CustomerDto>();
+        }
+    }
+
+    private void OnPolicyOwnerSameAsInsuredChanged(PolicyImportPreviewDto policy, bool value)
+    {
+        policy.PolicyOwnerSameAsInsured = value;
+        if (value)
+        {
+            policy.PolicyOwnerCustomerId = null;
+            policy.CreateNewPolicyOwner = false;
+            policy.PolicyOwnerName = null;
+            policy.PolicyOwnerIdentifier = null;
+            policy.PolicyOwnerPhone = null;
+            policy.PolicyOwnerCustomerType = CustomerType.Individual;
+            policy.PolicyOwnerNationalityCountryId = null;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnOwnerCustomerSelected(PolicyImportPreviewDto policy, CustomerDto? customer)
+    {
+        if (customer != null)
+        {
+            policy.PolicyOwnerCustomerId = customer.Id;
+            policy.CreateNewPolicyOwner = false;
+        }
+        else
+        {
+            policy.PolicyOwnerCustomerId = null;
+        }
+        StateHasChanged();
+    }
+
+    private void OnCreateNewPolicyOwnerChanged(PolicyImportPreviewDto policy, bool value)
+    {
+        policy.CreateNewPolicyOwner = value;
+        if (value)
+        {
+            policy.PolicyOwnerCustomerId = null;
+            policy.PolicyOwnerCustomerType = CustomerType.Individual;
+            if (kktcCountry != null)
+                policy.PolicyOwnerNationalityCountryId = kktcCountry.Id;
+        }
+        else
+        {
+            policy.PolicyOwnerName = null;
+            policy.PolicyOwnerIdentifier = null;
+            policy.PolicyOwnerPhone = null;
+            policy.PolicyOwnerCustomerType = CustomerType.Individual;
+            policy.PolicyOwnerNationalityCountryId = null;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnCustomerTypeChanged(PolicyImportPreviewDto policy, CustomerType type)
+    {
+        policy.PolicyOwnerCustomerType = type;
+        if (type == CustomerType.Individual && !policy.PolicyOwnerNationalityCountryId.HasValue && kktcCountry != null)
+            policy.PolicyOwnerNationalityCountryId = kktcCountry.Id;
+        else if (type == CustomerType.Corporate)
+            policy.PolicyOwnerNationalityCountryId = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnNationalityCountrySelected(PolicyImportPreviewDto policy, CountryDto? country)
+    {
+        policy.PolicyOwnerNationalityCountryId = country?.Id;
+        InvokeAsync(StateHasChanged);
+    }
+}

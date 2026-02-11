@@ -4,6 +4,7 @@
 @inject IPolicyImportApiClient ImportApi
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject NavigationManager Navigation
 @attribute [Authorize]
 
 <PageTitle>Police Import - IAMS</PageTitle>
@@ -248,10 +249,10 @@
         var dialog = await DialogService.ShowAsync<ImportDialog>($"{company.Name} - Import", parameters);
         var result = await dialog.Result;
 
-        if (!result!.Canceled)
+        if (!result!.Canceled && result.Data is string navigationUrl)
         {
-            await LoadRecentJobs();
-            Snackbar.Add("Import islemi kuyruga alindi", MudBlazor.Severity.Success);
+            // Navigate to the review page with Cari Kart mapping
+            Navigation.NavigateTo(navigationUrl);
         }
     }
 

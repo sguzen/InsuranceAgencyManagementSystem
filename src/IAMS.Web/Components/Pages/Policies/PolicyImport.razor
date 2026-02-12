@@ -255,8 +255,10 @@
                                                                  Label="Uyruk (Nationality)" Variant="Variant.Outlined"
                                                                  Dense="true" Margin="Margin.Dense" Class="mt-2"
                                                                  Required="true"
+                                                                 Clearable="true"
                                                                  ResetValueOnEmptyText="true"
                                                                  CoerceText="true"
+                                                                 CoerceValue="false"
                                                                  AdornmentIcon="@Icons.Material.Filled.Search"
                                                                  AdornmentColor="Color.Primary"
                                                                  ValueChanged="@((CountryDto c) => OnNationalityCountrySelected(policy, c))" />
@@ -467,6 +469,9 @@
 
     private async Task<IEnumerable<CountryDto>> SearchCountriesAsync(string searchTerm, CancellationToken cancellationToken)
     {
+        // Must yield to allow MudAutocomplete to handle state properly (same pattern as AddVehicleDialog)
+        await Task.Delay(1, cancellationToken);
+
         // Return all countries if no search term or too short
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 1)
             return countries;

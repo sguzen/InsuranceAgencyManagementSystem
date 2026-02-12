@@ -433,8 +433,8 @@
                 kktcCountry = countries.FirstOrDefault(c =>
                     c.Id == KKTC_COUNTRY_ID ||
                     c.Code == "601" ||
-                    c.NameTr.Contains("KUZEY") ||
-                    c.NameTr.Contains("KIBRIS") ||
+                    c.NameTr.ToUpperInvariant().Contains("KUZEY") ||
+                    c.NameTr.ToUpperInvariant().Contains("KK") ||
                     c.NameTr.ToUpperInvariant().Contains("KKTC"));
 
                 if (kktcCountry != null)

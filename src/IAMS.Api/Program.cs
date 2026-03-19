@@ -174,6 +174,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.UsePathBase("/backend");
 
 // Configure the HTTP request pipeline.
 // IMPORTANT: Middleware order matters!
@@ -195,15 +196,15 @@ if (enableHttpLogging)
 }
 
 // 5. Development-specific middleware
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "IAMS API V1");
         c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
     });
-}
+//}
 
 app.UseHttpsRedirection();
 

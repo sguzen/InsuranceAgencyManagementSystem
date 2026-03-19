@@ -189,16 +189,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseAntiforgery();
 
 app.UseMultiTenancy();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
-
 app.MapControllers();
 app.MapRazorPages();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-app.UseAntiforgery();
 app.Run();

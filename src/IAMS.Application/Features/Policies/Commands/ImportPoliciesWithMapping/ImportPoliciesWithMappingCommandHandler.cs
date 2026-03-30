@@ -628,17 +628,15 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             CancellationToken cancellationToken)
         {
             // IMPORTANT: Traffic and KASKO policies MUST be fully paid by law (no outstanding amount allowed)
-            bool isTrafficPolicy = policyType.Code?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Code?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Code?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
+            bool isTrafficPolicy = policyType.Name?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Name?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Name?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
                                    policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
                                    policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
+                                   policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
+                                   policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
 
-            bool isKaskoPolicy = policyType.Code?.Contains("KASKO", StringComparison.OrdinalIgnoreCase) == true ||
-                                 policyType.Name?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true ||
-                                 policyType.Category?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true;
+            bool isKaskoPolicy = policyType.Name?.Contains("KASKO", StringComparison.OrdinalIgnoreCase) == true;
 
             bool requiresFullPayment = isTrafficPolicy || isKaskoPolicy;
 

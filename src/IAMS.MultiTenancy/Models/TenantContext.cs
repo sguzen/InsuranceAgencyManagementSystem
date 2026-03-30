@@ -140,6 +140,11 @@ namespace IAMS.MultiTenancy.Models
         public string Currency => Tenant.Currency;
 
         /// <summary>
+        /// Get tenant's external ID
+        /// </summary>
+        public string ExternalId => Tenant.ExternalId;
+
+        /// <summary>
         /// Get tenant's language
         /// </summary>
         public string Language => Tenant.Language;

@@ -1,10 +1,19 @@
+@inject IConfiguration Configuration
 <!DOCTYPE html>
 <html lang="tr">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/admin/" />
+    @{
+        // Read the PathBase from appsettings.json, default to "/" for local dev
+        var basePath = Configuration["Hosting:PathBase"] ?? "/";
+        if (!basePath.EndsWith("/"))
+        {
+            basePath += "/";
+        }
+    }
+    <base href="@basePath" />
 
     <!-- MudBlazor CSS -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />

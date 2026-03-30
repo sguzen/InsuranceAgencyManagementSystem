@@ -174,7 +174,11 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-app.UsePathBase("/backend");
+var pathBase = app.Configuration["Hosting:PathBase"];
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    app.UsePathBase(pathBase);
+}
 
 // Configure the HTTP request pipeline.
 // IMPORTANT: Middleware order matters!
@@ -195,16 +199,21 @@ if (enableHttpLogging)
     app.UseMiddleware<HttpLoggingMiddleware>();
 }
 
-// 5. Development-specific middleware
-//if (app.Environment.IsDevelopment())
-//{
+
+// 2. Control Swagger via Configuration instead of Environment Variables
+var enableSwagger = app.Configuration.GetValue<bool>("EnableSwagger", false);
+if (app.Environment.IsDevelopment() || enableSwagger)
+{
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "IAMS API V1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
+        // Dynamically point to the correct JSON file location
+        var swaggerPath = string.IsNullOrWhiteSpace(pathBase) ? "/swagger/v1/swagger.json" : $"{pathBase}/swagger/v1/swagger.json";
+        c.SwaggerEndpoint(swaggerPath, "IAMS API v1");
     });
-//}
+}
+
+app.UseRouting();
 
 app.UseHttpsRedirection();
 

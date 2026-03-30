@@ -82,7 +82,11 @@ builder.Services.AddScoped<IMasterInsuranceCompaniesApiClient, MasterInsuranceCo
     new MasterInsuranceCompaniesApiClient(sp.GetRequiredService<HttpClient>()));
 
 var app = builder.Build();
-app.UsePathBase("/admin");
+var pathBase = app.Configuration["Hosting:PathBase"];
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    app.UsePathBase(pathBase);
+}
 
 if (!app.Environment.IsDevelopment())
 {

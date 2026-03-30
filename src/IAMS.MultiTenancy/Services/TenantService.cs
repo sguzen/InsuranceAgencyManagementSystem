@@ -209,6 +209,7 @@ namespace IAMS.MultiTenancy.Services
                 MaxUsers = entity.MaxUsers,
                 MaxStorageBytes = entity.MaxStorageBytes,
                 ContactEmail = entity.ContactEmail,
+                ExternalId = entity.ExternalId,
                 TimeZone = entity.TimeZone,
                 Currency = entity.Currency,
                 Language = entity.Language,

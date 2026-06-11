@@ -103,8 +103,8 @@ public class VehiclesControllerTests : IClassFixture<TestWebApplicationFactory<P
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<dynamic>();
-        result.Should().NotBeNull();
+        var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        result.ValueKind.Should().NotBe(System.Text.Json.JsonValueKind.Null);
     }
 
     [Fact]

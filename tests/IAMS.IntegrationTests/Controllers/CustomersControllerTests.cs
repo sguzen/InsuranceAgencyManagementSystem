@@ -40,8 +40,10 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var customer = await response.Content.ReadFromJsonAsync<CustomerDto>();
+        var result = await response.Content.ReadFromJsonAsync<IAMS.Shared.Models.Result<CustomerDto>>();
 
+        result.Should().NotBeNull();
+        var customer = result!.Data;
         customer.Should().NotBeNull();
         customer!.Id.Should().Be(1);
         customer.FirstName.Should().Be("Ahmet");
@@ -75,8 +77,10 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var customer = await response.Content.ReadFromJsonAsync<CustomerDto>();
+        var result = await response.Content.ReadFromJsonAsync<IAMS.Shared.Models.Result<CustomerDto>>();
 
+        result.Should().NotBeNull();
+        var customer = result!.Data;
         customer.Should().NotBeNull();
         customer!.FirstName.Should().Be("Mehmet");
         customer.LastName.Should().Be("Yılmaz");

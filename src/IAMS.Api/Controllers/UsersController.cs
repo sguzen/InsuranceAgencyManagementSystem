@@ -72,14 +72,8 @@ namespace IAMS.Api.Controllers
                     });
                 }
 
-                return Ok(new
-                {
-                    users = userDtos,
-                    totalCount,
-                    page,
-                    pageSize,
-                    totalPages = (int)Math.Ceiling((double)totalCount / pageSize)
-                });
+                var pagedResult = IAMS.Shared.Models.PagedResult<UserDto>.Create(userDtos, totalCount, page, pageSize);
+                return Ok(pagedResult);
             }
             catch (Exception ex)
             {
@@ -254,6 +248,78 @@ namespace IAMS.Api.Controllers
                 return StatusCode(500, new { message = "Error changing password" });
             }
         }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userManager.Users.OrderBy(u => u.Email).ToListAsync();
+                var userDtos = new List<UserDto>();
+                foreach (var user in users)
+                {
+                    var roles = await _userManager.GetRolesAsync(user);
+                    userDtos.Add(new UserDto
+                    {
+                        Id = user.Id,
+                        Email = user.Email!,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        IsActive = user.IsActive,
+                        CreatedOn = user.CreatedOn,
+                        LastLogin = user.LastLogin,
+                        Roles = roles.ToList()
+                    });
+                }
+                return Ok(userDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all users");
+                return StatusCode(500, new { message = "Error retrieving all users" });
+            }
+        }
+
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+            return Ok(roles);
+        }
+
+        [HttpGet("{id}/roles")]
+        public async Task<IActionResult> GetUserRoles(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound(new { message = "User not found" });
+            var roles = await _userManager.GetRolesAsync(user);
+            return Ok(roles);
+        }
+
+        [HttpPut("{id}/roles")]
+        public async Task<IActionResult> UpdateUserRoles(string id, [FromBody] UpdateUserRolesDto request)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound(new { message = "User not found" });
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (request.Roles?.Any() == true)
+            {
+                await _userManager.AddToRolesAsync(user, request.Roles);
+            }
+            return Ok(new { message = "Roles updated successfully" });
+        }
+
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> ToggleUserStatus(string id, [FromBody] ToggleUserStatusDto request)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound(new { message = "User not found" });
+            user.IsActive = request.IsActive;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+            return Ok(new { message = "Status updated successfully" });
+        }
     }
 
     public class CreateUserDto
@@ -277,5 +343,15 @@ namespace IAMS.Api.Controllers
     {
         public string CurrentPassword { get; set; } = string.Empty;
         public string NewPassword { get; set; } = string.Empty;
+    }
+
+    public class UpdateUserRolesDto
+    {
+        public List<string> Roles { get; set; } = new();
+    }
+
+    public class ToggleUserStatusDto
+    {
+        public bool IsActive { get; set; }
     }
 }

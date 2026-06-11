@@ -132,16 +132,16 @@
                                     </MudItem>
                                 }
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.NationalityCountryId"
-                                             Label="Uyruk"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true">
-                                        @foreach (var country in countries)
-                                        {
-                                            <MudSelectItem T="int?" Value="@((int?)country.Id)">@country.NameTr (@country.Code)</MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                    <MudAutocomplete T="CountryDto"
+                                                     Label="Uyruk"
+                                                     Variant="Variant.Outlined"
+                                                     Value="@selectedNationality"
+                                                     ValueChanged="@OnNationalityChanged"
+                                                     SearchFunc="@SearchCountries"
+                                                     ToStringFunc="@(c => c == null ? string.Empty : $"{c.NameTr} ({c.Code})")"
+                                                     ResetValueOnEmptyText="true"
+                                                     CoerceValue="true"
+                                                     Clearable="true" />
                                 </MudItem>
                             </MudGrid>
                         </MudCardContent>
@@ -402,6 +402,7 @@
 
     private CreateOrUpdateCustomerDto model = new();
     private bool saving = false;
+    private CountryDto? selectedNationality;
 
     // Parametric data
     private List<CountryDto> countries = new();
@@ -444,6 +445,8 @@
             model.Gender = Gender.Male;
             model.Status = CustomerStatus.Active;
             model.IdentificationType = IdentificationType.IdCard;
+            model.NationalityCountryId = 1; // KKTC default
+            selectedNationality = countries.FirstOrDefault(c => c.Id == 1);
         }
     }
 
@@ -529,6 +532,7 @@
                     Status = customer.Status,
                     Notes = customer.Notes
                 };
+                selectedNationality = countries.FirstOrDefault(c => c.Id == model.NationalityCountryId);
             }
         }
         catch (Exception ex)
@@ -622,6 +626,32 @@
         {
             saving = false;
         }
+    }
+
+    private void OnNationalityChanged(CountryDto? country)
+    {
+        selectedNationality = country;
+        model.NationalityCountryId = country?.Id;
+
+        if (model.Type == CustomerType.Individual)
+        {
+            if (country?.Id == 1) // KKTC
+                model.IdentificationType = IdentificationType.IdCard;
+            else if (country != null)
+                model.IdentificationType = IdentificationType.Passport;
+        }
+    }
+
+    private Task<IEnumerable<CountryDto>> SearchCountries(string? value, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(countries.AsEnumerable());
+
+        var filtered = countries.Where(c =>
+            c.NameTr.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            c.Code.Contains(value, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(filtered);
     }
 
     private void GoBack()

@@ -1,10 +1,10 @@
 using FluentAssertions;
-using IAMS.Application.DTOs.Vehicle;
+using IAMS.Shared.DTOs.Vehicle;
 using IAMS.Application.Interfaces;
 using IAMS.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+
 using Moq;
 using System.Net;
 using System.Net.Http.Json;
@@ -103,8 +103,8 @@ public class VehiclesControllerTests : IClassFixture<TestWebApplicationFactory<P
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<dynamic>();
-        result.Should().NotBeNull();
+        var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        result.ValueKind.Should().NotBe(System.Text.Json.JsonValueKind.Null);
     }
 
     [Fact]

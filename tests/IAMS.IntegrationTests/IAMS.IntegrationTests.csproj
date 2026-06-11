@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.16" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
@@ -25,7 +26,7 @@
     <ProjectReference Include="..\..\src\IAMS.Application\IAMS.Application.csproj" />
     <ProjectReference Include="..\..\src\IAMS.Infrastructure\IAMS.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
-    <ProjectReference Include="..\..\src\IAMS.Web\IAMS.Web.csproj" />
+    <ProjectReference Include="..\..\src\IAMS.Api\IAMS.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
-using IAMS.Application.DTOs.Customer;
+using FluentAssertions;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.IntegrationTests.Fixtures;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+
 using System.Net;
 using System.Net.Http.Json;
 
@@ -18,7 +18,7 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
         _client = _factory.CreateClient();
 
         // Add tenant header for multi-tenancy
-        _client.DefaultRequestHeaders.Add("X-Tenant", "test-agency-1");
+        _client.DefaultRequestHeaders.Add("X-Tenant-ID", "test-agency-1");
     }
 
     [Fact]
@@ -40,8 +40,10 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var customer = await response.Content.ReadFromJsonAsync<CustomerDto>();
+        var result = await response.Content.ReadFromJsonAsync<IAMS.Shared.Models.Result<CustomerDto>>();
 
+        result.Should().NotBeNull();
+        var customer = result!.Data;
         customer.Should().NotBeNull();
         customer!.Id.Should().Be(1);
         customer.FirstName.Should().Be("Ahmet");
@@ -62,12 +64,12 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
     public async Task CreateCustomer_WithValidData_ReturnsCreated()
     {
         // Arrange
-        var createDto = new CreateCustomerDto
+        var createDto = new CreateOrUpdateCustomerDto
         {
             FirstName = "Mehmet",
             LastName = "Yılmaz",
             Email = "mehmet.yilmaz@example.com",
-            Phone = "+90 533 111 2233"
+            MobilePhoneNumber = "+90 533 111 2233"
         };
 
         // Act
@@ -75,8 +77,10 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var customer = await response.Content.ReadFromJsonAsync<CustomerDto>();
+        var result = await response.Content.ReadFromJsonAsync<IAMS.Shared.Models.Result<CustomerDto>>();
 
+        result.Should().NotBeNull();
+        var customer = result!.Data;
         customer.Should().NotBeNull();
         customer!.FirstName.Should().Be("Mehmet");
         customer.LastName.Should().Be("Yılmaz");
@@ -90,7 +94,7 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
     public async Task CreateCustomer_WithInvalidFirstName_ReturnsBadRequest(string firstName)
     {
         // Arrange
-        var createDto = new CreateCustomerDto
+        var createDto = new CreateOrUpdateCustomerDto
         {
             FirstName = firstName,
             LastName = "Test",

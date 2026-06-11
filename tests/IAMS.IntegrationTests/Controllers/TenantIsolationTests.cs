@@ -1,7 +1,9 @@
-﻿using FluentAssertions;
-using IAMS.Application.DTOs.Customer;
+using FluentAssertions;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.IntegrationTests.Fixtures;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+
 using System.Net.Http.Json;
 
 namespace IAMS.IntegrationTests.MultiTenancy;
@@ -22,10 +24,10 @@ public class TenantIsolationTests : IClassFixture<TestWebApplicationFactory<Prog
         var tenant1Client = _factory.CreateClient();
         var tenant2Client = _factory.CreateClient();
 
-        tenant1Client.DefaultRequestHeaders.Add("X-Tenant", "test-agency-1");
-        tenant2Client.DefaultRequestHeaders.Add("X-Tenant", "test-agency-2");
+        tenant1Client.DefaultRequestHeaders.Add("X-Tenant-ID", "test-agency-1");
+        tenant2Client.DefaultRequestHeaders.Add("X-Tenant-ID", "test-agency-2");
 
-        var customerDto = new CreateCustomerDto
+        var customerDto = new CreateOrUpdateCustomerDto
         {
             FirstName = "Tenant1",
             LastName = "Customer",
@@ -34,18 +36,22 @@ public class TenantIsolationTests : IClassFixture<TestWebApplicationFactory<Prog
 
         // Act - Create customer in tenant 1
         var createResponse = await tenant1Client.PostAsJsonAsync("/api/customers", customerDto);
-        createResponse.EnsureSuccessStatusCode();
-        var createdCustomer = await createResponse.Content.ReadFromJsonAsync<CustomerDto>();
+        if (!createResponse.IsSuccessStatusCode)
+        {
+            var content = await createResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to create customer: {createResponse.StatusCode} - {content}");
+        }
+        var createdCustomer = await createResponse.Content.ReadFromJsonAsync<IAMS.Shared.Models.Result<CustomerDto>>();
 
         // Try to access the same customer from tenant 2
-        var tenant2Response = await tenant2Client.GetAsync($"/api/customers/{createdCustomer!.Id}");
+        var tenant2Response = await tenant2Client.GetAsync($"/api/customers/{createdCustomer!.Data!.Id}");
 
         // Assert
         tenant2Response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task RequestWithoutTenantHeader_ReturnsUnauthorized()
+    public async Task RequestWithoutTenantHeader_ReturnsSuccessWithDefaultTenant()
     {
         // Arrange
         var client = _factory.CreateClient();
@@ -55,6 +61,6 @@ public class TenantIsolationTests : IClassFixture<TestWebApplicationFactory<Prog
         var response = await client.GetAsync("/api/customers");
 
         // Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
     }
 }

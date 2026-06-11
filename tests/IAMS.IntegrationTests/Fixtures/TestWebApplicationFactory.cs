@@ -32,11 +32,10 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
         {
             // Remove the existing DbContext registrations and any DbConnection
             var descriptors = services.Where(d =>
-                d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>) ||
-                d.ServiceType == typeof(DbContextOptions<TenantDbContext>) ||
                 d.ServiceType.Name.Contains("DbContextOptions") ||
                 d.ServiceType == typeof(ApplicationDbContext) ||
                 d.ServiceType == typeof(TenantDbContext) ||
+                d.ServiceType == typeof(IAMS.Infrastructure.Data.IntegrationDbContext) ||
                 d.ServiceType.Name.Contains("DbConnection"))
                 .ToList();
 
@@ -44,6 +43,18 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
             {
                 services.Remove(descriptor);
             }
+
+            // Mock ITenantDatabaseService to prevent it from manually creating SQL Server connections
+            var tenantDbServiceDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IAMS.Shared.Interfaces.ITenantDatabaseService));
+            if (tenantDbServiceDescriptor != null)
+            {
+                services.Remove(tenantDbServiceDescriptor);
+            }
+            
+            var mockTenantDbService = new Moq.Mock<IAMS.Shared.Interfaces.ITenantDatabaseService>();
+            mockTenantDbService.Setup(m => m.EnsureTenantDatabaseAsync(Moq.It.IsAny<string>())).Returns(Task.CompletedTask);
+            mockTenantDbService.Setup(m => m.CreateTenantDatabaseAsync(Moq.It.IsAny<string>())).Returns(Task.CompletedTask);
+            services.AddScoped(_ => mockTenantDbService.Object);
 
             // Add test authentication
             services.AddAuthentication(options =>
@@ -72,6 +83,11 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
             services.AddDbContext<TenantDbContext>(options =>
             {
                 options.UseInMemoryDatabase("TestMasterDb");
+            });
+            
+            services.AddDbContext<IAMS.Infrastructure.Data.IntegrationDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("TestIntegrationDb");
             });
 
             // Build the service provider

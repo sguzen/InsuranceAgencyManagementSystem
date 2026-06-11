@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using IAMS.Application.DTOs.Customer;
+using FluentAssertions;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.IntegrationTests.Fixtures;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net;
@@ -62,12 +62,12 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
     public async Task CreateCustomer_WithValidData_ReturnsCreated()
     {
         // Arrange
-        var createDto = new CreateCustomerDto
+        var createDto = new CreateOrUpdateCustomerDto
         {
             FirstName = "Mehmet",
             LastName = "Yılmaz",
             Email = "mehmet.yilmaz@example.com",
-            Phone = "+90 533 111 2233"
+            MobilePhoneNumber = "+90 533 111 2233"
         };
 
         // Act
@@ -90,7 +90,7 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
     public async Task CreateCustomer_WithInvalidFirstName_ReturnsBadRequest(string firstName)
     {
         // Arrange
-        var createDto = new CreateCustomerDto
+        var createDto = new CreateOrUpdateCustomerDto
         {
             FirstName = firstName,
             LastName = "Test",

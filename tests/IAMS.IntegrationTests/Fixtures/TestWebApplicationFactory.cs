@@ -1,4 +1,5 @@
-﻿using IAMS.MultiTenancy.Data;
+using IAMS.MultiTenancy.Data;
+using IAMS.Persistence.Contexts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
             // Remove the existing DbContext registrations
             var descriptors = services.Where(d =>
                 d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>) ||
-                d.ServiceType == typeof(DbContextOptions<MasterDbContext>))
+                d.ServiceType == typeof(DbContextOptions<TenantDbContext>))
                 .ToList();
 
             foreach (var descriptor in descriptors)
@@ -31,7 +32,7 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
                 options.UseInMemoryDatabase("TestApplicationDb");
             });
 
-            services.AddDbContext<MasterDbContext>(options =>
+            services.AddDbContext<TenantDbContext>(options =>
             {
                 options.UseInMemoryDatabase("TestMasterDb");
             });
@@ -43,7 +44,7 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
             using var scope = serviceProvider.CreateScope();
             var scopedServices = scope.ServiceProvider;
             var appDb = scopedServices.GetRequiredService<ApplicationDbContext>();
-            var masterDb = scopedServices.GetRequiredService<MasterDbContext>();
+            var masterDb = scopedServices.GetRequiredService<TenantDbContext>();
             var logger = scopedServices.GetRequiredService<ILogger<TestWebApplicationFactory<TStartup>>>();
 
             try

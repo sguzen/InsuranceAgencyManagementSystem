@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using IAMS.Application.DTOs.Customer;
+using FluentAssertions;
+using IAMS.Shared.DTOs.Customer;
 using IAMS.IntegrationTests.Fixtures;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net.Http.Json;
@@ -25,7 +25,7 @@ public class TenantIsolationTests : IClassFixture<TestWebApplicationFactory<Prog
         tenant1Client.DefaultRequestHeaders.Add("X-Tenant", "test-agency-1");
         tenant2Client.DefaultRequestHeaders.Add("X-Tenant", "test-agency-2");
 
-        var customerDto = new CreateCustomerDto
+        var customerDto = new CreateOrUpdateCustomerDto
         {
             FirstName = "Tenant1",
             LastName = "Customer",

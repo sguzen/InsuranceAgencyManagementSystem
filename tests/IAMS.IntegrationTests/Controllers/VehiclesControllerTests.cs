@@ -1,5 +1,5 @@
 using FluentAssertions;
-using IAMS.Application.DTOs.Vehicle;
+using IAMS.Shared.DTOs.Vehicle;
 using IAMS.Application.Interfaces;
 using IAMS.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Hosting;

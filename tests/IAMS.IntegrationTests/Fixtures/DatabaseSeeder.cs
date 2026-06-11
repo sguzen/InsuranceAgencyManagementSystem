@@ -1,5 +1,5 @@
-﻿using IAMS.Domain.Entities;
-using IAMS.Infrastructure.Data;
+using IAMS.Domain.Entities;
+using IAMS.Persistence.Contexts;
 using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
 
@@ -7,7 +7,7 @@ namespace IAMS.IntegrationTests.Fixtures;
 
 public static class DatabaseSeeder
 {
-    public static void SeedTestData(ApplicationDbContext appDb, MasterDbContext masterDb)
+    public static void SeedTestData(ApplicationDbContext appDb, TenantDbContext masterDb)
     {
         // Seed master database with test tenants
         if (!masterDb.Tenants.Any())

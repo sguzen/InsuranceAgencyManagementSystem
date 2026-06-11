@@ -1,4 +1,4 @@
-﻿// IAMS.Api/Controllers/UsersController.cs
+// IAMS.Api/Controllers/UsersController.cs
 using IAMS.Shared.DTOs.Identity;
 using IAMS.Domain.Entities;
 using IAMS.Identity.Services;
@@ -88,7 +88,7 @@ namespace IAMS.Api.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetUser(string id)
         {
             try
@@ -161,7 +161,7 @@ namespace IAMS.Api.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto request)
         {
             try
@@ -199,7 +199,7 @@ namespace IAMS.Api.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             try
@@ -228,7 +228,7 @@ namespace IAMS.Api.Controllers
             }
         }
 
-        [HttpPost("{id}/change-password")]
+        [HttpPost("{id:guid}/change-password")]
         public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordDto request)
         {
             try

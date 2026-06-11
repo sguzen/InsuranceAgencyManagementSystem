@@ -1,7 +1,7 @@
 using FluentAssertions;
 using IAMS.Shared.DTOs.Customer;
 using IAMS.IntegrationTests.Fixtures;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+
 using System.Net;
 using System.Net.Http.Json;
 

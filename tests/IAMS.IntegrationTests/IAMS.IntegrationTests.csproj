@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -26,7 +26,7 @@
     <ProjectReference Include="..\..\src\IAMS.Application\IAMS.Application.csproj" />
     <ProjectReference Include="..\..\src\IAMS.Infrastructure\IAMS.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\IAMS.MultiTenancy\IAMS.MultiTenancy.csproj" />
-    <ProjectReference Include="..\..\src\IAMS.Web\IAMS.Web.csproj" />
+    <ProjectReference Include="..\..\src\IAMS.Api\IAMS.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

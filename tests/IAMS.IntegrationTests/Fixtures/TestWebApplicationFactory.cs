@@ -13,6 +13,8 @@ namespace IAMS.IntegrationTests.Fixtures;
 public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
     where TStartup : class
 {
+    private readonly string _dbId = Guid.NewGuid().ToString();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureAppConfiguration((context, config) =>
@@ -74,45 +76,57 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
                 });
             });
 
-            // Add test databases
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>((sp, options) =>
             {
-                options.UseInMemoryDatabase("TestApplicationDb");
+                var tenantAccessor = sp.GetService<IAMS.MultiTenancy.Interfaces.ITenantContextAccessor>();
+                string dbName = $"TestApplicationDb_{_dbId}_default";
+
+                if (tenantAccessor?.TenantContext?.Tenant != null)
+                {
+                    dbName = $"TestApplicationDb_{_dbId}_{tenantAccessor.TenantContext.Tenant.Identifier}";
+                }
+
+                options.UseInMemoryDatabase(dbName);
             });
 
             services.AddDbContext<TenantDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestMasterDb");
+                options.UseInMemoryDatabase($"TestMasterDb_{_dbId}");
             });
             
             services.AddDbContext<IAMS.Infrastructure.Data.IntegrationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestIntegrationDb");
+                options.UseInMemoryDatabase($"TestIntegrationDb_{_dbId}");
             });
 
             // Build the service provider
             var serviceProvider = services.BuildServiceProvider();
 
-            // Create a scope to obtain references to the database contexts
-            using var scope = serviceProvider.CreateScope();
-            var scopedServices = scope.ServiceProvider;
-            var appDb = scopedServices.GetRequiredService<ApplicationDbContext>();
-            var masterDb = scopedServices.GetRequiredService<TenantDbContext>();
-            var logger = scopedServices.GetRequiredService<ILogger<TestWebApplicationFactory<TStartup>>>();
-
-            try
+            using (var scope = serviceProvider.CreateScope())
             {
-                // Ensure the databases are created
-                appDb.Database.EnsureCreated();
+                var scopedServices = scope.ServiceProvider;
+                var masterDb = scopedServices.GetRequiredService<TenantDbContext>();
                 masterDb.Database.EnsureCreated();
 
-                // Seed test data
-                DatabaseSeeder.SeedTestData(appDb, masterDb);
+                var tenantAccessor = scopedServices.GetRequiredService<IAMS.MultiTenancy.Interfaces.ITenantContextAccessor>();
+
+                // Seed default tenant's app db
+                tenantAccessor.TenantContext = new IAMS.MultiTenancy.Models.TenantContext(new IAMS.MultiTenancy.Models.Tenant { Identifier = "default" });
+                var appDbDefault = scopedServices.GetRequiredService<ApplicationDbContext>();
+                appDbDefault.Database.EnsureCreated();
+                DatabaseSeeder.SeedTestData(appDbDefault, masterDb);
             }
-            catch (Exception ex)
+
+            using (var scope2 = serviceProvider.CreateScope())
             {
-                logger.LogError(ex, "An error occurred seeding the test database.");
-                throw;
+                var scopedServices2 = scope2.ServiceProvider;
+                var tenantAccessor2 = scopedServices2.GetRequiredService<IAMS.MultiTenancy.Interfaces.ITenantContextAccessor>();
+                tenantAccessor2.TenantContext = new IAMS.MultiTenancy.Models.TenantContext(new IAMS.MultiTenancy.Models.Tenant { Identifier = "test-agency-1" });
+                
+                var appDbAgency1 = scopedServices2.GetRequiredService<ApplicationDbContext>();
+                var masterDb2 = scopedServices2.GetRequiredService<TenantDbContext>();
+                appDbAgency1.Database.EnsureCreated();
+                DatabaseSeeder.SeedTestData(appDbAgency1, masterDb2);
             }
         });
 

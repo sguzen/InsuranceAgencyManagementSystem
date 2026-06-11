@@ -18,7 +18,7 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
         _client = _factory.CreateClient();
 
         // Add tenant header for multi-tenancy
-        _client.DefaultRequestHeaders.Add("X-Tenant", "test-agency-1");
+        _client.DefaultRequestHeaders.Add("X-Tenant-ID", "test-agency-1");
     }
 
     [Fact]

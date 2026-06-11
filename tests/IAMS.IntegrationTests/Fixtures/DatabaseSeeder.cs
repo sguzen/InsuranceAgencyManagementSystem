@@ -10,13 +10,13 @@ public static class DatabaseSeeder
     public static void SeedTestData(ApplicationDbContext appDb, TenantDbContext masterDb)
     {
         // Seed master database with test tenants
-        if (!masterDb.Tenants.Any())
+        if (!masterDb.Tenants.Any(t => t.Identifier == "test-agency-1"))
         {
             var tenants = new[]
             {
                 new TenantEntity
                 {
-                    Id = 1,
+                    Id = 2,
                     Name = "Test Agency 1",
                     Identifier = "test-agency-1",
                     ConnectionString = "InMemory",
@@ -32,7 +32,7 @@ public static class DatabaseSeeder
                 },
                 new TenantEntity
                 {
-                    Id = 2,
+                    Id = 3,
                     Name = "Test Agency 2",
                     Identifier = "test-agency-2",
                     ConnectionString = "InMemory",

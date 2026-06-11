@@ -25,6 +25,10 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    permissions:
+      checks: write        # Allows creating check runs
+      pull-requests: write # Allows commenting on PRs
+      contents: read       # Already needed for checkout
 
     steps:
       - name: Checkout code

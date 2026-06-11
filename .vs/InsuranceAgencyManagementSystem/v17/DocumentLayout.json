@@ -114,8 +114,7 @@
               "RelativeToolTip": "src\\IAMS.Web\\Components\\Pages\\Settings\\Users\\EditUserDialog.razor",
               "ViewState": "AgIAAN8AAAAAAAAAAAD4v/MAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-11T16:13:16.196Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T16:13:16.196Z"
             },
             {
               "$type": "Document",
@@ -125,7 +124,7 @@
               "RelativeDocumentMoniker": "src\\IAMS.Web\\Services\\ApiClient\\UsersApiClient.cs",
               "ToolTip": "C:\\Users\\Sis\\source\\repos\\InsuranceAgencyManagementSystem\\src\\IAMS.Web\\Services\\ApiClient\\UsersApiClient.cs",
               "RelativeToolTip": "src\\IAMS.Web\\Services\\ApiClient\\UsersApiClient.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAjwDIAAABdAAAAAAAAAA==",
+              "ViewState": "AgIAABYAAAAAAAAAAIA2wDIAAABdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-11T15:55:26.531Z",
               "EditorCaption": ""
@@ -140,8 +139,7 @@
               "RelativeToolTip": ".github\\workflows\\ci-cd.yml",
               "ViewState": "AgIAAGYAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
-              "WhenOpened": "2026-06-11T15:41:32.431Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T15:41:32.431Z"
             },
             {
               "$type": "Document",

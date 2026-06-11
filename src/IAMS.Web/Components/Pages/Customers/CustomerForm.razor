@@ -1,4 +1,4 @@
-﻿@page "/customers/create"
+@page "/customers/create"
 @page "/customers/{CustomerId:int}/edit"
 @layout Layout.MainLayout
 @attribute [Authorize]
@@ -160,9 +160,10 @@
                             <MudGrid>
                                 <MudItem xs="12" md="6">
                                     <MudSelect @bind-Value="model.IdentificationType"
-                                             Label="Kimlik Türü *"
+                                             Label="@(model.Type == CustomerType.Corporate ? "Kurum Kimlik Türü *" : "Kimlik Türü *")"
                                              Variant="Variant.Outlined"
                                              Required="true"
+                                             ToStringFunc="@GetIdentificationTypeText"
                                              T="IdentificationType">
                                         @if (model.Type == CustomerType.Corporate)
                                         {
@@ -179,6 +180,7 @@
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.IdentificationNumber"
                                                 Label="@(model.Type == CustomerType.Corporate ? "Vergi Numarası *" : "Kimlik Numarası *")"
+                                                Placeholder="@(model.Type == CustomerType.Corporate ? "Vergi Numarası" : "Kimlik Numarası")"
                                                 Variant="Variant.Outlined"
                                                 Required="true"
                                                 For="@(() => model.IdentificationNumber)" />
@@ -200,10 +202,9 @@
                             <MudGrid>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.Email"
-                                                Label="E-posta *"
+                                                Label="E-posta"
                                                 Variant="Variant.Outlined"
                                                 InputType="InputType.Email"
-                                                Required="true"
                                                 For="@(() => model.Email)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
@@ -445,8 +446,13 @@
             model.Gender = Gender.Male;
             model.Status = CustomerStatus.Active;
             model.IdentificationType = IdentificationType.IdCard;
-            model.NationalityCountryId = 1; // KKTC default
-            selectedNationality = countries.FirstOrDefault(c => c.Id == 1);
+            
+            var kktc = countries.FirstOrDefault(c => c.Code == "601" || c.NameTr.Contains("KUZEY KIBRIS"));
+            if (kktc != null)
+            {
+                model.NationalityCountryId = kktc.Id;
+                selectedNationality = kktc;
+            }
         }
     }
 
@@ -635,7 +641,7 @@
 
         if (model.Type == CustomerType.Individual)
         {
-            if (country?.Id == 1) // KKTC
+            if (country?.Code == "601" || country?.NameTr?.Contains("KUZEY KIBRIS") == true) // KKTC
                 model.IdentificationType = IdentificationType.IdCard;
             else if (country != null)
                 model.IdentificationType = IdentificationType.Passport;
@@ -647,9 +653,13 @@
         if (string.IsNullOrWhiteSpace(value))
             return Task.FromResult(countries.AsEnumerable());
 
+        var isKktcSearch = value.Equals("KKTC", StringComparison.OrdinalIgnoreCase) || 
+                           value.Equals("kk", StringComparison.OrdinalIgnoreCase);
+
         var filtered = countries.Where(c =>
             c.NameTr.Contains(value, StringComparison.OrdinalIgnoreCase) ||
-            c.Code.Contains(value, StringComparison.OrdinalIgnoreCase));
+            c.Code.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (isKktcSearch && (c.Code == "601" || c.NameTr.Contains("KUZEY KIBRIS"))));
 
         return Task.FromResult(filtered);
     }
@@ -657,5 +667,17 @@
     private void GoBack()
     {
         Navigation.NavigateTo("/customers");
+    }
+
+    private string GetIdentificationTypeText(IdentificationType type)
+    {
+        return type switch
+        {
+            IdentificationType.TaxNumber => "Vergi Numarası (VN)",
+            IdentificationType.IdCard => "Kimlik No (KN)",
+            IdentificationType.Passport => "Pasaport No (PN)",
+            IdentificationType.TradeLicense => "Mali Şirket (MŞ)",
+            _ => type.ToString()
+        };
     }
 }

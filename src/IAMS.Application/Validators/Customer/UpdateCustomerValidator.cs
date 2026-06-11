@@ -23,13 +23,13 @@ namespace IAMS.Application.Validators.Customer
                 .When(x => x.Type == CustomerType.Individual);
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Email format is invalid")
-                .MaximumLength(255).WithMessage("Email must not exceed 255 characters");
+                .MaximumLength(255).WithMessage("Email must not exceed 255 characters")
+                .When(x => !string.IsNullOrEmpty(x.Email));
 
             RuleFor(x => x.MobilePhoneNumber)
-                .NotEmpty().WithMessage("Phone is required")
-                .MaximumLength(20).WithMessage("Phone must not exceed 20 characters");
+                .MaximumLength(20).WithMessage("Phone must not exceed 20 characters")
+                .When(x => !string.IsNullOrEmpty(x.MobilePhoneNumber));
 
             //RuleFor(x => x.Address)
             //    .NotEmpty().WithMessage("Address is required")

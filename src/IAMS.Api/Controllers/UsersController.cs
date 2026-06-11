@@ -73,12 +73,12 @@ namespace IAMS.Api.Controllers
                 }
 
                 var pagedResult = IAMS.Shared.Models.PagedResult<UserDto>.Create(userDtos, totalCount, page, pageSize);
-                return Ok(pagedResult);
+                return Ok(IAMS.Shared.Models.Result<IAMS.Shared.Models.PagedResult<UserDto>>.Success(pagedResult));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving users");
-                return StatusCode(500, new { message = "Error retrieving users" });
+                return StatusCode(500, IAMS.Shared.Models.Result<IAMS.Shared.Models.PagedResult<UserDto>>.InternalError("Error retrieving users"));
             }
         }
 
@@ -90,7 +90,7 @@ namespace IAMS.Api.Controllers
                 var user = await _userManager.FindByIdAsync(id);
                 if (user == null)
                 {
-                    return NotFound(new { message = "User not found" });
+                    return NotFound(IAMS.Shared.Models.Result<UserDto>.NotFound("User not found"));
                 }
 
                 var roles = await _userManager.GetRolesAsync(user);
@@ -107,12 +107,12 @@ namespace IAMS.Api.Controllers
                     Roles = roles.ToList()
                 };
 
-                return Ok(userDto);
+                return Ok(IAMS.Shared.Models.Result<UserDto>.Success(userDto));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving user {UserId}", id);
-                return StatusCode(500, new { message = "Error retrieving user" });
+                return StatusCode(500, IAMS.Shared.Models.Result<UserDto>.InternalError("Error retrieving user"));
             }
         }
 
@@ -133,7 +133,7 @@ namespace IAMS.Api.Controllers
 
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new { errors = result.Errors });
+                    return BadRequest(IAMS.Shared.Models.Result<UserDto>.Failure("Failed to create user", result.Errors.ToList()));
                 }
 
                 // Assign roles if provided
@@ -146,12 +146,12 @@ namespace IAMS.Api.Controllers
                     }
                 }
 
-                return CreatedAtAction(nameof(GetUser), new { id = result.UserId }, new { userId = result.UserId });
+                return CreatedAtAction(nameof(GetUser), new { id = result.UserId }, IAMS.Shared.Models.Result<UserDto>.Success(new UserDto { Id = result.UserId! }));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating user");
-                return StatusCode(500, new { message = "Error creating user" });
+                return StatusCode(500, IAMS.Shared.Models.Result<UserDto>.InternalError("Error creating user"));
             }
         }
 
@@ -163,7 +163,7 @@ namespace IAMS.Api.Controllers
                 var user = await _userManager.FindByIdAsync(id);
                 if (user == null)
                 {
-                    return NotFound(new { message = "User not found" });
+                    return NotFound(IAMS.Shared.Models.Result.NotFound("User not found"));
                 }
 
                 user.FirstName = request.FirstName;
@@ -173,7 +173,7 @@ namespace IAMS.Api.Controllers
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+                    return BadRequest(IAMS.Shared.Models.Result.Failure("Failed to update user", result.Errors.Select(e => e.Description).ToList()));
                 }
 
                 // Update roles if provided
@@ -184,12 +184,12 @@ namespace IAMS.Api.Controllers
                     await _userManager.AddToRolesAsync(user, request.Roles);
                 }
 
-                return Ok(new { message = "User updated successfully" });
+                return Ok(IAMS.Shared.Models.Result.Success("User updated successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating user {UserId}", id);
-                return StatusCode(500, new { message = "Error updating user" });
+                return StatusCode(500, IAMS.Shared.Models.Result.InternalError("Error updating user"));
             }
         }
 
@@ -201,7 +201,7 @@ namespace IAMS.Api.Controllers
                 var user = await _userManager.FindByIdAsync(id);
                 if (user == null)
                 {
-                    return NotFound(new { message = "User not found" });
+                    return NotFound(IAMS.Shared.Models.Result.NotFound("User not found"));
                 }
 
                 // Soft delete - just deactivate
@@ -210,15 +210,15 @@ namespace IAMS.Api.Controllers
 
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+                    return BadRequest(IAMS.Shared.Models.Result.Failure("Failed to delete user", result.Errors.Select(e => e.Description).ToList()));
                 }
 
-                return Ok(new { message = "User deactivated successfully" });
+                return Ok(IAMS.Shared.Models.Result.Success("User deactivated successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting user {UserId}", id);
-                return StatusCode(500, new { message = "Error deleting user" });
+                return StatusCode(500, IAMS.Shared.Models.Result.InternalError("Error deleting user"));
             }
         }
 
@@ -230,22 +230,22 @@ namespace IAMS.Api.Controllers
                 var user = await _userManager.FindByIdAsync(id);
                 if (user == null)
                 {
-                    return NotFound(new { message = "User not found" });
+                    return NotFound(IAMS.Shared.Models.Result.NotFound("User not found"));
                 }
 
                 var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
 
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+                    return BadRequest(IAMS.Shared.Models.Result.Failure("Failed to change password", result.Errors.Select(e => e.Description).ToList()));
                 }
 
-                return Ok(new { message = "Password changed successfully" });
+                return Ok(IAMS.Shared.Models.Result.Success("Password changed successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error changing password for user {UserId}", id);
-                return StatusCode(500, new { message = "Error changing password" });
+                return StatusCode(500, IAMS.Shared.Models.Result.InternalError("Error changing password"));
             }
         }
 
@@ -271,12 +271,12 @@ namespace IAMS.Api.Controllers
                         Roles = roles.ToList()
                     });
                 }
-                return Ok(userDtos);
+                return Ok(IAMS.Shared.Models.Result<List<UserDto>>.Success(userDtos));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving all users");
-                return StatusCode(500, new { message = "Error retrieving all users" });
+                return StatusCode(500, IAMS.Shared.Models.Result<List<UserDto>>.InternalError("Error retrieving all users"));
             }
         }
 
@@ -284,41 +284,41 @@ namespace IAMS.Api.Controllers
         public async Task<IActionResult> GetAllRoles()
         {
             var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-            return Ok(roles);
+            return Ok(IAMS.Shared.Models.Result<List<string>>.Success(roles!));
         }
 
         [HttpGet("{id}/roles")]
         public async Task<IActionResult> GetUserRoles(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound(new { message = "User not found" });
+            if (user == null) return NotFound(IAMS.Shared.Models.Result<List<string>>.NotFound("User not found"));
             var roles = await _userManager.GetRolesAsync(user);
-            return Ok(roles);
+            return Ok(IAMS.Shared.Models.Result<List<string>>.Success(roles.ToList()));
         }
 
         [HttpPut("{id}/roles")]
         public async Task<IActionResult> UpdateUserRoles(string id, [FromBody] UpdateUserRolesDto request)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound(new { message = "User not found" });
+            if (user == null) return NotFound(IAMS.Shared.Models.Result.NotFound("User not found"));
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
             if (request.Roles?.Any() == true)
             {
                 await _userManager.AddToRolesAsync(user, request.Roles);
             }
-            return Ok(new { message = "Roles updated successfully" });
+            return Ok(IAMS.Shared.Models.Result.Success("Roles updated successfully"));
         }
 
         [HttpPut("{id}/status")]
         public async Task<IActionResult> ToggleUserStatus(string id, [FromBody] ToggleUserStatusDto request)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound(new { message = "User not found" });
+            if (user == null) return NotFound(IAMS.Shared.Models.Result.NotFound("User not found"));
             user.IsActive = request.IsActive;
             var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded) return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
-            return Ok(new { message = "Status updated successfully" });
+            if (!result.Succeeded) return BadRequest(IAMS.Shared.Models.Result.Failure("Failed to update status", result.Errors.Select(e => e.Description).ToList()));
+            return Ok(IAMS.Shared.Models.Result.Success("Status updated successfully"));
         }
     }
 

@@ -1,6 +1,6 @@
 @using IAMS.Application.Interfaces
 @using IAMS.Shared.DTOs.Identity
-@using IAMS.Web.Services.ApiClient
+@using IAMS.Admin.Services.ApiClient
 @inject IUsersApiClient UsersApi
 @inject ISnackbar Snackbar
 
@@ -65,7 +65,35 @@
                                  Label="Aktif kullanıcı"
                                  Color="Color.Primary" />
 
+                    <!-- Password Change -->
+                    <MudDivider Class="my-4" />
+                    <MudExpansionPanels>
+                        <MudExpansionPanel Text="Şifre Değiştir" IsExpanded="false">
+                            <MudStack Spacing="3">
+                                <MudAlert Severity="MudBlazor.Severity.Info" Dense="true">
+                                    Şifreyi değiştirmek istemiyorsanız bu alanları boş bırakın
+                                </MudAlert>
 
+                                <MudTextField @bind-Value="newPassword"
+                                              Label="Yeni Şifre"
+                                              Variant="Variant.Outlined"
+                                              InputType="@passwordInputType"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@passwordIcon"
+                                              OnAdornmentClick="TogglePasswordVisibility" />
+
+                                <MudTextField @bind-Value="confirmPassword"
+                                              Label="Şifre Tekrar"
+                                              Variant="Variant.Outlined"
+                                              InputType="@passwordInputType" />
+
+                                @if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(confirmPassword) && newPassword != confirmPassword)
+                                {
+                                    <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">Şifreler eşleşmiyor</MudAlert>
+                                }
+                            </MudStack>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
                 </MudStack>
             </MudForm>
         </MudContainer>
@@ -99,6 +127,11 @@
     private bool saving;
     private List<string>? availableRoles;
 
+    private string? newPassword;
+    private string? confirmPassword;
+    private bool showPassword = false;
+    private InputType passwordInputType = InputType.Password;
+    private string passwordIcon = Icons.Material.Filled.VisibilityOff;
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,6 +178,12 @@
         }
     }
 
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? InputType.Text : InputType.Password;
+        passwordIcon = showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
 
     private async Task Submit()
     {
@@ -154,7 +193,27 @@
             return;
         }
 
+        // Only validate password if user is trying to change it
+        if (!string.IsNullOrEmpty(newPassword) || !string.IsNullOrEmpty(confirmPassword))
+        {
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                Snackbar.Add("Yeni şifre boş olamaz", MudBlazor.Severity.Warning);
+                return;
+            }
 
+            if (string.IsNullOrEmpty(confirmPassword))
+            {
+                Snackbar.Add("Şifre tekrar boş olamaz", MudBlazor.Severity.Warning);
+                return;
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                Snackbar.Add("Şifreler eşleşmiyor", MudBlazor.Severity.Warning);
+                return;
+            }
+        }
 
         saving = true;
         try
@@ -176,6 +235,23 @@
                 }
                 saving = false;
                 return;
+            }
+
+            // Change password only if provided
+            if (!string.IsNullOrEmpty(newPassword))
+            {
+                var changePasswordDto = new ChangePasswordDto { NewPassword = newPassword };
+                var passwordResult = await UsersApi.ChangePasswordAsync(model.Id, changePasswordDto);
+                if (!passwordResult.IsSuccess)
+                {
+                    Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", MudBlazor.Severity.Warning);
+                }
+                else
+                {
+                    Snackbar.Add("Kullanıcı ve şifre başarıyla güncellendi", MudBlazor.Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                    return;
+                }
             }
 
             Snackbar.Add("Kullanıcı başarıyla güncellendi", MudBlazor.Severity.Success);

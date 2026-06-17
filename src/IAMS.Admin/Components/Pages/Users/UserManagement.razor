@@ -1,0 +1,263 @@
+@page "/users"
+@layout Layout.MainLayout
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using IAMS.Application.Interfaces
+@using IAMS.Shared.DTOs.Identity
+@using IAMS.Application.Constants
+@using IAMS.Application.Helpers
+@using IAMS.Admin.Services.ApiClient
+@inject IUsersApiClient UsersApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Kullanıcı Yönetimi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <MudStack Spacing="4">
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="_breadcrumbItems" Separator=">" />
+
+        <!-- Header -->
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4" GutterBottom="false">
+                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-3" />
+                Kullanıcı Yönetimi
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenAddUserDialog">
+                Yeni Kullanıcı
+            </MudButton>
+        </MudStack>
+
+        <!-- User List -->
+        <MudCard>
+            <MudCardContent>
+                @if (loading)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else if (users == null || !users.Any())
+                {
+                    <MudAlert Severity="MudBlazor.Severity.Info">Henüz kullanıcı bulunmamaktadır.</MudAlert>
+                }
+                else
+                {
+                    <MudTable Items="@users" Hover="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>Ad Soyad</MudTh>
+                            <MudTh>E-posta</MudTh>
+                            <MudTh>Roller</MudTh>
+                            <MudTh>Son Giriş</MudTh>
+                            <MudTh>Durum</MudTh>
+                            <MudTh>İşlemler</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Ad Soyad">
+                                <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        @context.FirstName[0]@context.LastName[0]
+                                    </MudAvatar>
+                                    <MudText>@context.FirstName @context.LastName</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="E-posta">@context.Email</MudTd>
+                            <MudTd DataLabel="Roller">
+                                @if (context.Roles.Any())
+                                {
+                                    @foreach (var role in context.Roles)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="GetRoleColor(role)">@RoleTranslations.ToTurkish(role)</MudChip>
+                                    }
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Son Giriş">
+                                @if (context.LastLogin.HasValue)
+                                {
+                                    <MudText Typo="Typo.body2">@context.LastLogin.Value.ToString("dd.MM.yyyy HH:mm")</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Hiç giriş yapmadı</MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Durum">
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Color="@(context.IsActive ? Color.Success : Color.Error)"
+                                         Variant="Variant.Text">
+                                    @(context.IsActive ? "Aktif" : "Pasif")
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="İşlemler">
+                                <MudStack Row Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => OpenEditUserDialog(context))"
+                                                   Title="Düzenle" />
+                                    <MudIconButton Icon="@(context.IsActive ? Icons.Material.Filled.PersonOff : Icons.Material.Filled.Person)"
+                                                   Size="Size.Small"
+                                                   Color="@(context.IsActive ? Color.Warning : Color.Success)"
+                                                   OnClick="@(() => ToggleUserStatus(context))"
+                                                   Title="@(context.IsActive ? "Pasif Yap" : "Aktif Yap")" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => DeleteUser(context))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private List<BreadcrumbItem> _breadcrumbItems = new();
+    private List<UserDto> users = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbItems = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Yönetim Paneli", href: "/"),
+            new BreadcrumbItem("Kullanıcı Yönetimi", href: null, disabled: true)
+        };
+
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        loading = true;
+        try
+        {
+            var result = await UsersApi.GetAllUsersAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                users = result.Data;
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Kullanıcılar yüklenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private Color GetRoleColor(string role)
+    {
+        return role switch
+        {
+            RoleNames.SuperAdmin => Color.Error,
+            RoleNames.Admin => Color.Warning,
+            RoleNames.Manager => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private async Task OpenAddUserDialog()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddUserDialog>("Yeni Kullanıcı Ekle", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadUsers();
+        }
+    }
+
+    private async Task OpenEditUserDialog(UserDto user)
+    {
+        var parameters = new DialogParameters<EditUserDialog>
+        {
+            { x => x.User, user }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<EditUserDialog>("Kullanıcıyı Düzenle", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadUsers();
+        }
+    }
+
+    private async Task ToggleUserStatus(UserDto user)
+    {
+        var action = user.IsActive ? "pasif" : "aktif";
+        var confirmed = await DialogService.ShowMessageBox(
+            "Durum Değiştir",
+            $"{user.FirstName} {user.LastName} kullanıcısını {action} yapmak istediğinizden emin misiniz?",
+            yesText: "Evet", cancelText: "İptal");
+
+        if (confirmed == true)
+        {
+            var result = await UsersApi.ToggleUserStatusAsync(user.Id, !user.IsActive);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add($"Kullanıcı durumu güncellendi", MudBlazor.Severity.Success);
+                await LoadUsers();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Durum güncellenirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteUser(UserDto user)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Kullanıcıyı Sil",
+            $"{user.FirstName} {user.LastName} kullanıcısını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+            yesText: "Sil", cancelText: "İptal");
+
+        if (confirmed == true)
+        {
+            var result = await UsersApi.DeleteUserAsync(user.Id);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Kullanıcı başarıyla silindi", MudBlazor.Severity.Success);
+                await LoadUsers();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Kullanıcı silinirken hata oluştu", MudBlazor.Severity.Error);
+            }
+        }
+    }
+}

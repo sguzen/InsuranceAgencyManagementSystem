@@ -14,6 +14,7 @@ namespace IAMS.Admin.Services.ApiClient
         Task<Result<List<string>>> GetUserRolesAsync(string userId);
         Task<Result<List<string>>> GetAllRolesAsync();
         Task<Result> UpdateUserRolesAsync(string userId, List<string> roles);
+        Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto);
         Task<Result> ToggleUserStatusAsync(string userId, bool isActive);
     }
 
@@ -70,6 +71,11 @@ namespace IAMS.Admin.Services.ApiClient
         public async Task<Result> UpdateUserRolesAsync(string userId, List<string> roles)
         {
             return await PutAsync($"api/users/{userId}/roles", new { Roles = roles });
+        }
+
+        public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto)
+        {
+            return await PostAsync($"api/users/{userId}/change-password", changePasswordDto);
         }
 
         public async Task<Result> ToggleUserStatusAsync(string userId, bool isActive)

@@ -1,4 +1,4 @@
-﻿using IAMS.MultiTenancy.Interfaces;
+using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -6,7 +6,7 @@ using IAMS.MultiTenancy.Models;
 
 namespace IAMS.MultiTenancy.Services
 {
-    public class ModuleService : IModuleService
+    public class ModuleService : IModuleService, IAMS.Application.Interfaces.IModuleService
     {
         private readonly ITenantContextAccessor _tenantContextAccessor;
         private readonly TenantDbContext _tenantdbContext;

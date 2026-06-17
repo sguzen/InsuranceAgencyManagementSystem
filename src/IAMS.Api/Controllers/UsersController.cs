@@ -2,7 +2,6 @@
 using IAMS.Shared.DTOs.Identity;
 using IAMS.Domain.Entities;
 using IAMS.Identity.Services;
-using IAMS.Shared.DTOs.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -223,7 +222,7 @@ namespace IAMS.Api.Controllers
         }
 
         [HttpPost("{id:guid}/change-password")]
-        public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordDto request)
+        public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminResetPasswordDto request)
         {
             try
             {
@@ -233,7 +232,9 @@ namespace IAMS.Api.Controllers
                     return NotFound(IAMS.Shared.Models.Result.NotFound("User not found"));
                 }
 
-                var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+                // Since admin may not know the current password, use token based reset
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
 
                 if (!result.Succeeded)
                 {
@@ -322,26 +323,8 @@ namespace IAMS.Api.Controllers
         }
     }
 
-    public class CreateUserDto
+    public class AdminResetPasswordDto
     {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public List<string>? Roles { get; set; }
-    }
-
-    public class UpdateUserDto
-    {
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
-        public List<string>? Roles { get; set; }
-    }
-
-    public class ChangePasswordDto
-    {
-        public string CurrentPassword { get; set; } = string.Empty;
         public string NewPassword { get; set; } = string.Empty;
     }
 

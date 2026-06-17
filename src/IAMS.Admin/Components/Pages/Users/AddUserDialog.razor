@@ -1,6 +1,7 @@
 @using IAMS.Application.Interfaces
 @using IAMS.Shared.DTOs.Identity
-@using IAMS.Web.Services.ApiClient
+@using IAMS.Application.Helpers
+@using IAMS.Admin.Services.ApiClient
 @inject IUsersApiClient UsersApi
 @inject ISnackbar Snackbar
 
@@ -35,6 +36,31 @@
                                   Label="Telefon"
                                   Variant="Variant.Outlined" />
 
+                    <!-- Password -->
+                    <MudText Typo="Typo.h6" Class="mb-2 mt-4">Şifre Bilgileri</MudText>
+
+                    <MudTextField @bind-Value="model.Password"
+                                  Label="Şifre"
+                                  Variant="Variant.Outlined"
+                                  InputType="@passwordInputType"
+                                  Required="true"
+                                  RequiredError="Şifre gereklidir"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@passwordIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility" />
+
+                    <MudTextField @bind-Value="model.ConfirmPassword"
+                                  Label="Şifre Tekrar"
+                                  Variant="Variant.Outlined"
+                                  InputType="@passwordInputType"
+                                  Required="true"
+                                  RequiredError="Şifre tekrar gereklidir" />
+
+                    @if (!string.IsNullOrEmpty(model.Password) && !string.IsNullOrEmpty(model.ConfirmPassword) && model.Password != model.ConfirmPassword)
+                    {
+                        <MudAlert Severity="MudBlazor.Severity.Warning" Dense="true">Şifreler eşleşmiyor</MudAlert>
+                    }
+
                     <!-- Roles -->
                     <MudText Typo="Typo.h6" Class="mb-2 mt-4">Roller</MudText>
 
@@ -64,8 +90,6 @@
                     <MudCheckBox @bind-Value="model.IsActive"
                                  Label="Aktif kullanıcı"
                                  Color="Color.Primary" />
-
-
                 </MudStack>
             </MudForm>
         </MudContainer>
@@ -91,28 +115,19 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public UserDto User { get; set; } = null!;
 
-    private UpdateUserDto model = new();
+    private CreateUserDto model = new() { IsActive = true };
     private MudForm form = null!;
     private bool isValid;
     private bool saving;
     private List<string>? availableRoles;
 
+    private bool showPassword = false;
+    private InputType passwordInputType = InputType.Password;
+    private string passwordIcon = Icons.Material.Filled.VisibilityOff;
 
     protected override async Task OnInitializedAsync()
     {
-        // Initialize model from User parameter
-        model = new UpdateUserDto
-        {
-            Id = User.Id,
-            Email = User.Email,
-            FirstName = User.FirstName,
-            LastName = User.LastName,
-            IsActive = User.IsActive,
-            Roles = new List<string>(User.Roles)
-        };
-
         await LoadRoles();
     }
 
@@ -145,6 +160,12 @@
         }
     }
 
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? InputType.Text : InputType.Password;
+        passwordIcon = showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
 
     private async Task Submit()
     {
@@ -154,14 +175,22 @@
             return;
         }
 
-
+        if (model.Password != model.ConfirmPassword)
+        {
+            Snackbar.Add("Şifreler eşleşmiyor", MudBlazor.Severity.Warning);
+            return;
+        }
 
         saving = true;
         try
         {
-            // Update user information
-            var result = await UsersApi.UpdateUserAsync(model.Id, model);
-            if (!result.IsSuccess)
+            var result = await UsersApi.CreateUserAsync(model);
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Kullanıcı başarıyla oluşturuldu", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result.Data));
+            }
+            else
             {
                 if (result.Errors?.Any() == true)
                 {
@@ -172,14 +201,9 @@
                 }
                 else
                 {
-                    Snackbar.Add(result.Message ?? "Kullanıcı güncellenirken hata oluştu", MudBlazor.Severity.Error);
+                    Snackbar.Add(result.Message ?? "Kullanıcı oluşturulurken hata oluştu", MudBlazor.Severity.Error);
                 }
-                saving = false;
-                return;
             }
-
-            Snackbar.Add("Kullanıcı başarıyla güncellendi", MudBlazor.Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {

@@ -177,7 +177,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.AccountBalance"
                                                    Size="Size.Small"
                                                    Color="Color.Info"
-                                                   OnClick="@(() => Navigation.NavigateTo($"/agencies/{context.Id}/insurance-companies"))"
+                                                   OnClick="@(() => Navigation.NavigateTo($"agencies/{context.Id}/insurance-companies"))"
                                                    Title="Sigorta Şirketleri" />
                                     @if (context.Status == AgencyStatus.Active)
                                     {
@@ -222,7 +222,7 @@
     {
         _breadcrumbItems = new List<BreadcrumbItem>
         {
-            new BreadcrumbItem("Yönetim Paneli", href: "/agencies"),
+            new BreadcrumbItem("Yönetim Paneli", href: "./"),
             new BreadcrumbItem("Acenta Yönetimi", href: null, disabled: true)
         };
 

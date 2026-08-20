@@ -21,7 +21,7 @@
             <!-- Stats -->
             <MudGrid>
                 <MudItem xs="12" sm="6" md="3">
-                    <MudCard Style="cursor: pointer;" @onclick="@(() => Navigation.NavigateTo("/agencies"))">
+                    <MudCard Style="cursor: pointer;" @onclick="@(() => Navigation.NavigateTo("agencies"))">
                         <MudCardContent>
                             <MudStack AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Size="Size.Large" />
@@ -74,7 +74,7 @@
                                Color="Color.Primary"
                                FullWidth="true"
                                StartIcon="@Icons.Material.Filled.Add"
-                               Href="/agencies"
+                               Href="agencies"
                                Size="Size.Large"
                                Class="py-4">
                         Yeni Acenta Ekle
@@ -85,7 +85,7 @@
                                Color="Color.Warning"
                                FullWidth="true"
                                StartIcon="@Icons.Material.Filled.Security"
-                               Href="/roles"
+                               Href="roles"
                                Size="Size.Large"
                                Class="py-4">
                         Rolleri Yönet
@@ -96,7 +96,7 @@
                                Color="Color.Info"
                                FullWidth="true"
                                StartIcon="@Icons.Material.Filled.People"
-                               Href="/users"
+                               Href="users"
                                Size="Size.Large"
                                Class="py-4">
                         Kullanıcıları Yönet

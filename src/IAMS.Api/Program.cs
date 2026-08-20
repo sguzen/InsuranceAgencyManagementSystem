@@ -5,6 +5,7 @@ using IAMS.Infrastructure.Logging.Enrichers;
 using IAMS.Infrastructure.Services;
 using IAMS.Persistence.Extensions;
 using IAMS.Identity.Extensions;
+using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Extensions;
 using IAMS.Api.Middleware;
 using IAMS.Api.Authentication;
@@ -174,6 +175,14 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Apply pending master database (TenantDb) schema scripts before serving requests.
+// Scripts: src/IAMS.MultiTenancy/Data/Migrations/*.sql, journaled in dbo.__MasterDbMigrations.
+// Disable with MasterDb:AutoMigrate=false to run them out-of-band instead.
+using (var migrationScope = app.Services.CreateScope())
+{
+    migrationScope.ServiceProvider.GetRequiredService<IMasterDbMigrator>().Migrate();
+}
 var pathBase = app.Configuration["Hosting:PathBase"];
 if (!string.IsNullOrWhiteSpace(pathBase))
 {

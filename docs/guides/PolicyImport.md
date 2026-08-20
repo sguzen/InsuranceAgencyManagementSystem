@@ -355,7 +355,8 @@ insurer's policy database. The MySQL policy import filters on that code
 must be correct *per insurer*.
 
 - Set it in the admin panel: **Acentalar → Sigorta Şirketleri → Düzenle → "Acenta Kodu"**
-  (stored in `AgencyInsuranceCompanies.AgencyCode`, master DB; migration `sql/005_AddAgencyCodeToAgencyInsuranceCompanies.sql`).
+  (stored in `AgencyInsuranceCompanies.AgencyCode`, master DB; applied automatically at API startup by
+  `src/IAMS.MultiTenancy/Data/Migrations/0005_AddAgencyCodeToAgencyInsuranceCompanies.sql`).
 - Format: 1–10 letters/digits (`IAMS.Shared.Validation.AgencyCodeRules`). Anything else is rejected by the API.
 - Links with no code fall back to the agency-level `Tenants.ExternalId` (the old single-code behaviour)
   and log a warning. If neither is set, preview/import fails fast with a clear message instead of querying.

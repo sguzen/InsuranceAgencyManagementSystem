@@ -300,6 +300,13 @@ namespace IAMS.Persistence.Services
                     "Please configure connection details in the agency insurance company settings.");
             }
 
+            if (string.IsNullOrWhiteSpace(credentials.AgencyCode))
+            {
+                throw new InvalidOperationException(
+                    $"No agency code configured for agency {agencyId}, insurance company {masterInsuranceCompanyId}. " +
+                    "Set the agency code (the insurer's 'ackod' for this agency) on the agency insurance company link in the admin panel.");
+            }
+
             logEntries.Add($"Credentials loaded: Host={credentials.Host}:{credentials.Port}, " +
                            $"Database={credentials.DatabaseName}, AgencyCode={credentials.AgencyCode ?? "N/A"}");
 

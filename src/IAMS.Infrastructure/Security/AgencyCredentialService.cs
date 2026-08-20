@@ -154,10 +154,22 @@ namespace IAMS.Infrastructure.Security
                 ? _encryption.Decrypt(entity.DbPassword)
                 : "";
 
-            // Get the agency code from the tenant entity
-            var tenant = await _context.Tenants
-                .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Id == agencyId);
+            // The agency code is assigned by each insurer, so it lives on the link.
+            // Fall back to the tenant-level ExternalId only for links created before
+            // per-insurer codes existed.
+            var agencyCode = entity.AgencyCode?.Trim();
+            if (string.IsNullOrEmpty(agencyCode))
+            {
+                var tenant = await _context.Tenants
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Id == agencyId);
+                agencyCode = tenant?.ExternalId?.Trim();
+
+                _logger.LogWarning(
+                    "No insurer-specific AgencyCode configured for Agency {AgencyId} / InsuranceCompany {InsuranceCompanyId}; " +
+                    "falling back to tenant ExternalId '{ExternalId}'. Set the agency code on the agency-insurance company link.",
+                    agencyId, insuranceCompanyId, agencyCode ?? "(none)");
+            }
 
             return new AgencyCredentialDetails
             {
@@ -167,7 +179,7 @@ namespace IAMS.Infrastructure.Security
                 Username = entity.DbUsername ?? "",
                 Password = password,
                 IsMySql = isMySql,
-                AgencyCode = tenant?.ExternalId
+                AgencyCode = string.IsNullOrEmpty(agencyCode) ? null : agencyCode
             };
         }
 

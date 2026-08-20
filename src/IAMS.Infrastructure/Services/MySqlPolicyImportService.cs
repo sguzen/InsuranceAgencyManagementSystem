@@ -5,7 +5,7 @@ using IAMS.Shared.DTOs.Policy;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using System.Text.Json;
-using System.Text.RegularExpressions;
+using IAMS.Shared.Validation;
 
 namespace IAMS.Infrastructure.Services
 {
@@ -27,8 +27,6 @@ namespace IAMS.Infrastructure.Services
         private readonly ILogger<MySqlPolicyImportService> _logger;
 
         // Validates agency code format to prevent injection (alphanumeric only, e.g., "A022")
-        private static readonly Regex AgencyCodeRegex = new(@"^[A-Za-z0-9]{1,10}$", RegexOptions.Compiled);
-
         public MySqlPolicyImportService(ILogger<MySqlPolicyImportService> logger)
         {
             _logger = logger;
@@ -71,11 +69,14 @@ namespace IAMS.Infrastructure.Services
             DateTime endDate,
             CancellationToken cancellationToken = default)
         {
-            var agencyCode = configuration.ApiKey?.Trim()
-                ?? throw new InvalidOperationException("Agency code (ApiKey) not configured for this import configuration");
+            var agencyCode = configuration.ApiKey?.Trim();
+            if (string.IsNullOrEmpty(agencyCode))
+                throw new InvalidOperationException(
+                    "Agency code is not configured for this insurance company. " +
+                    "Set the agency code (the insurer's 'ackod' for this agency) on the agency-insurance company link in the admin panel.");
 
             // Validate agency code format to prevent SQL injection
-            if (!AgencyCodeRegex.IsMatch(agencyCode))
+            if (!AgencyCodeRules.IsValid(agencyCode))
                 throw new ArgumentException($"Invalid agency code format: {agencyCode}");
 
             var connectionString = BuildConnectionString(configuration);

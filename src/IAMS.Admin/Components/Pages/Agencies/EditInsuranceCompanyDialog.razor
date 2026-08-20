@@ -14,6 +14,10 @@
 
                 <MudSwitch @bind-Value="model.IsActive" Label="Aktif" Color="Color.Success" />
 
+                <MudTextField @bind-Value="model.AgencyCode" Label="Acenta Kodu (Sigorta Şirketindeki)" Variant="Variant.Outlined"
+                              Placeholder="örn: A022" MaxLength="10"
+                              HelperText="Bu sigorta şirketinin sisteminde acentanıza verilen kod (ackod). Poliçe çekerken bu kodla filtrelenir." />
+
                 <MudDivider />
                 <MudText Typo="Typo.subtitle1">Veritabanı Bağlantı Bilgileri</MudText>
 
@@ -68,6 +72,7 @@
     {
         model = new UpdateAgencyInsuranceCompanyDto
         {
+            AgencyCode = Association.AgencyCode,
             DbServer = Association.DbServer,
             DbName = Association.DbName,
             DbUsername = Association.DbUsername,

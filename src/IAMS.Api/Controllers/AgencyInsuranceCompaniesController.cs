@@ -2,6 +2,7 @@ using IAMS.MultiTenancy.Data;
 using IAMS.MultiTenancy.Entities;
 using IAMS.Persistence.Services;
 using IAMS.Shared.DTOs.Agency;
+using IAMS.Shared.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -80,6 +81,9 @@ namespace IAMS.Api.Controllers
                 if (agency == null)
                     return NotFound(new { message = "Agency not found" });
 
+                if (!AgencyCodeRules.TryNormalize(request.AgencyCode, out var agencyCode, out var agencyCodeError))
+                    return BadRequest(new { message = agencyCodeError });
+
                 // Check for existing association (including soft-deleted)
                 var existingActive = await _context.AgencyInsuranceCompanies
                     .FirstOrDefaultAsync(aic => aic.AgencyId == agencyId
@@ -103,6 +107,7 @@ namespace IAMS.Api.Controllers
                     existingDeleted.DeletedBy = null;
                     existingDeleted.InsuranceCompanyName = request.InsuranceCompanyName;
                     existingDeleted.InsuranceCompanyCode = request.InsuranceCompanyCode;
+                    existingDeleted.AgencyCode = agencyCode;
                     existingDeleted.DbServer = request.DbServer;
                     existingDeleted.DbName = request.DbName;
                     existingDeleted.DbUsername = request.DbUsername;
@@ -122,6 +127,7 @@ namespace IAMS.Api.Controllers
                         InsuranceCompanyId = request.InsuranceCompanyId,
                         InsuranceCompanyName = request.InsuranceCompanyName,
                         InsuranceCompanyCode = request.InsuranceCompanyCode,
+                        AgencyCode = agencyCode,
                         DbServer = request.DbServer,
                         DbName = request.DbName,
                         DbUsername = request.DbUsername,
@@ -171,6 +177,10 @@ namespace IAMS.Api.Controllers
                 if (association == null)
                     return NotFound(new { message = "Association not found" });
 
+                if (!AgencyCodeRules.TryNormalize(request.AgencyCode, out var agencyCode, out var agencyCodeError))
+                    return BadRequest(new { message = agencyCodeError });
+
+                association.AgencyCode = agencyCode;
                 association.DbServer = request.DbServer;
                 association.DbName = request.DbName;
                 association.DbUsername = request.DbUsername;
@@ -343,6 +353,7 @@ namespace IAMS.Api.Controllers
                 InsuranceCompanyId = association.InsuranceCompanyId,
                 InsuranceCompanyName = association.InsuranceCompanyName,
                 InsuranceCompanyCode = association.InsuranceCompanyCode,
+                AgencyCode = association.AgencyCode,
                 DbServer = association.DbServer,
                 DbName = association.DbName,
                 DbUsername = association.DbUsername,

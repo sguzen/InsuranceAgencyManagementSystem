@@ -346,3 +346,18 @@ dotnet ef database update -p src/IAMS.Persistence -s src/IAMS.Web
 ## Support
 
 For questions or issues, please refer to the main project documentation or contact the development team.
+
+## Agency code per insurance company (MySQL import)
+
+Every insurance company assigns the agency its **own** agency code — the `ackod` value in the
+insurer's policy database. The MySQL policy import filters on that code
+(`@agencyCodeStart/@agencyCodeEnd` in `MySqlPolicyImportService.BuildPolicyQuery`), so the value
+must be correct *per insurer*.
+
+- Set it in the admin panel: **Acentalar → Sigorta Şirketleri → Düzenle → "Acenta Kodu"**
+  (stored in `AgencyInsuranceCompanies.AgencyCode`, master DB; migration `sql/005_AddAgencyCodeToAgencyInsuranceCompanies.sql`).
+- Format: 1–10 letters/digits (`IAMS.Shared.Validation.AgencyCodeRules`). Anything else is rejected by the API.
+- Links with no code fall back to the agency-level `Tenants.ExternalId` (the old single-code behaviour)
+  and log a warning. If neither is set, preview/import fails fast with a clear message instead of querying.
+- `DbServer` must include the MySQL port (e.g. `host:3306` or `host:23306`); without a MySQL port the
+  server is treated as SQL Server.

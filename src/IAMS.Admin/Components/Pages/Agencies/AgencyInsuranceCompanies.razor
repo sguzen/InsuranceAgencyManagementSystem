@@ -102,6 +102,7 @@
                             <HeaderContent>
                                 <MudTh>Sigorta Şirketi</MudTh>
                                 <MudTh>Durum</MudTh>
+                                <MudTh>Acenta Kodu</MudTh>
                                 <MudTh>DB Sunucu</MudTh>
                                 <MudTh>Veritabanı</MudTh>
                                 <MudTh>DB Kullanıcı</MudTh>
@@ -121,6 +122,16 @@
                                              Variant="Variant.Filled">
                                         @(context.IsActive ? "Aktif" : "Pasif")
                                     </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Acenta Kodu">
+                                    @if (!string.IsNullOrEmpty(context.AgencyCode))
+                                    {
+                                        <MudText Typo="Typo.body2">@context.AgencyCode</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Tanımsız</MudChip>
+                                    }
                                 </MudTd>
                                 <MudTd DataLabel="DB Sunucu">
                                     <MudText Typo="Typo.body2">@(context.DbServer ?? "-")</MudText>

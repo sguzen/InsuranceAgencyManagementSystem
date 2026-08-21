@@ -32,8 +32,8 @@
         
         <!-- User Menu -->
         <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
-            <MudMenuItem Icon="@Icons.Material.Filled.Person">Profil</MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.Settings">Ayarlar</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Person" OnClick="@(() => Navigation.NavigateTo("/profile"))">Profil</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="@(() => Navigation.NavigateTo("/settings"))">Ayarlar</MudMenuItem>
             <MudDivider />
             <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Çıkış</MudMenuItem>
         </MudMenu>

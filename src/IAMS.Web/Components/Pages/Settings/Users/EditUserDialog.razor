@@ -240,11 +240,16 @@
             // Change password only if provided
             if (!string.IsNullOrEmpty(newPassword))
             {
-                var changePasswordDto = new ChangePasswordDto { NewPassword = newPassword };
+                // Admin-initiated reset: no current password is sent.
+                var changePasswordDto = new ChangePasswordDto { NewPassword = newPassword, ConfirmNewPassword = confirmPassword };
                 var passwordResult = await UsersApi.ChangePasswordAsync(model.Id, changePasswordDto);
                 if (!passwordResult.IsSuccess)
                 {
                     Snackbar.Add("Kullanıcı güncellendi ancak şifre değiştirilemedi", MudBlazor.Severity.Warning);
+                    foreach (var error in passwordResult.Errors ?? new List<string>())
+                    {
+                        Snackbar.Add(error, MudBlazor.Severity.Warning);
+                    }
                 }
                 else
                 {

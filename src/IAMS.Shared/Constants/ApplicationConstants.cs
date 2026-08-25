@@ -58,6 +58,13 @@ namespace IAMS.Shared.Constants
             public const string Permission = "permission";
             public const string TenantId = "tenant_id";
             public const string TenantName = "tenant_name";
+
+            /// <summary>
+            /// Present only on principals authenticated with the internal service API key.
+            /// Marks the caller as a trusted internal service (e.g. the Web front-end),
+            /// which is allowed to assert the tenant via the X-Tenant-ID header.
+            /// </summary>
+            public const string ApiKeyValidated = "ApiKeyValidated";
         }
 
         /// <summary>

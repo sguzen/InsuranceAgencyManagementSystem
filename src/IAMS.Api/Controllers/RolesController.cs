@@ -11,7 +11,7 @@ namespace IAMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-  //  [Authorize]
+    [Authorize(Policy = "UserManagement")]
     public class RolesController : ControllerBase
     {
         private readonly RoleManager<ApplicationRole> _roleManager;

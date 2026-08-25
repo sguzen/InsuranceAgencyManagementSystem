@@ -17,6 +17,13 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Values read by Program.cs top-level statements (fail-fast secret checks) must be
+        // supplied via UseSetting: they flow into builder.Configuration before Program runs,
+        // whereas ConfigureAppConfiguration overrides only apply to later reads.
+        builder.UseSetting("JwtSettings:Secret", "test-secret-key-for-testing-only-not-for-production-needs-to-be-32-chars-long");
+        builder.UseSetting("ApiSettings:ApiKey", "test-api-key-12345");
+        builder.UseSetting("MultiTenancy:AllowClientTenantResolution", "true");
+
         builder.ConfigureAppConfiguration((context, config) =>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
@@ -26,7 +33,10 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
                 { "JwtSettings:Secret", "test-secret-key-for-testing-only-not-for-production-needs-to-be-32-chars-long" },
                 { "JwtSettings:Issuer", "IAMS-Test" },
                 { "JwtSettings:Audience", "IAMS-Test-Users" },
-                { "ApiSettings:ApiKey", "test-api-key-12345" }
+                { "ApiSettings:ApiKey", "test-api-key-12345" },
+                // Tests select the tenant via the X-Tenant-ID header without an API key,
+                // which production no longer trusts.
+                { "MultiTenancy:AllowClientTenantResolution", "true" }
             });
         });
 

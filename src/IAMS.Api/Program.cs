@@ -70,10 +70,30 @@ builder.Services.AddHostedService<IAMS.Persistence.Services.PolicyImportBackgrou
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"];
 
+// Fail fast on missing/weak secrets — never fall back to a committed default.
+// Development: dotnet user-secrets set "JwtSettings:Secret" "<random 32+ chars>"
+// Production: environment variable JwtSettings__Secret
+if (string.IsNullOrWhiteSpace(secretKey) || secretKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret is not configured or is shorter than 32 characters. " +
+        "Set it via user secrets (development) or environment variables (production).");
+}
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    // A policy scheme routes each request to JWT or API key authentication based on the
+    // credential the caller presents, so internal service calls (API key) and user calls
+    // (JWT) are both authenticated before the tenant middleware inspects the principal.
+    options.DefaultScheme = "JwtOrApiKey";
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddPolicyScheme("JwtOrApiKey", "JWT or API Key", options =>
+{
+    options.ForwardDefaultSelector = context =>
+        context.Request.Headers.ContainsKey("X-API-Key")
+            ? ApiKeyAuthenticationOptions.DefaultScheme
+            : JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -103,6 +123,25 @@ builder.Services.AddAuthorization(options =>
         policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, ApiKeyAuthenticationOptions.DefaultScheme);
         policy.RequireAuthenticatedUser();
     });
+
+    // User/role administration: the internal service (Web enforces its own UI permissions)
+    // or a user holding the users/roles management permission.
+    options.AddPolicy("UserManagement", policy =>
+    {
+        policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, ApiKeyAuthenticationOptions.DefaultScheme);
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(IAMS.Shared.Constants.ApplicationConstants.ClaimTypes.ApiKeyValidated, "true") ||
+            context.User.HasClaim(IAMS.Shared.Constants.ApplicationConstants.ClaimTypes.Permission, IAMS.Application.Constants.PermissionNames.ManageUsers) ||
+            context.User.HasClaim(IAMS.Shared.Constants.ApplicationConstants.ClaimTypes.Permission, IAMS.Application.Constants.PermissionNames.ManageRoles));
+    });
+
+    // Secure by default: any endpoint without explicit authorization metadata requires an
+    // authenticated caller (JWT or API key). Public endpoints must opt out with [AllowAnonymous].
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder(
+            JwtBearerDefaults.AuthenticationScheme, ApiKeyAuthenticationOptions.DefaultScheme)
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -163,14 +202,32 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add CORS
+// Add CORS — any origin only in Development; otherwise an explicit allow-list from
+// Cors:AllowedOrigins (wildcard subdomains supported, e.g. "https://*.example.com" to
+// cover every tenant host under a shared parent domain).
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+            if (allowedOrigins.Length == 0)
+            {
+                Log.Warning("Cors:AllowedOrigins is empty — cross-origin browser requests will be blocked");
+            }
+
+            policy.WithOrigins(allowedOrigins)
+                  .SetIsOriginAllowedToAllowWildcardSubdomains()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
     });
 });
 
@@ -228,11 +285,15 @@ app.UseHttpsRedirection();
 
 app.UseCors("DefaultPolicy");
 
-// 6. Multi-tenancy middleware - reads tenant info and connection strings from database
+// 6. Authentication BEFORE tenant resolution: the tenant middleware trusts the X-Tenant-ID
+// header only from API-key-authenticated internal services and validates the JWT's
+// tenant_id claim against the resolved tenant.
+app.UseAuthentication();
+
+// 7. Multi-tenancy middleware - reads tenant info and connection strings from database
 app.UseMultiTenancy();
 
-// 7. Authentication & Authorization
-app.UseAuthentication();
+// 8. Authorization
 app.UseAuthorization();
 
 // 8. Application endpoints

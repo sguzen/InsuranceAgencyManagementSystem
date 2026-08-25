@@ -1,25 +1,50 @@
-﻿// IAMS.MultiTenancy/Middleware/TenantMiddleware.cs
+// IAMS.MultiTenancy/Middleware/TenantMiddleware.cs
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using IAMS.MultiTenancy.Interfaces;
 using IAMS.MultiTenancy.Models;
+using IAMS.Shared.Constants;
 using IAMS.Shared.Interfaces;
 
 namespace IAMS.MultiTenancy.Middleware
 {
+    /// <summary>
+    /// Resolves the tenant for the current request from trusted sources only:
+    /// 1. X-Tenant-ID header — accepted only from internal service callers authenticated
+    ///    with the shared API key (or when MultiTenancy:AllowClientTenantResolution is
+    ///    explicitly enabled, e.g. local development / Swagger).
+    /// 2. The tenant_id claim of an authenticated principal (signed into the JWT at login).
+    /// 3. The request host's subdomain (each tenant has its own web address).
+    /// 4. The configured MultiTenancy:DefaultTenant, if set (single-tenant deployments).
+    ///
+    /// If the authenticated principal carries a tenant claim that does not match the
+    /// resolved tenant, the request is rejected with 403 — a user of tenant A can never
+    /// operate on tenant B's database, whatever headers they send.
+    ///
+    /// NOTE: in pipelines where authentication runs after this middleware (e.g. the Web
+    /// app's cookie authentication), context.User is unauthenticated here and only the
+    /// host/default sources apply.
+    /// </summary>
     public class TenantMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<TenantMiddleware> _logger;
+        private readonly bool _allowClientTenantResolution;
+        private readonly string? _defaultTenant;
 
         // Only inject services that are safe to inject at startup (Singleton or Transient)
         public TenantMiddleware(
             RequestDelegate next,
-            ILogger<TenantMiddleware> logger)
+            ILogger<TenantMiddleware> logger,
+            IConfiguration configuration)
         {
             _next = next;
             _logger = logger;
+            _allowClientTenantResolution = configuration.GetValue<bool>("MultiTenancy:AllowClientTenantResolution");
+            _defaultTenant = configuration["MultiTenancy:DefaultTenant"];
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -28,33 +53,50 @@ namespace IAMS.MultiTenancy.Middleware
             {
                 var tenantService = context.RequestServices.GetRequiredService<Interfaces.ITenantService>();
                 var tenantContextAccessor = context.RequestServices.GetRequiredService<ITenantContextAccessor>();
-                var tenantDbService = context.RequestServices.GetRequiredService<ITenantDatabaseService>(); 
+                var tenantDbService = context.RequestServices.GetRequiredService<ITenantDatabaseService>();
 
-                var tenantIdentifier = GetTenantIdentifier(context);
-                if (string.IsNullOrEmpty(tenantIdentifier))
+                Tenant? tenant = null;
+                foreach (var candidate in GetTenantIdentifierCandidates(context))
                 {
-                    tenantIdentifier = "default";
+                    tenant = await tenantService.GetTenantAsync(candidate);
+                    if (tenant != null)
+                    {
+                        break;
+                    }
                 }
 
-                var tenant = await tenantService.GetTenantAsync(tenantIdentifier);
                 if (tenant == null)
                 {
-                    _logger.LogWarning("Tenant not found: {TenantIdentifier}", tenantIdentifier);
-                    context.Response.StatusCode = 404;
-                    await context.Response.WriteAsync("Tenant not found");
+                    _logger.LogWarning("No tenant could be resolved for host {Host}", context.Request.Host.Value);
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await context.Response.WriteAsync("Tenant could not be resolved");
                     return;
                 }
 
-                // ENSURE TENANT DATABASE EXISTS AND IS MIGRATED
-                await tenantDbService.EnsureTenantDatabaseAsync(tenantIdentifier);
+                // An authenticated user may only operate on the tenant their token was issued for.
+                var claimTenant = context.User?.FindFirst(ApplicationConstants.ClaimTypes.TenantId)?.Value;
+                if (context.User?.Identity?.IsAuthenticated == true &&
+                    !string.IsNullOrEmpty(claimTenant) &&
+                    !string.Equals(claimTenant, tenant.Identifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(
+                        "Tenant mismatch: principal belongs to {ClaimTenant} but request resolved to {ResolvedTenant}",
+                        claimTenant, tenant.Identifier);
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    await context.Response.WriteAsync("Forbidden: tenant mismatch");
+                    return;
+                }
 
                 if (!tenant.IsActive)
                 {
                     _logger.LogWarning("Inactive tenant: {TenantId}", tenant.Id);
-                    context.Response.StatusCode = 403;
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     await context.Response.WriteAsync("Tenant is inactive");
                     return;
                 }
+
+                // Ensure the tenant database exists and is migrated (cached per tenant per process)
+                await tenantDbService.EnsureTenantDatabaseAsync(tenant.Identifier);
 
                 tenantContextAccessor.TenantContext = new TenantContext(tenant);
 
@@ -70,50 +112,66 @@ namespace IAMS.MultiTenancy.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in tenant middleware");
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsync("Internal server error");
             }
         }
 
-        private static string GetTenantIdentifier(HttpContext context)
+        private IEnumerable<string> GetTenantIdentifierCandidates(HttpContext context)
         {
-            // Try header first
-            if (context.Request.Headers.TryGetValue("X-Tenant-ID", out var headerValue))
+            // X-Tenant-ID header — trusted only on the internal service hop (API key)
+            // or when client resolution is explicitly enabled for development.
+            if (context.Request.Headers.TryGetValue(ApplicationConstants.Headers.TenantId, out var headerValue))
             {
-                var tenantId = headerValue.FirstOrDefault();
-                if (!string.IsNullOrEmpty(tenantId))
+                var headerTenant = headerValue.FirstOrDefault();
+                if (!string.IsNullOrEmpty(headerTenant) &&
+                    (_allowClientTenantResolution || IsTrustedServiceCaller(context.User)))
                 {
-                    return tenantId;
+                    yield return headerTenant;
+                }
+                else if (!string.IsNullOrEmpty(headerTenant))
+                {
+                    _logger.LogWarning("Ignoring {Header} header from untrusted caller", ApplicationConstants.Headers.TenantId);
                 }
             }
 
-            // Try subdomain
-            var host = context.Request.Host.Value;
+            // Tenant claim issued at login — cannot be forged without the signing key.
+            if (context.User?.Identity?.IsAuthenticated == true)
+            {
+                var claimTenant = context.User.FindFirst(ApplicationConstants.ClaimTypes.TenantId)?.Value;
+                if (!string.IsNullOrEmpty(claimTenant))
+                {
+                    yield return claimTenant;
+                }
+            }
+
+            // Host subdomain — each tenant has its own web address.
+            var host = context.Request.Host.Host;
             if (host.Contains('.'))
             {
                 var parts = host.Split('.');
                 if (parts.Length == 2 && parts[1].Contains("localhost"))
                 {
-                    return parts[0];
+                    yield return parts[0];
                 }
-                if (parts.Length >= 3 && parts[0] != "www")
+                else if (parts.Length >= 3 && parts[0] != "www")
                 {
-                    return parts[0];
+                    yield return parts[0];
                 }
             }
 
-            // Try query parameter
-            if (context.Request.Query.TryGetValue("tenant", out var queryValue))
+            // Explicitly configured fallback for single-tenant deployments.
+            // Leave MultiTenancy:DefaultTenant unset to disable.
+            if (!string.IsNullOrEmpty(_defaultTenant))
             {
-                var tenantId = queryValue.FirstOrDefault();
-                if (!string.IsNullOrEmpty(tenantId))
-                {
-                    return tenantId;
-                }
+                yield return _defaultTenant;
             }
-
-            return "default";
         }
 
+        private static bool IsTrustedServiceCaller(ClaimsPrincipal? user)
+        {
+            return user?.Identity?.IsAuthenticated == true &&
+                   user.HasClaim(ApplicationConstants.ClaimTypes.ApiKeyValidated, "true");
+        }
     }
 }

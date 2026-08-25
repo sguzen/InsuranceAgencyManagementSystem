@@ -105,11 +105,12 @@ namespace IAMS.Api.Controllers
         {
             var expectedSecret = _configuration["NexusSettings:SecretHandshakeKey"];
 
-            // If no secret is configured, allow the request (for local development only!)
+            // Fail closed: without a configured secret the endpoint cannot verify callers,
+            // so it accepts nothing.
             if (string.IsNullOrWhiteSpace(expectedSecret))
             {
-                _logger.LogWarning("NexusSettings:SecretHandshakeKey is not configured. Allowing request without validation.");
-                return true;
+                _logger.LogError("NexusSettings:SecretHandshakeKey is not configured. Rejecting Nexus lead — configure the secret to enable this endpoint.");
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(signatureHeader))

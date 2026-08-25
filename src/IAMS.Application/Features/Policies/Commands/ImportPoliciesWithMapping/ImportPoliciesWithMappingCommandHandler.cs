@@ -23,15 +23,18 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
+        private readonly IImportAutoPaymentService _autoPaymentService;
         private readonly ILogger<ImportPoliciesWithMappingCommandHandler> _logger;
 
         public ImportPoliciesWithMappingCommandHandler(
             IUnitOfWork unitOfWork,
             ICustomerCodeGenerator customerCodeGenerator,
+            IImportAutoPaymentService autoPaymentService,
             ILogger<ImportPoliciesWithMappingCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _customerCodeGenerator = customerCodeGenerator;
+            _autoPaymentService = autoPaymentService;
             _logger = logger;
         }
 
@@ -627,29 +630,19 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             string userId,
             CancellationToken cancellationToken)
         {
-            // IMPORTANT: Traffic and KASKO policies MUST be fully paid by law (no outstanding amount allowed)
-            bool isTrafficPolicy = policyType.Name?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Name?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Name?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
-
-            bool isKaskoPolicy = policyType.Name?.Contains("KASKO", StringComparison.OrdinalIgnoreCase) == true;
-
-            bool requiresFullPayment = isTrafficPolicy || isKaskoPolicy;
+            // Traffic-family policies (Trafik/Kasko variants) are fully paid by law; the
+            // shared rule also honors the agency's AutoPayMandatoryPolicies setting (#515).
+            bool requiresFullPayment = await _autoPaymentService.ShouldAutoPayAsync(policyType, cancellationToken);
 
             decimal paymentAmount = 0;
             if (requiresFullPayment)
             {
-                // Traffic/KASKO policies: ALWAYS create full payment for premium amount
-                // This ensures zero outstanding balance as required by law
+                // Create full payment for the premium amount → zero outstanding balance
                 paymentAmount = policy.PremiumAmount; // Use actual policy premium, not DTO
 
                 _logger.LogInformation(
                     "Creating full payment for {PolicyType} policy {PolicyNumber}: {Amount}",
-                    isTrafficPolicy ? "TRAFFIC" : "KASKO",
+                    policyType.Name,
                     policy.PolicyNumber,
                     paymentAmount);
             }
@@ -670,7 +663,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     Status = PaymentStatus.Completed,
                     CurrencyId = currencyId,
                     Notes = requiresFullPayment
-                        ? (isTrafficPolicy ? "Trafik poliçesi - Tam ödeme (Yasal gereklilik)" : "Kasko poliçesi - Tam ödeme (Yasal gereklilik)")
+                        ? _autoPaymentService.AutoPaymentNote
                         : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
@@ -685,14 +678,14 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     "Created payment of {Amount} for policy {PolicyNumber} (Type: {PolicyType})",
                     paymentAmount,
                     policy.PolicyNumber,
-                    requiresFullPayment ? (isTrafficPolicy ? "Traffic" : "KASKO") : "Other");
+                    policyType.Name);
             }
             else if (requiresFullPayment)
             {
                 // This should never happen, but log as warning if it does
                 _logger.LogWarning(
                     "{PolicyType} policy {PolicyNumber} has zero premium amount - no payment created!",
-                    isTrafficPolicy ? "Traffic" : "KASKO",
+                    policyType.Name,
                     policy.PolicyNumber);
             }
         }

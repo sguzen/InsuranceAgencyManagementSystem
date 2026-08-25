@@ -21,6 +21,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         private readonly IExcelPolicyParser _policyParser;
         private readonly IPolicyQueryService _policyQueryService;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
+        private readonly IImportAutoPaymentService _autoPaymentService;
         private readonly ILogger<ImportPoliciesCommandHandler> _logger;
 
         public ImportPoliciesCommandHandler(
@@ -29,6 +30,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             IExcelPolicyParser policyParser,
             IPolicyQueryService policyQueryService,
             ICustomerCodeGenerator customerCodeGenerator,
+            IImportAutoPaymentService autoPaymentService,
             ILogger<ImportPoliciesCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -36,6 +38,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             _policyParser = policyParser;
             _policyQueryService = policyQueryService;
             _customerCodeGenerator = customerCodeGenerator;
+            _autoPaymentService = autoPaymentService;
             _logger = logger;
         }
 
@@ -188,20 +191,18 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             await _unitOfWork.Policies.AddAsync(policy);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Determine payment amount
-            // For traffic policies, automatically mark as fully paid (bakiye = 0)
-            bool isTrafficPolicy = policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
-                                   policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
+            // Traffic-family policies (Trafik/Kasko variants) are auto-marked fully paid,
+            // unless the agency turned the AutoPayMandatoryPolicies setting off (see #515).
+            bool autoPay = await _autoPaymentService.ShouldAutoPayAsync(policyType, cancellationToken);
 
             decimal paymentAmount = 0;
-            if (isTrafficPolicy)
+            if (autoPay)
             {
-                // Traffic policies must be fully paid
                 paymentAmount = dto.PremiumAmount;
             }
             else if (dto.PaidAmount.HasValue && dto.PaidAmount.Value > 0)
             {
-                // Other policies use the provided paid amount
+                // Use the paid amount provided by the import source
                 paymentAmount = dto.PaidAmount.Value;
             }
 
@@ -216,7 +217,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                     PaymentMethod = ParsePaymentMethod(dto.PaymentMethod),
                     Status = PaymentStatus.Completed,
                     CurrencyId = currency.Id,
-                    Notes = isTrafficPolicy ? "Auto-payment for traffic policy (bakiye = 0)" : "Initial payment from import",
+                    Notes = autoPay ? _autoPaymentService.AutoPaymentNote : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
                     ModifiedBy = userId,

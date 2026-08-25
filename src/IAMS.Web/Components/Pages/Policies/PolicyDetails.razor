@@ -865,7 +865,7 @@ else
         {
             if (policy?.CustomerId == null) return;
 
-            var balancesResult = await CustomersApi.GetCustomersWithBalancesAsync();
+            var balancesResult = await CustomersApi.GetCustomersWithBalancesAsync(policy.CustomerId);
             if (balancesResult.IsSuccess && balancesResult.Data != null)
             {
                 customerBalanceByCurrency.Clear();

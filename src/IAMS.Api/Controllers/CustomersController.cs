@@ -66,9 +66,9 @@ namespace IAMS.Api.Controllers
         /// Get all customers with their balances per currency
         /// </summary>
         [HttpGet("with-balances")]
-        public async Task<ActionResult<Result<List<CustomerWithBalanceDto>>>> GetCustomersWithBalances()
+        public async Task<ActionResult<Result<List<CustomerWithBalanceDto>>>> GetCustomersWithBalances([FromQuery] int? customerId = null)
         {
-            var query = new GetCustomersWithBalancesQuery();
+            var query = new GetCustomersWithBalancesQuery(customerId);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

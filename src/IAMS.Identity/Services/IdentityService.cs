@@ -9,6 +9,7 @@ using IAMS.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using IAMS.Domain.Entities;
+using IAMS.MultiTenancy.Interfaces;
 using IAMS.Shared.DTOs.Identity;
 
 namespace IAMS.Identity.Services
@@ -19,17 +20,20 @@ namespace IAMS.Identity.Services
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IPermissionService _permissionService;
         private readonly IConfiguration _configuration;
+        private readonly ITenantContextAccessor _tenantContextAccessor;
 
         public IdentityService(
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
             IPermissionService permissionService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ITenantContextAccessor tenantContextAccessor)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _permissionService = permissionService;
             _configuration = configuration;
+            _tenantContextAccessor = tenantContextAccessor;
         }
 
         public async Task<AuthResult> LoginAsync(string email, string password)
@@ -187,6 +191,15 @@ namespace IAMS.Identity.Services
                 new(System.Security.Claims.ClaimTypes.Email, user.Email!),
                 new(System.Security.Claims.ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
             };
+
+            // Bind the token to the tenant it was issued for. TenantMiddleware rejects any
+            // request where this claim does not match the tenant resolved for the request.
+            var tenant = _tenantContextAccessor.CurrentTenant;
+            if (tenant != null)
+            {
+                claims.Add(new Claim(ApplicationConstants.ClaimTypes.TenantId, tenant.Identifier));
+                claims.Add(new Claim(ApplicationConstants.ClaimTypes.TenantName, tenant.Name ?? tenant.Identifier));
+            }
 
             // Add role claims
             var roles = await _userManager.GetRolesAsync(user);

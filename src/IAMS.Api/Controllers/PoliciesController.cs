@@ -23,6 +23,7 @@ using IAMS.Application.Features.Policies.Queries.GetPolicy;
 using IAMS.Application.Features.Policies.Queries.GetPolicyByNumber;
 using IAMS.Application.Features.Policies.Queries.GetPolicyStatistics;
 using IAMS.Application.Features.Policies.Queries.GetTotalPoliciesCount;
+using IAMS.Api.Validation;
 using IAMS.Application.Models;
 using IAMS.Domain.Enums;
 using IAMS.Shared.Interfaces.Repositories;
@@ -346,6 +347,12 @@ namespace IAMS.Api.Controllers
                 return BadRequest(Result<List<PolicyImportPreviewDto>>.Failure("Insurance company must be selected", (List<string>?)null));
             }
 
+            var fileError = await ImportFileValidator.ValidateAsync(file);
+            if (fileError != null)
+            {
+                return BadRequest(Result<List<PolicyImportPreviewDto>>.Failure(fileError, (List<string>?)null));
+            }
+
             var query = new ParsePolicyImportQuery(file, insuranceCompanyId);
             var result = await _mediator.Send(query);
 
@@ -395,6 +402,12 @@ namespace IAMS.Api.Controllers
             if (insuranceCompanyId <= 0)
             {
                 return BadRequest(Result<PolicyImportResultDto>.Failure("Insurance company must be selected", (List<string>?)null));
+            }
+
+            var fileError = await ImportFileValidator.ValidateAsync(file);
+            if (fileError != null)
+            {
+                return BadRequest(Result<PolicyImportResultDto>.Failure(fileError, (List<string>?)null));
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

@@ -21,6 +21,7 @@ namespace IAMS.Api.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDto request)
         {
             try
@@ -42,6 +43,7 @@ namespace IAMS.Api.Controllers
         }
 
         [HttpPost("refresh-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             try
@@ -84,7 +86,10 @@ namespace IAMS.Api.Controllers
             }
         }
 
+        // User creation is an administrative action (the DTO even carries a role name):
+        // no anonymous self-registration.
         [HttpPost("register")]
+        [Authorize(Policy = "UserManagement")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto request)
         {
             try

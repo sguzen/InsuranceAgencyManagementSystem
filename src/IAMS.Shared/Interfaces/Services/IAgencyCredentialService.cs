@@ -41,6 +41,11 @@ namespace IAMS.Shared.Interfaces.Services
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool IsMySql { get; set; }
+
+        /// <summary>
+        /// Agency code assigned by this insurer (AgencyInsuranceCompany.AgencyCode),
+        /// falling back to the tenant's ExternalId for legacy links. Null if neither is set.
+        /// </summary>
         public string? AgencyCode { get; set; }
     }
 }

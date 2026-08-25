@@ -26,6 +26,14 @@ namespace IAMS.MultiTenancy.Extensions
                         errorNumbersToAdd: null));
             });
 
+            // Master DB schema migrator (run by the API host at startup; see MasterDbMigrator)
+            services.AddSingleton(new MasterDbMigrationOptions
+            {
+                AutoMigrate = !string.Equals(configuration[$"{MasterDbMigrationOptions.SectionName}:AutoMigrate"], "false",
+                    StringComparison.OrdinalIgnoreCase)
+            });
+            services.AddScoped<IMasterDbMigrator, MasterDbMigrator>();
+
             // Add memory cache for tenant caching
             services.AddMemoryCache();
 

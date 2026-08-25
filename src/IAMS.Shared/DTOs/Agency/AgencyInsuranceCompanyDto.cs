@@ -7,6 +7,8 @@ namespace IAMS.Shared.DTOs.Agency
         public int InsuranceCompanyId { get; set; }
         public string InsuranceCompanyName { get; set; } = string.Empty;
         public string InsuranceCompanyCode { get; set; } = string.Empty;
+        /// <summary>Agency code assigned by this insurer (insurer's "ackod" for this agency).</summary>
+        public string? AgencyCode { get; set; }
         public string? DbServer { get; set; }
         public string? DbName { get; set; }
         public string? DbUsername { get; set; }
@@ -23,6 +25,8 @@ namespace IAMS.Shared.DTOs.Agency
         public int InsuranceCompanyId { get; set; }
         public string InsuranceCompanyName { get; set; } = string.Empty;
         public string InsuranceCompanyCode { get; set; } = string.Empty;
+        /// <summary>Agency code assigned by this insurer (insurer's "ackod" for this agency).</summary>
+        public string? AgencyCode { get; set; }
         public string? DbServer { get; set; }
         public string? DbName { get; set; }
         public string? DbUsername { get; set; }
@@ -33,6 +37,8 @@ namespace IAMS.Shared.DTOs.Agency
 
     public class UpdateAgencyInsuranceCompanyDto
     {
+        /// <summary>Agency code assigned by this insurer (insurer's "ackod" for this agency).</summary>
+        public string? AgencyCode { get; set; }
         public string? DbServer { get; set; }
         public string? DbName { get; set; }
         public string? DbUsername { get; set; }

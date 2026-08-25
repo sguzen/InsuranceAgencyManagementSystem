@@ -15,6 +15,14 @@ namespace IAMS.Persistence.Services
     /// </summary>
     public class TenantDatabaseService : ITenantDatabaseService
     {
+        // Tenants whose database has already been verified/migrated by this process.
+        // EnsureTenantDatabaseAsync is called from the per-request tenant middleware, so
+        // without this cache every request would hit the database with CanConnect/pending-
+        // migration checks (and unauthenticated requests could trigger provisioning work).
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _ensuredTenants =
+            new(StringComparer.OrdinalIgnoreCase);
+        private static readonly SemaphoreSlim _ensureLock = new(1, 1);
+
         private readonly TenantDbContext _masterDb;
         private readonly IConfiguration _configuration;
         private readonly ILogger<TenantDatabaseService> _logger;
@@ -30,6 +38,30 @@ namespace IAMS.Persistence.Services
         }
 
         public async Task EnsureTenantDatabaseAsync(string tenantIdentifier)
+        {
+            if (_ensuredTenants.ContainsKey(tenantIdentifier))
+            {
+                return;
+            }
+
+            await _ensureLock.WaitAsync();
+            try
+            {
+                if (_ensuredTenants.ContainsKey(tenantIdentifier))
+                {
+                    return;
+                }
+
+                await EnsureTenantDatabaseCoreAsync(tenantIdentifier);
+                _ensuredTenants.TryAdd(tenantIdentifier, true);
+            }
+            finally
+            {
+                _ensureLock.Release();
+            }
+        }
+
+        private async Task EnsureTenantDatabaseCoreAsync(string tenantIdentifier)
         {
             try
             {

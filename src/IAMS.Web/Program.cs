@@ -197,6 +197,30 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
+
+// Re-issues the Identity cookie for the signed-in user. Used after a password change (done via the
+// API), which rotates the user's security stamp and would otherwise invalidate the session at the
+// next security-stamp validation. Interactive Blazor circuits cannot write cookies themselves.
+app.MapGet("/account/refresh-signin", async (
+    HttpContext httpContext,
+    Microsoft.AspNetCore.Identity.SignInManager<IAMS.Domain.Entities.ApplicationUser> signInManager,
+    Microsoft.AspNetCore.Identity.UserManager<IAMS.Domain.Entities.ApplicationUser> userManager,
+    string? returnUrl) =>
+{
+    // Only allow local redirects.
+    var target = !string.IsNullOrEmpty(returnUrl) && returnUrl.StartsWith('/') && !returnUrl.StartsWith("//")
+        ? returnUrl
+        : "/profile";
+
+    var user = await userManager.GetUserAsync(httpContext.User);
+    if (user == null)
+    {
+        return Results.Redirect("/login");
+    }
+
+    await signInManager.RefreshSignInAsync(user);
+    return Results.Redirect(target);
+}).RequireAuthorization();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.Run();

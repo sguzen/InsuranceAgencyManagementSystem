@@ -27,6 +27,14 @@ namespace IAMS.MultiTenancy.Entities
         [MaxLength(50)]
         public string InsuranceCompanyCode { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Code assigned to this agency by this insurance company in the insurer's own
+        /// system (the "ackod" value used to filter policies on import).
+        /// Each insurer assigns its own code, so it lives on the link, not on the agency.
+        /// </summary>
+        [MaxLength(IAMS.Shared.Validation.AgencyCodeRules.MaxLength)]
+        public string? AgencyCode { get; set; }
+
         // Database connection details for this insurance company
         [MaxLength(200)]
         public string? DbServer { get; set; }

@@ -1,0 +1,289 @@
+@page "/profile"
+@layout Layout.MainLayout
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using System.Security.Claims
+@using IAMS.Application.Constants
+@using IAMS.Shared.DTOs.Identity
+@using IAMS.Web.Services.ApiClient
+@inject IUsersApiClient UsersApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Profilim</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="pa-6">
+    <MudStack Spacing="4">
+        <MudBreadcrumbs Items="_breadcrumbItems" Separator=">" />
+
+        <MudText Typo="Typo.h4" GutterBottom="false">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3" />
+            Profilim
+        </MudText>
+
+        @if (loading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        }
+        else if (user == null)
+        {
+            <MudAlert Severity="MudBlazor.Severity.Error">
+                Kullanıcı bilgileri yüklenemedi. @loadError
+            </MudAlert>
+        }
+        else
+        {
+            <!-- Account details -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Hesap Bilgileri</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudField Label="Ad Soyad" Variant="Variant.Text">@user.FirstName @user.LastName</MudField>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudField Label="E-posta" Variant="Variant.Text">@user.Email</MudField>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudField Label="Son Giriş" Variant="Variant.Text">
+                                @(user.LastLogin?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
+                            </MudField>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudField Label="Roller" Variant="Variant.Text">
+                                @if (user.Roles.Count == 0)
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                }
+                                else
+                                {
+                                    <MudStack Row Spacing="1" Wrap="Wrap.Wrap">
+                                        @foreach (var role in user.Roles)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="@GetRoleColor(role)">@role</MudChip>
+                                        }
+                                    </MudStack>
+                                }
+                            </MudField>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+
+            <!-- Change password -->
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Lock" Class="mr-2" Size="Size.Small" />
+                            Şifre Değiştir
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudForm @ref="form" @bind-IsValid="isValid">
+                        <MudStack Spacing="3">
+                            <MudTextField @bind-Value="currentPassword"
+                                          Label="Mevcut Şifre"
+                                          InputType="@passwordInputType"
+                                          Required="true"
+                                          RequiredError="Mevcut şifre gereklidir"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@passwordIcon"
+                                          OnAdornmentClick="TogglePasswordVisibility" />
+
+                            <MudTextField @bind-Value="newPassword"
+                                          Label="Yeni Şifre"
+                                          InputType="@passwordInputType"
+                                          Required="true"
+                                          RequiredError="Yeni şifre gereklidir"
+                                          Validation="@(new Func<string?, string?>(ValidateNewPassword))"
+                                          HelperText="En az 8 karakter; büyük harf, küçük harf ve rakam içermelidir" />
+
+                            <MudTextField @bind-Value="confirmPassword"
+                                          Label="Yeni Şifre (Tekrar)"
+                                          InputType="@passwordInputType"
+                                          Required="true"
+                                          RequiredError="Şifre tekrarı gereklidir"
+                                          Validation="@(new Func<string?, string?>(ValidateConfirmPassword))" />
+
+                            <MudStack Row Justify="Justify.FlexEnd">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Save"
+                                           Disabled="@saving"
+                                           OnClick="ChangePassword">
+                                    @if (saving)
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    }
+                                    Şifreyi Değiştir
+                                </MudButton>
+                            </MudStack>
+                        </MudStack>
+                    </MudForm>
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private readonly List<BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new BreadcrumbItem("Ana Sayfa", href: "/"),
+        new BreadcrumbItem("Profilim", href: null, disabled: true)
+    };
+
+    private MudForm form = default!;
+    private bool isValid;
+    private bool loading = true;
+    private bool saving;
+    private string? loadError;
+    private string? userId;
+    private UserDto? user;
+
+    private string? currentPassword;
+    private string? newPassword;
+    private string? confirmPassword;
+    private bool showPassword;
+    private InputType passwordInputType = InputType.Password;
+    private string passwordIcon = Icons.Material.Filled.VisibilityOff;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Shown after the refresh-signin round trip that follows a successful change.
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (uri.Query.Contains("pw=changed", StringComparison.OrdinalIgnoreCase))
+        {
+            Snackbar.Add("Şifreniz başarıyla değiştirildi", MudBlazor.Severity.Success);
+        }
+
+        await LoadUser();
+    }
+
+    private async Task LoadUser()
+    {
+        loading = true;
+        try
+        {
+            var authState = AuthenticationStateTask != null ? await AuthenticationStateTask : null;
+            var principal = authState?.User;
+            userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? principal?.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                loadError = "Oturum bilgisi bulunamadı.";
+                return;
+            }
+
+            var result = await UsersApi.GetUserByIdAsync(userId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                user = result.Data;
+            }
+            else
+            {
+                loadError = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private string? ValidateNewPassword(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return null; // Required handles empty
+        if (value.Length < 8) return "Şifre en az 8 karakter olmalıdır";
+        if (!value.Any(char.IsUpper)) return "Şifre en az bir büyük harf içermelidir";
+        if (!value.Any(char.IsLower)) return "Şifre en az bir küçük harf içermelidir";
+        if (!value.Any(char.IsDigit)) return "Şifre en az bir rakam içermelidir";
+        return null;
+    }
+
+    private string? ValidateConfirmPassword(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return null;
+        return value == newPassword ? null : "Şifreler eşleşmiyor";
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? InputType.Text : InputType.Password;
+        passwordIcon = showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
+
+    private async Task ChangePassword()
+    {
+        await form.Validate();
+        if (!isValid || string.IsNullOrEmpty(userId))
+        {
+            return;
+        }
+
+        saving = true;
+        try
+        {
+            var dto = new ChangePasswordDto
+            {
+                CurrentPassword = currentPassword ?? string.Empty,
+                NewPassword = newPassword ?? string.Empty,
+                ConfirmNewPassword = confirmPassword ?? string.Empty
+            };
+
+            var result = await UsersApi.ChangePasswordAsync(userId, dto);
+            if (result.IsSuccess)
+            {
+                // The password change rotates the security stamp; re-issue the auth cookie so the
+                // current session stays valid, then come back here with a success flag.
+                var returnUrl = Uri.EscapeDataString("/profile?pw=changed");
+                Navigation.NavigateTo($"/account/refresh-signin?returnUrl={returnUrl}", forceLoad: true);
+                return;
+            }
+
+            if (result.Errors?.Any() == true)
+            {
+                foreach (var error in result.Errors)
+                {
+                    Snackbar.Add(error, MudBlazor.Severity.Warning);
+                }
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Şifre değiştirilemedi", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Beklenmeyen hata: {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private Color GetRoleColor(string role) => role switch
+    {
+        RoleNames.SuperAdmin => Color.Error,
+        RoleNames.Admin => Color.Warning,
+        RoleNames.Manager => Color.Info,
+        _ => Color.Default
+    };
+}

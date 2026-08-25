@@ -127,6 +127,41 @@ namespace IAMS.Web.Services.ApiClient
             }
         }
 
+        protected async Task<Result> PostAsync(string endpoint, object data)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(endpoint, data, _jsonOptions);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Try to deserialize error response as Result object
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                        if (errorResult != null)
+                        {
+                            return errorResult;
+                        }
+                    }
+                    catch
+                    {
+                        // If deserialization fails, fall back to raw content
+                    }
+
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return Result.Failure($"API isteği başarısız: {response.StatusCode}", errorContent);
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<Result>(_jsonOptions);
+                return result ?? Result.Failure("API'den boş yanıt alındı", new List<string>());
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"API çağrısı başarısız: {ex.Message}", ex.ToString());
+            }
+        }
+
         protected async Task<Result> PutAsync(string endpoint, object data)
         {
             try

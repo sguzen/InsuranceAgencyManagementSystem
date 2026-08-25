@@ -116,6 +116,13 @@ namespace IAMS.Application.Features.Policies.Queries.PreviewMySqlImport
 
         private static ImportConfiguration BuildImportConfiguration(AgencyCredentialDetails credentials, int tenantInsuranceCompanyId)
         {
+            if (string.IsNullOrWhiteSpace(credentials.AgencyCode))
+            {
+                throw new InvalidOperationException(
+                    "Bu sigorta sirketi icin acenta kodu tanimli degil. " +
+                    "Yonetim panelinde acenta-sigorta sirketi baglantisina acenta kodunu (sigortacinin 'ackod' degeri) girin.");
+            }
+
             var additionalSettings = JsonSerializer.Serialize(new
             {
                 Port = credentials.Port,

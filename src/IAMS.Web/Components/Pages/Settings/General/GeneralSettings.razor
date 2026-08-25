@@ -189,6 +189,28 @@
                     </MudCardContent>
                 </MudCard>
 
+                <!-- Policy Import Settings -->
+                <MudCard Class="mb-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Poliçe İçe Aktarma</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSwitch @bind-Value="policyImportModel.AutoPayMandatoryPolicies"
+                                   Color="Color.Primary"
+                                   Label="Trafik/Kasko poliçelerini içe aktarmada otomatik ödenmiş işaretle" />
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary mt-2">
+                            Açıkken, içe aktarılan Trafik ve Kasko poliçeleri için prim tutarı kadar
+                            tamamlanmış bir ödeme kaydı otomatik oluşturulur (yasal gereklilik).
+                            Kapalıyken ödeme kaydı yalnızca içe aktarma kaynağındaki ödenen tutardan
+                            oluşturulur ve bakiyeler gerçek tahsilatı yansıtır. Değişiklik yalnızca
+                            bundan sonra başlatılan içe aktarmaları etkiler; mevcut ödeme kayıtları
+                            değiştirilmez.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+
                 <!-- Actions -->
                 <MudStack Row Justify="Justify.FlexEnd" Spacing="2">
                     <MudButton Variant="Variant.Outlined"
@@ -217,6 +239,7 @@
 
 @code {
     private GeneralSettingsDto settingsModel = new();
+    private PolicyImportSettingsDto policyImportModel = new();
     private bool isLoading = true;
 
     private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
@@ -241,6 +264,9 @@
             {
                 settingsModel = settings;
             }
+
+            policyImportModel = await TenantService.GetTenantSettingAsync<PolicyImportSettingsDto>(PolicyImportSettingsDto.SettingKey)
+                                ?? new PolicyImportSettingsDto();
         }
         catch (Exception ex)
         {
@@ -258,6 +284,7 @@
         try
         {
             await TenantService.SetTenantSettingAsync("general", settingsModel);
+            await TenantService.SetTenantSettingAsync(PolicyImportSettingsDto.SettingKey, policyImportModel);
             Snackbar.Add("Ayarlar başarıyla kaydedildi", MudBlazor.Severity.Success);
         }
         catch (Exception ex)

@@ -16,17 +16,20 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMySqlPolicyImportService _mySqlImportService;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
+        private readonly IImportAutoPaymentService _autoPaymentService;
         private readonly ILogger<SyncPoliciesFromMySqlCommandHandler> _logger;
 
         public SyncPoliciesFromMySqlCommandHandler(
             IUnitOfWork unitOfWork,
             IMySqlPolicyImportService mySqlImportService,
             ICustomerCodeGenerator customerCodeGenerator,
+            IImportAutoPaymentService autoPaymentService,
             ILogger<SyncPoliciesFromMySqlCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mySqlImportService = mySqlImportService;
             _customerCodeGenerator = customerCodeGenerator;
+            _autoPaymentService = autoPaymentService;
             _logger = logger;
         }
 
@@ -249,27 +252,14 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
         }
 
         /// <summary>
-        /// Traffic (Trafik) and Kasko policies are legally required to be fully paid.
-        /// Automatically creates a completed payment record for these policy types.
+        /// Traffic-family policies (Trafik/Kasko variants) are legally required to be fully
+        /// paid; the shared rule also honors the agency's AutoPayMandatoryPolicies setting
+        /// (#515). Creates a completed payment record when the rule applies.
         /// </summary>
         private async Task CreateAutoPaymentIfRequiredAsync(
             Policy policy, PolicyType policyType, int currencyId, string userId, CancellationToken cancellationToken)
         {
-            bool isTrafficPolicy =
-                policyType.Code?.Contains("TRAFİK", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Code?.Contains("TRAFIK", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Code?.Contains("TRAFFIC", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Name?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Name?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Category?.Contains("Trafik", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Category?.Contains("Traffic", StringComparison.OrdinalIgnoreCase) == true;
-
-            bool isKaskoPolicy =
-                policyType.Code?.Contains("KASKO", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Name?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true ||
-                policyType.Category?.Contains("Kasko", StringComparison.OrdinalIgnoreCase) == true;
-
-            if (!isTrafficPolicy && !isKaskoPolicy)
+            if (!await _autoPaymentService.ShouldAutoPayAsync(policyType, cancellationToken))
                 return;
 
             if (policy.PremiumAmount <= 0)
@@ -283,9 +273,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                 PaymentMethod = PaymentMethod.BankTransfer,
                 Status = PaymentStatus.Completed,
                 CurrencyId = currencyId,
-                Notes = isTrafficPolicy
-                    ? "Trafik poliçesi - Tam ödeme (Yasal gereklilik)"
-                    : "Kasko poliçesi - Tam ödeme (Yasal gereklilik)",
+                Notes = _autoPaymentService.AutoPaymentNote,
                 CreatedBy = userId,
                 CreatedOn = DateTime.UtcNow,
                 ModifiedBy = userId,
@@ -296,7 +284,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogDebug("Auto-created payment for {PolicyType} policy {PolicyNumber}: {Amount}",
-                isTrafficPolicy ? "traffic" : "kasko", policy.PolicyNumber, policy.PremiumAmount);
+                policyType.Name, policy.PolicyNumber, policy.PremiumAmount);
         }
 
         private async Task<Customer> GetOrCreateCustomerAsync(ImportPolicyDto dto, string userId)

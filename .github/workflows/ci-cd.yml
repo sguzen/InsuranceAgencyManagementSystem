@@ -125,6 +125,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Scans the checked-out tree (not history — the pre-rotation secrets remain in old
+      # commits and are handled by rotation, see #507) so newly added secrets fail the build.
+      - name: Scan for secrets (gitleaks)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks detect --no-git --source . --redact --verbose
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:

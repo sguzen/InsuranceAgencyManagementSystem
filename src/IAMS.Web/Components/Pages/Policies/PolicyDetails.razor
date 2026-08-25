@@ -869,7 +869,9 @@ else
             if (balancesResult.IsSuccess && balancesResult.Data != null)
             {
                 customerBalanceByCurrency.Clear();
-                var customerBalances = balancesResult.Data.Where(b => b.Id == policy.CustomerId);
+                // The endpoint also returns fully-paid customer/currency rows (for premium
+                // totals on the customer list); only outstanding balances matter here.
+                var customerBalances = balancesResult.Data.Where(b => b.Id == policy.CustomerId && b.Balance != 0);
                 foreach (var balance in customerBalances)
                 {
                     customerBalanceByCurrency[balance.Currency] = balance.Balance;

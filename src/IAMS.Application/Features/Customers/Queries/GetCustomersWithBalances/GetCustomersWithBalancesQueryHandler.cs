@@ -90,8 +90,10 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomersWithBalances
 
                     var balance = group.TotalPremium - totalPaid;
 
-                    // Only include if there's a non-zero balance
-                    if (balance != 0)
+                    // Include every customer/currency with activity: rows with an outstanding
+                    // balance AND fully-paid rows, so the UI can show premium totals (#517).
+                    // Consumers that only care about debt filter on Balance != 0 themselves.
+                    if (balance != 0 || group.TotalPremium != 0)
                     {
                         result.Add(new CustomerWithBalanceDto
                         {

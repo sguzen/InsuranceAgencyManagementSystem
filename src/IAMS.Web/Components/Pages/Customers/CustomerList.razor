@@ -113,6 +113,13 @@
                                 </MudText>
                             </CellTemplate>
                         </TemplateColumn>
+                        <TemplateColumn Title="Toplam Prim" Sortable="false">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body1" Style="font-size: 1rem; font-weight: 500;">
+                                    @GetCustomerPremium(context.Item.Id)
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
                         <TemplateColumn Title="Bakiye" Sortable="false">
                             <CellTemplate>
                                 @{
@@ -165,6 +172,23 @@
                                 else
                                 {
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">Poliçe yok</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Toplam Prim" Sortable="false">
+                            <CellTemplate>
+                                @{
+                                    var premium = GetCustomerPremium(context.Item.Id);
+                                }
+                                @if (premium != "-")
+                                {
+                                    <MudChip T="String" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.RequestQuote">
+                                        @premium
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
                                 }
                             </CellTemplate>
                         </TemplateColumn>
@@ -300,6 +324,7 @@
 @code {
     private List<CustomerDto> customers = new();
     private Dictionary<int, Dictionary<string, decimal>> customerBalances = new();
+    private Dictionary<int, Dictionary<string, decimal>> customerPremiums = new();
     private List<CurrencyDto> currencies = new();
     private bool loading = true;
     private ListViewMode viewMode = ListViewMode.Simple;
@@ -429,6 +454,7 @@
             if (balancesResult.IsSuccess && balancesResult.Data != null)
             {
                 customerBalances.Clear();
+                customerPremiums.Clear();
                 foreach (var item in balancesResult.Data)
                 {
                     if (!customerBalances.ContainsKey(item.Id))
@@ -436,6 +462,12 @@
                         customerBalances[item.Id] = new Dictionary<string, decimal>();
                     }
                     customerBalances[item.Id][item.Currency] = item.Balance;
+
+                    if (!customerPremiums.ContainsKey(item.Id))
+                    {
+                        customerPremiums[item.Id] = new Dictionary<string, decimal>();
+                    }
+                    customerPremiums[item.Id][item.Currency] = item.TotalPremium;
                 }
             }
         }
@@ -584,5 +616,20 @@
             .ToList();
 
         return balances.Any() ? string.Join(" | ", balances) : "-";
+    }
+
+    private string GetCustomerPremium(int customerId)
+    {
+        if (!customerPremiums.ContainsKey(customerId) || !customerPremiums[customerId].Any())
+        {
+            return "-";
+        }
+
+        var premiums = customerPremiums[customerId]
+            .Where(p => p.Value != 0)
+            .Select(p => $"{p.Value:N2} {p.Key}")
+            .ToList();
+
+        return premiums.Any() ? string.Join(" | ", premiums) : "-";
     }
 }

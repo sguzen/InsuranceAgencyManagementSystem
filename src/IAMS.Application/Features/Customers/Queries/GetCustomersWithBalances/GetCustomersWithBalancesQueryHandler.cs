@@ -25,91 +25,94 @@ namespace IAMS.Application.Features.Customers.Queries.GetCustomersWithBalances
         {
             try
             {
-                _logger.LogInformation("Getting customers with balances per currency");
+                _logger.LogInformation("Getting customers with balances per currency (customerId: {CustomerId})", request.CustomerId);
 
-                // Get all policies with their related data
-                var policies = await _unitOfWork.Policies.AsQueryable()
+                // Premium totals aggregated in the database, per customer per currency.
+                var premiumTotals = await _unitOfWork.Policies.AsQueryable()
                     .Where(p => !p.IsDeleted)
-                    .Include(p => p.Customer)
-                    .Include(p => p.Currency)
-                    .Select(p => new
-                    {
-                        p.Id,
-                        p.CustomerId,
-                        CustomerCode = p.Customer.CustomerCode,
-                        FirstName = p.Customer.FirstName,
-                        LastName = p.Customer.LastName,
-                        Email = p.Customer.Email,
-                        MobilePhoneNumber = p.Customer.MobilePhoneNumber,
-                        Status = p.Customer.Status,
-                        CreatedOn = p.Customer.CreatedOn,
-                        CurrencyCode = p.Currency.Code,
-                        p.PremiumAmount,
-                        PolicyStatus = p.Status
-                    })
-                    .ToListAsync(cancellationToken);
-
-                // Get all payments
-                var payments = await _unitOfWork.PolicyPayments.AsQueryable()
-                    .Where(p => !p.IsDeleted)
-                    .Select(p => new
-                    {
-                        p.PolicyId,
-                        p.Amount
-                    })
-                    .ToListAsync(cancellationToken);
-
-                // Group by customer and currency
-                var customerCurrencyGroups = policies
-                    .GroupBy(p => new { p.CustomerId, p.CurrencyCode })
+                    .Where(p => request.CustomerId == null || p.CustomerId == request.CustomerId)
+                    .GroupBy(p => new { p.CustomerId, CurrencyCode = p.Currency.Code })
                     .Select(g => new
                     {
                         g.Key.CustomerId,
                         g.Key.CurrencyCode,
-                        CustomerCode = g.First().CustomerCode,
-                        FirstName = g.First().FirstName,
-                        LastName = g.First().LastName,
-                        Email = g.First().Email,
-                        MobilePhoneNumber = g.First().MobilePhoneNumber,
-                        Status = g.First().Status,
-                        CreatedOn = g.First().CreatedOn,
                         TotalPremium = g.Sum(p => p.PremiumAmount),
-                        ActivePolicyCount = g.Count(p => p.PolicyStatus == PolicyStatus.Active),
-                        PolicyIds = g.Select(p => p.Id).ToList()
+                        ActivePolicyCount = g.Sum(p => p.Status == PolicyStatus.Active ? 1 : 0)
                     })
-                    .ToList();
+                    .ToListAsync(cancellationToken);
 
-                // Calculate balances
+                // Paid totals aggregated in the database, grouped by the policy's currency
+                // (payments are recorded in the policy currency).
+                var paidTotals = await _unitOfWork.PolicyPayments.AsQueryable()
+                    .Where(pp => !pp.IsDeleted && !pp.Policy.IsDeleted)
+                    .Where(pp => request.CustomerId == null || pp.Policy.CustomerId == request.CustomerId)
+                    .GroupBy(pp => new { pp.Policy.CustomerId, CurrencyCode = pp.Policy.Currency.Code })
+                    .Select(g => new
+                    {
+                        g.Key.CustomerId,
+                        g.Key.CurrencyCode,
+                        TotalPaid = g.Sum(pp => pp.Amount)
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var paidLookup = paidTotals.ToDictionary(x => (x.CustomerId, x.CurrencyCode), x => x.TotalPaid);
+
+                // Contact/identity fields for the customers that have policies.
+                var customers = await _unitOfWork.Customers.AsQueryable()
+                    .Where(c => request.CustomerId == null || c.Id == request.CustomerId)
+                    .Where(c => c.Policies.Any(p => !p.IsDeleted))
+                    .Select(c => new
+                    {
+                        c.Id,
+                        c.CustomerCode,
+                        c.FirstName,
+                        c.LastName,
+                        c.Email,
+                        c.MobilePhoneNumber,
+                        c.Status,
+                        c.CreatedOn
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var customerLookup = customers.ToDictionary(c => c.Id);
+
+                // Every payment belongs to a policy, so premiumTotals covers all
+                // customer/currency combinations with any activity.
                 var result = new List<CustomerWithBalanceDto>();
-
-                foreach (var group in customerCurrencyGroups)
+                foreach (var group in premiumTotals)
                 {
-                    var totalPaid = payments
-                        .Where(p => group.PolicyIds.Contains(p.PolicyId))
-                        .Sum(p => p.Amount);
-
+                    var totalPaid = paidLookup.TryGetValue((group.CustomerId, group.CurrencyCode), out var paid) ? paid : 0m;
                     var balance = group.TotalPremium - totalPaid;
 
-                    // Only include if there's a non-zero balance
-                    if (balance != 0)
+                    // Include rows with an outstanding balance AND fully-paid rows, so the
+                    // UI can show premium totals (#517). Consumers that only care about
+                    // debt filter on Balance != 0 themselves.
+                    if (balance == 0 && group.TotalPremium == 0)
                     {
-                        result.Add(new CustomerWithBalanceDto
-                        {
-                            Id = group.CustomerId,
-                            CustomerCode = group.CustomerCode,
-                            FirstName = group.FirstName,
-                            LastName = group.LastName,
-                            Email = group.Email,
-                            MobilePhoneNumber = group.MobilePhoneNumber,
-                            Status = group.Status,
-                            CreatedOn = group.CreatedOn,
-                            ActivePolicyCount = group.ActivePolicyCount,
-                            Currency = group.CurrencyCode,
-                            Balance = balance,
-                            TotalPremium = group.TotalPremium,
-                            TotalPaid = totalPaid
-                        });
+                        continue;
                     }
+
+                    if (!customerLookup.TryGetValue(group.CustomerId, out var customer))
+                    {
+                        continue;
+                    }
+
+                    result.Add(new CustomerWithBalanceDto
+                    {
+                        Id = group.CustomerId,
+                        CustomerCode = customer.CustomerCode,
+                        FirstName = customer.FirstName,
+                        LastName = customer.LastName,
+                        Email = customer.Email,
+                        MobilePhoneNumber = customer.MobilePhoneNumber,
+                        Status = customer.Status,
+                        CreatedOn = customer.CreatedOn,
+                        ActivePolicyCount = group.ActivePolicyCount,
+                        Currency = group.CurrencyCode,
+                        Balance = balance,
+                        TotalPremium = group.TotalPremium,
+                        TotalPaid = totalPaid
+                    });
                 }
 
                 _logger.LogInformation("Found {Count} customer-currency combinations with balances", result.Count);

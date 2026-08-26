@@ -134,7 +134,7 @@
                                                        MaxItems="50"
                                                        DebounceInterval="150"
                                                        AdornmentIcon="@Icons.Material.Filled.Search"
-                                                       HelperText="Müşteri adı veya e-posta ile arayın">
+                                                       HelperText="Müşteri adı ile arayın">
                                             <ItemTemplate Context="customerItem">
                                                 <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
                                                     <MudAvatar Color="Color.Primary" Size="Size.Small">
@@ -142,7 +142,7 @@
                                                     </MudAvatar>
                                                     <MudStack Spacing="0">
                                                         <MudText Typo="Typo.body2">@customerItem.FirstName @customerItem.LastName</MudText>
-                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@customerItem.Email</MudText>
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@customerItem.CustomerCode</MudText>
                                                     </MudStack>
                                                 </MudStack>
                                             </ItemTemplate>

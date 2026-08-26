@@ -166,14 +166,6 @@ else
                                 </MudCardHeader>
                                 <MudCardContent>
                                     <MudStack Spacing="3">
-                                        @if (!string.IsNullOrEmpty(customer.Email))
-                                        {
-                                            <MudStack Row Justify="Justify.SpaceBetween">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">E-posta:</MudText>
-                                                <MudLink Href="@($"mailto:{customer.Email}")">@customer.Email</MudLink>
-                                            </MudStack>
-                                        }
-                                        
                                         @if (!string.IsNullOrEmpty(customer.MobilePhoneNumber))
                                         {
                                             <MudStack Row Justify="Justify.SpaceBetween">
@@ -207,7 +199,7 @@ else
                                     <MudStack Spacing="2">
                                         @if (!string.IsNullOrEmpty(customer.Address1))
                                         {
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Adres 1:</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Adres:</MudText>
                                             <MudText Typo="Typo.body1">@customer.Address1</MudText>
                                         }
                                         

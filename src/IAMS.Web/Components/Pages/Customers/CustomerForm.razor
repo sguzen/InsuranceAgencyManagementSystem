@@ -69,18 +69,21 @@
                                         </MudSelect>
                                     </MudItem>
                                 }
-                                <MudItem xs="12" md="4">
-                                    <MudSelect @bind-Value="model.Status"
-                                             Label="Durum *"
-                                             Variant="Variant.Outlined"
-                                             Required="true"
-                                             T="CustomerStatus">
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Active">Aktif</MudSelectItem>
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Inactive">Pasif</MudSelectItem>
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Prospect">Aday Müşteri</MudSelectItem>
-                                        <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Former">Eski Müşteri</MudSelectItem>
-                                    </MudSelect>
-                                </MudItem>
+                                @if (IsEdit)
+                                {
+                                    <MudItem xs="12" md="4">
+                                        <MudSelect @bind-Value="model.Status"
+                                                 Label="Durum *"
+                                                 Variant="Variant.Outlined"
+                                                 Required="true"
+                                                 T="CustomerStatus">
+                                            <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Active">Aktif</MudSelectItem>
+                                            <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Inactive">Pasif</MudSelectItem>
+                                            <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Prospect">Aday Müşteri</MudSelectItem>
+                                            <MudSelectItem T="CustomerStatus" Value="@CustomerStatus.Former">Eski Müşteri</MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                }
                             </MudGrid>
                         </MudCardContent>
                     </MudCard>
@@ -131,18 +134,6 @@
                                                      For="@(() => model.DateOfBirth)" />
                                     </MudItem>
                                 }
-                                <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.NationalityCountryId"
-                                             Label="Uyruk"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true">
-                                        @foreach (var country in countries)
-                                        {
-                                            <MudSelectItem T="int?" Value="@((int?)country.Id)">@country.NameTr (@country.Code)</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
                             </MudGrid>
                         </MudCardContent>
                     </MudCard>
@@ -183,6 +174,18 @@
                                                 Required="true"
                                                 For="@(() => model.IdentificationNumber)" />
                                 </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="model.NationalityCountryId"
+                                             Label="Uyruk"
+                                             Variant="Variant.Outlined"
+                                             T="int?"
+                                             Clearable="true">
+                                        @foreach (var country in countries)
+                                        {
+                                            <MudSelectItem T="int?" Value="@((int?)country.Id)">@country.NameTr (@country.Code)</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
                             </MudGrid>
                         </MudCardContent>
                     </MudCard>
@@ -198,14 +201,6 @@
                         </MudCardHeader>
                         <MudCardContent>
                             <MudGrid>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Email"
-                                                Label="E-posta *"
-                                                Variant="Variant.Outlined"
-                                                InputType="InputType.Email"
-                                                Required="true"
-                                                For="@(() => model.Email)" />
-                                </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.HomePhone"
                                                 Label="Ev Telefonu"
@@ -245,76 +240,11 @@
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            <MudGrid>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address1"
-                                                Label="Adres 1"
-                                                Variant="Variant.Outlined"
-                                                Lines="2"
-                                                For="@(() => model.Address1)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.Address2"
-                                                Label="Adres 2"
-                                                Variant="Variant.Outlined"
-                                                Lines="2"
-                                                For="@(() => model.Address2)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudSelect 
-                                             Label="Şehir"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true"
-                                               ValueChanged="@((int? value) => OnCityChanged(value))">
-                                        @foreach (var city in cities)
-                                        {
-                                            <MudSelectItem T="int?" Value="@((int?)city.Id)">@city.NameTr</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudSelect 
-                                             Label="Mahalle"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true"
-                                             Disabled="@(!model.CityId.HasValue)"
-                                               ValueChanged="@((int? value) => OnDistrictChanged(value))">
-                                        @foreach (var district in filteredDistricts)
-                                        {
-                                            <MudSelectItem T="int?" Value="@((int?)district.Id)">@district.NameTr</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudSelect 
-                                             Label="Bucak"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true"
-                                             Disabled="@(!model.DistrictId.HasValue)"
-                                               ValueChanged="@((int? value) => OnSubdistrictChanged(value))">
-                                        @foreach (var subdistrict in filteredSubdistricts)
-                                        {
-                                            <MudSelectItem T="int?" Value="@((int?)subdistrict.Id)">@subdistrict.NameTr</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.VillageId"
-                                             Label="Köy"
-                                             Variant="Variant.Outlined"
-                                             T="int?"
-                                             Clearable="true"
-                                             Disabled="@(!model.SubdistrictId.HasValue)">
-                                        @foreach (var village in filteredVillages)
-                                        {
-                                            <MudSelectItem T="int?" Value="@((int?)village.Id)">@village.NameTr</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-                            </MudGrid>
+                            <MudTextField @bind-Value="model.Address1"
+                                        Label="Adres"
+                                        Variant="Variant.Outlined"
+                                        Lines="3"
+                                        For="@(() => model.Address1)" />
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -406,26 +336,6 @@
     // Parametric data
     private List<CountryDto> countries = new();
     private List<OccupationDto> occupations = new();
-    private List<CityDto> cities = new();
-    private List<DistrictDto> districts = new();
-    private List<SubdistrictDto> subdistricts = new();
-    private List<VillageDto> villages = new();
-
-    // Filtered hierarchical data
-    private List<DistrictDto> filteredDistricts => 
-        model.CityId.HasValue 
-            ? districts.Where(d => d.CityId == model.CityId.Value).ToList() 
-            : new List<DistrictDto>();
-
-    private List<SubdistrictDto> filteredSubdistricts => 
-        model.DistrictId.HasValue 
-            ? subdistricts.Where(s => s.DistrictId == model.DistrictId.Value).ToList() 
-            : new List<SubdistrictDto>();
-
-    private List<VillageDto> filteredVillages => 
-        model.SubdistrictId.HasValue 
-            ? villages.Where(v => v.SubdistrictId == model.SubdistrictId.Value).ToList() 
-            : new List<VillageDto>();
 
     private bool IsEdit => CustomerId.HasValue;
 
@@ -444,6 +354,10 @@
             model.Gender = Gender.Male;
             model.Status = CustomerStatus.Active;
             model.IdentificationType = IdentificationType.IdCard;
+            // Uyruk defaults to KKTC (nüfus country code 601)
+            model.NationalityCountryId = countries.FirstOrDefault(c =>
+                c.Code == "601" ||
+                (c.NameTr?.Contains("Kıbrıs", StringComparison.OrdinalIgnoreCase) ?? false))?.Id;
         }
     }
 
@@ -478,18 +392,6 @@
 
             var occupationsResult = await ParametricApi.GetOccupationsAsync();
             occupations = occupationsResult.IsSuccess ? occupationsResult.Data ?? new List<OccupationDto>() : new List<OccupationDto>();
-
-            var citiesResult = await ParametricApi.GetCitiesAsync();
-            cities = citiesResult.IsSuccess ? citiesResult.Data ?? new List<CityDto>() : new List<CityDto>();
-
-            var districtsResult = await ParametricApi.GetDistrictsAsync();
-            districts = districtsResult.IsSuccess ? districtsResult.Data ?? new List<DistrictDto>() : new List<DistrictDto>();
-
-            var subdistrictsResult = await ParametricApi.GetSubdistrictsAsync();
-            subdistricts = subdistrictsResult.IsSuccess ? subdistrictsResult.Data ?? new List<SubdistrictDto>() : new List<SubdistrictDto>();
-
-            var villagesResult = await ParametricApi.GetVillagesAsync();
-            villages = villagesResult.IsSuccess ? villagesResult.Data ?? new List<VillageDto>() : new List<VillageDto>();
         }
         catch (Exception ex)
         {
@@ -536,30 +438,6 @@
             Snackbar.Add($"Müşteri bilgileri yüklenirken hata oluştu: {ex.Message}", MudBlazor.Severity.Error);
             GoBack();
         }
-    }
-
-    private void OnCityChanged(int? cityId)
-    {
-        model.CityId = cityId;
-        // Clear dependent fields when city changes
-        model.DistrictId = null;
-        model.SubdistrictId = null;
-        model.VillageId = null;
-    }
-
-    private void OnDistrictChanged(int? districtId)
-    {
-        model.DistrictId = districtId;
-        // Clear dependent fields when district changes
-        model.SubdistrictId = null;
-        model.VillageId = null;
-    }
-
-    private void OnSubdistrictChanged(int? subdistrictId)
-    {
-        model.SubdistrictId = subdistrictId;
-        // Clear dependent field when subdistrict changes
-        model.VillageId = null;
     }
 
     private async Task OnValidSubmit()

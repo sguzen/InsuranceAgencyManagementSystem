@@ -54,12 +54,21 @@ namespace IAMS.Application.Features.Customers.Commands.CreateCustomer
                     }
                 }
 
-                // Check if customer with email already exists for this tenant
-                var existingCustomerByEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email);
-                if (existingCustomerByEmail != null)
+                // E-posta is hidden in the UI; generate a unique placeholder when blank
+                // (same scheme as the policy-import paths — Email has a unique index).
+                if (string.IsNullOrWhiteSpace(request.CustomerDto.Email))
                 {
-                    _logger.LogWarning("Customer creation failed: Email already exists");
-                    return Result<CustomerDto>.ValidationFailure("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut", new List<string>());
+                    request.CustomerDto.Email = $"noemail_{Guid.NewGuid():N}@temp.com";
+                }
+                else
+                {
+                    // Check if customer with email already exists for this tenant
+                    var existingCustomerByEmail = await _unitOfWork.Customers.GetByEmailAsync(request.CustomerDto.Email);
+                    if (existingCustomerByEmail != null)
+                    {
+                        _logger.LogWarning("Customer creation failed: Email already exists");
+                        return Result<CustomerDto>.ValidationFailure("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut", new List<string>());
+                    }
                 }
 
                 // Check if customer with phone number already exists for this tenant

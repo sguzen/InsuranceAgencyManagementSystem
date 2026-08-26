@@ -87,6 +87,25 @@ public class CustomersControllerTests : IClassFixture<TestWebApplicationFactory<
         customer.Email.Should().Be("mehmet.yilmaz@example.com");
     }
 
+    [Fact]
+    public async Task CreateCustomer_WithoutEmail_AutoGeneratesPlaceholder()
+    {
+        // E-posta is hidden in the UI (#521); a unique placeholder must be generated
+        // server-side so the unique index on Email is never violated.
+        var createDto = new CreateOrUpdateCustomerDto
+        {
+            FirstName = "Ayşe",
+            LastName = "Kaya",
+            MobilePhoneNumber = "+90 533 444 5566"
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/customers", createDto);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var result = await response.Content.ReadFromJsonAsync<IAMS.Shared.Models.Result<CustomerDto>>();
+        result!.Data!.Email.Should().StartWith("noemail_").And.EndWith("@temp.com");
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]

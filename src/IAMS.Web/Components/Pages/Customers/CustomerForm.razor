@@ -154,32 +154,29 @@
                                              Label="Kimlik Türü *"
                                              Variant="Variant.Outlined"
                                              Required="true"
-                                             T="IdentificationType">
-                                        @if (model.Type == CustomerType.Corporate)
+                                             T="IdentificationType"
+                                             ToStringFunc="@IdentificationTypeLabel">
+                                        @foreach (var idType in AllowedIdentificationTypes)
                                         {
-                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.TaxNumber">Vergi Numarası (VN)</MudSelectItem>
-                                        }
-                                        else
-                                        {
-                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.IdCard">Kimlik No (KN)</MudSelectItem>
-                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.Passport">Pasaport No (PN)</MudSelectItem>
-                                            <MudSelectItem T="IdentificationType" Value="@IdentificationType.TradeLicense">Mali Şirket (MŞ)</MudSelectItem>
+                                            <MudSelectItem T="IdentificationType" Value="@idType">@IdentificationTypeLabel(idType)</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.IdentificationNumber"
-                                                Label="@(model.Type == CustomerType.Corporate ? "Vergi Numarası *" : "Kimlik Numarası *")"
+                                                Label="@IdentificationNumberLabel"
                                                 Variant="Variant.Outlined"
                                                 Required="true"
                                                 For="@(() => model.IdentificationNumber)" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.NationalityCountryId"
+                                    <MudSelect Value="@model.NationalityCountryId"
+                                             ValueChanged="@((int? value) => OnNationalityChanged(value))"
                                              Label="Uyruk"
                                              Variant="Variant.Outlined"
                                              T="int?"
-                                             Clearable="true">
+                                             Clearable="true"
+                                             ToStringFunc="@CountryDisplayName">
                                         @foreach (var country in countries)
                                         {
                                             <MudSelectItem T="int?" Value="@((int?)country.Id)">@country.NameTr (@country.Code)</MudSelectItem>
@@ -266,7 +263,8 @@
                                                  Label="Meslek"
                                                  Variant="Variant.Outlined"
                                                  T="int?"
-                                                 Clearable="true">
+                                                 Clearable="true"
+                                                 ToStringFunc="@OccupationDisplayName">
                                             @foreach (var occupation in occupations)
                                             {
                                                 <MudSelectItem T="int?" Value="@((int?)occupation.Id)">@occupation.NameTr</MudSelectItem>
@@ -339,6 +337,75 @@
 
     private bool IsEdit => CustomerId.HasValue;
 
+    private int? kktcCountryId;
+
+    private bool IsKktcNationality => model.NationalityCountryId.HasValue && model.NationalityCountryId == kktcCountryId;
+
+    // Kimlik türü is determined by the customer type and uyruk:
+    // bireysel + KKTC → Kimlik No; bireysel + other → Pasaport No; kurumsal → MŞ.
+    // A legacy stored value stays selectable on edit so old records remain displayable.
+    private IEnumerable<IdentificationType> AllowedIdentificationTypes
+    {
+        get
+        {
+            var allowed = new List<IdentificationType>
+            {
+                model.Type == CustomerType.Corporate
+                    ? IdentificationType.TradeLicense
+                    : (IsKktcNationality ? IdentificationType.IdCard : IdentificationType.Passport)
+            };
+
+            if (!allowed.Contains(model.IdentificationType))
+            {
+                allowed.Add(model.IdentificationType);
+            }
+
+            return allowed;
+        }
+    }
+
+    private static string IdentificationTypeLabel(IdentificationType idType) => idType switch
+    {
+        IdentificationType.IdCard => "Kimlik No (KN)",
+        IdentificationType.Passport => "Pasaport No (PN)",
+        IdentificationType.TradeLicense => "Mali Şirket (MŞ)",
+        IdentificationType.TaxNumber => "Vergi Numarası (VN)",
+        _ => idType.ToString()
+    };
+
+    private string IdentificationNumberLabel => model.IdentificationType switch
+    {
+        IdentificationType.IdCard => "Kimlik Numarası *",
+        IdentificationType.Passport => "Pasaport Numarası *",
+        IdentificationType.TradeLicense => "MŞ Numarası *",
+        IdentificationType.TaxNumber => "Vergi Numarası *",
+        _ => "Kimlik Numarası *"
+    };
+
+    private void OnNationalityChanged(int? countryId)
+    {
+        model.NationalityCountryId = countryId;
+
+        // Corporate identification is uyruk-independent (always MŞ / legacy VN)
+        if (model.Type == CustomerType.Individual)
+        {
+            model.IdentificationType = IsKktcNationality ? IdentificationType.IdCard : IdentificationType.Passport;
+        }
+    }
+
+    // MudSelect renders Value.ToString() (the raw id) when the value is set before the
+    // items register — e.g. the KKTC default or values loaded on edit. A ToStringFunc
+    // keeps the display text independent of that timing.
+    private string CountryDisplayName(int? id) =>
+        id == null
+            ? string.Empty
+            : countries.FirstOrDefault(c => c.Id == id) is { } c ? $"{c.NameTr} ({c.Code})" : string.Empty;
+
+    private string OccupationDisplayName(int? id) =>
+        id == null
+            ? string.Empty
+            : occupations.FirstOrDefault(o => o.Id == id)?.NameTr ?? string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadParametricData();
@@ -353,11 +420,9 @@
             model.Type = CustomerType.Individual;
             model.Gender = Gender.Male;
             model.Status = CustomerStatus.Active;
+            // Uyruk defaults to KKTC → kimlik türü Kimlik No
+            model.NationalityCountryId = kktcCountryId;
             model.IdentificationType = IdentificationType.IdCard;
-            // Uyruk defaults to KKTC (nüfus country code 601)
-            model.NationalityCountryId = countries.FirstOrDefault(c =>
-                c.Code == "601" ||
-                (c.NameTr?.Contains("Kıbrıs", StringComparison.OrdinalIgnoreCase) ?? false))?.Id;
         }
     }
 
@@ -373,12 +438,12 @@
             model.Gender = Gender.Male; // Set default but won't be shown
             model.DateOfBirth = null;
             model.OccupationId = null;
-            model.IdentificationType = IdentificationType.TaxNumber;
+            model.IdentificationType = IdentificationType.TradeLicense;
         }
         else if (newType == CustomerType.Individual)
         {
-            // Set individual defaults
-            model.IdentificationType = IdentificationType.IdCard;
+            // Individual: kimlik türü follows the uyruk (KKTC → KN, otherwise PN)
+            model.IdentificationType = IsKktcNationality ? IdentificationType.IdCard : IdentificationType.Passport;
         }
     }
 
@@ -392,6 +457,11 @@
 
             var occupationsResult = await ParametricApi.GetOccupationsAsync();
             occupations = occupationsResult.IsSuccess ? occupationsResult.Data ?? new List<OccupationDto>() : new List<OccupationDto>();
+
+            // KKTC (nüfus country code 601) drives the uyruk default and the kimlik türü rule
+            kktcCountryId = countries.FirstOrDefault(c =>
+                c.Code == "601" ||
+                (c.NameTr?.Contains("Kıbrıs", StringComparison.OrdinalIgnoreCase) ?? false))?.Id;
         }
         catch (Exception ex)
         {

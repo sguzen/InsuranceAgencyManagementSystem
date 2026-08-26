@@ -233,6 +233,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Local development bootstrap (LocalBootstrap=true, set by scripts/local-db.sh): create
+// the master, default application, and integration databases from the EF models —
+// schema plus HasData seed (default tenant, parametric data) — when they don't exist.
+// EnsureCreated is a no-op on databases that already have tables. Never enable this in
+// production, where the schema is managed by MasterDbMigrator and DBA scripts.
+if (app.Configuration.GetValue<bool>("LocalBootstrap"))
+{
+    using var bootstrapScope = app.Services.CreateScope();
+    bootstrapScope.ServiceProvider.GetRequiredService<IAMS.MultiTenancy.Data.TenantDbContext>()
+        .Database.EnsureCreated();
+    bootstrapScope.ServiceProvider.GetRequiredService<IAMS.Persistence.Contexts.ApplicationDbContext>()
+        .Database.EnsureCreated();
+    bootstrapScope.ServiceProvider.GetRequiredService<IAMS.Infrastructure.Data.IntegrationDbContext>()
+        .Database.EnsureCreated();
+    Log.Information("LocalBootstrap: master, application, and integration databases ensured");
+}
+
 // Apply pending master database (TenantDb) schema scripts before serving requests.
 // Scripts: src/IAMS.MultiTenancy/Data/Migrations/*.sql, journaled in dbo.__MasterDbMigrations.
 // Disable with MasterDb:AutoMigrate=false to run them out-of-band instead.

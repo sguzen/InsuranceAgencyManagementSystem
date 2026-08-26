@@ -533,14 +533,12 @@
                                             <MudTable Items="customersWithOutstanding.Take(10)" Dense="true" Hover="true">
                                                 <HeaderContent>
                                                     <MudTh>Müşteri</MudTh>
-                                                    <MudTh>E-posta</MudTh>
                                                     <MudTh Style="text-align:right">Aktif Poliçe</MudTh>
                                                     <MudTh Style="text-align:right">Bekleyen Ödeme</MudTh>
                                                     <MudTh Style="text-align:right">Kalan Bakiye</MudTh>
                                                 </HeaderContent>
                                                 <RowTemplate>
                                                     <MudTd DataLabel="Müşteri">@context.CustomerName</MudTd>
-                                                    <MudTd DataLabel="E-posta">@context.CustomerEmail</MudTd>
                                                     <MudTd DataLabel="Aktif Poliçe" Style="text-align:right">@context.ActivePoliciesCount</MudTd>
                                                     <MudTd DataLabel="Bekleyen Ödeme" Style="text-align:right">@context.PendingPaymentsCount</MudTd>
                                                     <MudTd DataLabel="Kalan Bakiye" Style="text-align:right">

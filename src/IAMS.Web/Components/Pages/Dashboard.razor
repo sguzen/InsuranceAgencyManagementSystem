@@ -59,10 +59,7 @@
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Müşteri">
-                                        <div>
-                                            <MudText Typo="Typo.body2" Color="Color.Primary"><b>@context.CustomerName</b></MudText>
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.CustomerEmail</MudText>
-                                        </div>
+                                        <MudText Typo="Typo.body2" Color="Color.Primary"><b>@context.CustomerName</b></MudText>
                                     </MudTd>
                                     <MudTd DataLabel="Poliçe Sayısı">@context.ActivePoliciesCount</MudTd>
                                     <MudTd DataLabel="Bekleyen Ödeme">@context.PendingPaymentsCount</MudTd>

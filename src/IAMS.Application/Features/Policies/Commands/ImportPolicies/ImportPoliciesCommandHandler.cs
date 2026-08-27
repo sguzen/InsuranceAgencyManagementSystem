@@ -22,6 +22,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
         private readonly IPolicyQueryService _policyQueryService;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
         private readonly IImportAutoPaymentService _autoPaymentService;
+        private readonly IEndorsementLinkService _endorsementLinkService;
         private readonly ILogger<ImportPoliciesCommandHandler> _logger;
 
         public ImportPoliciesCommandHandler(
@@ -31,6 +32,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             IPolicyQueryService policyQueryService,
             ICustomerCodeGenerator customerCodeGenerator,
             IImportAutoPaymentService autoPaymentService,
+            IEndorsementLinkService endorsementLinkService,
             ILogger<ImportPoliciesCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -39,6 +41,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             _policyQueryService = policyQueryService;
             _customerCodeGenerator = customerCodeGenerator;
             _autoPaymentService = autoPaymentService;
+            _endorsementLinkService = endorsementLinkService;
             _logger = logger;
         }
 
@@ -96,7 +99,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 {
                     try
                     {
-                        var policy = await ImportSinglePolicyAsync(policyDto, userId, insuranceCompanyId, cancellationToken);
+                        var policy = await ImportSinglePolicyAsync(policyDto, userId, insuranceCompanyId, result, cancellationToken);
                         result.SuccessCount++;
                         result.ImportedPolicyIds.Add(policy.Id);
                     }
@@ -126,7 +129,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
 
         // The remaining import logic stays in the handler for now
 
-        private async Task<Policy> ImportSinglePolicyAsync(ImportPolicyDto dto, string userId, int insuranceCompanyId, CancellationToken cancellationToken)
+        private async Task<Policy> ImportSinglePolicyAsync(ImportPolicyDto dto, string userId, int insuranceCompanyId, PolicyImportResultDto result, CancellationToken cancellationToken)
         {
             // Lookup or create related entities
             var customer = await GetOrCreateCustomerAsync(dto);
@@ -141,13 +144,15 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
 
             if (dto.InnerCode != "000" && !string.IsNullOrEmpty(dto.PolicyNumber))
             {
-                // Find the original policy (the one with InnerCode = "000")
+                // Find the original policy (the one with InnerCode = "000"). A zeyil without
+                // its original is imported anyway with a warning — it shows as its own row
+                // until the original arrives, when IEndorsementLinkService attaches it (#528).
                 originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(dto.PolicyNumber);
                 if (originalPolicy == null)
                 {
-                    throw new InvalidOperationException(
-                        $"Original policy not found for endorsement: {dto.PolicyNumber}. " +
-                        $"InnerCode: {dto.InnerCode}");
+                    result.Warnings.Add(
+                        $"Zeyil ana poliçesi olmadan içe aktarıldı: Poliçe No={dto.PolicyNumber}, Zeyil No={dto.InnerCode}. " +
+                        "Ana poliçe içe aktarıldığında otomatik olarak bağlanacaktır.");
                 }
             }
 
@@ -191,6 +196,13 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
             await _unitOfWork.Policies.AddAsync(policy);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // If this row is an original, attach any zeyils that were imported before it
+            if (policy.InnerCode == "000" &&
+                await _endorsementLinkService.LinkOrphanEndorsementsAsync(policy, cancellationToken) > 0)
+            {
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
             // Traffic-family policies (Trafik/Kasko variants) are auto-marked fully paid,
             // unless the agency turned the AutoPayMandatoryPolicies setting off (see #515).
             bool autoPay = await _autoPaymentService.ShouldAutoPayAsync(policyType, cancellationToken);
@@ -206,8 +218,10 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                 paymentAmount = dto.PaidAmount.Value;
             }
 
-            // Create payment if there's an amount to record
-            if (paymentAmount > 0)
+            // Create payment if there's an amount to record. Signed under the auto-pay rule:
+            // a negative-premium zeyil (iade) gets a matching negative payment so the
+            // traffic chain stays at zero balance (#528).
+            if (paymentAmount != 0)
             {
                 var payment = new PolicyPayment
                 {
@@ -217,7 +231,9 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPolicies
                     PaymentMethod = ParsePaymentMethod(dto.PaymentMethod),
                     Status = PaymentStatus.Completed,
                     CurrencyId = currency.Id,
-                    Notes = autoPay ? _autoPaymentService.AutoPaymentNote : "Initial payment from import",
+                    Notes = autoPay
+                        ? (paymentAmount < 0 ? _autoPaymentService.AutoRefundNote : _autoPaymentService.AutoPaymentNote)
+                        : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,
                     ModifiedBy = userId,

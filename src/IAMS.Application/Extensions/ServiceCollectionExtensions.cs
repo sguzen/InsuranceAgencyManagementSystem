@@ -78,6 +78,7 @@ namespace IAMS.Application.Extensions
             services.AddScoped<IExcelFileValidator, ExcelFileValidator>();
             services.AddScoped<IExcelPolicyParser, ExcelPolicyParser>();
             services.AddScoped<IImportAutoPaymentService, ImportAutoPaymentService>();
+            services.AddScoped<IEndorsementLinkService, EndorsementLinkService>();
 
             // Register Focused Policy Services (replaces bloated repository interface)
             services.AddScoped<IPolicyQueryService, PolicyQueryService>();

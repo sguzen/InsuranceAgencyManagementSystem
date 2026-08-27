@@ -24,17 +24,20 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
         private readonly IImportAutoPaymentService _autoPaymentService;
+        private readonly IEndorsementLinkService _endorsementLinkService;
         private readonly ILogger<ImportPoliciesWithMappingCommandHandler> _logger;
 
         public ImportPoliciesWithMappingCommandHandler(
             IUnitOfWork unitOfWork,
             ICustomerCodeGenerator customerCodeGenerator,
             IImportAutoPaymentService autoPaymentService,
+            IEndorsementLinkService endorsementLinkService,
             ILogger<ImportPoliciesWithMappingCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _customerCodeGenerator = customerCodeGenerator;
             _autoPaymentService = autoPaymentService;
+            _endorsementLinkService = endorsementLinkService;
             _logger = logger;
         }
 
@@ -117,6 +120,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                             vehicleCache,
                             policyCache,
                             codeState,
+                            result,
                             cancellationToken);
 
                         result.SuccessCount++;
@@ -182,6 +186,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             Dictionary<string, Vehicle> vehicleCache,
             Dictionary<string, Policy> policyCache,
             CustomerCodeState codeState,
+            PolicyImportResultDto result,
             CancellationToken cancellationToken)
         {
             var dto = mappedPolicy.OriginalImportData;
@@ -307,13 +312,15 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 }
                 else
                 {
-                    // Not in batch, check database
+                    // Not in batch, check database. A zeyil without its original is imported
+                    // anyway with a warning — it shows as its own row in the UI until the
+                    // original arrives, when IEndorsementLinkService attaches it (#528).
                     originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(policyNumber);
                     if (originalPolicy == null)
                     {
-                        throw new InvalidOperationException(
-                            $"Original policy not found for endorsement: PolicyNumber={policyNumber}, InnerCode={innerCode}. " +
-                            $"The original policy (InnerCode=000) must be in the import file or database.");
+                        result.Warnings.Add(
+                            $"Zeyil ana poliçesi olmadan içe aktarıldı: Poliçe No={policyNumber}, Zeyil No={innerCode}. " +
+                            "Ana poliçe içe aktarıldığında otomatik olarak bağlanacaktır.");
                     }
                 }
             }
@@ -356,6 +363,13 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             policyCache[policyKey] = policy;
             _logger.LogDebug("Added policy to cache: Company={CompanyId}, Type={TypeId}, Policy={PolicyNumber}, InnerCode={InnerCode}",
                 insuranceCompanyId, policyType.Id, policyNumber, innerCode);
+
+            // If this row is an original, attach any orphan zeyils imported in earlier runs
+            // (the batch's final SaveChanges persists the links)
+            if (innerCode == "000")
+            {
+                await _endorsementLinkService.LinkOrphanEndorsementsAsync(policy, cancellationToken);
+            }
 
             // Create initial payment if applicable
             await CreateInitialPaymentIfNeeded(policy, policyType, dto, currency.Id, userId, cancellationToken);
@@ -634,10 +648,11 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
             // shared rule also honors the agency's AutoPayMandatoryPolicies setting (#515).
             bool requiresFullPayment = await _autoPaymentService.ShouldAutoPayAsync(policyType, cancellationToken);
 
+            // Signed amount for the auto-pay rule: a negative-premium zeyil (iade) gets a
+            // matching negative payment so the traffic chain stays at zero balance (#528).
             decimal paymentAmount = 0;
             if (requiresFullPayment)
             {
-                // Create full payment for the premium amount → zero outstanding balance
                 paymentAmount = policy.PremiumAmount; // Use actual policy premium, not DTO
 
                 _logger.LogInformation(
@@ -652,7 +667,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                 paymentAmount = dto.PaidAmount.Value;
             }
 
-            if (paymentAmount > 0)
+            if (paymentAmount != 0)
             {
                 var payment = new PolicyPayment
                 {
@@ -663,7 +678,7 @@ namespace IAMS.Application.Features.Policies.Commands.ImportPoliciesWithMapping
                     Status = PaymentStatus.Completed,
                     CurrencyId = currencyId,
                     Notes = requiresFullPayment
-                        ? _autoPaymentService.AutoPaymentNote
+                        ? (paymentAmount < 0 ? _autoPaymentService.AutoRefundNote : _autoPaymentService.AutoPaymentNote)
                         : "Initial payment from import",
                     CreatedBy = userId,
                     CreatedOn = DateTime.UtcNow,

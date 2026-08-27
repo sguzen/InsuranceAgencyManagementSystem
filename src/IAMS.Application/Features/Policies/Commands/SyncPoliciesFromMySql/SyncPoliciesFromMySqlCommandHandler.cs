@@ -108,7 +108,14 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                     TotalRows = policies.Count
                 };
 
-                foreach (var policyDto in policies)
+                // Originals (InnerCode=000) first, so endorsements from the same sync find
+                // their main policy in the database (same ordering as the mapping import).
+                var sortedPolicies = policies
+                    .OrderBy(p => p.InnerCode != "000" && p.InnerCode != null ? 1 : 0)
+                    .ThenBy(p => p.PolicyNumber)
+                    .ToList();
+
+                foreach (var policyDto in sortedPolicies)
                 {
                     try
                     {
@@ -196,11 +203,20 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
             var vehicle = await GetOrCreateVehicleAsync(dto, customer.Id, userId);
 
-            // Check if this is an endorsement
+            // Check if this is an endorsement (zeyil). An endorsement must never be imported
+            // without its original policy: an orphan (OriginalPolicyId = null) is invisible
+            // in the customer's policy list yet still counts in balances (#528). Failing the
+            // row here lands it in the sync's error list; the rest of the sync continues.
             Policy? originalPolicy = null;
             if (dto.InnerCode != "000" && !string.IsNullOrEmpty(dto.PolicyNumber))
             {
                 originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(dto.PolicyNumber);
+                if (originalPolicy == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Original policy not found for endorsement: PolicyNumber={dto.PolicyNumber}, InnerCode={dto.InnerCode}. " +
+                        $"The original policy (InnerCode=000) must exist in the database or be part of this sync.");
+                }
             }
 
             // Build EnsuredEntity string (Sigortalı) - same pattern as CSV import

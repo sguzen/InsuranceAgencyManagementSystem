@@ -199,29 +199,17 @@
                         <MudCardContent Class="pt-2">
                             <MudGrid Spacing="2">
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="model.HomePhone"
-                                                Label="Ev Telefonu"
-                                                Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                Mask="@(new PatternMask("(000) 000-0000"))"
-                                                For="@(() => model.HomePhone)" />
-                                </MudItem>
-                                <MudItem xs="12" md="6">
-                                    <MudSelect @bind-Value="model.MobilePhoneCountryCode"
-                                             Label="Cep Tel. Ülke Kodu"
-                                             Variant="Variant.Outlined" Margin="Margin.Dense"
-                                             T="string"
-                                             Clearable="true">
-                                        @foreach (var country in countries.Where(c => !string.IsNullOrEmpty(c.PhoneCode)))
-                                        {
-                                            <MudSelectItem T="string" Value="@country.PhoneCode">@country.PhoneCode - @country.NameTr</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </MudItem>
-                                <MudItem xs="12" md="6">
                                     <MudTextField @bind-Value="model.MobilePhoneNumber"
-                                                Label="Cep Telefonu No"
+                                                Label="Cep Telefonu 1"
                                                 Variant="Variant.Outlined" Margin="Margin.Dense"
                                                 For="@(() => model.MobilePhoneNumber)" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    @* Stored in the HomePhone column — label only, no DB change *@
+                                    <MudTextField @bind-Value="model.HomePhone"
+                                                Label="Cep Telefonu 2"
+                                                Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                For="@(() => model.HomePhone)" />
                                 </MudItem>
                             </MudGrid>
                         </MudCardContent>
@@ -246,37 +234,6 @@
                     </MudCard>
                 </MudItem>
 
-                <!-- Professional Information -->
-                @if (model.Type == CustomerType.Individual)
-                {
-                    <MudItem xs="12">
-                        <MudCard>
-                            <MudCardHeader Class="pb-0">
-                                <CardHeaderContent>
-                                    <MudText Typo="Typo.subtitle1" Style="font-weight:600">Mesleki Bilgiler</MudText>
-                                </CardHeaderContent>
-                            </MudCardHeader>
-                            <MudCardContent Class="pt-2">
-                                <MudGrid Spacing="2">
-                                    <MudItem xs="12" md="6">
-                                        <MudSelect @key="@occupations.Count"
-                                                 @bind-Value="model.OccupationId"
-                                                 Label="Meslek"
-                                                 Variant="Variant.Outlined" Margin="Margin.Dense"
-                                                 T="int?"
-                                                 Clearable="true"
-                                                 ToStringFunc="@OccupationDisplayName">
-                                            @foreach (var occupation in occupations)
-                                            {
-                                                <MudSelectItem T="int?" Value="@((int?)occupation.Id)">@occupation.NameTr</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    </MudItem>
-                                </MudGrid>
-                            </MudCardContent>
-                        </MudCard>
-                    </MudItem>
-                }
 
                 <!-- Notes -->
                 <MudItem xs="12">
@@ -334,7 +291,6 @@
 
     // Parametric data
     private List<CountryDto> countries = new();
-    private List<OccupationDto> occupations = new();
 
     private bool IsEdit => CustomerId.HasValue;
 
@@ -381,11 +337,6 @@
         id == null
             ? string.Empty
             : countries.FirstOrDefault(c => c.Id == id) is { } c ? $"{c.NameTr} ({c.Code})" : string.Empty;
-
-    private string OccupationDisplayName(int? id) =>
-        id == null
-            ? string.Empty
-            : occupations.FirstOrDefault(o => o.Id == id)?.NameTr ?? string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -435,9 +386,6 @@
             // Load all parametric data in parallel
             var countriesResult = await ParametricApi.GetCountriesAsync();
             countries = countriesResult.IsSuccess ? countriesResult.Data ?? new List<CountryDto>() : new List<CountryDto>();
-
-            var occupationsResult = await ParametricApi.GetOccupationsAsync();
-            occupations = occupationsResult.IsSuccess ? occupationsResult.Data ?? new List<OccupationDto>() : new List<OccupationDto>();
 
             // KKTC (nüfus country code 601) drives the uyruk default and the kimlik türü rule
             kktcCountryId = countries.FirstOrDefault(c =>

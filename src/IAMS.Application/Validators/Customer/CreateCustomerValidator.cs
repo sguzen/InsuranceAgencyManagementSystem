@@ -22,9 +22,10 @@ namespace IAMS.Application.Validators.Customer
                 .MaximumLength(100).WithMessage("Last name must not exceed 100 characters")
                 .When(x => x.Type == CustomerType.Individual);
 
+            // No format/length rule for the identification number: old KKTC kimlik numbers
+            // were 6 digits (later extended), passports vary — only the column size applies.
             RuleFor(x => x.IdentificationNumber)
-                .Length(11).WithMessage("Identification number must be exactly 11 digits")
-                .Matches(@"^\d{11}$").WithMessage("Identification number must contain only digits")
+                .MaximumLength(50).WithMessage("Identification number must not exceed 50 characters")
                 .When(x => !string.IsNullOrEmpty(x.IdentificationNumber));
 
             RuleFor(x => x.Email)

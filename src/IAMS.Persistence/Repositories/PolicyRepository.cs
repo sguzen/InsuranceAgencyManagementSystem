@@ -72,6 +72,7 @@ namespace IAMS.Persistence.Repositories
                 .Include(p => p.InsuranceCompany)
                 .Include(p => p.PolicyType)
                 .Include(p => p.Currency)
+                .Include(p => p.Vehicle) // plate shown on the Cari Kart policy list (#527)
                 .Where(p => p.CustomerId == customerId && !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedOn)
                 .ToListAsync();

@@ -100,11 +100,14 @@ else
 
                                         <MudDivider />
                                         
-                                        <MudStack Row Justify="Justify.SpaceBetween">
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Cinsiyet:</MudText>
-                                            <MudText Typo="Typo.body1">@GetGenderText(customer.Gender)</MudText>
-                                        </MudStack>
-                                        
+                                        @if (customer.Type == CustomerType.Individual)
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Cinsiyet:</MudText>
+                                                <MudText Typo="Typo.body1">@GetGenderText(customer.Gender)</MudText>
+                                            </MudStack>
+                                        }
+
                                         @if (customer.DateOfBirth.HasValue)
                                         {
                                             <MudStack Row Justify="Justify.SpaceBetween">
@@ -289,6 +292,7 @@ else
                                 <MudTh>Z.No</MudTh>
                                 <MudTh>Poliçe Türü</MudTh>
                                 <MudTh>Plaka</MudTh>
+                                <MudTh>Marka/Model</MudTh>
                                 <MudTh>Sigorta Şirketi</MudTh>
                                 <MudTh>Başlangıç</MudTh>
                                 <MudTh>Bitiş</MudTh>
@@ -322,6 +326,7 @@ else
                                 </MudTd>
                                 <MudTd DataLabel="Poliçe Türü">@context.PolicyType.Name</MudTd>
                                 <MudTd DataLabel="Plaka">@GetPlateForPolicy(context)</MudTd>
+                                <MudTd DataLabel="Marka/Model">@GetBrandModelForPolicy(context)</MudTd>
                                 <MudTd DataLabel="Sigorta Şirketi">@context.InsuranceCompany.Name</MudTd>
                                 <MudTd DataLabel="Başlangıç">@context.StartDate.ToString("dd.MM.yyyy")</MudTd>
                                 <MudTd DataLabel="Bitiş">@context.EndDate.ToString("dd.MM.yyyy")</MudTd>
@@ -761,12 +766,13 @@ else
         _ => type.ToString()
     };
 
+    // Same labels as the customer form's kimlik türü field
     private string GetIdentificationTypeText(IdentificationType type) => type switch
     {
-        IdentificationType.IdCard => "Kimlik Kartı",
-        IdentificationType.Passport => "Pasaport",
-        IdentificationType.TradeLicense => "Trade License",
-        IdentificationType.TaxNumber => "Vergi Numarası",
+        IdentificationType.IdCard => "Kimlik No (KN)",
+        IdentificationType.Passport => "Pasaport No (PN)",
+        IdentificationType.TradeLicense => "Mali Şirket (MŞ)",
+        IdentificationType.TaxNumber => "Vergi Numarası (VN)",
         _ => type.ToString()
     };
 
@@ -783,6 +789,17 @@ else
     // Plaka is shown only for traffic-family policies (trafik/kasko variants, any
     // spelling including the Turkish İ); the column stays empty for other types.
     private static readonly string[] TrafficMarkers = { "TRAFIK", "TRAFFIC", "TRAFIC", "KASKO" };
+
+    private static string? GetBrandModelForPolicy(PolicyDto policy)
+    {
+        if (GetPlateForPolicy(policy) == null || policy.Vehicle == null)
+        {
+            return null;
+        }
+
+        var brandModel = $"{policy.Vehicle.BrandName} {policy.Vehicle.ModelName}".Trim();
+        return string.IsNullOrWhiteSpace(brandModel) ? null : brandModel;
+    }
 
     private static string? GetPlateForPolicy(PolicyDto policy)
     {

@@ -9,9 +9,15 @@ namespace IAMS.Shared.DTOs.Policy
         public int SuccessCount { get; set; }
         public int FailureCount { get; set; }
         public List<PolicyImportError> Errors { get; set; } = new();
+
+        /// <summary>
+        /// Non-fatal notices, e.g. a zeyil imported before its original policy (#528).
+        /// </summary>
+        public List<string> Warnings { get; set; } = new();
         public List<int> ImportedPolicyIds { get; set; } = new();
 
         public bool HasErrors => Errors.Any();
+        public bool HasWarnings => Warnings.Any();
     }
 
     public class PolicyImportError

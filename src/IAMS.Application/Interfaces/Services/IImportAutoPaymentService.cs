@@ -14,6 +14,12 @@ namespace IAMS.Application.Interfaces.Services
         string AutoPaymentNote { get; }
 
         /// <summary>
+        /// Note text for the negative payment created for a negative-premium zeyil
+        /// (iade), keeping the traffic-policy chain at zero balance.
+        /// </summary>
+        string AutoRefundNote { get; }
+
+        /// <summary>
         /// True when the policy type is in the traffic family covered by the law:
         /// its code, name, or category contains Trafik/Traffic/Trafic or any Kasko
         /// variant (Kasko, Yarım Kasko, Tam Kasko, ...), in any casing or spelling.

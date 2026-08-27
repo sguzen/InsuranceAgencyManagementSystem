@@ -17,6 +17,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
         private readonly IMySqlPolicyImportService _mySqlImportService;
         private readonly ICustomerCodeGenerator _customerCodeGenerator;
         private readonly IImportAutoPaymentService _autoPaymentService;
+        private readonly IEndorsementLinkService _endorsementLinkService;
         private readonly ILogger<SyncPoliciesFromMySqlCommandHandler> _logger;
 
         public SyncPoliciesFromMySqlCommandHandler(
@@ -24,12 +25,14 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             IMySqlPolicyImportService mySqlImportService,
             ICustomerCodeGenerator customerCodeGenerator,
             IImportAutoPaymentService autoPaymentService,
+            IEndorsementLinkService endorsementLinkService,
             ILogger<SyncPoliciesFromMySqlCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mySqlImportService = mySqlImportService;
             _customerCodeGenerator = customerCodeGenerator;
             _autoPaymentService = autoPaymentService;
+            _endorsementLinkService = endorsementLinkService;
             _logger = logger;
         }
 
@@ -120,7 +123,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                     try
                     {
                         var policy = await ImportSinglePolicyAsync(
-                            policyDto, request.UserId, request.InsuranceCompanyId, cancellationToken);
+                            policyDto, request.UserId, request.InsuranceCompanyId, result, cancellationToken);
 
                         result.SuccessCount++;
                         result.ImportedPolicyIds.Add(policy.Id);
@@ -196,26 +199,26 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
         }
 
         private async Task<Policy> ImportSinglePolicyAsync(
-            ImportPolicyDto dto, string userId, int insuranceCompanyId, CancellationToken cancellationToken)
+            ImportPolicyDto dto, string userId, int insuranceCompanyId, PolicyImportResultDto result, CancellationToken cancellationToken)
         {
             var customer = await GetOrCreateCustomerAsync(dto, userId);
             var policyType = await GetPolicyTypeAsync(dto);
             var currency = await GetCurrencyAsync(dto.CurrencyCode ?? "TRY");
             var vehicle = await GetOrCreateVehicleAsync(dto, customer.Id, userId);
 
-            // Check if this is an endorsement (zeyil). An endorsement must never be imported
-            // without its original policy: an orphan (OriginalPolicyId = null) is invisible
-            // in the customer's policy list yet still counts in balances (#528). Failing the
-            // row here lands it in the sync's error list; the rest of the sync continues.
+            // Check if this is an endorsement (zeyil). A zeyil whose original is not (yet)
+            // in the system is imported anyway with a warning — it shows as its own row in
+            // the UI until the original arrives, at which point it is linked automatically
+            // by IEndorsementLinkService (#528).
             Policy? originalPolicy = null;
             if (dto.InnerCode != "000" && !string.IsNullOrEmpty(dto.PolicyNumber))
             {
                 originalPolicy = await _unitOfWork.Policies.GetByPolicyNumberAsync(dto.PolicyNumber);
                 if (originalPolicy == null)
                 {
-                    throw new InvalidOperationException(
-                        $"Original policy not found for endorsement: PolicyNumber={dto.PolicyNumber}, InnerCode={dto.InnerCode}. " +
-                        $"The original policy (InnerCode=000) must exist in the database or be part of this sync.");
+                    result.Warnings.Add(
+                        $"Zeyil ana poliçesi olmadan içe aktarıldı: Poliçe No={dto.PolicyNumber}, Zeyil No={dto.InnerCode}. " +
+                        "Ana poliçe içe aktarıldığında otomatik olarak bağlanacaktır.");
                 }
             }
 
@@ -261,6 +264,13 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             await _unitOfWork.Policies.AddAsync(policy);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // If this row is an original, attach any zeyils that were imported before it
+            if (policy.InnerCode == "000" &&
+                await _endorsementLinkService.LinkOrphanEndorsementsAsync(policy, cancellationToken) > 0)
+            {
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
             // Auto-create payment for traffic and kasko policies (legally required to be fully paid)
             await CreateAutoPaymentIfRequiredAsync(policy, policyType, currency.Id, userId, cancellationToken);
 
@@ -278,7 +288,9 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
             if (!await _autoPaymentService.ShouldAutoPayAsync(policyType, cancellationToken))
                 return;
 
-            if (policy.PremiumAmount <= 0)
+            // Signed amount: a negative-premium zeyil (iade) gets a matching negative
+            // payment so the traffic chain stays at zero balance (#528).
+            if (policy.PremiumAmount == 0)
                 return;
 
             var payment = new PolicyPayment
@@ -289,7 +301,7 @@ namespace IAMS.Application.Features.Policies.Commands.SyncPoliciesFromMySql
                 PaymentMethod = PaymentMethod.BankTransfer,
                 Status = PaymentStatus.Completed,
                 CurrencyId = currencyId,
-                Notes = _autoPaymentService.AutoPaymentNote,
+                Notes = policy.PremiumAmount < 0 ? _autoPaymentService.AutoRefundNote : _autoPaymentService.AutoPaymentNote,
                 CreatedBy = userId,
                 CreatedOn = DateTime.UtcNow,
                 ModifiedBy = userId,

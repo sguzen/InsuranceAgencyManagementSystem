@@ -30,6 +30,8 @@ namespace IAMS.Application.Services.PolicyImport
 
         public string AutoPaymentNote => "Trafik/Kasko poliçesi - Tam ödeme (Yasal gereklilik)";
 
+        public string AutoRefundNote => "Trafik/Kasko zeyili - Prim iadesi (Yasal gereklilik)";
+
         public bool RequiresFullPaymentByLaw(PolicyType policyType)
         {
             return ContainsMandatoryMarker(policyType.Code) ||

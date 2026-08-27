@@ -313,6 +313,10 @@ else
                                         {
                                             <MudChip Size="Size.Small" Color="Color.Info" T="int">@GetEndorsementCount(context.Id) Zeyil</MudChip>
                                         }
+                                        @if (context.InnerCode != "000")
+                                        {
+                                            <MudChip Size="Size.Small" Color="Color.Warning" T="string" Title="Bu zeyilin ana poliçesi sistemde yok; içe aktarıldığında otomatik bağlanır">Ana poliçe yok</MudChip>
+                                        }
                                     </MudStack>
                                 </MudTd>
                                 <MudTd DataLabel="Poliçe Türü">@context.PolicyType.Name</MudTd>
@@ -641,8 +645,10 @@ else
             {
                 allPolicies = result.Data;
 
-                // Separate main policies from endorsements
-                mainPolicies = allPolicies.Where(p => p.InnerCode == "000").ToList();
+                // Separate main policies from endorsements. Orphan zeyils — imported before
+                // their original policy exists (#528) — are shown as their own rows so the
+                // balance always matches the visible policies.
+                mainPolicies = allPolicies.Where(p => p.InnerCode == "000" || !p.OriginalPolicyId.HasValue).ToList();
 
                 // Group endorsements by their main policy ID
                 endorsementsByPolicy.Clear();

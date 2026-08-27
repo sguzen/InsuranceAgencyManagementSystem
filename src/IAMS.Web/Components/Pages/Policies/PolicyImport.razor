@@ -634,10 +634,24 @@
                         }
                     }
 
+                    // Show warnings (e.g. zeyil imported before its original policy)
+                    if (importResult.Warnings.Any())
+                    {
+                        foreach (var warning in importResult.Warnings.Take(5))
+                        {
+                            Snackbar.Add(warning, MudBlazor.Severity.Warning);
+                        }
+                        if (importResult.Warnings.Count > 5)
+                        {
+                            Snackbar.Add($"... ve {importResult.Warnings.Count - 5} uyarı daha", MudBlazor.Severity.Warning);
+                        }
+                    }
+
                     // Navigate to policies list after successful import
                     if (importResult.FailureCount == 0)
                     {
-                        await Task.Delay(1500); // Give user time to see the message
+                        // Give the user time to see the message (longer when warnings are showing)
+                        await Task.Delay(importResult.Warnings.Any() ? 4000 : 1500);
                         Navigation.NavigateTo("/policies");
                     }
                 }

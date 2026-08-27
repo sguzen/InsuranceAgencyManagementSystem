@@ -3,12 +3,14 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
+      - master   # default branch — CI was silently skipped while this listed only 'main' (#513)
       - main
       - develop
       - 'release/**'
       - 'hotfix/**'
   pull_request:
     branches:
+      - master
       - main
       - develop
   workflow_dispatch:  # Allow manual trigger

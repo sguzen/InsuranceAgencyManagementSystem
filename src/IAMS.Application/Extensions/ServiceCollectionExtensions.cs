@@ -40,6 +40,7 @@ namespace IAMS.Application.Extensions
             // Register Pipeline Behaviors
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>)); // logs handlers slower than 500ms (#511)
 
             // Register Application Services
             services.AddScoped<ICustomerService, CustomerService>();
